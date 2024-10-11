@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class TransferServerLatestPolicy(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure AWS Transfer Server uses latest Security Policy"
-        id = "CKV_AWS_379" # watch for conflict
+        id = "CKV_AWS_379"
         supported_resources = ('aws_transfer_server',)
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -55,7 +55,7 @@ class TransferServerLatestPolicy(BaseResourceCheck):
         if security_policy:
             if self.__check_policy_date(security_policy[0]):
                 return CheckResult.PASSED
-        return CheckResult.FAILED # default is TransferSecurityPolicy-2018-11 which is old: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_server
+        return CheckResult.FAILED  # default is TransferSecurityPolicy-2018-11 which is old: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_server
 
     def get_evaluated_key(self) -> str:
         return "security_policy_name"
