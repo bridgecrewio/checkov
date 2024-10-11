@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AWS_73"
+  name: "Ensure AWS SQS uses CMK not AWS default keys for encryption"
+  category: "ENCRYPTION"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_sqs_queue"
+      attribute: "kms_master_key_id"
+      operator: "not_exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_sqs_queue"
+      attribute: "kms_master_key_id"
+      operator: "not_contains"
+      value: "alias/aws/sqs"
