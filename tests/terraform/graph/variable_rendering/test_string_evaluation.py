@@ -517,6 +517,20 @@ class TestTerraformEvaluation(TestCase):
         result = evaluate_terraform(input_str)
         self.assertEqual(expected, result)
 
+    def test_try_each_int (self):
+        # input_str = 'try(each.value,80)'
+        input_str = 'try(each.value.port,80)'
+        expected = 80
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
+    def test_try_each_str(self):
+        # input_str = 'try(each.value,80)'
+        input_str = 'try(each.value.port,HTTP)'
+        expected = 'HTTP'
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",

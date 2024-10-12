@@ -265,12 +265,18 @@ def terraform_try(*args: Any) -> Any:
         "try evaluates all of its argument expressions in turn and returns the result of the first one that does not
         produce any errors."
     """
+    accepted_exception = "'NoneType' object is not subscriptable"
+    arg_with_accepted_exception = ''
     for arg in args:
         try:
             return evaluate(arg) if isinstance(arg, str) else arg
         except Exception as e:
             logging.warning(f"Error in evaluate_try of argument {arg} - {e}")
+            if str(e) == accepted_exception and not arg_with_accepted_exception:
+                arg_with_accepted_exception = arg
             continue
+    if arg_with_accepted_exception:
+        return arg_with_accepted_exception
     raise Exception(f"No argument can be evaluated for try of {args}")
 
 
@@ -369,9 +375,24 @@ def evaluate(input_str: str) -> Any:
 
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
-    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+        input_str = replace_each_value_for_try(input_str)
+        try:
+            evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+        except Exception:
+            try_args = input_str.replace(TRY_STR_REPLACEMENT,"")[1:-1].split(',')
+            evaluated = terraform_try(*try_args)
+    else:
+        evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 
 def remove_unicode_null(input_str: str) -> str:
     return input_str.replace("\u0000", "\\0")
+
+
+def replace_each_value_for_try(input_str: str) -> str:
+    each_location = input_str.find('each.value')
+    if each_location >= 0:
+        comma_location = input_str.find(',', each_location)
+        input_str = input_str.replace(input_str[each_location:comma_location], "raise Exception()")
+    return input_str
