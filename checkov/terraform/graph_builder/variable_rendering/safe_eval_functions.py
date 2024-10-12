@@ -379,7 +379,7 @@ def evaluate(input_str: str) -> Any:
         try:
             evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
         except Exception:
-            try_args = input_str.replace(TRY_STR_REPLACEMENT,"")[1:-1].split(',')
+            try_args = input_str.replace(TRY_STR_REPLACEMENT, "")[1:-1].split(',')
             evaluated = terraform_try(*try_args)
     else:
         evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
