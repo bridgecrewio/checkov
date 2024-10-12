@@ -449,4 +449,3 @@ def find_chart_directories(root_folder: str | None, files: list[str] | None, exc
                 chart_directories.append(root)
 
     return chart_directories
-
