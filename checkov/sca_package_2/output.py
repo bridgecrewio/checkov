@@ -277,7 +277,8 @@ def create_cli_license_violations_table(file_path: str,
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]],
                           lines_details_found: bool) -> str:
     columns = 7
-    table_width = 159
+    table_width = 165
+    fixed_line_with = 159
     column_width = int(table_width / columns)
 
     cve_table_lines = create_cve_summary_table_part(
@@ -286,7 +287,7 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
 
     vulnerable_packages = True if package_details_map else False
     fixable_table_lines = create_fixable_cve_summary_table_part(
-        table_width=table_width, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
+        table_width=fixed_line_with, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
     )
 
     package_table_lines = create_package_overview_table_part(
