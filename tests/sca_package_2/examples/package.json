@@ -20,7 +20,7 @@
     "test": "bazelisk test --build_tag_filters=-view-engine-only --test_tag_filters=-view-engine-only"
   },
   "dependencies": {
-    "express": "3.0.0",
+    "express": "4.21.1",
     "lodash": "3.1.0"
   }
 }
