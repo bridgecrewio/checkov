@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def extract_commands(conf: dict[str, Any]) -> tuple[list[str], list[str]]:
+def extract_commands(conf: dict[str, Any]) -> tuple[list[str], list[str|None]]:
     commands = conf.get("command")
     if not commands or not isinstance(commands, list):
         return [], []
