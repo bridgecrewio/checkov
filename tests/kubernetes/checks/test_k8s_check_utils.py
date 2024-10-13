@@ -6,11 +6,12 @@ def test_non_int_extract_commands() -> None:
 
     keys, values = extract_commands(conf)
     assert keys == ['kube-apiserver', '--encryption-provider-config']
-    assert values == [None, 'config.file']
+    assert values == ['', 'config.file']
+
 
 def test_int_extract_commands() -> None:
-    conf = {'command': ['kube-apiserver', '--encryption-provider-config=config.file','-p', 9082]}
+    conf = {'command': ['kube-apiserver', '--encryption-provider-config=config.file', '-p', 9082]}
 
     keys, values = extract_commands(conf)
     assert keys == ['kube-apiserver', '--encryption-provider-config', '-p', 9082]
-    assert values == [None, 'config.file', None, None]
+    assert values == ['', 'config.file', '', '']
