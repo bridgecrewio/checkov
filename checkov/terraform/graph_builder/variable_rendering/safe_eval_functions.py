@@ -265,6 +265,7 @@ def terraform_try(*args: Any) -> Any:
         "try evaluates all of its argument expressions in turn and returns the result of the first one that does not
         produce any errors."
     """
+    # this exception happens when we try to evaluate expressions like 'locals.x' or 'each.value', we want to continue evaluating and not crash
     accepted_exception = "'NoneType' object is not subscriptable"
     arg_with_accepted_exception = ''
     for arg in args:
