@@ -13,5 +13,5 @@ definition:
       resource_types:
         - "aws_sqs_queue"
       attribute: "kms_master_key_id"
-      operator: "not_contains"
+      operator: "not_equals"
       value: "alias/aws/sqs"
