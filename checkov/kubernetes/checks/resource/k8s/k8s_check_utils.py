@@ -12,7 +12,7 @@ def extract_commands(conf: dict[str, Any]) -> tuple[list[str], list[str]]:
     for cmd in commands:
         if cmd is None:
             continue
-        if "=" in cmd:
+        if isinstance(cmd, str) and "=" in cmd:
             key, value = cmd.split("=", maxsplit=1)
             keys.append(key)
             values.append(value)
