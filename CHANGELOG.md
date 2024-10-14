@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.257...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.258...HEAD)
+
+## [3.2.258](https://github.com/bridgecrewio/checkov/compare/3.2.257...3.2.258) - 2024-10-13
+
+### Bug Fix
+
+- **terraform:** Set timeout for parsing Terraform files with hcl2. - [#6759](https://github.com/bridgecrewio/checkov/pull/6759)
 
 ## [3.2.257](https://github.com/bridgecrewio/checkov/compare/3.2.256...3.2.257) - 2024-10-06
 
