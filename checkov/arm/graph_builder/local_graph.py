@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum
-from typing import Any, TYPE_CHECKING, Literal
+from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
@@ -14,6 +13,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block
+
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
     def __init__(self, definitions: dict[str, dict[str, Any]]) -> None:
