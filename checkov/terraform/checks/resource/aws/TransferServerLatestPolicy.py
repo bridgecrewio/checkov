@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class TransferServerLatestPolicy(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure AWS Transfer Server uses latest Security Policy"
-        id = "CKV_AWS_379"
+        id = "CKV_AWS_380"
         supported_resources = ('aws_transfer_server',)
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
