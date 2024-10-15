@@ -219,6 +219,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         tf_registry = get_graph_checks_registry("terraform").checks
         k8s_registry = get_graph_checks_registry("kubernetes").checks
         bicep_registry = get_graph_checks_registry("bicep").checks
+        arm_registry = get_graph_checks_registry("arm").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
@@ -226,6 +227,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
         self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].id)
         self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].bc_id)
+        self.assertEqual('kpande_arm_1650378013213', arm_registry[0].bc_id)
+        self.assertEqual('kpande_arm_1650378013213', arm_registry[0].bc_id)
 
     def test_pre_scan_with_multiple_frameworks_graph_check(self):
         instance = BcPlatformIntegration()
@@ -568,6 +571,23 @@ def mock_custom_policies_response():
                 "benchmarks": {},
                 "frameworks": [
                     "bicep"
+                ]
+            },
+            {
+                "id": "kpande_arm_1650378013213",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "arm policy",
+                "guideline": "meaningful guideline for arm policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "arm",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "arm"
                 ]
             }
         ]
