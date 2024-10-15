@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.258...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.262...HEAD)
+
+## [3.2.262](https://github.com/bridgecrewio/checkov/compare/3.2.258...3.2.262) - 2024-10-14
+
+### Feature
+
+- **terraform:** 2 new checks - [#6764](https://github.com/bridgecrewio/checkov/pull/6764)
+- **terraform:** Add s3 data transport check - [#6763](https://github.com/bridgecrewio/checkov/pull/6763)
+
+### Bug Fix
+
+- **helm:** Remove helm target dir after scanning - [#6767](https://github.com/bridgecrewio/checkov/pull/6767)
+- **kubernetes:** Handle non-sting params in command - [#6768](https://github.com/bridgecrewio/checkov/pull/6768)
 
 ## [3.2.258](https://github.com/bridgecrewio/checkov/compare/3.2.257...3.2.258) - 2024-10-13
 
