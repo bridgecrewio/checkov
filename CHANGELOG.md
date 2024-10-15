@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.262...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.266...HEAD)
+
+## [3.2.266](https://github.com/bridgecrewio/checkov/compare/3.2.262...3.2.266) - 2024-10-15
+
+### Feature
+
+- **arm:** unsupported module soft fail - [#6775](https://github.com/bridgecrewio/checkov/pull/6775)
 
 ## [3.2.262](https://github.com/bridgecrewio/checkov/compare/3.2.258...3.2.262) - 2024-10-14
 
