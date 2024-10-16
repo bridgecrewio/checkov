@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "aksResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "AKS Cluster Resource ID"
+      }
+    },
+    "aksResourceLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Location of the AKS resource e.g. \"East US\""
+      }
+    },
+    "aksResourceTagValues": {
+      "type": "object",
+      "metadata": {
+        "description": "Existing all tags on AKS Cluster Resource"
+      }
+    },
+    "workspaceResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Monitor Log Analytics Resource ID"
+      }
+    }
+  },
+  "resources": [
+    {
+      "name": "pass",
+      "type": "Microsoft.ContainerService/managedClusters",
+      "location": "[parameters('aksResourceLocation')]",
+      "tags": "[parameters('aksResourceTagValues')]",
+      "apiVersion": "2018-03-31",
+      "properties": {
+        "mode": "Incremental",
+        "id": "[parameters('aksResourceId')]",
+        "addonProfiles": {
+          "omsagent": {
+            "enabled": true,
+            "config": {
+              "logAnalyticsWorkspaceResourceID": "[parameters('workspaceResourceId')]"
+            }
+          },
+          "azureKeyvaultSecretsProvider": {
+         "enabled": true,
+          "config": {
+          "enableSecretRotation": true
+        }
+      }
+        }
+      }
+    }
+  ]
+}

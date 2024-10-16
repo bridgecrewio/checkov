@@ -1,5 +1,7 @@
 pass:
   - "azurerm_network_interface.pass_int_1"
   - "azurerm_network_interface.pass_int_2"
+  - "azurerm_network_interface.pass_int_3"
+  - "azurerm_network_interface.pass_int_4"
 fail:
   - "azurerm_network_interface.fail_int"
