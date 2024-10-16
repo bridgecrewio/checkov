@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os.path
 import re
+import sys
 import uuid
 from collections import namedtuple
 from concurrent import futures
@@ -110,6 +112,7 @@ REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.clean()
+        self.set_config()
 
     def clean(self) -> None:
         self.bc_api_key = read_key()
@@ -360,6 +363,12 @@ class BcPlatformIntegration:
                     retries=self.http_retry,
                 )
         logging.debug('Successfully set up HTTP manager')
+
+    @staticmethod
+    def set_config() -> None:
+        # asyncio - on windows aiodns needs SelectorEventLoop
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     def setup_bridgecrew_credentials(
         self,

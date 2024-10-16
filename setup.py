@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.15",
+        "bc-detect-secrets==1.5.17",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -80,7 +80,7 @@ setup(
         "jmespath>=1.0.0,<2.0.0",
         "tqdm<5.0.0,>=4.65.0",
         "packaging>=23.0,<24.0",
-        "cloudsplaining<0.7.0,>=0.6.2",
+        "cloudsplaining<0.8.0,>=0.7.0",
         "networkx<2.7",
         "dockerfile-parse<3.0.0,>=2.0.0",
         "docker>=6.0.1,<8.0.0",
