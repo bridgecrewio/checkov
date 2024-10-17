@@ -694,6 +694,37 @@ resource "aws_msk_cluster" "pass_msk" {
   }
 }
 
+
+# MSK Connect
+
+resource "aws_security_group" "pass_msk_connect" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_mskconnect_connector" "pass_msk_connect" {
+  connector_configuration    = {}
+  kafkaconnect_version       = "example-version"
+  name                       = "msk-connect"
+  service_execution_role_arn = "aws_iam_role.msk_connect.arn"
+
+  kafka_cluster {
+    apache_kafka_cluster {
+      bootstrap_servers = "bootstrap-servers"
+
+      vpc {
+        security_groups = [aws_security_group.pass_msk_connect.id]
+        subnets         = []
+      }
+    }
+  }
+}
+
 # MWAA
 
 resource "aws_security_group" "pass_mwaa" {
