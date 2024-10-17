@@ -1,47 +1,27 @@
 metadata:
-  version: 0.1
+  version: 0.2
+  approach: define failing
   id: CKV_AWS_19
   name: Ensure all data stored in the S3 bucket is securely encrypted at rest
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
-    - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new Bucket(..., {..., encryption: BucketEncryption.$ANY_VAR, ...}, ...)"
-              - cond_type: pattern
-                operator: equals
-                value: "new Bucket(..., {..., encryption: BucketEncryption.UNENCRYPTED, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new $Y.Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.$ANY_VAR, ...}, ...)"
-              - cond_type: pattern
-                operator: equals
-                value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.UNENCRYPTED, ...}, ...)"
+  pattern: new $AWS.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (?i)(Bucket|CfnBucket)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.KMS_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.S3_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.KMS, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.KMS_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.S3_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.KMS, <ANY> } ,<ANY>)

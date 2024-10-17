@@ -1,37 +1,17 @@
 metadata:
-  version: 0.1
+  version: 0.2
+  approach: define failing
   id: CKV_AWS_18
   name: Ensure the S3 bucket has access logging enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
-    - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket } from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new Bucket(..., {..., serverAccessLogsBucket: $ANY_VAR, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new $Y.Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new $Y.Bucket(..., {..., serverAccessLogsBucket: $ANY_VAR, ...}, ...)"
+  pattern: new $AWS.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (Bucket|CfnBucket)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, serverAccessLogsBucket: <ANY> , <ANY> } ,<ANY>)

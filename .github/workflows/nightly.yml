@@ -62,7 +62,7 @@ jobs:
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d  # v5
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842  # v5
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md
@@ -94,7 +94,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install pipenv
@@ -128,7 +128,7 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_${{ matrix.name }}_X86_64_${{ needs.github-release.outputs.version }}.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64.zip
           asset_content_type: application/zip
   build-release-artifact-linux-arm:
     needs: [ github-release ]
@@ -164,5 +164,5 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_linux_arm64_${{ needs.github-release.outputs.version }}.zip
+          asset_name: checkov_linux_arm64.zip
           asset_content_type: application/zip

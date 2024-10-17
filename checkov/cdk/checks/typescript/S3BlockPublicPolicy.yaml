@@ -1,0 +1,33 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_54
+  name: Ensure S3 bucket has block public policy enabled
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - patterns:
+            or:
+              - not_pattern: |
+                  'new $FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
+              - not_pattern: |
+                  "new $FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - patterns:
+            or:
+              - not_pattern: |
+                  'new $S3.$FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
+              - not_pattern: |
+                  "new $S3.$FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"

@@ -31,8 +31,12 @@ class AnsibleLocalGraph(ObjectLocalGraph):
 
             for code_block in definition:
                 if ResourceType.TASKS in code_block:
-                    for task in code_block[ResourceType.TASKS]:
-                        self._process_blocks(file_path=file_path, task=task)
+                    tasks = code_block[ResourceType.TASKS]
+                    if tasks:  # Check if tasks is not None and not empty
+                        for task in tasks:
+                            self._process_blocks(file_path=file_path, task=task)
+                    else:
+                        self._process_blocks(file_path=file_path, task=code_block)
                 else:
                     self._process_blocks(file_path=file_path, task=code_block)
 
@@ -69,7 +73,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 # either it is actually not an Ansible file or a playbook without tasks refs
                 continue
 
-            resource_type = f"{ResourceType.TASKS}.{name}"
+            resource_type = f"{ResourceType.TASKS}.{prefix}{name}"
 
             if isinstance(config, str):
                 # this happens when modules have no parameters and are directly used with the user input
@@ -83,6 +87,10 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                     END_LINE: task[END_LINE],
                 }
 
+            if not isinstance(config, dict):
+                # either it is actually not an Ansible file or a playbook without tasks refs
+                continue
+
             attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
@@ -94,11 +102,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             self.vertices.append(
                 Block(
                     name=f"{resource_type}.{task_name}",
-                    config=config,
+                    config=task,
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=f"{resource_type}.{prefix}{task_name}",
+                    id=f"{resource_type}.{task_name}",
                     source=self.source,
                 )
             )
@@ -138,8 +146,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
         file_paths = get_scannable_file_paths(root_folder=root_folder)
 
         for file_path in file_paths:
-            result = parse_file(f=file_path)
-            if result is not None:
-                definitions[file_path] = result[0]
+            try:
+                result = parse_file(f=file_path)
+                if result is not None:
+                    definitions[file_path] = result[0]
+            except Exception as err:
+                logging.warning(f'fail to pars file {file_path}, {err}')
 
         return definitions

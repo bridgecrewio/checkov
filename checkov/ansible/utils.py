@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.common.util.suppression import collect_suppressions_for_context
+from checkov.runner_filter import RunnerFilter
 
 TASK_NAME_PATTERN = re.compile(r"^\s*-\s+name:\s+", re.MULTILINE)
 
@@ -137,8 +141,12 @@ def build_definitions_context(
 
         for code_block in definition:
             if ResourceType.TASKS in code_block:
-                for task in code_block[ResourceType.TASKS]:
-                    _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=task)
+                tasks = code_block[ResourceType.TASKS]
+                if tasks:  # Check if tasks is not empty
+                    for task in tasks:
+                        _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=task)
+                else:
+                    _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=code_block)
             else:
                 _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=code_block)
 
@@ -189,3 +197,36 @@ def _create_resource_context(definition_raw: list[tuple[int, str]], resource: di
         "code_lines": code_lines,
         "skipped_checks": skipped_checks,
     }
+
+
+def create_definitions(
+        root_folder: str | None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
+    runner_filter = runner_filter or RunnerFilter()
+    definitions: dict[str, dict[str, Any]] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
+    if files:
+        create_file_definition(files, definitions, definitions_raw)
+
+    if root_folder:
+        for root, d_names, f_names in os.walk(root_folder):
+            filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
+            filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+            files_to_load = [os.path.join(root, f_name) for f_name in f_names]
+            create_file_definition(files_to_load, definitions, definitions_raw)
+
+    return definitions, definitions_raw
+
+
+def create_file_definition(files_to_load: List[str], definitions: dict[str, dict[str, Any]], definitions_raw: dict[str, list[tuple[int, str]]]) -> None:
+    results = parallel_runner.run_function(lambda f: (f, parse_file(f)), files_to_load)
+    for file_result_pair in results:
+        if file_result_pair is None:
+            # this only happens, when an uncaught exception occurs
+            continue
+
+        file, result = file_result_pair
+        if result:
+            (definitions[file], definitions_raw[file]) = result  # type: ignore[assignment]

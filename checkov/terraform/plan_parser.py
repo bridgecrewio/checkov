@@ -3,19 +3,23 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-from typing import Optional, Tuple, Dict, List, Any, cast
+import os
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
-from checkov.common.util.consts import LINE_FIELD_NAMES
+from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN, START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
+
+from hcl2 import START_LINE as start_line, END_LINE as end_line
 
 SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
+TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -27,6 +31,45 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
     "azurerm_portal_dashboard": "dashboard_properties",
+    "aws_vpc_endpoint_policy": "policy",
+    "aws_ecr_registry_policy": "policy",
+    "aws_acmpca_policy": "policy",
+    "aws_api_gateway_rest_api_policy": "policy",
+    "aws_backup_vault_policy": "policy",
+    "aws_cloudwatch_log_destination_policy": "access_policy",
+    "aws_cloudwatch_log_resource_policy": "policy_document",
+    "aws_oam_sink_policy": "policy",
+    "aws_codebuild_resource_policy": "policy",
+    "aws_dynamodb_resource_policy": "policy",
+    "aws_ecr_repository_policy": "policy",
+    "aws_ecrpublic_repository_policy": "policy",
+    "aws_efs_file_system_policy": "policy",
+    "aws_elasticsearch_domain_policy": "access_policies",
+    "aws_media_store_container_policy": "policy",
+    "aws_cloudwatch_event_bus_policy": "policy",
+    "aws_schemas_registry_policy": "policy",
+    "aws_glue_resource_policy": "policy",
+    "aws_iot_policy": "policy",
+    "aws_kms_key": "policy",
+    "aws_kinesis_resource_policy": "policy",
+    "aws_msk_cluster_policy": "policy",
+    "aws_networkfirewall_resource_policy": "policy",
+    "aws_opensearch_domain_policy": "access_policies",
+    "aws_opensearchserverless_access_policy": "policy",
+    "aws_redshift_resource_policy": "policy",
+    "aws_redshiftserverless_resource_policy": "policy",
+    "aws_s3_bucket_policy": "policy",
+    "aws_s3control_access_point_policy": "policy",
+    "aws_s3control_bucket_policy": "policy",
+    "aws_ses_identity_policy": "policy",
+    "aws_sesv2_email_identity_policy": "policy",
+    "aws_sns_topic_data_protection_policy": "policy",
+    "aws_sns_topic_policy": "policy",
+    "aws_sqs_queue_policy": "policy",
+    "aws_secretsmanager_secret_policy": "policy",
+    "aws_vpclattice_auth_policy": "policy",
+    "aws_vpclattice_resource_policy": "policy",
+    "google_project_iam_policy": "policy_data"
 }
 
 
@@ -161,10 +204,12 @@ def _prepare_resource_block(
         resource_address: str | None = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address  # type:ignore[assignment]  # special field
 
-        changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
+        changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # because it can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
+            # enrich conf with after_unknown values
+            _eval_after_unknown(changes, resource_conf)
 
         provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
         if provisioners:
@@ -173,6 +218,22 @@ def _prepare_resource_block(
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, block_type, prepared
+
+
+def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) -> None:
+    after_unknown = changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN)
+    if os.getenv('EVAL_TF_PLAN_AFTER_UNKNOWN') and after_unknown and isinstance(after_unknown, dict):
+        for k, v in after_unknown.items():
+            # We check if the value of the field is True. That would mean its value is known after the apply
+            # We also check whether the field is not already present in the conf since we do not want to
+            # override it. Overriding can actually cause losing its value
+            if v is True and k not in resource_conf:
+                # We set the value to 'true_after_unknown' and not its original value
+                # We need to set a constant other than a boolean (True/"true"),
+                # so it will not collide with actual possible values of those attributes
+                # In these cases, policies checking the existence of a value will succeed,
+                # but policies checking for concrete values will fail
+                resource_conf[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(
@@ -212,7 +273,7 @@ def _find_child_modules(
                     (
                         module_call_resource
                         for module_call_resource in module_call_resources
-                        if f"{module_address}.{module_call_resource['address']}" == resource["address"]
+                        if f"{module_address}.{module_call_resource['address']}" == (resource["address"].rsplit('[', 1)[0] if resource["address"][-1] == "]" else resource["address"])
                     ),
                     None
                 )
@@ -240,6 +301,43 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
         root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
+
+
+def _is_provider_key(key: str) -> bool:
+    """key is a valid provider"""
+    return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
+
+
+def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Returns the provider dict"""
+
+    provider_map: dict[str, dict[str, Any]] = {}
+    provider_config = template.get("configuration", {}).get("provider_config")
+
+    if provider_config and isinstance(provider_config, dict):
+        for provider_key, provider_data in provider_config.items():
+            if _is_provider_key(key=provider_key):
+                # Not a provider, skip
+                continue
+            provider_map[provider_key] = {}
+            provider_alias = provider_data.get("alias", "default")
+            provider_map_entry = provider_map[provider_key]
+            for field, value in provider_data.get('expressions', {}).items():
+                if field in LINE_FIELD_NAMES or not isinstance(value, dict):
+                    continue  # don't care about line #s or non dicts
+                expression_value = value.get('constant_value', None)
+                if expression_value:
+                    if isinstance(expression_value, str):
+                        expression_value = [expression_value]
+                    provider_map_entry[field] = expression_value
+            provider_map_entry['start_line'] = [provider_data.get(START_LINE, 1) - 1]
+            provider_map_entry['end_line'] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry[start_line] = [provider_data.get(START_LINE, 1) - 1]
+            provider_map_entry[end_line] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry['alias'] = [provider_alias]
+            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
+
+    return provider_map
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -293,10 +391,14 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary and template_lines of the plan file
     """
-    tf_definition: Dict[str, Any] = {"resource": [], "data": []}
+    tf_definition: Dict[str, Any] = {"provider": [], "resource": [], "data": []}
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
+
+    provider = _get_provider(template=template)
+    if bool(provider):
+        tf_definition["provider"].append(provider)
 
     resource_changes = _get_resource_changes(template=template)
 
@@ -349,13 +451,27 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
     return value_list
 
 
-def _get_provisioner(input_data: List[Any]) -> List[Any]:
+def _get_provisioner(input_data: List[Dict[str, Any]]) -> List[Dict[str, Dict[str, Any]]]:
     result = []
     for item in input_data:
-        key = item['type']
-        command_value = item['expressions']['command']
-        if not isinstance(command_value, list):
-            command_value = [command_value]
-        transformed_item = {key: {'command': command_value}}
-        result.append(transformed_item)
+        if 'type' in item and 'expressions' in item:
+            key = item['type']
+            expressions = item['expressions']
+            transformed_expressions = {}
+
+            if key == 'local-exec':
+                if 'command' in expressions:
+                    command_value = expressions['command']
+                    if not isinstance(command_value, list):
+                        command_value = [command_value]
+                    transformed_expressions['command'] = command_value
+
+                for field, value in expressions.items():
+                    if field != 'command':
+                        transformed_expressions[field] = value
+            else:
+                transformed_expressions = expressions
+
+            transformed_item = {key: transformed_expressions}
+            result.append(transformed_item)
     return result

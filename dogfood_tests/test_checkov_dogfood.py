@@ -56,6 +56,8 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.SAST_JAVA,
         CheckType.SAST_PYTHON,
         CheckType.SAST_JAVASCRIPT,
+        CheckType.SAST_TYPESCRIPT,
+        CheckType.SAST_GOLANG,
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
@@ -159,6 +161,8 @@ def test_terraform_framework(caplog: LogCaptureFixture) -> None:
         "terraform/runner/resources/invalid_terraform_syntax/bad_tf_1.tf$",
         "terraform/runner/resources/invalid_terraform_syntax/bad_tf_2.tf$",
         "terraform/runner/resources/unbalanced_eval_brackets/main.tf$",
+        "terraform/runner/resources/hcl_timeout/main.tf$",
+        "terraform/parser/resources/hcl_timeout/main.tf$",
     ]
 
     run_framework_test(caplog=caplog, framework=CheckType.TERRAFORM, excluded_paths=excluded_paths)

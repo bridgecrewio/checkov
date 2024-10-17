@@ -51,7 +51,7 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=log_stack_trace_on_error)
+        logging.error(f"failed to persist object into S3 bucket {bucket} - {object_path}", exc_info=log_stack_trace_on_error)
         raise
 
 
@@ -81,7 +81,7 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
             continue
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
         if on_prem:
-            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
+            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')  # type: ignore
         reduced_scan_reports[check_type] = \
             {
                 "checks": {

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import re
@@ -257,8 +259,28 @@ def formatdate(format_str: str, input_str: str) -> str:
     return dt.strftime(processed_format_str)
 
 
+def terraform_try(*args: Any) -> Any:
+    """
+    From terraform docs:
+        "try evaluates all of its argument expressions in turn and returns the result of the first one that does not
+        produce any errors."
+    """
+    for arg in args:
+        try:
+            return evaluate(arg) if isinstance(arg, str) else arg
+        except Exception as e:
+            logging.warning(f"Error in evaluate_try of argument {arg} - {e}")
+            continue
+    raise Exception(f"No argument can be evaluated for try of {args}")
+
+
 SAFE_EVAL_FUNCTIONS: List[str] = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
+
+
+# type conversion functions
+TRY_STR_REPLACEMENT = "__terraform_try__"
+SAFE_EVAL_DICT[TRY_STR_REPLACEMENT] = terraform_try
 
 # math functions
 SAFE_EVAL_DICT["abs"] = abs
@@ -312,6 +334,7 @@ SAFE_EVAL_DICT["merge"] = merge
 # SAFE_EVAL_DICT['range']
 SAFE_EVAL_DICT["reverse"] = reverse
 SAFE_EVAL_DICT["sort"] = sort
+SAFE_EVAL_DICT["zipmap"] = lambda *lists: dict(zip(*lists))  # noqa: B905
 
 
 # type conversion
@@ -332,12 +355,20 @@ SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
 def evaluate(input_str: str) -> Any:
-    if "__" in input_str:
+    count_underscores = input_str.count("__")
+    # We are operating under the assumption that the function name will start and end with "__", ensuring that we have at least two of them
+    if count_underscores >= 2:
         logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
     if input_str == "...":
         # don't create an Ellipsis object
         return input_str
+    if input_str.startswith("try"):
+        # As `try` is a saved word in python, we can't override it like other functions as `eval` won't accept it.
+        # Instead, we are manually replacing this string with our own custom string, so we can pass it to `eval`.
+
+        # Don't use str.replace to make sure we replace just the first occurrence
+        input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
