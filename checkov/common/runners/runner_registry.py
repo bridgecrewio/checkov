@@ -128,7 +128,8 @@ class RunnerRegistry:
                                         collect_skip_comments=collect_skip_comments)]
             else:
                 # This is the only runner, so raise a clear indication of failure
-                raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
+                raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform',
+                                            unsupported_frameworks=[runner_check_type])
         else:
             valid_runners = []
             invalid_runners = []
@@ -150,11 +151,11 @@ class RunnerRegistry:
             # if some frameworks are disabled and the user used --framework, log a warning so they see it
             # if some frameworks are disabled and the user did not use --framework, then log at a lower level so that we have it for troubleshooting
             if not valid_runners:
+                check_types = [runner.check_type for runner in self.runners]
                 runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
                 error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
                                 f'You must subscribe to one or more of the categories below to get results for these frameworks.{os.linesep}{runners_categories}'
-                logging.error(error_message)
-                raise ModuleNotEnabledError(error_message)
+                raise ModuleNotEnabledError(error_message, unsupported_frameworks=check_types)
             elif invalid_runners:
                 for runner in invalid_runners:
                     level = logging.INFO

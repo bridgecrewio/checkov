@@ -1,6 +1,34 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.257...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.267...HEAD)
+
+## [3.2.267](https://github.com/bridgecrewio/checkov/compare/3.2.266...3.2.267) - 2024-10-16
+
+- no noteworthy changes
+
+## [3.2.266](https://github.com/bridgecrewio/checkov/compare/3.2.262...3.2.266) - 2024-10-15
+
+### Feature
+
+- **arm:** unsupported module soft fail - [#6775](https://github.com/bridgecrewio/checkov/pull/6775)
+
+## [3.2.262](https://github.com/bridgecrewio/checkov/compare/3.2.258...3.2.262) - 2024-10-14
+
+### Feature
+
+- **terraform:** 2 new checks - [#6764](https://github.com/bridgecrewio/checkov/pull/6764)
+- **terraform:** Add s3 data transport check - [#6763](https://github.com/bridgecrewio/checkov/pull/6763)
+
+### Bug Fix
+
+- **helm:** Remove helm target dir after scanning - [#6767](https://github.com/bridgecrewio/checkov/pull/6767)
+- **kubernetes:** Handle non-sting params in command - [#6768](https://github.com/bridgecrewio/checkov/pull/6768)
+
+## [3.2.258](https://github.com/bridgecrewio/checkov/compare/3.2.257...3.2.258) - 2024-10-13
+
+### Bug Fix
+
+- **terraform:** Set timeout for parsing Terraform files with hcl2. - [#6759](https://github.com/bridgecrewio/checkov/pull/6759)
 
 ## [3.2.257](https://github.com/bridgecrewio/checkov/compare/3.2.256...3.2.257) - 2024-10-06
 
