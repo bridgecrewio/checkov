@@ -1,0 +1,6 @@
+pass:
+    - "aws_sqs_queue.pass_notexists"
+    - "aws_sqs_queue.pass_different_start"
+
+fail:
+    - "aws_sqs_queue.fail"

@@ -33,13 +33,13 @@ def filter_excluded_paths(
                 # do not add compiled paths that aren't regexes
                 continue
         for entry in list(names):
-            path = entry.name if isinstance(entry, os.DirEntry) else entry
+            path = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
             full_path = os.path.join(root_dir, path)
             if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
 
     # support for our own excluded paths list
     for entry in list(names):
-        path = entry.name if isinstance(entry, os.DirEntry) else entry
+        path = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
         if path in EXCLUDED_PATHS:
             safe_remove(names, entry)
