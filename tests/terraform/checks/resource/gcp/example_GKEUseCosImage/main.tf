@@ -227,6 +227,6 @@ resource "google_container_node_pool" "unknown2" {
     max_unavailable = "0"
   }
 
-  version = "not_a_float"
+  version = lookup(each.value,"auto_upgrade",True) ? "" : lookup(each.value,"version",latest)
   zone    = "us-west1"
 }
