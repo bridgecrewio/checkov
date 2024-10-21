@@ -54,12 +54,12 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@2d790406f505036ef40ecba973cc774a50395aac  # v2
+        uses: github/codeql-action/init@f779452ac5af1c261dce0346a8f964149f49322b  # v2
         with:
           languages: python
           setup-python-dependencies: false
           config-file: ./.github/codeql-config.yml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@2d790406f505036ef40ecba973cc774a50395aac  # v2
+        uses: github/codeql-action/autobuild@f779452ac5af1c261dce0346a8f964149f49322b  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@2d790406f505036ef40ecba973cc774a50395aac  # v2
+        uses: github/codeql-action/analyze@f779452ac5af1c261dce0346a8f964149f49322b  # v2
