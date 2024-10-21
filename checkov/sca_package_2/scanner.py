@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,7 @@ from typing import Any
 from requests import JSONDecodeError
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.http_utils import request_wrapper
 
 from checkov.common.util.tqdm_utils import ProgressBar
@@ -43,7 +45,8 @@ class Scanner:
                 "path": bc_integration.repo_path,
                 "repoId": bc_integration.repo_id,
                 "id": bc_integration.timestamp,
-                "repositoryId": ""
+                "repositoryId": "",
+                "enableDotnetCpm": env_vars_config.ENABLE_DOTNET_CPM,
             }
 
             response = request_wrapper(
