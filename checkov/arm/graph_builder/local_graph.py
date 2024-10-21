@@ -97,32 +97,27 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             )
 
     def _create_edges(self) -> None:
+        # TODO: Create variable vertices edges
+        # TODO: Render variables into vertices
         for origin_vertex_index, vertex in enumerate(self.vertices):
-            if 'dependsOn' not in vertex.attributes:
-                continue
-            for dep in vertex.attributes['dependsOn']:
-                if 'resourceId' in dep:
-                    # Extract name from resourceId function
-                    processed_dep = dep.split(',')[-1].split(')')[0]
-                    if '(' in processed_dep:
-                        processed_dep = processed_dep+')'
+            if 'dependsOn' in vertex.attributes:
+                self._create_explicit_edge(origin_vertex_index, vertex.name, vertex.attributes['dependsOn'])
+            self._create_implicit_edges(origin_vertex_index, vertex.name, vertex.attributes)
 
-                    if 'variables' in processed_dep:
-                        # TODO: Render resource name from variables
-                        pass
-                    if 'parameters' in processed_dep:
-                        # TODO: Render resource name from parameters
-                        pass
-                else:
-                    processed_dep = dep.split('/')[-1]
-                # Check if the processed dependency exists in the map
-                if processed_dep in self.vertices_by_name:
-                    self._create_edge(processed_dep, origin_vertex_index, f'{vertex.name}->{processed_dep}')
-                else:
-                    # Dependency not found
-                    logging.debug(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
-                                  f" {vertex.name} not found")
-                    continue
+    def _create_explicit_edge(self, origin_vertex_index: int, resource_name: str, deps: list[str]) -> None:
+        for dep in deps:
+            if 'resourceId' in dep:
+                processed_dep = self._extract_resource_name_from_resource_id_func(dep)
+            else:
+                processed_dep = dep.split('/')[-1]
+            # Check if the processed dependency exists in the map
+            if processed_dep in self.vertices_by_name:
+                self._create_edge(processed_dep, origin_vertex_index, f'{resource_name}->{processed_dep}')
+            else:
+                # Dependency not found
+                logging.debug(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
+                              f" {resource_name} not found")
+                continue
 
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         dest_vertex_index = self.vertices_by_name.get(element_name)
@@ -132,6 +127,36 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
+
+    @staticmethod
+    def _extract_resource_name_from_resource_id_func(resource_id: str) -> str:
+        # Extract name from resourceId function
+        return resource_id.split(',')[-1].split(')')[0]
+
+    @staticmethod
+    def _extract_resource_name_from_reference_func(reference: str) -> str:
+        resource_name = "".join(reference.split('reference(', 1)[1].split(')')[:-1])
+        if 'resourceId' in resource_name:
+            return "".join(resource_name.split('resourceId(', 1)[1].split(')')[:-1]).split(',')[-1]
+        else:
+            return resource_name.split(',')[0]
+
+    def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
+        for key, value in d.items():
+            if isinstance(value, str):
+                if 'reference' in value:
+                    self._create_implicit_edge(origin_vertex_index, resource_name, value)
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str) and 'reference' in item:
+                        self._create_implicit_edge(origin_vertex_index, resource_name, item)
+            elif isinstance(value, dict):
+                self._create_implicit_edges(origin_vertex_index, resource_name, value)
+
+    def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
+        dep_name = ArmLocalGraph._extract_resource_name_from_reference_func(reference_string)
+        self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
+
 
     def update_vertices_configs(self) -> None:
         # not used
