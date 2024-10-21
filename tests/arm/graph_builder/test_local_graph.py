@@ -5,6 +5,17 @@ from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.utils import get_files_definitions
 
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
+EXPLICIT_DEPS_DIR = EXAMPLES_DIR / "ExplicitDepsResources"
+
+
+def test_build_graph_with_edges():
+    test_files = [EXPLICIT_DEPS_DIR / "interface.json",
+                  EXPLICIT_DEPS_DIR / "storage.json",
+                  EXPLICIT_DEPS_DIR / "subnet.json"]
+    definitions, _, _ = get_files_definitions(test_files)
+    test_graph = ArmLocalGraph(definitions)
+    test_graph.build_graph()
+    # TODO: Add unit tests
 
 
 def test_build_graph():

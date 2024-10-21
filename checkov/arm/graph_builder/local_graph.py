@@ -117,7 +117,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     processed_dep = dep.split('/')[-1]
                 # Check if the processed dependency exists in the map
                 if processed_dep in self.vertices_by_name:
-                    self._create_edge(processed_dep, origin_vertex_index, dep)
+                    self._create_edge(processed_dep, origin_vertex_index, f'{vertex.name}->{processed_dep}')
                 else:
                     # Dependency not found
                     logging.debug(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
