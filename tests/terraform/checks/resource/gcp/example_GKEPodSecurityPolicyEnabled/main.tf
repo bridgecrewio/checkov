@@ -24,5 +24,12 @@ resource "google_container_cluster" "fail2" {
   }
 }
 
+resource "google_container_cluster" "unknown3" {
+  min_master_version = "not_a_float"
+    pod_security_policy_config {
+    enabled = false
+  }
+}
+
 
 

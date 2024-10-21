@@ -81,7 +81,7 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
             continue
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
         if on_prem:
-            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
+            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')  # type: ignore
         reduced_scan_reports[check_type] = \
             {
                 "checks": {
