@@ -4,6 +4,7 @@ import io
 import itertools
 import logging
 import os
+import shutil
 import subprocess  # nosec
 import tempfile
 import threading
@@ -369,6 +370,12 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         list(parallel_runner.run_function(func=Runner._convert_chart_to_k8s, items=chart_items))
         return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
+    def remove_target_folder(self) -> None:
+        try:
+            shutil.rmtree(self.target_folder_path)  # delete directory
+        except OSError as exc:
+            logging.debug("failed to remove helm target folder path", exc_info=exc)
+
     def run(
         self,
         root_folder: str | None,
@@ -387,6 +394,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         k8s_runner.tmp_root_dir = self.get_k8s_target_folder_path()
         report = k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
         self.graph_manager = k8s_runner.graph_manager
+        self.remove_target_folder()
         return report
 
 
