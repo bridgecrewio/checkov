@@ -693,8 +693,8 @@ class Checkov:
                 print(f"{banner}")
             return None
         except ModuleNotEnabledError as m:
-            logging.error(m)
-            self.exit_run()
+            if all(framework in self.config.framework for framework in m.unsupported_frameworks):
+                logging.warning(m)
             return None
         except PlatformConnectionError:
             # we don't want to print all of these stack traces in normal output, as these could be user error

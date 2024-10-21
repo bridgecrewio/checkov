@@ -179,10 +179,10 @@ def filter_ignored_paths(
     # mostly this will just remove those problematic directories hardcoded above.
     included_paths = included_paths or []
     for entry in list(names):
-        path = entry.name if isinstance(entry, os.DirEntry) else entry
-        if path in ignored_directories:
+        cur_path: str = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
+        if cur_path in ignored_directories:
             safe_remove(names, entry)
-        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV and path not in included_paths:
+        if cur_path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV and cur_path not in included_paths:
             safe_remove(names, entry)
 
     # now apply the new logic
@@ -197,7 +197,7 @@ def filter_ignored_paths(
                 # do not add compiled paths that aren't regexes
                 continue
         for entry in list(names):
-            path = entry.name if isinstance(entry, os.DirEntry) else entry
+            path: str = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
             full_path = os.path.join(root_dir, path)
             if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
