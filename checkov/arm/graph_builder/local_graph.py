@@ -7,6 +7,7 @@ from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -21,6 +22,8 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.vertices: list[ArmBlock] = []
         self.definitions = definitions
         self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
+        self.vertices_by_name: dict[str, int] = {}
+
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
@@ -38,6 +41,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
             self.vertices_by_path_and_id[(vertex.path, vertex.id)] = i
+            self.vertices_by_name[vertex.name] = i
+
+            self.in_edges[i] = []
+            self.out_edges[i] = []
 
     def _create_parameter_vertices(self, file_path: str, parameters: dict[str, dict[str, Any]] | None) -> None:
         if not parameters:
@@ -85,13 +92,71 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=f"{resource_type}.{resource_name}",
+                    id=f"{resource_type}.{resource_name}"
                 )
             )
 
     def _create_edges(self) -> None:
-        # no edges yet
-        pass
+        # TODO: Create variable vertices edges
+        # TODO: Render variables into vertices
+        for origin_vertex_index, vertex in enumerate(self.vertices):
+            if 'dependsOn' in vertex.attributes:
+                self._create_explicit_edge(origin_vertex_index, vertex.name, vertex.attributes['dependsOn'])
+            self._create_implicit_edges(origin_vertex_index, vertex.name, vertex.attributes)
+
+    def _create_explicit_edge(self, origin_vertex_index: int, resource_name: str, deps: list[str]) -> None:
+        for dep in deps:
+            if 'resourceId' in dep:
+                processed_dep = self._extract_resource_name_from_resource_id_func(dep)
+            else:
+                processed_dep = dep.split('/')[-1]
+            # Check if the processed dependency exists in the map
+            if processed_dep in self.vertices_by_name:
+                self._create_edge(processed_dep, origin_vertex_index, f'{resource_name}->{processed_dep}')
+            else:
+                # Dependency not found
+                logging.debug(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
+                              f" {resource_name} not found")
+                continue
+
+    def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
+        dest_vertex_index = self.vertices_by_name.get(element_name)
+        if origin_vertex_index == dest_vertex_index:
+            return
+        edge = Edge(origin_vertex_index, dest_vertex_index, label)
+        self.edges.append(edge)
+        self.out_edges[origin_vertex_index].append(edge)
+        self.in_edges[dest_vertex_index].append(edge)
+
+    @staticmethod
+    def _extract_resource_name_from_resource_id_func(resource_id: str) -> str:
+        # Extract name from resourceId function
+        return resource_id.split(',')[-1].split(')')[0]
+
+    @staticmethod
+    def _extract_resource_name_from_reference_func(reference: str) -> str:
+        resource_name = "".join(reference.split('reference(', 1)[1].split(')')[:-1])
+        if 'resourceId' in resource_name:
+            return "".join(resource_name.split('resourceId(', 1)[1].split(')')[:-1]).split(',')[-1]
+        else:
+            return resource_name.split(',')[0]
+
+    def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
+        for key, value in d.items():
+            if isinstance(value, str):
+                if 'reference' in value:
+                    self._create_implicit_edge(origin_vertex_index, resource_name, value)
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str) and 'reference' in item:
+                        self._create_implicit_edge(origin_vertex_index, resource_name, item)
+            elif isinstance(value, dict):
+                self._create_implicit_edges(origin_vertex_index, resource_name, value)
+
+    def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
+        dep_name = ArmLocalGraph._extract_resource_name_from_reference_func(reference_string)
+        self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
+
 
     def update_vertices_configs(self) -> None:
         # not used
