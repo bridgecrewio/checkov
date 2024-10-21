@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -43,7 +44,8 @@ class Scanner:
                 "path": bc_integration.repo_path,
                 "repoId": bc_integration.repo_id,
                 "id": bc_integration.timestamp,
-                "repositoryId": ""
+                "repositoryId": "",
+                "enableDotnetCpm": os.getenv('ENABLE_DOTNET_CPM', 'False'),
             }
 
             response = request_wrapper(
