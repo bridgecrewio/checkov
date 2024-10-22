@@ -24,7 +24,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
         self.vertices_by_name: dict[str, int] = {}
 
-
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
         logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
@@ -129,7 +128,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.in_edges[dest_vertex_index].append(edge)
 
     def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
-        for key, value in d.items():
+        for _, value in d.items():
             if isinstance(value, str):
                 if 'reference' in value:
                     self._create_implicit_edge(origin_vertex_index, resource_name, value)
@@ -137,7 +136,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
     def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
         dep_name = extract_resource_name_from_reference_func(reference_string)
         self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
-
 
     def update_vertices_configs(self) -> None:
         # not used
