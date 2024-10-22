@@ -22,7 +22,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
     def evaluate_vertex_attribute_from_edge(self, edge_list: list[Edge]) -> None:
         origin_vertex_attributes = self.local_graph.vertices[edge_list[0].origin].attributes
         val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge_list[0].label, ""))
-        attr_path = ''
+        attr_path = None
         for edge in edge_list:
             attr_path, attr_value = self.extract_dest_attribute_path_and_value(dest_index=edge.dest,
                                                                                origin_value=val_to_eval)
