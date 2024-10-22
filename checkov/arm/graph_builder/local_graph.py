@@ -131,27 +131,25 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
     @staticmethod
     def _extract_resource_name_from_resource_id_func(resource_id: str) -> str:
         # Extract name from resourceId function
-        return resource_id.split(',')[-1].split(')')[0]
+        return ArmLocalGraph._clean_string(resource_id.split(',')[-1].split(')')[0])
 
     @staticmethod
     def _extract_resource_name_from_reference_func(reference: str) -> str:
-        resource_name = "".join(reference.split('reference(', 1)[1].split(')')[:-1])
+        resource_name = ''.join(reference.split('reference(', 1)[1].split(')')[:-1])
         if 'resourceId' in resource_name:
-            return "".join(resource_name.split('resourceId(', 1)[1].split(')')[:-1]).split(',')[-1]
+            return ArmLocalGraph._clean_string(''.join(resource_name.split('resourceId(', 1)[1].split(')')[0]).split(',')[-1])
         else:
-            return resource_name.split(',')[0]
+            return ArmLocalGraph._clean_string(resource_name.split(',')[0].split('/')[-1])
+
+    @staticmethod
+    def _clean_string(input: str) -> str:
+        return input.replace("'", '').replace(" ", "")
 
     def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
         for key, value in d.items():
             if isinstance(value, str):
                 if 'reference' in value:
                     self._create_implicit_edge(origin_vertex_index, resource_name, value)
-            elif isinstance(value, list):
-                for item in value:
-                    if isinstance(item, str) and 'reference' in item:
-                        self._create_implicit_edge(origin_vertex_index, resource_name, item)
-            elif isinstance(value, dict):
-                self._create_implicit_edges(origin_vertex_index, resource_name, value)
 
     def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
         dep_name = ArmLocalGraph._extract_resource_name_from_reference_func(reference_string)
