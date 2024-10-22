@@ -120,7 +120,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         dest_vertex_index = self.vertices_by_name.get(element_name)
-        if origin_vertex_index == dest_vertex_index:
+        if origin_vertex_index == dest_vertex_index or dest_vertex_index is None:
             return
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         self.edges.append(edge)
