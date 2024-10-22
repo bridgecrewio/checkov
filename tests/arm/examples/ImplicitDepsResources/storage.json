@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "myKeyVault",
+      "location": "westus",
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "tenantId": "tenantId",
+        "accessPolicies": []
+      },
+      "resources": [
+        {
+          "type": "secrets",
+          "name": "MySecret",
+          "apiVersion": "2019-09-01",
+          "properties": {
+            "value": "MySecretValue123"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2019-07-01",
+      "name": "myVM",
+      "location": "westus",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_DS1_v2"
+        },
+        "osProfile": {
+          "computerName": "myVM",
+          "adminUsername": "adminuser",
+          "customData": "[reference('Microsoft.KeyVault/vaults/myKeyVault', '2019-09-01').secrets['MySecret'].value]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'myNIC')]"
+            }
+          ]
+        },
+        "storageProfile": {
+          "osDisk": {
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

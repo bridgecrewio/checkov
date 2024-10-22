@@ -23,7 +23,7 @@ CHECKS_POSSIBLE_ENDING = {".json", ".yaml", ".yml"}
 
 GraphSupportedIACFrameworks = [GraphSource.TERRAFORM, GraphSource.CLOUDFORMATION, GraphSource.KUBERNETES,
                                GraphSource.TERRAFORM_PLAN, GraphSource.KUSTOMIZE, GraphSource.BICEP,
-                               GraphSource.GITHUB_ACTION, GraphSource.HELM, GraphSource.ANSIBLE]
+                               GraphSource.GITHUB_ACTION, GraphSource.HELM, GraphSource.ANSIBLE, GraphSource.ARM]
 
 
 class Registry(BaseRegistry):

@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+      {
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2020-06-01",
+        "name": "PublicIP1",
+        "location": "westus",
+        "properties": {
+          "publicIPAllocationMethod": "Dynamic"
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2020-06-01",
+        "name": "NIC1",
+        "location": "westus",
+        "dependsOn": [
+          "Microsoft.Network/virtualNetworks/VNet1/subnets/Subnet1",
+          "Microsoft.Network/publicIPAddresses/PublicIP1"
+        ],
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VNet1', 'Subnet1')]"
+                },
+                "privateIPAllocationMethod": "Dynamic",
+                "publicIPAddress": {
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'PublicIP1')]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
