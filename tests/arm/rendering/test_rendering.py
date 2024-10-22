@@ -1,12 +1,13 @@
-import unittest
+from pathlib import Path
 
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.utils import get_files_definitions
 
+EXAMPLES_DIR = Path(__file__).parent
 
 def test_rander_vars():
     # given
-    test_file = "test_rendering.json"
+    test_file = EXAMPLES_DIR / "test_rendering.json"
     definitions, _, _ = get_files_definitions([str(test_file)])
 
     local_graph = ArmLocalGraph(definitions=definitions)
