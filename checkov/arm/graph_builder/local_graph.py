@@ -151,9 +151,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                 if not isinstance(attr_value, str):
                     continue
                 if ArmElements.VARIABLES in attr_value or ArmElements.PARAMETERS in attr_value:
-                    match = re.search(pattern, attr_value)
-                    var_name = match.group(2) if match else ''
-                    self._create_edge(var_name, origin_vertex_index, attr_key)
+                    matches = re.findall(pattern, attr_value)
+                    for match in matches:
+                        var_name = match[1]
+                        self._create_edge(var_name, origin_vertex_index, attr_key)
 
     def update_vertices_configs(self) -> None:
         # not used
