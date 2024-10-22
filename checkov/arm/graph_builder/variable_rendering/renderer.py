@@ -59,3 +59,6 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             new_value = adjust_value(element_name=origin_value, value=vertex.attributes["value"])
             return "value", new_value
         return None, None
+
+    def evaluate_non_rendered_values(self) -> None:
+        pass
