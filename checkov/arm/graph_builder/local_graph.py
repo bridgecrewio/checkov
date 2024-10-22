@@ -31,9 +31,9 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
         self._create_edges()
         logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
-        # if render_variables:
-        renderer = ArmVariableRenderer(self)
-        renderer.render_variables_from_local_graph()
+        if render_variables:
+            renderer = ArmVariableRenderer(self)
+            renderer.render_variables_from_local_graph()
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
