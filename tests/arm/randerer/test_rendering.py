@@ -16,8 +16,9 @@ def test_rander_vars():
 
     # then
     assert len(local_graph.vertices) == 5
-    assert len(local_graph.edges) == 4
+    assert len(local_graph.edges) == 5
     assert local_graph.vertices[2].attributes['name'] == "[format('{0}/{1}', aci-vnet, aci-networkProfile)]"
+    assert local_graph.vertices[2].attributes['id'] == "[resourceId('Microsoft.Network/networkProfiles', aci-networkProfile)]"
     assert local_graph.vertices[2].attributes['location'] == "eth0"
     assert local_graph.vertices[2].attributes['properties.addressSpace.addressPrefixes.0'] == "10.0.0.0/16"
     assert local_graph.vertices[2].attributes['properties']['addressSpace']['addressPrefixes'][0] == "10.0.0.0/16"

@@ -35,6 +35,7 @@
       "apiVersion": "2020-11-01",
       "name": "[format('{0}/{1}', parameters('vnetName'), variables('networkProfileName'))]",
       "location": "[variables('location')]",
+      "id": "[resourceId('Microsoft.Network/networkProfiles', variables('networkProfileName'))]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
