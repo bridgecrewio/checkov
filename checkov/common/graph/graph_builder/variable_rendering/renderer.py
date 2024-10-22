@@ -61,6 +61,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
                 logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
             evaluated_edges_cache.append(edges_to_render)
+
             logging.debug(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
