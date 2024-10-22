@@ -11,10 +11,10 @@ from typing_extensions import TypeAlias  # noqa[TC002]
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
 from checkov.bicep.graph_builder.variable_rendering.renderer import BicepVariableRenderer
-from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.common.graph.graph_builder.utils import adjust_value
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 
@@ -56,9 +56,9 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
         self._create_edges()
         logging.info(f"[BicepLocalGraph] created {len(self.edges)} edges")
 
-        if render_variables:
-            renderer = BicepVariableRenderer(self)
-            renderer.render_variables_from_local_graph()
+        # if render_variables:
+        renderer = BicepVariableRenderer(self)
+        renderer.render_variables_from_local_graph()
 
     def _create_vertices(self) -> None:
         for file_path, bicep_conf in self.definitions.items():

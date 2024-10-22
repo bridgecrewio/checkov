@@ -50,9 +50,16 @@ def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple
 
     if template is None or template_lines is None:
         return None, None
-
+    # if 'variables' in template:
+    #     pars_variables(template, template_lines)
     return template, template_lines
 
+# def pars_variables(template: dict[str, Any], template_lines: list[tuple[int, str]]) -> None:
+#     for var_key, var_value in template[ArmElements.VARIABLES]:
+#         if not isinstance(var_value, dict):
+#             new_var = {}
+#             new_var['value'] = pickle_deepcopy(var_value)
+#             value = var_value
 
 def load(filename: Path | str) -> tuple[dict[str, Any], list[tuple[int, str]]]:
     """
