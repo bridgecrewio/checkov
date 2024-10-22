@@ -12,6 +12,7 @@ def test_rander_vars():
     local_graph = ArmLocalGraph(definitions=definitions)
     # when
     local_graph.build_graph(render_variables=True)
+
     # then
     assert len(local_graph.vertices) == 5
     assert len(local_graph.edges) == 5
