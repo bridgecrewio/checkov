@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
-from checkov.arm.utils import ArmElements
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import adjust_value
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
@@ -40,7 +39,6 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             val_to_replace = self.local_graph.vertices[edge.dest].id.replace(".", "('") + "')"
             val_to_eval = val_to_eval.replace(val_to_replace, attr_value)
 
-
         self.local_graph.update_vertex_attribute(
             vertex_index=edge_list[0].origin,
             attribute_key=edge_list[0].label,
@@ -48,7 +46,6 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             change_origin_id=edge_list[0].dest,
             attribute_at_dest=attr_path,
         )
-
 
     def extract_dest_attribute_path_and_value(self, dest_index: int, origin_value: Any) -> tuple[str, Any] | tuple[None, None]:
         vertex = self.local_graph.vertices[dest_index]

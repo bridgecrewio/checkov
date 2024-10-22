@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 import os
 import re
+from collections.abc import Collection
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter

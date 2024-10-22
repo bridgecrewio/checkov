@@ -59,7 +59,8 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                 continue
             if not isinstance(conf, dict):
                 full_conf = {"value": pickle_deepcopy(conf)}
-            else: full_conf= conf
+            else:
+                full_conf = conf
             config = pickle_deepcopy(full_conf)
             attributes = pickle_deepcopy(full_conf)
 
@@ -73,7 +74,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     id=f"{BlockType.VARIABLE}.{name}",
                 )
             )
-
 
     def _create_parameter_vertices(self, file_path: str, parameters: dict[str, dict[str, Any]] | None) -> None:
         if not parameters:
@@ -127,7 +127,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def _create_edges(self) -> None:
         self._create_vars_and_parameters_edges()
-        #todo add explicit references edges
+        # todo add explicit references edges
 
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         vertex_name = element_name
