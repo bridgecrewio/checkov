@@ -5,7 +5,7 @@ from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
-from checkov.arm.utils import ArmElements
+from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, extract_resource_name_from_reference_func
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
@@ -107,7 +107,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
     def _create_explicit_edge(self, origin_vertex_index: int, resource_name: str, deps: list[str]) -> None:
         for dep in deps:
             if 'resourceId' in dep:
-                processed_dep = self._extract_resource_name_from_resource_id_func(dep)
+                processed_dep = extract_resource_name_from_resource_id_func(dep)
             else:
                 processed_dep = dep.split('/')[-1]
             # Check if the processed dependency exists in the map
@@ -128,23 +128,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
 
-    @staticmethod
-    def _extract_resource_name_from_resource_id_func(resource_id: str) -> str:
-        # Extract name from resourceId function
-        return ArmLocalGraph._clean_string(resource_id.split(',')[-1].split(')')[0])
-
-    @staticmethod
-    def _extract_resource_name_from_reference_func(reference: str) -> str:
-        resource_name = ''.join(reference.split('reference(', 1)[1].split(')')[:-1])
-        if 'resourceId' in resource_name:
-            return ArmLocalGraph._clean_string(''.join(resource_name.split('resourceId(', 1)[1].split(')')[0]).split(',')[-1])
-        else:
-            return ArmLocalGraph._clean_string(resource_name.split(',')[0].split('/')[-1])
-
-    @staticmethod
-    def _clean_string(input: str) -> str:
-        return input.replace("'", '').replace(" ", "")
-
     def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
         for key, value in d.items():
             if isinstance(value, str):
@@ -152,7 +135,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     self._create_implicit_edge(origin_vertex_index, resource_name, value)
 
     def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
-        dep_name = ArmLocalGraph._extract_resource_name_from_reference_func(reference_string)
+        dep_name = extract_resource_name_from_reference_func(reference_string)
         self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
 
 

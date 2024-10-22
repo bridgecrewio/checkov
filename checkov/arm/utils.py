@@ -40,7 +40,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 
 def get_files_definitions(
-    files: Iterable[str], filepath_fn: Callable[[str], str] | None = None
+        files: Iterable[str], filepath_fn: Callable[[str], str] | None = None
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]], list[str]]:
     """Parses ARM files into its definitions and raw data"""
 
@@ -60,3 +60,21 @@ def get_files_definitions(
             parsing_errors.append(os.path.normpath(file))
 
     return definitions, definitions_raw, parsing_errors
+
+
+def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
+    # Extract name from resourceId function
+    return clean_string(resource_id.split(',')[-1].split(')')[0])
+
+
+def extract_resource_name_from_reference_func(reference: str) -> str:
+    resource_name = ''.join(reference.split('reference(', 1)[1].split(')')[:-1])
+    if 'resourceId' in resource_name:
+        return clean_string(
+            ''.join(resource_name.split('resourceId(', 1)[1].split(')')[0]).split(',')[-1])
+    else:
+        return clean_string(resource_name.split(',')[0].split('/')[-1])
+
+
+def clean_string(input: str) -> str:
+    return input.replace("'", '').replace(" ", "")
