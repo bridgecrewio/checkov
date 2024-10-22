@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.267...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.268...HEAD)
+
+## [3.2.268](https://github.com/bridgecrewio/checkov/compare/3.2.267...3.2.268) - 2024-10-20
+
+### Feature
+
+- **terraform_plan:** Support after_unknown evaluation of complex attributes - [#6784](https://github.com/bridgecrewio/checkov/pull/6784)
 
 ## [3.2.267](https://github.com/bridgecrewio/checkov/compare/3.2.266...3.2.267) - 2024-10-16
 
