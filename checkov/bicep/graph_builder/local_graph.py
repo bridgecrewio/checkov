@@ -56,9 +56,9 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
         self._create_edges()
         logging.info(f"[BicepLocalGraph] created {len(self.edges)} edges")
 
-        # if render_variables:
-        renderer = BicepVariableRenderer(self)
-        renderer.render_variables_from_local_graph()
+        if render_variables:
+            renderer = BicepVariableRenderer(self)
+            renderer.render_variables_from_local_graph()
 
     def _create_vertices(self) -> None:
         for file_path, bicep_conf in self.definitions.items():
