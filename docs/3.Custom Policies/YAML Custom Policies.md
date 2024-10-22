@@ -20,6 +20,8 @@ The Metadata includes:
 * Policy Name
 * ID - `CKV2_<provider>_<number>`
 * Category
+* Guideline (optional)
+* Severity (optional) - can be `INFO`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
 
 The possible values for category are:
 
@@ -32,6 +34,26 @@ The possible values for category are:
 * CONVENTION
 * SECRETS
 * KUBERNETES
+* APPLICATION_SECURITY
+* SUPPLY_CHAIN
+* API_SECURITY 
+
+The possible values for severity are:
+
+* INFO
+* LOW
+* MEDIUM
+* HIGH
+* CRITICAL
+
+```yaml
+metadata:
+  id: "CKV2_CUSTOM_1"
+  name: "Ensure bucket has versioning and owner tag"
+  category: "BACKUP_AND_RECOVERY"
+  guideline: "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ckv2_custom_1"
+  severity: "HIGH"
+```
 
 ## Policy Definition
 
@@ -39,14 +61,15 @@ The policy definition consists of:
 
 * **Definition Block(s)** - either *Attribute Block(s)* or *Connection State Block(s)* or both
 * **Logical Operator(s)** (optional)
-* **Filter**(optional)
+* **Filter** (optional)
 
 The top level object under `definition` must be a single object (not a list). It can be an attribute block, a connection block, or a logical operator (`and`, `or`, `not`).
 
 ## Types of Definition Blocks
 
 * **Attribute Blocks:** The policy describes resources with a certain configuration as defined by a configuration **attribute** and its value (per Terraform), or by the presence/absence of an attribute.
-* **Connection State Blocks** - The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
+* **Connection State Blocks:**  The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
+* **Resource Type Blocks:** The policy describes resource types that are either allowed or forbidden to use, commonly referred to as allow/deny lists.
 
 ### Using AND/OR Logic
 A policy definition may include multiple blocks (**Attribute**, **Connection state** or both), associated by **AND/OR** logic.
@@ -58,7 +81,7 @@ A policy definition may include any block (**Attribute**, **Connection state**, 
 
 An **Attribute Block** in a policy's definition indicates that a resource will be non-compliant if a certain configuration attribute does not have a specified value or if it exists/doesn't exist.
 
-Bridgecrew's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
+Prisma Cloud's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
 
 ### Attribute Block Example
 
@@ -76,39 +99,47 @@ definition:
 
 ### Attribute Condition: Operators
 
-| Operator              | Value in YAML           |
-|-----------------------|-------------------------|
-| Equals                | `equals`                |
-| Not Equals            | `not_equals`            |
-| Regex Match           | `regex_match`           |
-| Not Regex Match       | `not_regex_match`       |
-| Exists                | `exists`                |
-| Not Exists            | `not_exists`            |
-| One Exists            | `one_exists`            |
-| Any                   | `any`                   |
-| Contains              | `contains`              |
-| Not Contains          | `not_contains`          |
-| Within                | `within`                |
-| Starts With           | `starting_with`         |
-| Not Starts With       | `not_starting_with`     |
-| Ends With             | `ending_with`           |
-| Not Ends With         | `not_ending_with`       |
-| Greater Than          | `greater_than`          |
-| Greater Than Or Equal | `greater_than_or_equal` |
-| Less Than             | `less_than`             |
-| Less Than Or Equal    | `less_than_or_equal`    |
-| Subset                | `subset`                |
-| Not Subset            | `not_subset`            |
-| Is Empty              | `is_empty`              |
-| Is Not Empty          | `is_not_empty`          |
-| Length Equals         | `length_equals`         |
-| Length Not Equals     | `length_equals`         |
-| Length Less Than      | `length_less_than`      |
-| Length Less Than Or Equal   | `length_less_than_or_equal`      |
-| Length Greater Than   | `length_greater_than`   |
-| Length Greater Than Or Equal   | `length_greater_than_or_equal`   |
-| Is False              | `is_false`              |
-| Is True               | `is_true`               |
+| Value in YAML                  | Description                                      | Value types       | Example                                           |
+|--------------------------------|--------------------------------------------------|-------------------|---------------------------------------------------|
+| `equals`                       | Exact value match                                | String, Int, Bool | operator: "equals"<br>value: "t3.nano"            |
+| `not_equals`                   | Not equal to the value                           | String, Int, Bool | operator: "not_equals"<br>value: "t3.nano"        |
+| `regex_match`                  | The value must match the regular <br>expression      | String (RegEx)    | operator: "regex_match"<br>value: "^myex-.*"      |
+| `not_regex_match`              | The value must not match the regular <br>expression  | String (RegEx)    | operator: "not_regex_match"<br>value: "^myex-.*"  |
+| `exists`                       | The attribute or connection appears in the <br>resource definition | None              | attribute: "name"<br>operator: exists |
+| `not_exists`                   | The attribute or connection does not <br>appear in the resource    | None              | attribute: "name"<br>operator: not_exists |
+| `one_exists`                   | At least one connection of a specific type <br>exists | None         | resource_types:<br>  - aws_vpc<br>connected_resource_types:<br>  - aws_flow_log<br>operator: one_exists<br>attribute: networking<br>cond_type: connection |
+| `contains`                     | Checks if an attribute's value contains <br>the specified values, supporting nested structures  |  String    | operator: "contains"<br>value: <br>-"value1" |
+| `not_contains`                 | Checks if an attribute's value does not contain <br>the specified values, supporting nested structures  | String    | operator: "not_contains"<br>value: <br>-"value1" |
+| `within`                       | Checks if the attribute is within a given list of values  | (List) String | operator: within<br> - value1<br> - value2 |
+| `not_within`                   | Checks if the attribute is not within a given list of values | (List) Strings | operator: not_within<br>value:<br> - 'value1'<br> - 'value2' |
+| `starting_with`                | The attribute must begin with the value                | String | operator: starting_with<br>value: terraform-aws-modules |
+| `not_starting_with`            | The attribute must not begin with the value            | String | operator: not_starting_with<br>value: terraform-aws-modules |
+| `ending_with`                  | The value used by the attribute must end <br>with this string | String | operator: ending_with<br>value: "-good" |
+| `not_ending_with`              | The value used by the attribute must not <br>end with this string | String | operator: not_ending_with<br>value: "-bad" |
+| `greater_than`                 | The value used by the attribute must be <br>greater than this value | String, Int | operator: greater_than<br>value: "100" |
+| `greater_than_or_equal`        | The value used by the attribute must be <br>greater than or equal to this value | String, Int | operator: less_than_or_equal<br>value: "100" |
+| `less_than`                    | The value used by the attribute must be <br>less than this value | String, Int | operator: less_than<br>value: "100" |
+| `less_than_or_equal`           | The value used by the attribute must be <br>less than or equal to this value | String, Int | operator: less_than_or_equal<br>value: "100" |
+| `subset`                       | The values used by the attribute must be <br>a subset of the listed values and not <br>outside of that | (List) String | operator: subset<br>value: <br> - "a"<br> - "b" |
+| `not_subset`                   | The values used by the attribute must <br>not be any of a subset of the listed <br>values and not outside of that | (List) String | operator: not_subset<br>value: <br> - "a"<br> - "b" |
+| `is_empty`                     | The attribute must not have a value | None | attribute: "audit_log_config.*.exempted_members"<br>operator: is_empty |
+| `is_not_empty`                 | The attribute must have a value | None | attribute: "description"<br>operator: is_not_empty |
+| `length_equals`                | The list of attributes of that type must <br>be of this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_equals<br>value: "2" |
+| `length_not_equals`            | The list of attributes of that type must <br>not be of this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_not_equals<br>value: "2" |
+| `length_less_than`             | The list of attributes of that type must <br>be less than this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_less_than<br>value: "20" |
+| `length_less_than_or_equal`    | The list of attributes of that type must <br>be less than or equal to this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_less_than_or_equal<br>value: "20" |
+| `length_greater_than`          | The list of attributes of that type must <br>be greater than this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_greater_than<br>value: "20" |
+| `length_greater_than_or_equal` | The list of attributes of that type must <br>be greater than or equal to this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_greater_than_or_equal<br>value: "20" |
+| `is_false`                     | The value of the attribute must be false | None | operator: is_false |
+| `is_true`                      | The value of the attribute must be true | None | operator: is_true |
+| `intersects`                   | Given 2 values, check if those values <br>intersect | (List) Strings | attribute: "availability_zone"<br>operator: "intersects"<br>value: "us-" |
+| `not_intersects`               | Given 2 values, check if those values do<br> not intersect | (List) Strings | attribute: "availability_zone"<br>operator: "not_intersects"<br>value: "us-" |
+| `equals_ignore_case`           | The value of the attribute equals this <br>value, ignoring case for both | String | operator: "equals_ignore_case"<br>value: "INGRESS" |
+| `not_equals_ignore_case`       | The value of the attribute does not <br>equal this value, ignoring case for both | String | operator: "not_equals_ignore_case"<br>value: "INGRESS" |
+| `range_includes`               | The range of the value of the attribute <br>includes this single number | String, Int | operator: "range_includes"<br>value: 3000 |
+| `range_not_includes`           | The range of the value of the attribute <br>does not include this single number | String, Int | operator: "range_not_includes"<br>value: 3000 |
+| `number_of_words_equals`       | The number of words in the value of the <br>attribute is equal to this number | String, Int | operator: number_of_words_equals<br>value: 6 |
+| `number_of_words_not_equals`   | The number of words in the value of the <br>attribute is not equal to this number | String, Int | operator: number_of_words_not_equals<br>value: 6 |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
@@ -119,7 +150,7 @@ All those operators are supporting JSONPath attribute expression by adding the `
 | `cond_type` | string | Must be `attribute`                                                                                                                                                                                                                                                                                      |
 | `resource_type` | collection of strings | Use either `all` or `[resource types from list]`                                                                                                                                                                                                                                                         |
 | `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period`                                                                                                                                                                                                                  |
-| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal`, `is_true`, `is_false` |
+| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal`, `is_true`, `is_false`, `intersects`, `not_intersects` |
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                                              |
 
 
@@ -188,6 +219,7 @@ definition:
 | ----- | ----- |
 | Exists | `exists` |
 | Not Exists | `not_exists` |
+| One Exists | `one_exists` |
 
 ### Connection State Condition: Keys and Values
 
@@ -231,9 +263,25 @@ definition:
 
 *Note: The condition above uses AND logic. See [additional examples](https://www.checkov.io/3.Custom%20Policies/Examples.html) for complex logic in policy definitions.*
 
+## Resource Type Blocks
+
+A **Resource Type Block** in a policy's definition indicates that a resource will be compliant/non-complaint depending on the resource type, which is allowed/forbidden. Use the `exist` operator to define an allowlist and the `not_exist` operator to define a blocklist.
+
+### Resource Type Block Example
+
+The Resource Type Block in the `definition` in the example below is used to ensure CloudHSM cluster won't be provisioned:
+
+```yaml
+definition:
+  cond_type: "resource"
+  resource_types:
+   - "aws_cloudhsm_v2_cluster"
+  operator: "not_exists"
+```
+
 ## Using AND/OR Logic
 
-The Bridgecrew platform allows you to combine definition blocks using AND/OR operators.
+The Prisma Cloud platform allows you to combine definition blocks using AND/OR operators.
 
 * The top-level logical operator is the first key below \"definition\" (and not an item in a collection). Most policies will start with an `and` or `or` key here, with multiple conditions nested within that.
 * Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources.
@@ -293,4 +341,117 @@ definition:
 ```
 
 [See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
+
+## Supported Frameworks
+
+### Ansible
+Following `resource_types` are supported
+
+- `block`
+- `tasks.[module name]`
+
+ex.
+```yaml
+cond_type: attribute
+resource_types:
+  - tasks.ansible.builtin.uri
+  - tasks.uri
+attribute: url
+operator: starting_with
+value: "https://"
+```
+
+#### Note
+In the case a module can be used without parameters by just adding the value to it, 
+then it can be queried via a the special attribute `__self__`.
+
+ex.
+```yaml
+cond_type: "attribute"
+resource_types:
+  - "ansible.builtin.command"
+  - "command"
+attribute: "__self__"
+operator: "not_contains"
+value: "vim"
+```
+
+### ARM
+All resources can be referenced under `resource_types`.
+Currently, no support for connections.
+
+### Bicep
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### CloudFormation
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### Dockerfile
+All official Docker instructions can be referenced under `resource_types`.
+Currently, no support for connections.
+
+#### Note
+Following attribute values are supported
+
+- `content` stores the raw data for an instruction
+- `value` stores the sanitized data for an instruction
+
+ex.
+```dockerfile
+RUN apt-get update \
+ && sudo apt-get install vim
+```
+->
+```yaml
+content: "RUN apt-get update \\\n && sudo apt-get install vim\n"
+value: "apt-get update  && sudo apt-get install vim"
+```
+
+### GitHub Actions
+Following `resource_types` are supported
+
+- `permissions` on the root level
+- `steps`
+- `jobs`
+- `on`
+
+Following connections are supported
+
+- `steps` -> `jobs`
+
+#### Note
+The value for `permissions` can be either a map or a single string.
+Map entries should be prefixed with `permissions.` key and a single string entry can be accessed by using `permissions` as the attribute.
+
+ex.
+```yaml
+cond_type: "attribute"
+resource_types:
+  - "permissions"
+attribute: "permissions"
+operator: "not_equals"
+value: "write-all"
+```
+
+The value for `on` can be either a map, a string or a list of strings.
+
+ex.
+```yaml
+cond_type: attribute
+resource_types:
+  - "on"
+attribute: on.push.branches
+operator: contains
+value: main
+```
+
+### Kubernetes
+All resources can be referenced under `resource_types`.
+Currently, no support for connections.
+
+### Terraform
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
 

@@ -5,6 +5,7 @@ import os
 import hashlib
 from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
@@ -21,17 +22,29 @@ class ModuleLoaderRegistry:
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()
         self.root_dir = ""  # root dir for storing external modules
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
+    def load(
+        self,
+        current_dir: str,
+        source: str | None,
+        source_version: str | None,
+        module_address: str | None = None,
+        tf_managed: bool = False,
+    ) -> ModuleContent | None:
         """
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
         """
-        module_address = f'{source}:{source_version}'
+        if source is None:
+            return None
+
+        if module_address is None:
+            module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
             logging.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
@@ -54,17 +67,22 @@ information, see `loader.ModuleLoader.load`.
             next_url = ""
             if source in self.failed_urls_cache:
                 break
+            logging.info(f"Iterating over {len(self.loaders)} loaders")
             for loader in self.loaders:
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
-                    module_params = ModuleParams(root_dir=self.root_dir,
-                                                 current_dir=current_dir,
-                                                 source=source,
-                                                 source_version=source_version,
-                                                 dest_dir=local_dir,
-                                                 external_modules_folder_name=self.external_modules_folder_name,
-                                                 inner_module=inner_module)
+                    module_params = ModuleParams(
+                        root_dir=self.root_dir,
+                        current_dir=current_dir,
+                        source=source,
+                        source_version=source_version,
+                        dest_dir=local_dir,
+                        external_modules_folder_name=self.external_modules_folder_name,
+                        inner_module=inner_module,
+                        tf_managed=tf_managed,
+                    )
+                    logging.info(f"Attempting loading via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
@@ -94,7 +112,8 @@ information, see `loader.ModuleLoader.load`.
         return content
 
     def register(self, loader: "ModuleLoader") -> None:
-        self.loaders.append(loader)
+        if loader not in self.loaders:
+            self.loaders.append(loader)
 
     def reset_module_content_cache(self) -> None:
         self.module_content_cache = {}

@@ -31,6 +31,19 @@ class TestDefaultNamespace(unittest.TestCase):
             "kubernetes_role_binding.pass",
             "kubernetes_config_map.pass",
             "kubernetes_ingress.pass",
+            "kubernetes_pod_v1.pass",
+            "kubernetes_deployment_v1.pass",
+            "kubernetes_daemon_set_v1.pass",
+            "kubernetes_stateful_set_v1.pass",
+            "kubernetes_replication_controller_v1.pass",
+            "kubernetes_job_v1.pass",
+            "kubernetes_cron_job_v1.pass",
+            "kubernetes_service_v1.pass",
+            "kubernetes_secret_v1.pass",
+            "kubernetes_service_account_v1.pass",
+            "kubernetes_role_binding_v1.pass",
+            "kubernetes_config_map_v1.pass",
+            "kubernetes_ingress_v1.pass",
         }
 
         failing_resources = {
@@ -47,14 +60,28 @@ class TestDefaultNamespace(unittest.TestCase):
             "kubernetes_service_account.fail",
             "kubernetes_role_binding.fail",
             "kubernetes_config_map.fail",
-            "kubernetes_ingress.fail"
+            "kubernetes_ingress.fail",
+            "kubernetes_pod_v1.fail",
+            "kubernetes_pod_v1.fail2",
+            "kubernetes_deployment_v1.fail",
+            "kubernetes_daemon_set_v1.fail",
+            "kubernetes_stateful_set_v1.fail",
+            "kubernetes_replication_controller_v1.fail",
+            "kubernetes_job_v1.fail",
+            "kubernetes_cron_job_v1.fail",
+            "kubernetes_service_v1.fail",
+            "kubernetes_secret_v1.fail",
+            "kubernetes_service_account_v1.fail",
+            "kubernetes_role_binding_v1.fail",
+            "kubernetes_config_map_v1.fail",
+            "kubernetes_ingress_v1.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 13)
-        self.assertEqual(summary["failed"], 14)
+        self.assertEqual(summary["passed"], 13 * 2)
+        self.assertEqual(summary["failed"], 14 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -8,8 +8,8 @@ provider:
   environment:
     TABLE_NAME: "mytable"
     BUCKET_NAME: "mybucket"
-    AWS_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
-    AWS_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    AWS_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+    AWS_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_2 test secret
   iamRoleStatements:
     - Effect: "Allow"
       Action:

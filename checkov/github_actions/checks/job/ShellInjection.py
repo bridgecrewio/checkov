@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import re
-from typing import Any, Tuple, Dict
+from typing import Any
 
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
@@ -8,7 +10,7 @@ from checkov.yaml_doc.enums import BlockType
 
 
 class DontAllowShellInjection(BaseGithubActionsCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure run commands are not vulnerable to shell injection"
         id = "CKV_GHA_2"
         super().__init__(
@@ -18,7 +20,7 @@ class DontAllowShellInjection(BaseGithubActionsCheck):
             supported_entities=('jobs', 'jobs.*.steps[]')
         )
 
-    def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
 

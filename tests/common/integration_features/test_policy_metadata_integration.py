@@ -13,25 +13,28 @@ class TestPolicyMetadataIntegration(unittest.TestCase):
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
         instance.customer_run_config_response = mock_customer_run_config()
         instance.prisma_policies_response = mock_prisma_policies_response()
+        instance.prisma_policies_exception_response = [mock_prisma_policies_response()[0]]
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
         metadata_integration.pc_to_ckv_id_mapping
-        self.assertDictEqual(metadata_integration.pc_to_ckv_id_mapping, {'6960be11-e3a6-46cc-bf66-933c57c2af5d': 'CKV_AWS_15', 'c11ce08c-b93e-4e11-8d1c-e5a1339139d1': 'CKV_AWS_40', '0e4c576e-c934-4af3-8592-a53920e71ffb': 'CKV_AWS_53'})
-        self.assertListEqual(metadata_integration.filtered_policy_ids, ['CKV_AWS_15', 'CKV_AWS_40', 'CKV_AWS_53'])
+        self.assertDictEqual(metadata_integration.pc_to_ckv_id_mapping, {'6960be11-e3a6-46cc-bf66-933c57c2af5d': 'CKV_AWS_212', '3dc2478c-bf25-4383-aaa1-30feb5cda586': '806079891421835264_AZR_1685557908904', 'c11ce08c-b93e-4e11-8d1c-e5a1339139d1': 'CKV_AWS_40', '0e4c576e-c934-4af3-8592-a53920e71ffb': 'CKV_AWS_53', '1234': 'CKV3_SAST_123'})
+        self.assertListEqual(metadata_integration.filtered_policy_ids, ['CKV_AWS_212', '806079891421835264_AZR_1685557908904', 'CKV_AWS_40', 'CKV_AWS_53', 'CKV_AZURE_122'])
+        self.assertListEqual(metadata_integration.filtered_exception_policy_ids, ['CKV_AWS_212'])
+        self.assertSetEqual(set(metadata_integration.sast_check_metadata.keys()), {'CKV3_SAST_123'})
 
 
 def mock_customer_run_config():
     return {
         "policyMetadata": {
-            "CKV_AWS_15": {
+            "CKV_AWS_212": {
                 "id": "BC_AWS_IAM_5",
                 "title": "Ensure IAM password policy requires at least one uppercase letter",
                 "guideline": "https://docs.bridgecrew.io/docs/iam_5",
                 "severity": "MEDIUM",
                 "pcSeverity": "MEDIUM",
                 "category": "IAM",
-                "checkovId": "CKV_AWS_15",
+                "checkovId": "CKV_AWS_212",
                 "constructiveTitle": "Ensure AWS IAM password policy has an uppercase character",
                 "descriptiveTitle": "AWS IAM password policy does not have an uppercase character",
                 "pcPolicyId": "6960be11-e3a6-46cc-bf66-933c57c2af5d",
@@ -71,8 +74,62 @@ def mock_customer_run_config():
                     "0e4c576e-c934-4af3-8592-a53920e71ffb"
                 ],
                 "benchmarks": {}
+            },
+            "CKV_AZURE_122": {
+                "id": "BC_AZR_NETWORKING_39",
+                "title": "Ensure that Application Gateway uses WAF in \"Detection\" or \"Prevention\" modes",
+                "guideline": "https://docs.bridgecrew.io/docs/ensure-that-application-gateway-uses-waf-in-detection-or-prevention-modes",
+                "severity": "LOW",
+                "pcSeverity": "LOW",
+                "category": "Networking",
+                "checkovId": "CKV_AZURE_122",
+                "constructiveTitle": "Ensure application gateway uses WAF in Detection or Prevention modes",
+                "descriptiveTitle": "Application gateway does not use WAF in Detection or Prevention modes",
+                "pcPolicyId": "3dc2478c-bf25-4383-aaa1-30feb5cda586",
+                "additionalPcPolicyIds": [
+                    "3dc2478c-bf25-4383-aaa1-30feb5cda586"
+                ],
+                "benchmarks": {}
+            },
+            "CKV3_SAST_123": {
+                "id": "BC_SAST_123",
+                "title": "sast",
+                "guideline": "https://docs.bridgecrew.io/docs/abc",
+                "severity": "LOW",
+                "pcSeverity": "LOW",
+                "category": "Networking",
+                "checkovId": "CKV3_SAST_123",
+                "constructiveTitle": "sast",
+                "descriptiveTitle": "sast",
+                "pcPolicyId": "1234",
+                "additionalPcPolicyIds": [
+                    "1234"
+                ],
+                "benchmarks": {}
             }
-        }
+        },
+        "customPolicies": [
+            {
+            "id": "806079891421835264_AZR_1685557908904",
+            "code": "null",
+            "title": "Application gateway does not use WAF in Detection or Prevention modes",
+            "guideline": "Refer the documentation for more details,\nhttps://docs.bridgecrew.io/docs/ensure-that-application-gateway-uses-waf-in-detection-or-prevention-modes",
+            "severity": "MEDIUM",
+            "pcSeverity": "MEDIUM",
+            "category": "Networking",
+            "pcPolicyId": "3dc2478c-bf25-4383-aaa1-30feb5cda586",
+            "additionalPcPolicyIds": [
+                "3dc2478c-bf25-4383-aaa1-30feb5cda586"
+            ],
+            "sourceIncidentId": "BC_AZR_NETWORKING_39",
+            "benchmarks": {},
+            "frameworks": [
+                "CloudFormation",
+                "Terraform"
+            ],
+            "provider": "Azure"
+            }
+        ]
     }
 
 
@@ -145,6 +202,40 @@ def mock_prisma_policies_response():
             "policyCategory": "risk",
             "policyClass": "exposure",
             "remediable": False
+        },
+        {
+            "policyId": "3dc2478c-bf25-4383-aaa1-30feb5cda586",
+            "name": "Application gateway does not use WAF in Detection or Prevention modes",
+            "policyType": "config",
+            "policySubTypes": [
+                "build"
+            ],
+            "systemDefault": True,
+            "description": "Ensure that Application Gateway uses WAF in \"Detection\" or \"Prevention\" modes",
+            "severity": "medium",
+            "rule": {
+                "parameters": {
+                    "withIac": "true",
+                    "savedSearch": "false"
+                },
+                "type": "Config",
+                "children": [
+                    {
+                        "criteria": "{\"category\":\"Networking\",\"resourceTypes\":[\"azurerm_web_application_firewall_policy\"]}",
+                        "type": "build",
+                        "metadata": {
+                            "checkovId": "CKV_AZURE_122"
+                        },
+                        "recommendation": "Refer the documentation for more details,\nhttps://docs.bridgecrew.io/docs/ensure-that-application-gateway-uses-waf-in-detection-or-prevention-modes"
+                    }
+                ]
+            },
+            "recommendation": "",
+            "cloudType": "azure",
+            "labels": [
+                "pcsup"
+            ],
+            "enabled": True,
         },
         {
             "policyId": "c11ce08c-b93e-4e11-8d1c-e5a1339139d1",

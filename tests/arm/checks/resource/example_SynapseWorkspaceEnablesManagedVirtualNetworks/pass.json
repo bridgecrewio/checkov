@@ -1,0 +1,313 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "defaultDataLakeStorageAccountName": {
+            "type": "string"
+        },
+        "defaultDataLakeStorageFilesystemName": {
+            "type": "string"
+        },
+        "sqlAdministratorLogin": {
+            "type": "string"
+        },
+        "sqlAdministratorLoginPassword": {
+            "type": "secureString",
+            "defaultValue": ""
+        },
+        "setWorkspaceIdentityRbacOnStorageAccount": {
+            "type": "bool"
+        },
+        "createManagedPrivateEndpoint": {
+            "type": "bool"
+        },
+        "defaultAdlsGen2AccountResourceId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "azureADOnlyAuthentication": {
+            "type": "bool"
+        },
+        "allowAllConnections": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "managedVirtualNetwork": {
+            "type": "string",
+            "allowedValues": [
+                "default",
+                ""
+            ]
+        },
+        "tagValues": {
+            "type": "object",
+            "defaultValue": {}
+        },
+        "publicNetworkAccess": {
+            "type": "string",
+            "allowedValues": [
+                "Enabled",
+                "Disabled"
+            ]
+        },
+        "storageSubscriptionID": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionId]"
+        },
+        "storageResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]"
+        },
+        "storageLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "storageRoleUniqueId": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
+        },
+        "isNewStorageAccount": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "isNewFileSystemOnly": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "adlaResourceId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "managedResourceGroupName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "storageAccessTier": {
+            "type": "string"
+        },
+        "storageAccountType": {
+            "type": "string"
+        },
+        "storageSupportsHttpsTrafficOnly": {
+            "type": "bool"
+        },
+        "storageKind": {
+            "type": "string"
+        },
+        "minimumTlsVersion": {
+            "type": "string"
+        },
+        "storageIsHnsEnabled": {
+            "type": "bool"
+        },
+        "userObjectId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "setSbdcRbacOnStorageAccount": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "setWorkspaceMsiByPassOnStorageAccount": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "workspaceStorageAccountProperties": {
+            "type": "object",
+            "defaultValue": {}
+        },
+        "managedVirtualNetworkSettings": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "storageBlobDataContributorRoleID": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+        "defaultDataLakeStorageAccountUrl": "[concat('https://', parameters('defaultDataLakeStorageAccountName'), '.dfs.core.windows.net')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-06-01-preview",
+            "name": "pass",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.Synapse/workspaces",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "defaultDataLakeStorage": {
+                    "accountUrl": "[variables('defaultDataLakeStorageAccountUrl')]",
+                    "filesystem": "[parameters('defaultDataLakeStorageFilesystemName')]",
+                    "resourceId": "[parameters('defaultAdlsGen2AccountResourceId')]",
+                    "createManagedPrivateEndpoint": "[parameters('createManagedPrivateEndpoint')]"
+                },
+                "managedVirtualNetwork": "[parameters('managedVirtualNetwork')]",
+                "managedResourceGroupName": "[parameters('managedResourceGroupName')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "managedVirtualNetworkSettings": "[parameters('managedVirtualNetworkSettings')]",
+                "azureADOnlyAuthentication": "[parameters('azureADOnlyAuthentication')]",
+                "sqlAdministratorLogin": "[parameters('sqlAdministratorLogin')]",
+                "sqlAdministratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('allowAllConnections')]",
+                    "apiVersion": "2021-06-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.Synapse/workspaces/', parameters('name'))]"
+                    ],
+                    "location": "[parameters('location')]",
+                    "name": "allowAll",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "255.255.255.255"
+                    },
+                    "type": "firewallrules"
+                }
+            ],
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('defaultDataLakeStorageAccountName'))]",
+                "[concat('Microsoft.Resources/deployments/', parameters('defaultDataLakeStorageFilesystemName'))]"
+            ],
+            "tags": "[parameters('tagValues')]"
+        },
+        {
+            "condition": "[parameters('setWorkspaceIdentityRbacOnStorageAccount')]",
+            "apiVersion": "2019-05-01",
+            "name": "StorageRoleDeploymentResource",
+            "type": "Microsoft.Resources/deployments",
+            "subscriptionId": "[parameters('storageSubscriptionID')]",
+            "resourceGroup": "[parameters('storageResourceGroupName')]",
+            "dependsOn": [
+                "[concat('Microsoft.Synapse/workspaces/', parameters('name'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+                            "apiVersion": "2018-09-01-preview",
+                            "name": "[concat(parameters('defaultDataLakeStorageAccountName'), '/Microsoft.Authorization/',  guid(concat(resourceGroup().id, '/', variables('storageBlobDataContributorRoleID'), '/', parameters('name'), '/', parameters('storageRoleUniqueId'))))]",
+                            "location": "[parameters('storageLocation')]",
+                            "properties": {
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataContributorRoleID'))]",
+                                "principalId": "[reference(concat('Microsoft.Synapse/workspaces/', parameters('name')), '2021-06-01', 'Full').identity.principalId]",
+                                "principalType": "ServicePrincipal"
+                            }
+                        },
+                        {
+                            "condition": "[parameters('setSbdcRbacOnStorageAccount')]",
+                            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+                            "apiVersion": "2018-09-01-preview",
+                            "name": "[concat(parameters('defaultDataLakeStorageAccountName'), '/Microsoft.Authorization/',  guid(concat(resourceGroup().id, '/', variables('storageBlobDataContributorRoleID'), '/', parameters('userObjectId'), '/', parameters('storageRoleUniqueId'))))]",
+                            "properties": {
+                                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('storageBlobDataContributorRoleID'))]",
+                                "principalId": "[parameters('userObjectId')]",
+                                "principalType": "User"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "condition": "[parameters('setWorkspaceMsiByPassOnStorageAccount')]",
+            "apiVersion": "2019-05-01",
+            "name": "UpdateStorageAccountNetworkingAcls",
+            "type": "Microsoft.Resources/deployments",
+            "subscriptionId": "[parameters('storageSubscriptionID')]",
+            "resourceGroup": "[parameters('storageResourceGroupName')]",
+            "dependsOn": [
+                "[concat('Microsoft.Synapse/workspaces/', parameters('name'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2021-01-01",
+                            "location": "[parameters('storageLocation')]",
+                            "name": "[parameters('defaultDataLakeStorageAccountName')]",
+                            "properties": "[parameters('workspaceStorageAccountProperties')]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "condition": "[parameters('isNewStorageAccount')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('defaultDataLakeStorageAccountName')]",
+            "apiVersion": "2021-01-01",
+            "location": "[parameters('storageLocation')]",
+            "properties": {
+                "accessTier": "[parameters('storageAccessTier')]",
+                "supportsHttpsTrafficOnly": "[parameters('storageSupportsHttpsTrafficOnly')]",
+                "isHnsEnabled": "[parameters('storageIsHnsEnabled')]",
+                "minimumTlsVersion": "[parameters('minimumTlsVersion')]"
+            },
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "[parameters('storageKind')]",
+            "tags": {},
+            "resources": [
+                {
+                    "condition": "[parameters('isNewStorageAccount')]",
+                    "name": "[concat('default/', parameters('defaultDataLakeStorageFilesystemName'))]",
+                    "type": "blobServices/containers",
+                    "apiVersion": "2021-01-01",
+                    "properties": {
+                        "publicAccess": "None"
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Storage/storageAccounts/', parameters('defaultDataLakeStorageAccountName'))]"
+                    ]
+                }
+            ]
+        },
+        {
+            "condition": "[parameters('isNewFileSystemOnly')]",
+            "apiVersion": "2019-05-01",
+            "name": "[parameters('defaultDataLakeStorageFilesystemName')]",
+            "type": "Microsoft.Resources/deployments",
+            "subscriptionId": "[parameters('storageSubscriptionID')]",
+            "resourceGroup": "[parameters('storageResourceGroupName')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+                            "name": "[concat(parameters('defaultDataLakeStorageAccountName'), '/default/', parameters('defaultDataLakeStorageFilesystemName'))]",
+                            "apiVersion": "2021-01-01",
+                            "properties": {
+                                "publicAccess": "None"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

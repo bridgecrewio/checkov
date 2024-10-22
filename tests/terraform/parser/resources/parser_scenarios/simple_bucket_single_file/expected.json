@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "aws_s3_bucket": {
@@ -8,7 +8,8 @@
               "my-test-bucket"
             ],
             "__start_line__": 1,
-            "__end_line__": 3
+            "__end_line__": 3,
+            "__address__": "aws_s3_bucket.test"
           }
         }
       }

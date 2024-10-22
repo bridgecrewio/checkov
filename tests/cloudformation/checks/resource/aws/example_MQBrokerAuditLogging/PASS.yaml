@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Enabled:
+    Type: "AWS::AmazonMQ::Broker"
+    Properties:
+      AutoMinorVersionUpgrade: false
+      BrokerName: Example
+      DeploymentMode: SINGLE_INSTANCE
+      EngineType: ACTIVEMQ
+      EngineVersion: 5.15.0
+      HostInstanceType: mq.t3.micro
+      Logs:
+        Audit: true
+      PubliclyAccessible: true
+      Users:
+        - ConsoleAccess: true
+          Groups:
+            - MyGroup
+          Password: AmazonMqPassword  # checkov:skip=CKV_SECRET_6 test secret
+          Username: AmazonMqUsername

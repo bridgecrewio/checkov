@@ -102,7 +102,7 @@ checkov -d . --framework arm
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.723 
+By Prisma Cloud | version: x.x.x 
 
 arm scan results:
 
@@ -111,7 +111,7 @@ Passed checks: 0, Failed checks: 5, Skipped checks: 0
 Check: CKV_AZURE_15: "Ensure web app is using the latest version of TLS encryption"
 	FAILED for resource: Microsoft.Web/sites.[concat(parameters('webAppName'), '-webapp')]
 	File: /example.json:53-68
-	Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_6
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-6
 
 		53 |     {
 		54 |       "type": "Microsoft.Web/sites",
@@ -134,7 +134,7 @@ Check: CKV_AZURE_15: "Ensure web app is using the latest version of TLS encrypti
 Check: CKV_AZURE_17: "Ensure the web app has 'Client Certificates (Incoming client certificates)' set"
 	FAILED for resource: Microsoft.Web/sites.[concat(parameters('webAppName'), '-webapp')]
 	File: /example.json:53-68
-	Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_7
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-7
 
 		53 |     {
 		54 |       "type": "Microsoft.Web/sites",
@@ -157,7 +157,7 @@ Check: CKV_AZURE_17: "Ensure the web app has 'Client Certificates (Incoming clie
 Check: CKV_AZURE_14: "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service"
 	FAILED for resource: Microsoft.Web/sites.[concat(parameters('webAppName'), '-webapp')]
 	File: /example.json:53-68
-	Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_5
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-5
 
 		53 |     {
 		54 |       "type": "Microsoft.Web/sites",
@@ -180,7 +180,7 @@ Check: CKV_AZURE_14: "Ensure web app redirects all HTTP traffic to HTTPS in Azur
 Check: CKV_AZURE_16: "Ensure that Register with Azure Active Directory is enabled on App Service"
 	FAILED for resource: Microsoft.Web/sites.[concat(parameters('webAppName'), '-webapp')]
 	File: /example.json:53-68
-	Guide: https://docs.bridgecrew.io/docs/bc_azr_iam_1
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/bc-azr-iam-1
 
 		53 |     {
 		54 |       "type": "Microsoft.Web/sites",
@@ -203,7 +203,7 @@ Check: CKV_AZURE_16: "Ensure that Register with Azure Active Directory is enable
 Check: CKV_AZURE_18: "Ensure that 'HTTP Version' is the latest if used to run the web app"
 	FAILED for resource: Microsoft.Web/sites.[concat(parameters('webAppName'), '-webapp')]
 	File: /example.json:53-68
-	Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_8
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-8
 
 		53 |     {
 		54 |       "type": "Microsoft.Web/sites",

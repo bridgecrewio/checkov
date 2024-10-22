@@ -8,12 +8,8 @@ from checkov.common.util.type_forcers import force_float
 class GreaterThanAttributeSolver(BaseAttributeSolver):
     operator = Operators.GREATER_THAN  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         vertex_attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
-        # if this value contains an underendered variable, then we cannot evaluate the check,
-        # so return True (since we cannot return UNKNOWN)
-        if self._is_variable_dependant(vertex_attr, vertex['source_']):
-            return True
         attr_float = force_float(vertex_attr)
         value_float = force_float(self.value)
 

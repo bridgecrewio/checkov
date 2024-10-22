@@ -16,3 +16,4 @@ definition:
       - aws_cloudfront_distribution
       connected_resource_types:
       - aws_cloudfront_response_headers_policy
+      - data.aws_cloudfront_response_headers_policy

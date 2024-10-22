@@ -1,24 +1,38 @@
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.typing import _SkippedCheck, _CheckResult
+
 
 class Registry(BaseCheckRegistry):
-
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(CheckType.HELM)
 
-    def extract_entity_details(self, entity):
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, dict[str, Any]]:  # type:ignore[override]
         kind = entity["kind"]
         conf = entity
         return kind, conf
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
+    def scan(
+        self,
+        scanned_file: str,
+        entity: dict[str, Any],
+        skipped_checks: list[_SkippedCheck],
+        runner_filter: RunnerFilter,
+        report_type: str | None = None,
+    ) -> dict[BaseCheck, _CheckResult]:
         (entity_type, entity_configuration) = self.extract_entity_details(entity)
         results = {}
         checks = self.get_checks(entity_type)
         for check in checks:
-            skip_info = {}
+            skip_info: "_SkippedCheck" = {}
             if skipped_checks:
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
@@ -32,7 +46,7 @@ class Registry(BaseCheckRegistry):
         return results
 
     @staticmethod
-    def _should_run_scan(check_id, entity_configuration, runner_filter):
+    def _should_run_scan(check_id: str, entity_configuration: dict[str, Any], runner_filter: RunnerFilter) -> bool:
         check_id_allowlist = runner_filter.checks
         check_id_denylist = runner_filter.skip_checks
         if check_id_allowlist:

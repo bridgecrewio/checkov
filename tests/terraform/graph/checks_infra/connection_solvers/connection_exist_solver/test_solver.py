@@ -1,12 +1,16 @@
 import os
 from pathlib import Path
 
+from parameterized import parameterized_class
+
 from checkov.runner_filter import RunnerFilter
+from tests.graph_utils.utils import PARAMETERIZED_GRAPH_FRAMEWORKS
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class ConnectionSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
@@ -24,7 +28,7 @@ class ConnectionSolver(TestBaseSolver):
     def test_output_connection(self):
         root_folder = '../../../resources/output_example'
         check_id = "VPCForSubnet"
-        should_pass = ['aws_vpc.my_vpc','aws_subnet.my_subnet']
+        should_pass = ['module.submodule.aws_vpc.my_vpc','aws_subnet.my_subnet']
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -51,8 +55,16 @@ class ConnectionSolver(TestBaseSolver):
         reduced_graph = check.solver.reduce_graph_by_target_types(graph_connector)
 
         # then
-        assert len(graph_connector.nodes) >= 661
-        assert len(graph_connector.edges) >= 327
+        if self.graph_framework == 'NETWORKX':
+            assert len(graph_connector.nodes) >= 661
+            assert len(graph_connector.edges) >= 327
 
-        assert len(reduced_graph.nodes) <= 52
-        assert len(reduced_graph.edges) <= 12
+            assert len(reduced_graph.nodes) <= 85
+            assert len(reduced_graph.edges) <= 20
+
+        elif self.graph_framework == 'RUSTWORKX':
+            assert len(graph_connector.nodes()) >= 661
+            assert len(graph_connector.edges()) >= 327
+
+            assert len(reduced_graph.nodes()) <= 85
+            assert len(reduced_graph.edges()) <= 20

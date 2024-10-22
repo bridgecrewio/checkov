@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_94
+  name: Ensure Glue Data Catalog Encryption is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_glue.CfnDataCatalogEncryptionSettings(<ANY>)
+  conditions:
+    - not_pattern: |
+        aws_cdk.aws_glue.CfnDataCatalogEncryptionSettings(<ANY>, data_catalog_encryption_settings={'ConnectionPasswordEncryption':{'ReturnConnectionPasswordEncrypted': True}, 'EncryptionAtRest':{'CatalogEncryptionMode': 'SSE-KMS'}} ,<ANY>)

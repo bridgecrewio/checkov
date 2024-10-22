@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.storage/storageaccounts
@@ -5,16 +9,16 @@ from checkov.common.util.type_forcers import force_int
 
 
 class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # properties.networkAcls.bypass == "AzureServices"
         # Fail if apiVersion less than 2017 as this setting wasn't available
         name = "Ensure 'Trusted Microsoft Services' is enabled for Storage Account access"
         id = "CKV_AZURE_36"
-        supported_resources = ['Microsoft.Storage/storageAccounts']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('Microsoft.Storage/storageAccounts',)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "apiVersion" in conf:
             # Fail if apiVersion < 2017 as you could not set networkAcls
             year = force_int(conf["apiVersion"][0:4])

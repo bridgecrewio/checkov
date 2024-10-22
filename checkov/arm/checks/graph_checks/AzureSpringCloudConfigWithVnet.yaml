@@ -1,0 +1,15 @@
+metadata:
+  id: "CKV2_AZURE_23"
+  name: "Ensure Azure spring cloud is configured with Virtual network (Vnet)"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types: "Microsoft.AppPlatform/Spring"
+      attribute: "sku.name"
+      operator: "not_equals_ignore_case"
+      value: "B0"
+    - cond_type: attribute
+      resource_types: "Microsoft.AppPlatform/Spring"
+      attribute: "properties.networkProfile.serviceRuntimeSubnetId"
+      operator: "exists"

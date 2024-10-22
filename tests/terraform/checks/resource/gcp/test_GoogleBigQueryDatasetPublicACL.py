@@ -1,56 +1,49 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleBigQueryDatasetPublicACL import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestBigQueryDatasetPublicACL(unittest.TestCase):
+class TestGoogleBigQueryDatasetPublicACL(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_GoogleBigQueryDatasetPublicACL"
 
-    def test_failure_special_group(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "special_group": ["allAuthenticatedUsers"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_all_users(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["VIEWER"], "special_group": ["projectReaders"]},
-                                    {"role": ["READER"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_special_group(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "special_group": ["projectReaders"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "google_bigquery_dataset.pass_special_group",
+            "google_bigquery_dataset.pass_user_by_email",
+            "google_bigquery_dataset.pass_group_by_email",
+            "google_bigquery_dataset.pass_domain",
+            "google_bigquery_dataset.pass_view",
+            "google_bigquery_dataset.pass_routine",
+            "google_bigquery_dataset.pass_dataset",
+        }
 
-    def test_success(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "user_by_email": ["foo@bar.com"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "google_bigquery_dataset.fail_special_group",
+            "google_bigquery_dataset.fail_all_users",
+            "google_bigquery_dataset.fail_new_key",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

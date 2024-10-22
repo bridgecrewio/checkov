@@ -1,3 +1,10 @@
+resource "aws_lightsail_container_service" "example" {
+  name        = "example"
+  power       = "nano"
+  scale       = 1
+  is_disabled = false
+}
+
 resource "aws_lightsail_container_service_deployment_version" "example" {
   container {
     container_name = "hello-world"

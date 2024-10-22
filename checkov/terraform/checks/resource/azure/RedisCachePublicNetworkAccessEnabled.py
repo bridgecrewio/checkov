@@ -6,8 +6,8 @@ class RedisCachePublicNetworkAccessEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Azure Cache for Redis disables public network access"
         id = "CKV_AZURE_89"
-        supported_resources = ['azurerm_redis_cache']
-        categories = [CheckCategories.IAM]
+        supported_resources = ('azurerm_redis_cache',)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):

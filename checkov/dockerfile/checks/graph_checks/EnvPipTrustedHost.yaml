@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_16"
+  name: "Ensure that certificate validation isn't disabled with pip via the 'PIP_TRUSTED_HOST' environment variable"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(export\\s+)?(PIP_TRUSTED_HOST=(([^\\s]+)|('[^']+')|(\"[^s\"]+\"))).*"
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(PIP_TRUSTED_HOST(=|\\s+)[^\\s]+).*"

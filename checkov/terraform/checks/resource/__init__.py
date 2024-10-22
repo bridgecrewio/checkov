@@ -11,3 +11,5 @@ from checkov.terraform.checks.resource.digitalocean import *  # noqa
 from checkov.terraform.checks.resource.alicloud import *  # noqa
 from checkov.terraform.checks.resource.kubernetes import *  # noqa
 from checkov.terraform.checks.resource.yandexcloud import *  # noqa
+from checkov.terraform.checks.resource.ncp import *  # noqa
+from checkov.terraform.checks.resource.tencentcloud import * # noqa

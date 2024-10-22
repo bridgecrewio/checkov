@@ -16,7 +16,7 @@ class TestVMEncryptionAtHostEnabled(unittest.TestCase):
                   location            = azurerm_resource_group.example.location
                   sku                 = "Standard_F2"
                   instances           = 1
-                  admin_password      = "P@55w0rd1234!"
+                  admin_password      = "P@55w0rd1234!"  # checkov:skip=CKV_SECRET_80 test secret
                   admin_username      = "adminuser"
                 
                   source_image_reference {

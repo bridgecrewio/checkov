@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_8
+  name: Ensure all data stored in the Launch configuration EBS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: |
+      aws_cdk.aws_autoscaling.CfnLaunchConfiguration(<ANY>, block_device_mappings=[<ANY>, {'ebs':{'encrypted': False}} ,<ANY>] ,<ANY>)

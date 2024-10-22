@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.7.101.28" />
+    <PackageReference Include="DSInternals.Common" Version="4.7.0" />
+    <PackageReference Include="EnumStringValues" Version="4.0.0" />
+    <PackageReference Include="jQuery" Version="3.0.0" />
+    <PackageReference Include="log4net" Version="2.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SendGrid" Version="9.28.1" />
+    <PackageReference Include="TinyMCE" Version="6.3.0" />
+  </ItemGroup>
+</Project>

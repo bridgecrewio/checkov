@@ -14,7 +14,7 @@ resource "aws_mq_broker" "fail" {
 
   user {
     username = "ExampleUser"
-    password = "MindTheGapps"
+    password = "MindTheGapps"  # checkov:skip=CKV_SECRET_6 test secret
   }
 
   # encryption_options {

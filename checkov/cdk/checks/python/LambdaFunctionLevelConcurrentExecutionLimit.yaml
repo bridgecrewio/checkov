@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_115
+  name: Ensure that AWS Lambda function is configured for function-level concurrent execution limit
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_lambda.Function(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_lambda.Function(<ANY>, reserved_concurrent_executions=$NUM, <ANY>)
+      - pattern: aws_cdk.aws_sam.CfnFunction(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, reserved_concurrent_executions=$NUM, <ANY>)

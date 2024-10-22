@@ -5,8 +5,9 @@ import pytest
 from checkov.bicep.runner import Runner
 from checkov.arm.runner import Runner as ArmRunner
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.code_categories import CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.checks.param.registry import registry as param_registry
@@ -33,12 +34,19 @@ def test_arm_checks_laoded():
     assert len(resource_registry.checks) > 30
 
 
-def test_runner_passing_check():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_passing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "playground.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_3"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_3"]))
 
     # then
     summary = report.get_summary()
@@ -48,13 +56,19 @@ def test_runner_passing_check():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_failing_check():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_failing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "playground.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_9"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_9"]))
 
     # then
     summary = report.get_summary()
@@ -64,13 +78,19 @@ def test_runner_failing_check():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_skipping_check():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_skipping_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "playground.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
 
     # then
     summary = report.get_summary()
@@ -80,8 +100,14 @@ def test_runner_skipping_check():
     assert summary["skipped"] == 1
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_honors_enforcement_rules():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_honors_enforcement_rules(graph_connector):
     # given
     test_files = list(map(lambda f: str(f), [EXAMPLES_DIR / "playground.bicep", EXAMPLES_DIR / "graph.bicep"]))
 
@@ -90,7 +116,7 @@ def test_runner_honors_enforcement_rules():
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
     filter.enforcement_rule_configs = {CheckType.BICEP: Severities[BcSeverities.OFF]}
-    report = Runner().run(root_folder="", files=test_files, runner_filter=filter)
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=test_files, runner_filter=filter)
 
     # then
     summary = report.get_summary()
@@ -100,13 +126,19 @@ def test_runner_honors_enforcement_rules():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_parsing_errors():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_parsing_errors(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "malformed.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
 
     # then
     summary = report.get_summary()
@@ -116,13 +148,19 @@ def test_runner_parsing_errors():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 1
 
-
-def test_runner_ignore_existing_resource():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_ignore_existing_resource(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "existing.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_35"]))
 
     # then
     summary = report.get_summary()
@@ -135,13 +173,19 @@ def test_runner_ignore_existing_resource():
 
     assert report.failed_checks[0].resource == "Microsoft.Storage/storageAccounts.storageAccount"
 
-
-def test_runner_extra_resources():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_extra_resources(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "playground.bicep"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_3"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_3"]))
 
     # then
     summary = report.get_summary()
@@ -155,3 +199,18 @@ def test_runner_extra_resources():
     assert extra_resource.file_abs_path == str(test_file)
     assert extra_resource.file_path.endswith("playground.bicep")
 
+
+def test_runner_loop_resource():
+    # given
+    test_file = EXAMPLES_DIR / "loop.bicep"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_2"]))
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0

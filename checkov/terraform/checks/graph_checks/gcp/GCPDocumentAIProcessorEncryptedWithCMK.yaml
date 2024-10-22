@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_GCP_22"
+  name: "Ensure Document AI Processors are encrypted with a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+scope:
+  provider: "GCP"
+definition:
+  resource_types:
+    - google_document_ai_processor
+  operator: exists
+  attribute: kms_key_name
+  cond_type: attribute

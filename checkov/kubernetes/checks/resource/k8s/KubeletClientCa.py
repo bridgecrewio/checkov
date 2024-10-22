@@ -23,5 +23,7 @@ class KubeletClientCa(BaseK8sContainerCheck):
                         return CheckResult.FAILED
                 return CheckResult.FAILED
 
+        return CheckResult.UNKNOWN
+
 
 check = KubeletClientCa()

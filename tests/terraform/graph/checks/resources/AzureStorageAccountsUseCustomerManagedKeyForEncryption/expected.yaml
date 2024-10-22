@@ -1,5 +1,0 @@
-pass:
-  - "azurerm_storage_account.storage_account_good_1"
-fail:
-  - "azurerm_storage_account.storage_account_bad_1"
-  - "azurerm_storage_account.storage_account_bad_2"

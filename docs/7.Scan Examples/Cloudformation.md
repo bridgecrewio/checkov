@@ -50,7 +50,7 @@ checkov -d . --framework cloudformation
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.723 
+By Prisma Cloud | version: 2.0.723 
 
 cloudformation scan results:
 
@@ -59,17 +59,17 @@ Passed checks: 2, Failed checks: 6, Skipped checks: 0
 Check: CKV_AWS_17: "Ensure all data stored in RDS is not publicly accessible"
    PASSED for resource: AWS::RDS::DBInstance.MyDB0
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:2-9
-   Guide: https://docs.bridgecrew.io/docs/public_2
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/public-policies/public-2
 
 Check: CKV_AWS_17: "Ensure all data stored in RDS is not publicly accessible"
    PASSED for resource: AWS::RDS::DBInstance.MyDB1
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:10-18
-   Guide: https://docs.bridgecrew.io/docs/public_2
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/public-policies/public-2
 
 Check: CKV_AWS_161: "Ensure RDS database has IAM authentication enabled"
    FAILED for resource: AWS::RDS::DBInstance.MyDB0
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:2-9
-   Guide: https://docs.bridgecrew.io/docs/ensure-rds-database-has-iam-authentication-enabled
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/ensure-rds-database-has-iam-authentication-enabled
 
       2 |   MyDB0:
       3 |     Type: 'AWS::RDS::DBInstance'
@@ -84,7 +84,7 @@ Check: CKV_AWS_161: "Ensure RDS database has IAM authentication enabled"
 Check: CKV_AWS_157: "Ensure that RDS instances have Multi-AZ enabled"
    FAILED for resource: AWS::RDS::DBInstance.MyDB0
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:2-9
-   Guide: https://docs.bridgecrew.io/docs/general_73
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-73
 
       2 |   MyDB0:
       3 |     Type: 'AWS::RDS::DBInstance'
@@ -99,7 +99,7 @@ Check: CKV_AWS_157: "Ensure that RDS instances have Multi-AZ enabled"
 Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at rest"
    FAILED for resource: AWS::RDS::DBInstance.MyDB0
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:2-9
-   Guide: https://docs.bridgecrew.io/docs/general_4
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-4
 
       2 |   MyDB0:
       3 |     Type: 'AWS::RDS::DBInstance'
@@ -114,7 +114,7 @@ Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at r
 Check: CKV_AWS_161: "Ensure RDS database has IAM authentication enabled"
    FAILED for resource: AWS::RDS::DBInstance.MyDB1
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:10-18
-   Guide: https://docs.bridgecrew.io/docs/ensure-rds-database-has-iam-authentication-enabled
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/ensure-rds-database-has-iam-authentication-enabled
 
       10 |   MyDB1:
       11 |     Type: 'AWS::RDS::DBInstance'
@@ -130,7 +130,7 @@ Check: CKV_AWS_161: "Ensure RDS database has IAM authentication enabled"
 Check: CKV_AWS_157: "Ensure that RDS instances have Multi-AZ enabled"
    FAILED for resource: AWS::RDS::DBInstance.MyDB1
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:10-18
-   Guide: https://docs.bridgecrew.io/docs/general_73
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-73
 
       10 |   MyDB1:
       11 |     Type: 'AWS::RDS::DBInstance'
@@ -146,7 +146,7 @@ Check: CKV_AWS_157: "Ensure that RDS instances have Multi-AZ enabled"
 Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at rest"
    FAILED for resource: AWS::RDS::DBInstance.MyDB1
    File: /example_RDSEncryption/RDSEncryption-FAIL.yaml:10-18
-   Guide: https://docs.bridgecrew.io/docs/general_4
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-4
 
       10 |   MyDB1:
       11 |     Type: 'AWS::RDS::DBInstance'

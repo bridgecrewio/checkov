@@ -5,18 +5,13 @@
   },
   "CHECKS": {
     "prefixes": [
-      "fix: ",
-      "feat: ",
-      "break: ",
-      "docs: ",
-      "chore: ",
-      "platform: "
+      "chore: "
     ],
-    "regexp": "(fix|feat|break|docs|chore|platform)\\((arm|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph)\\): "
+    "regexp": "^(fix|feat|break|docs|chore|platform)\\((ansible|argo|arm|azure|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gha|gitlab|helm|kubernetes|kustomize|openapi|sast|sca|secrets|serverless|terraform|general|graph|terraform_plan|terraform_json)\\): "
   },
   "MESSAGES": {
     "success": "PR title is valid",
     "failure": "PR title is invalid",
-    "notice": "Valid prefixes are: fix, feat, break, docs, chore, platform."
+    "notice": "Title needs to pass regex '(fix|feat|break|docs|chore|platform)\\((ansible|argo|arm|azure|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gha|gitlab|helm|kubernetes|kustomize|openapi|sast|sca|secrets|serverless|terraform|general|graph|terraform_plan|terraform_json)\\): '"
   }
 }

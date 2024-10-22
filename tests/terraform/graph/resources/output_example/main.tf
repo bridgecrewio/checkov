@@ -1,5 +1,5 @@
 module "submodule" {
-  source = "submodule"
+  source = "./submodule"
 }
 
 resource "aws_subnet" "my_subnet" {

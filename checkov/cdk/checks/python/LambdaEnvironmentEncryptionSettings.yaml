@@ -1,0 +1,25 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_173
+  name: Check encryption settings for Lambda environmental variable
+  category: Encryption
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_lambda.Function(<ANY>, environment={$ARG1:$ARG2} ,<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_lambda.Function(<ANY>, environment={$ARG1:$ARG2} ,<ANY>, kms_key=aws_cdk.aws_lambda.Key.from_key_arn(<ANY>), <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_lambda.Function(<ANY>, kms_key=aws_cdk.aws_lambda.Key.from_key_arn(<ANY>) ,<ANY>, environment={$ARG1:$ARG2} , <ANY>)
+      - pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, environment={$ARG1:$ARG2} ,<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_sam.CfnFunction(<ANY>, environment={$ARG1:$ARG2} ,<ANY>, kms_key_arn=$ARG, <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_sam.CfnFunction(<ANY>, kms_key_arn=$ARG ,<ANY>, environment={$ARG1:$ARG2} , <ANY>)

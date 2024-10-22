@@ -1,0 +1,308 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscription": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "resourceGroup": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "name": {
+            "defaultValue": "myv2datafactory",
+            "type": "string"
+        },
+        "version": {
+            "defaultValue": "V2",
+            "type": "string"
+        },
+        "location": {
+            "defaultValue": "eastus",
+            "type": "string"
+        },
+        "tagsByResource": {
+            "type": "Object"
+        },
+        "vNetEnabled": {
+            "defaultValue": false,
+            "type": "bool"
+        },
+        "publicNetworkAccess": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+        "privateEndpoints": {
+            "type": "array",
+            "metadata": {
+                "description": "Private endpoints. Empty if no private network access selected."
+            }
+        },
+        "gitConfigureLater": {
+            "defaultValue": true,
+            "type": "bool"
+        },
+        "gitRepoType": {
+            "defaultValue": "FactoryVSTSConfiguration",
+            "type": "string"
+        },
+        "gitAccountName": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "gitProjectName": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "gitRepositoryName": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "gitCollaborationBranch": {
+            "defaultValue": "master",
+            "type": "string"
+        },
+        "gitRootFolder": {
+            "defaultValue": "/",
+            "type": "string"
+        },
+        "userAssignedIdentities": {
+            "defaultValue": {
+                "type": "SystemAssigned"
+            },
+            "type": "object"
+        },
+        "userAssignedIdentitiesStr": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "vaultBaseUrl": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "keyName": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "keyVersion": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "enableCMK": {
+            "defaultValue": false,
+            "type": "bool"
+        },
+        "cmkIdentity": {
+            "defaultValue": "",
+            "type": "string"
+        }
+    },
+    "variables": {
+        "hasPE": "[greater(length(parameters('privateEndpoints')), 0)]",
+        "resourceGroupId": "[if(variables('hasPE'),parameters('privateEndpoints')[0].privateEndpointConfiguration.resourceGroup.value.name, '')]",
+        "subNetId": "[if(variables('hasPE'),parameters('privateEndpoints')[0].privateEndpointConfiguration.privateEndpoint.properties.subnet.id, '')]",
+        "subNetSub": "[if(variables('hasPE'),split(variables('subNetId'),'/')[2],'')]",
+        "subNetRg": "[if(variables('hasPE'),split(variables('subNetId'),'/')[4],'')]",
+        "subNetName": "[if(variables('hasPE'),split(variables('subNetId'),'/')[8],'')]",
+        "integrateDns": "[if(variables('hasPE'),parameters('privateEndpoints')[0].privateDnsZoneConfiguration.integrateWithPrivateDnsZone, 'true')]"
+    },
+    "resources": [
+        {
+            "condition": "[equals(parameters('version'), 'V2')]",
+            "type": "Microsoft.DataFactory/factories",
+            "apiVersion": "2018-06-01",
+            "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "identity": "[if(parameters('enableCMK'),json(parameters('userAssignedIdentitiesStr')), parameters('userAssignedIdentities'))]",
+            "properties": {
+                "repoConfiguration": "[if(bool(parameters('gitConfigureLater')), json('null'), json(concat('{\"type\": \"', parameters('gitRepoType'), '\",','\"accountName\": \"', parameters('gitAccountName'), '\",','\"repositoryName\": \"', parameters('gitRepositoryName'), '\",', if(equals(parameters('gitRepoType'), 'FactoryVSTSConfiguration'), concat('\"projectName\": \"', parameters('gitProjectName'), '\",'), ''),'\"collaborationBranch\": \"', parameters('gitCollaborationBranch'), '\",','\"rootFolder\": \"', parameters('gitRootFolder'), '\"}')))]",
+                "publicNetworkAccess": "[if(bool(parameters('publicNetworkAccess')), 'Enabled', 'Disabled')]",
+                "encryption": "[if(parameters('enableCMK'), json(concat('{\"identity\":{\"userAssignedIdentity\":\"', parameters('cmkIdentity'), '\"},','\"VaultBaseUrl\": \"', parameters('vaultBaseUrl'), '\",','\"KeyName\": \"', parameters('keyName'), '\",','\"KeyVersion\": \"', parameters('keyVersion'), '\"}')), json('null'))]"
+            },
+            "tags": "[ if(contains(parameters('tagsByResource'), 'Microsoft.DataFactory/factories'), parameters('tagsByResource')['Microsoft.DataFactory/factories'], json('{}')) ]",
+            "resources": [
+                {
+                    "condition": "[and(equals(parameters('version'), 'V2'), parameters('vNetEnabled'))]",
+                    "name": "[concat(parameters('name'), '/default')]",
+                    "type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+                    "apiVersion": "2018-06-01",
+                    "properties": {},
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('name'))]"
+                    ]
+                },
+                {
+                    "condition": "[and(equals(parameters('version'), 'V2'), parameters('vNetEnabled'))]",
+                    "name": "[concat(parameters('name'), '/AutoResolveIntegrationRuntime')]",
+                    "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+                    "apiVersion": "2018-06-01",
+                    "properties": {
+                        "type": "Managed",
+                        "managedVirtualNetwork": {
+                            "referenceName": "default",
+                            "type": "ManagedVirtualNetworkReference"
+                        },
+                        "typeProperties": {
+                            "computeProperties": {
+                                "location": "AutoResolve",
+                                "dataFlowProperties": {
+                                    "computeType": "General",
+                                    "coreCount": 8,
+                                    "timeToLive": 0
+                                }
+                            }
+                        }
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('name'))]",
+                        "[concat('Microsoft.DataFactory/factories/', parameters('name'), '/managedVirtualNetworks/default')]"
+                    ]
+                }
+            ]
+        },
+        {
+            "condition": "[and(not(parameters('publicNetworkAccess')), equals(parameters('privateEndpoints')[0].privateEndpointConfiguration.resourceGroup.mode, 1))]",
+            "apiVersion": "2018-05-01",
+            "name": "[concat('deployResourceGroup-', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.resourceGroup.value.name)]",
+            "type": "Microsoft.Resources/deployments",
+            "subscriptionId": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subscription.subscriptionId]",
+            "location": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.location]",
+            "dependsOn": [
+                "[parameters('name')]"
+            ],
+            "copy": {
+                "name": "privateendpointscopy",
+                "count": "[length(parameters('privateEndpoints'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/resourceGroups",
+                            "apiVersion": "2021-04-01",
+                            "name": "[variables('resourceGroupId')]",
+                            "location": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.location]",
+                            "properties": {}
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "condition": "[not(parameters('publicNetworkAccess'))]",
+            "apiVersion": "2017-05-10",
+            "name": "[concat('deployPrivateEndpoint-', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name)]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.resourceGroup.value.name]",
+            "subscriptionId": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subscription.subscriptionId]",
+            "dependsOn": [
+                "[parameters('name')]",
+                "[concat('deployResourceGroup-', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.resourceGroup.value.name)]"
+            ],
+            "copy": {
+                "name": "privateendpointscopy",
+                "count": "[length(parameters('privateEndpoints'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "location": "[parameters('location')]",
+                            "name": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name]",
+                            "type": "Microsoft.Network/privateEndpoints",
+                            "apiVersion": "2020-03-01",
+                            "properties": {
+                                "subnet": {
+                                    "id": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.properties.subnet.id]"
+                                },
+                                "privateLinkServiceConnections": [
+                                    {
+                                        "name": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name]",
+                                        "properties": {
+                                            "privateLinkServiceId": "[concat('/subscriptions/',parameters('subscription'),'/resourcegroups/',parameters('resourceGroup'), '/providers/Microsoft.DataFactory/factories/', parameters('name'))]",
+                                            "groupIds": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.properties.privateLinkServiceConnections[0].properties.groupIds]"
+                                        }
+                                    }
+                                ]
+                            },
+                            "tags": {}
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "[concat('deployPrivateDnsZone-', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name)]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.resourceGroup.value.name]",
+            "subscriptionId": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subscription.subscriptionId]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', concat('deployPrivateEndpoint-', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name))]"
+            ],
+            "condition": "[and(not(parameters('publicNetworkAccess')), variables('integrateDns'))]",
+            "copy": {
+                "name": "privateendpointdnscopy",
+                "count": "[length(parameters('privateEndpoints'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/privateDnsZones",
+                            "apiVersion": "2018-09-01",
+                            "name": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName]",
+                            "location": "global",
+                            "tags": {},
+                            "properties": {}
+                        },
+                        {
+                            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                            "apiVersion": "2018-09-01",
+                            "name": "[concat(string(parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName), '/', uniquestring(variables('subNetId')))]",
+                            "location": "global",
+                            "dependsOn": [
+                                "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName]"
+                            ],
+                            "properties": {
+                                "virtualNetwork": {
+                                    "id": "[concat('/subscriptions/',variables('subNetSub'),'/resourceGroups/',variables('subNetRg'),'/providers/Microsoft.Network/virtualNetworks/',variables('subNetName'))]"
+                                },
+                                "registrationEnabled": false
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+                            "apiVersion": "2020-03-01",
+                            "name": "[concat(parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.privateEndpoint.name, '/', 'default')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName]"
+                            ],
+                            "properties": {
+                                "privateDnsZoneConfigs": [
+                                    {
+                                        "name": "[parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName]",
+                                        "properties": {
+                                            "privateDnsZoneId": "[concat('/subscriptions/',variables('subNetSub'),'/resourcegroups/',variables('subNetRg'), '/providers/Microsoft.Network/privateDnsZones/', parameters('privateEndpoints')[copyIndex()].privateEndpointConfiguration.subResource.expectedPrivateDnsZoneName )]"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  id: CKV2_AWS_6
+  name: Ensure that S3 bucket has a Public Access block
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, block_public_access=$ANY_VAR, <ANY>)

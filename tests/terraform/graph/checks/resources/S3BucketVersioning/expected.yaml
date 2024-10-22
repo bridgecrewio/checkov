@@ -2,9 +2,10 @@ pass:
   - "aws_s3_bucket.enabled"
   - "aws_s3_bucket.enabled_v4"
   - "aws_s3_bucket.enabled_var"
-  - "aws_s3_bucket.unknown_var"
-  - "aws_s3_bucket.legacy_syntax"
-  - "aws_s3_bucket.legacy_syntax_v4"
+  - 'aws_s3_bucket.this["test-bucket1"]'
+  - 'aws_s3_bucket.this["test-bucket2"]'
+  - "aws_s3_bucket.ref_by_name"
+  - "aws_s3_bucket.ref_by_name_local"
 fail:
   - "aws_s3_bucket.default"
   - "aws_s3_bucket.disabled"

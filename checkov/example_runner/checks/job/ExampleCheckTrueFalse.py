@@ -22,7 +22,7 @@
 #       ACTIONS_ALLOW_UNSECURE_COMMANDS: false
 #     run: |
 #       echo "ok"
-# 
+#
 from __future__ import annotations
 
 from typing import Any
@@ -38,7 +38,7 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
     def __init__(self) -> None:
         # Describe the check for the user
         name = "Ensure ACTIONS_ALLOW_UNSECURE_COMMANDS isn't true on environment variables on a job"
-        # Give the check a unique id eg. CKV_TLA_24 where 
+        # Give the check a unique id eg. CKV_TLA_24 where
         #  CKV is standard for python checks
         #  TLA = Three letter acronym for your runner check type: GHA is GitHub Actions
         #  24 is the number in sequence of checks.  Must be unique!
@@ -51,10 +51,10 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
             block_type=BlockType.ARRAY,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
-        # The block type is passed as a data structure.  
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+        # The block type is passed as a data structure.
         # Add logic to parse the structure for the misconfig
-        # Remember to always return a PASSED or FAILED. 
+        # Remember to always return a PASSED or FAILED.
         # It is easy to miss a result in complex logic
         if "env" not in conf:
             return CheckResult.PASSED, conf
@@ -62,6 +62,7 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
         if env_variables.get("MY_ENV_IS_PASSED", False):
             return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
+
 
 # Set this to your check name
 check = ExampleCheckTrueFalse()

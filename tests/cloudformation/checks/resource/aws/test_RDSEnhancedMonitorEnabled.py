@@ -19,6 +19,7 @@ class TestRDSEnhancedMonitorEnabled(unittest.TestCase):
 
         passing_resources = {
             "AWS::RDS::DBInstance.Enabled",
+            "AWS::RDS::DBInstance.EnabledNumber",
         }
         failing_resources = {
             "AWS::RDS::DBInstance.Default",

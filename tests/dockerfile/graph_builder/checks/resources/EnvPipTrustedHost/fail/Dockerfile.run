@@ -1,0 +1,34 @@
+FROM python:3
+RUN export PIP_TRUSTED_HOST=pypi.python.org && pip install checkov
+RUN export PIP_TRUSTED_HOST="pypi.python.org" && pip install checkov
+RUN export PIP_TRUSTED_HOST='pypi.python.org' && pip install checkov
+
+RUN PIP_TRUSTED_HOST=pypi.python.org pip install checkov
+RUN PIP_TRUSTED_HOST="pypi.python.org" pip install checkov
+RUN PIP_TRUSTED_HOST='pypi.python.org' pip install checkov
+
+RUN PIP_TRUSTED_HOST=pypi.python.org CHECKOV=AWESOME pip install checkov
+RUN PIP_TRUSTED_HOST="pypi.python.org" CHECKOV="AWESOME" pip install checkov
+RUN PIP_TRUSTED_HOST='pypi.python.org' CHECKOV='AWESOME' pip install checkov
+
+RUN CHECKOV=AWESOME PIP_TRUSTED_HOST=pypi.python.org pip install checkov
+RUN CHECKOV="AWESOME" PIP_TRUSTED_HOST="pypi.python.org" pip install checkov
+RUN CHECKOV='AWESOME' PIP_TRUSTED_HOST='pypi.python.org' pip install checkov
+
+RUN TEST_123="456" PIP_TRUSTED_HOST=pypi.python.org geordi="la forge" pip install checkov
+RUN TEST_123='456' PIP_TRUSTED_HOST="pypi.python.org" geordi='la forge' pip install checkov
+RUN TEST_123=456 PIP_TRUSTED_HOST='pypi.python.org' geordi="la forge" pip install checkov
+
+RUN TEST_123="456" \
+    PIP_TRUSTED_HOST=pypi.python.org \
+    EXAMPLE="VAR" \
+    pip install checkov
+RUN TEST_123='456' \
+    PIP_TRUSTED_HOST="pypi.python.org" \
+    EXAMPLE='VAR' \
+    pip install checkov
+RUN \
+    TEST_123=456\
+    PIP_TRUSTED_HOST='pypi.python.org' \
+    EXAMPLE="VAR" \
+    pip install checkov

@@ -1,0 +1,17 @@
+metadata: 
+  id: "CKV2_AZURE_28"
+  name: "Ensure Container Instance is configured with managed identity"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: attribute
+      resource_types: azurerm_container_group
+      attribute: identity.type
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: azurerm_container_group
+      attribute: identity.type
+      operator: "number_of_words_not_equals"
+      value: 0

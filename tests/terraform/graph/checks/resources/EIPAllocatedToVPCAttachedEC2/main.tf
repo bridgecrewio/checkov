@@ -19,6 +19,23 @@ resource "aws_eip" "not_ok_eip" {
   associate_with_private_ip = "10.0.0.10"
 }
 
+# eip with domain attribute
+
+resource "aws_eip" "ok_eip_domain" {
+  instance = aws_instance.ok_eip_domain.id
+  domain   = "vpc"
+}
+
+resource "aws_instance" "ok_eip_domain" {
+  ami               = "ami-21f78e11"
+  availability_zone = "us-west-2a"
+  instance_type     = "t2.micro"
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
 # via aws_eip_association
 
 resource "aws_eip_association" "eip_assoc" {
@@ -27,6 +44,25 @@ resource "aws_eip_association" "eip_assoc" {
 }
 
 resource "aws_instance" "ec2_assoc" {
+  ami               = "ami-21f78e11"
+  availability_zone = "us-west-2a"
+  instance_type     = "t2.micro"
+
+  tags = {
+    Name = "Assoc"
+  }
+}
+
+resource "aws_eip" "ok_eip_domain_assoc" {
+  domain = "vpc"
+}
+
+resource "aws_eip_association" "eip_domain_assoc" {
+  instance_id   = aws_instance.ec_domain2_assoc.id
+  allocation_id = aws_eip.ok_eip_domain_assoc.id
+}
+
+resource "aws_instance" "ec_domain2_assoc" {
   ami               = "ami-21f78e11"
   availability_zone = "us-west-2a"
   instance_type     = "t2.micro"

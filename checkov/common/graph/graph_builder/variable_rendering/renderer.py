@@ -2,23 +2,27 @@ from __future__ import annotations
 
 import logging
 import os
+import warnings
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Dict, Any, Iterable, TypeVar
+from typing import TYPE_CHECKING, List, Dict, Any, Iterable, TypeVar, Generic
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import run_function_multithreaded
+from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
-    from checkov.common.graph.graph_builder.local_graph import LocalGraph
+    from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
 
-_Block = TypeVar("_Block", bound="Block")
+_LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
 
 
-class VariableRenderer(ABC):
+class VariableRenderer(ABC, Generic[_LocalGraph]):
     MAX_NUMBER_OF_LOOPS = 50
 
-    def __init__(self, local_graph: LocalGraph[_Block]) -> None:
+    def __init__(self, local_graph: _LocalGraph) -> None:
+        warnings.filterwarnings("ignore", category=SyntaxWarning)
         self.local_graph = local_graph
         self.run_async = True if os.getenv("RENDER_VARIABLES_ASYNC") == "True" else False
         self.max_workers = int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
@@ -26,6 +30,7 @@ class VariableRenderer(ABC):
         self.duplicate_iter_count = int(os.getenv("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
         self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
+        self.vertices_index_to_render: List[int] = []
 
     def render_variables_from_local_graph(self) -> None:
         self._render_variables_from_edges()
@@ -39,6 +44,9 @@ class VariableRenderer(ABC):
 
         # all the edges entering `end_vertices`
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
+        if self.vertices_index_to_render:
+            edges_to_render = self._remove_unrelated_edges(edges_to_render)
+
         end_vertices_indexes = set()
         loops = 0
         evaluated_edges_cache: list[list[Edge]] = [[], []]
@@ -54,7 +62,7 @@ class VariableRenderer(ABC):
                 break
             evaluated_edges_cache.append(edges_to_render)
 
-            logging.info(f"evaluating {len(edges_to_render)} edges")
+            logging.debug(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
@@ -87,10 +95,12 @@ class VariableRenderer(ABC):
                 logging.warning("Reached 50 graph edge iterations, breaking.")
                 break
 
+        if self.vertices_index_to_render:
+            return
         self.local_graph.update_vertices_configs()
-        logging.info("done evaluating edges")
+        logging.debug("done evaluating edges")
         self.evaluate_non_rendered_values()
-        logging.info("done evaluate_non_rendered_values")
+        logging.debug("done evaluate_non_rendered_values")
 
     @abstractmethod
     def _render_variables_from_vertices(self) -> None:
@@ -100,6 +110,13 @@ class VariableRenderer(ABC):
         inner_edges = edges[0]
         self.evaluate_vertex_attribute_from_edge(inner_edges)
         return inner_edges
+
+    def _remove_unrelated_edges(self, edges_to_render: List[Edge]) -> List[Edge]:
+        new_edges_to_render = []
+        for edge in edges_to_render:
+            if not self.local_graph.vertices[edge.origin] == BlockType.RESOURCE or edge.origin not in self.vertices_index_to_render:
+                new_edges_to_render.append(edge)
+        return new_edges_to_render
 
     @abstractmethod
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
@@ -112,5 +129,6 @@ class VariableRenderer(ABC):
             edge_groups.setdefault(f"{edge.origin}{edge.label}", []).append(edge)
         return list(edge_groups.values())
 
+    @abstractmethod
     def evaluate_non_rendered_values(self) -> None:
         pass

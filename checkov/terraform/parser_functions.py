@@ -1,9 +1,18 @@
+from __future__ import annotations
+
 import json
 import logging
-from typing import Dict, List, Union, Any
+from collections.abc import Hashable
+from typing import Dict, List, Union, Any, Callable
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.common.util.parser_utils import (
+    eval_string,
+    split_merge_args,
+    string_to_native,
+    to_string,
+)
 
 #
 # Functions defined in this file implement terraform functions.
@@ -21,7 +30,7 @@ from checkov.common.util.parser_utils import eval_string, split_merge_args, stri
 FUNCTION_FAILED = "____FUNCTION_FAILED____"
 
 
-def merge(original, var_resolver, **_):
+def merge(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/merge.html
     args = split_merge_args(original)
     if args is None:
@@ -41,7 +50,7 @@ def merge(original, var_resolver, **_):
     return merged_map
 
 
-def concat(original, var_resolver, **_):
+def concat(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> list[Any] | str:
     # https://www.terraform.io/docs/language/functions/concat.html
     args = split_merge_args(original)
     if args is None:
@@ -68,7 +77,7 @@ def tobool(original: Union[bool, str], **_: Any) -> Union[bool, str]:
     return bool_value if isinstance(bool_value, bool) else FUNCTION_FAILED
 
 
-def tonumber(original, **_):
+def tonumber(original: str, **_: Any) -> float | str:
     # https://www.terraform.io/docs/configuration/functions/tonumber.html
     if original.startswith('"') and original.endswith('"'):
         original = original[1:-1]
@@ -80,8 +89,8 @@ def tonumber(original, **_):
     except ValueError:
         return FUNCTION_FAILED
 
-    
-def tostring(original, **_):
+
+def tostring(original: str, **_: Any) -> bool | str:
     # Indicates a safe string, all good
     if original.startswith('"') and original.endswith('"'):
         return original[1:-1]
@@ -99,7 +108,7 @@ def tostring(original, **_):
             return FUNCTION_FAILED  # no change
 
 
-def tolist(original, **_):
+def tolist(original: str, **_: Any) -> list[Any] | str:
     # https://www.terraform.io/docs/configuration/functions/tolist.html
     altered_value = eval_string(original)
     if altered_value is None:
@@ -107,7 +116,7 @@ def tolist(original, **_):
     return altered_value if isinstance(altered_value, list) else list(altered_value)
 
 
-def toset(original, **_):
+def toset(original: str, **_: Any) -> set[Any] | str:
     # https://www.terraform.io/docs/configuration/functions/toset.html
     altered_value = eval_string(original)
     if altered_value is None:
@@ -115,9 +124,9 @@ def toset(original, **_):
     return altered_value if isinstance(altered_value, set) else set(altered_value)
 
 
-def tomap(original, **_):
+def tomap(original: str, **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/tomap.html
-    original = original.replace(":", "=")     # converted to colons by parser #shrug
+    original = original.replace(":", "=")  # converted to colons by parser #shrug
 
     altered_value = eval_string(original)
     if altered_value is None or not isinstance(altered_value, dict):
@@ -125,27 +134,27 @@ def tomap(original, **_):
     return _check_map_type_consistency(altered_value)
 
 
-def map(original, **_):
+def map(original: str, **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/map.html
 
     # NOTE: Splitting by commas is annoying due to possible commas in strings. To avoid
     #       the issue, act like it's a list (to allow comma separation) and let the HCL
     #       parser deal with it. Then iterating the list is easy.
     converted_to_list = eval_string(f"[{original}]")
-    if converted_to_list is None or len(converted_to_list) & 1:       # none or odd number of args
+    if converted_to_list is None or len(converted_to_list) & 1:  # none or odd number of args
         return FUNCTION_FAILED
 
     return create_map(converted_to_list)
 
 
-def create_map(lst: List):
+def create_map(lst: list[Any]) -> dict[Hashable, Any]:
     new_map = {}
     for i in range(0, len(lst), 2):
         new_map[lst[i]] = lst[i + 1]
     return _check_map_type_consistency(new_map)
 
 
-def _check_map_type_consistency(value: Dict) -> Dict:
+def _check_map_type_consistency(value: dict[Hashable, Any]) -> dict[Hashable, Any]:
     # If there is a string and anything else, convert to string
     had_string = False
     had_something_else = False
@@ -170,26 +179,52 @@ def _check_map_type_consistency(value: Dict) -> Dict:
     return value
 
 
-def handle_dynamic_values(conf: Dict[str, List[Any]]) -> None:
+def handle_dynamic_values(conf: Dict[str, List[Any]], has_dynamic_block: bool = False) -> bool:
     # recursively search for blocks that are dynamic
     for block_name in conf.keys():
-        if isinstance(conf[block_name], dict):
-            handle_dynamic_values(conf[block_name])
+        conf_block = conf[block_name]
+        if isinstance(conf_block, dict):
+            has_dynamic_block = handle_dynamic_values(conf_block, has_dynamic_block)
 
         # if the configuration is a block element, search down again.
-        if isinstance(conf[block_name], list) and conf[block_name] and isinstance(conf[block_name][0], dict):
-            handle_dynamic_values(conf[block_name][0])
+        if conf_block and isinstance(conf_block, list) and isinstance(conf_block[0], dict):
+            has_dynamic_block = handle_dynamic_values(conf_block[0], has_dynamic_block)
 
-    process_dynamic_values(conf)
+    # if a dynamic block exists somewhere in the resource it will return True
+    return process_dynamic_values(conf) or has_dynamic_block
 
 
-def process_dynamic_values(conf: Dict[str, List[Any]]) -> None:
-    for dynamic_element in conf.get("dynamic", {}):
+def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
+    dynamic_conf: Union[List[Any], Dict[str, List[Any]]] = conf.get("dynamic", {})
+
+    if not isinstance(dynamic_conf, list):
+        return False
+
+    has_dynamic_block = False
+    for dynamic_element in dynamic_conf:
         if isinstance(dynamic_element, str):
             try:
                 dynamic_element = json.loads(dynamic_element)
             except Exception:
                 dynamic_element = {}
 
-        for element_name in dynamic_element.keys():
-            conf[element_name] = dynamic_element[element_name].get("content", [])
+        for element_name, element_value in dynamic_element.items():
+            if "content" in element_value:
+                if element_name in conf:
+                    if not isinstance(conf[element_name], list):
+                        conf[element_name] = [conf[element_name]]
+                    if isinstance(element_value["content"], list):
+                        conf[element_name].extend(element_value["content"])
+                    else:
+                        conf[element_name].append(element_value["content"])
+
+                else:
+                    conf[element_name] = pickle_deepcopy(element_value["content"])
+            else:
+                # this should be the result of a successful dynamic block rendering
+                # in some cases a whole dict is added, which doesn't have a list around it
+                conf[element_name] = element_value if isinstance(element_value, list) else [element_value]
+
+        has_dynamic_block = True
+
+    return has_dynamic_block

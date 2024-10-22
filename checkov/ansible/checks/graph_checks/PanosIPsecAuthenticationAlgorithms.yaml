@@ -1,0 +1,29 @@
+metadata:
+  id: "CKV_PAN_12"
+  name: "Ensure IPsec profiles do not specify use of insecure authentication algorithms"
+  category: "NETWORKING"
+definition:
+  and:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_ipsec_profile
+    attribute: esp_authentication
+    operator: exists
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_ipsec_profile
+    attribute: esp_authentication
+    operator: not_contains
+    value: 'none'
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_ipsec_profile
+    attribute: esp_authentication
+    operator: not_contains
+    value: 'md5'
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_ipsec_profile
+    attribute: esp_authentication
+    operator: not_contains
+    value: 'sha1'

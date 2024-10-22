@@ -1,0 +1,5 @@
+pass:
+  - "ibm_database.pass"
+fail:
+  - "ibm_database.fail_1"
+  - "ibm_database.fail_2"

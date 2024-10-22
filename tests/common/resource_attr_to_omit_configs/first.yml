@@ -1,0 +1,7 @@
+mask:
+- aws_db_instance:storage_container_path
+- key2:storage_container_path
+- key3:admin_password
+- key4:admin_password,1
+- key5:plaintext
+- plaintext

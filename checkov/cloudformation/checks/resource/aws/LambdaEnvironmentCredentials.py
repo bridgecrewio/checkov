@@ -9,7 +9,7 @@ from checkov.common.util.secrets import AWS, GENERAL, get_secrets_from_string
 
 class LambdaEnvironmentCredentials(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure no hard-coded secrets exist in lambda environment"
+        name = "Ensure no hard-coded secrets exist in Lambda environment"
         id = "CKV_AWS_45"
         supported_resources = ("AWS::Lambda::Function", "AWS::Serverless::Function")
         categories = (CheckCategories.SECRETS,)
@@ -24,6 +24,10 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 variables = environment.get("Variables")
                 if variables and isinstance(variables, dict):
                     for var_name, value in variables.items():
+                        if isinstance(value, dict):
+                            # if it is a resolved instrinsic function like !Ref: xyz, then it can't be a secret
+                            continue
+
                         secrets = get_secrets_from_string(str(value), AWS, GENERAL)
                         if secrets:
                             self.evaluated_keys = [f"Properties/Environment/Variables/{var_name}"]

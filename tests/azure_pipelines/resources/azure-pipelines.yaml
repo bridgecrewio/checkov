@@ -1,0 +1,41 @@
+trigger:
+- master
+
+resources:
+  repositories:
+  - repository: AzureDevOps
+    type: git
+    endpoint: AzureDevOps
+    name: AzureDevOps/AzureDevOps
+
+stages:
+- stage: Example
+  jobs:
+  - job: FailNoTag
+    displayName: FailNoTagDisplayName
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    container: ubuntu
+
+    steps:
+      - script: printenv
+        name: runPrintenv
+  - job: PassDigest
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    container: ubuntu@sha256:a0a45bd8c6c4acd6967396366f01f2a68f73406327285edc5b7b07cb1cf073db
+
+    steps:
+      - script: printenv
+
+jobs:
+- job: FailTag
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  container: ubuntu:20.04
+
+  steps:
+    - script: printenv

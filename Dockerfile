@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.11-slim
 
 ENV RUN_IN_DOCKER=True
 
@@ -8,22 +8,21 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
             ca-certificates \
             git \
-            wget \
             curl \
             openssh-client \
     ; \
     \
-    wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
+    curl -sSLo get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 700 get_helm.sh; \
     VERIFY_CHECKSUM=true ./get_helm.sh; \
     rm ./get_helm.sh; \
     \
-    wget -q -O get_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh; \
+    curl -sSLo get_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh; \
     chmod 700 get_kustomize.sh; \
     ./get_kustomize.sh; mv /kustomize /usr/bin/kustomize; \
     rm ./get_kustomize.sh; \
     \
-    apt-get remove -y wget curl; \
+    apt-get remove -y curl; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 

@@ -1,38 +1,43 @@
+import os
 import unittest
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.EC2Credentials import check
+from checkov.terraform.runner import Runner
 
 
 class TestEC2Credentials(unittest.TestCase):
-    def test_success(self):
-        conf = {
-            "ami": ["ami-04169656fea786776"],
-            "instance_type": ["t2.nano"],
-            "user_data": [
-                '#! /bin/bash\nsudo apt-get update\nsudo apt-get install -y apache2\nsudo systemctl start apache2\nsudo systemctl enable apache2\nexport AWS_ACCESS_KEY_ID\nexport AWS_ACCESS_KEY_ID=FOO\nexport AWS_SECRET_ACCESS_KEY=bar\nexport AWS_DEFAULT_REGION=us-west-2\necho "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'
-            ],
-            "tags": [{"Name": "${local.resource_prefix.value}-ec2"}],
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files_dir = current_dir + "/example_EC2Credentials"
+        report = runner.run(
+            root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
+        )
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_instance.pass",
+            "aws_launch_template.pass",
+            "aws_launch_configuration.pass"
+        }
+        failing_resources = {
+            "aws_instance.fail",
+            "aws_launch_template.fail",
+            "aws_launch_configuration.fail"
         }
 
-        scan_result = check.scan_resource_conf(conf=conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-        conf = {"ami": ["ami-04169656fea786776"], "instance_type": ["t2.nano"]}
-        scan_result = check.scan_resource_conf(conf=conf)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_failure(self):
-        conf = {
-            "ami": ["ami-04169656fea786776"],
-            "instance_type": ["t2.nano"],
-            "user_data": [
-                '#! /bin/bash\nsudo apt-get update\nsudo apt-get install -y apache2\nsudo systemctl start apache2\nsudo systemctl enable apache2\nexport AWS_ACCESS_KEY_ID\nexport AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\nexport AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\nexport AWS_DEFAULT_REGION=us-west-2\necho "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'
-            ],
-            "tags": [{"Name": "${local.resource_prefix.value}-ec2"}],
-        }
-        scan_result = check.scan_resource_conf(conf=conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == "__main__":

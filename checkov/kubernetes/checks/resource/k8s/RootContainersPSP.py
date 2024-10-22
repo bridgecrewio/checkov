@@ -1,20 +1,23 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 
 
 class RootContainersPSP(BaseK8Check):
-
-    def __init__(self):
+    def __init__(self) -> None:
         # CIS-1.3 1.7.6
         # CIS-1.5 5.2.6
         name = "Do not admit root containers"
         # Location: PodSecurityPolicy.spec.runAsUser.rule
         id = "CKV_K8S_6"
-        supported_kind = ['PodSecurityPolicy']
-        categories = [CheckCategories.KUBERNETES]
+        supported_kind = ("PodSecurityPolicy",)
+        categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def scan_spec_conf(self, conf):
+    def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "spec" in conf:
             if "runAsUser" in conf["spec"]:
                 if "rule" in conf["spec"]["runAsUser"]:

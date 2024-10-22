@@ -9,7 +9,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     PolicyMetadataIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.terraform.checks.resource.registry import resource_registry as tf_registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class TestBCApiUrl(unittest.TestCase):
@@ -70,11 +70,12 @@ class TestBCApiUrl(unittest.TestCase):
 
     def test_no_overriding_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.api_url, "https://www.bridgecrew.cloud")
+        self.assertEqual(instance.api_url, "https://api0.prismacloud.io/bridgecrew")
 
     def test_skip_mapping_default(self):
         # Default is False so mapping is obtained
         instance = BcPlatformIntegration()
+        instance.api_url = 'https://www.bridgecrew.cloud/v1'
         instance.setup_http_manager()
         instance.get_public_run_config()
         metadata_integration = PolicyMetadataIntegration(instance)
@@ -101,9 +102,10 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
-        check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
-        check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        check_same_severity = next((check for check in all_checks if check.id == "CKV_AWS_15"), None)
+        check_different_severity = next((check for check in all_checks if check.id == "CKV_AWS_40"), None)
+        check_no_desc_title = next((check for check in all_checks if check.id == "CKV_AWS_53"), None)
 
         self.assertEqual(check_same_severity.name, 'Ensure IAM password policy requires at least one uppercase letter')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
@@ -117,16 +119,17 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
-        check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
-        check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        check_same_severity = next((check for check in all_checks if check.id == "CKV_AWS_15"), None)
+        check_different_severity = next((check for check in all_checks if check.id == "CKV_AWS_40"), None)
+        check_no_desc_title = next((check for check in all_checks if check.id == "CKV_AWS_53"), None)
 
         self.assertEqual(check_same_severity.name, 'AWS IAM password policy does not have an uppercase character')
         self.assertEqual(check_different_severity.name, 'AWS IAM policy attached to users')
         self.assertEqual(check_no_desc_title.name, 'Ensure S3 bucket has block public ACLS enabled')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
-        self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
+        self.assertEqual(check_no_desc_title.severity, None)
 
     def test_should_upload(self):
         self.assertFalse(get_source_type('vscode').upload_results)
@@ -136,26 +139,68 @@ class TestBCApiUrl(unittest.TestCase):
 
     def test_run_config_url(self):
         instance = BcPlatformIntegration()
+        instance.repo_id = 'owner/repo'
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000'
-        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=bc'))
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=bc&enforcementv2=true&repoId=owner/repo'))
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
-        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc'))
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc&enforcementv2=true&repoId=owner/repo'))
+        instance.repo_id = 'encode/më'
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc&enforcementv2=true&repoId=encode/m%C3%AB'))
 
     def test_is_valid_policy_filter(self):
         instance = BcPlatformIntegration()
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
         instance.customer_run_config_response = mock_customer_run_config()
-        self.assertTrue(instance.is_valid_policy_filter(policy_filter={'policy.label': 'CODE'},
+        self.assertTrue(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'CODE')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.labels': 'CODE'},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.labels', 'CODE')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': 'CODE', 'not': 'allowed'},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'CODE'), ('not', 'allowed')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[],
                                                          valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={},
-                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'A'), ('policy.label', 'B')], valid_filters={}))
+
+    def test_add_static_policy_filters(self):
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true')]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true'), ('policy.subtype', 'build')]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.label', 'xyz')]), [('policy.label', 'xyz'), ('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.label', 'xyz'), ('policy.enabled', 'true')]), [('policy.label', 'xyz'), ('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')]), [('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')])
+
+    def test_setup_on_prem(self):
+        instance = BcPlatformIntegration()
+
+        instance.customer_run_config_response = None
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {}
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {}
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': False
+            }
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': True
+            }
+        }
+        instance.setup_on_prem()
+        self.assertTrue(instance.on_prem)
 
 
 def mock_customer_run_config():

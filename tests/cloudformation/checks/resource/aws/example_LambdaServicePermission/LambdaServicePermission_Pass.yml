@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  FunctionPassingArnPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: arn:aws:apigateway:us-east-1::/apis/qwerty
+  
+  FunctionPassingAccountPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction
+      Principal: apigateway.amazonaws.com
+      SourceAccount: 901234567812
+  
+  FunctionStringPrincipallPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction
+      Principal: 901234567812
+  
+  ExampleS3ServicePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: TestFunction
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: 901234567812
+      SourceArn: arn:aws:apigateway:us-east-1::/apis/qwerty
+  
+  ExampleEventsServicePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: TestFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceAccount: 901234567812
+      SourceArn: arn:aws:apigateway:us-east-1::/apis/qwerty

@@ -1,17 +1,19 @@
+import json
 import os
 from pathlib import Path
 
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
+
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from pytest_mock import MockerFixture
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.sca.commons import get_package_lines
 from checkov.common.sca.output import create_report_cve_record
-from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
 
@@ -38,10 +40,9 @@ def test_valid_cyclonedx_bom():
     assert component.purl.version.startswith('sha1:')
     assert component.type == ComponentType.APPLICATION
 
-    vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
-    assert len(vulnerabilities) == 4
+    assert len(cyclonedx.bom.vulnerabilities) == 6
     # doesn't matter which vulnerability, they are all unknown for runs without platform connection
-    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
+    assert next(iter(next(iter(cyclonedx.bom.vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
     assert "http://cyclonedx.org/schema/bom/1.4" in output
 
@@ -86,7 +87,8 @@ def test_valid_cyclonedx_image_bom():
         check_class=check_class,
         vulnerability_details=vulnerability,
         licenses="BSD-3-Clause",
-        image_details=image_details,
+        sca_details=image_details,
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
     report = Report(check_type='sca_image')
     report.add_record(record)
@@ -112,11 +114,10 @@ def test_valid_cyclonedx_image_bom():
     assert package_component.type == ComponentType.LIBRARY
     assert package_component.version == "7.74.0-1.3+deb11u1"
     assert len(package_component.licenses) == 1
-    assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
+    assert next(iter(package_component.licenses)).name == "BSD-3-Clause"
 
-    vulnerabilities = package_component.get_vulnerabilities()
-    assert len(vulnerabilities) == 1
-    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
+    assert len(cyclonedx.bom.vulnerabilities) == 1
+    assert next(iter(next(iter(cyclonedx.bom.vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
 
     image_purl = PackageURL(
         name='Dockerfile',
@@ -128,7 +129,7 @@ def test_valid_cyclonedx_image_bom():
         name='acme/repo//ubuntu:latest',
         purl=image_purl,
         group=None,
-        component_type=ComponentType.CONTAINER,
+        type=ComponentType.CONTAINER,
         version=''
     )
     assert cyclonedx.bom.has_component(image_component)
@@ -140,7 +141,7 @@ def test_sca_packages_cyclonedx_bom():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package.scanner.Scanner"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
@@ -157,6 +158,9 @@ def test_sca_packages_cyclonedx_bom():
         "discoveredDate": "2019-12-18T19:15:00Z",
         "fixDate": "2019-12-18T20:15:00+01:00",
     }
+    package = {'package_registry': "https://registry.npmjs.org/",
+               'is_private_registry': False,
+               "linesNumbers": [2, 6]}
 
     # when
     record = create_report_cve_record(
@@ -165,6 +169,8 @@ def test_sca_packages_cyclonedx_bom():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package=package,
+        file_line_range=get_package_lines(package)
     )
 
     report = Report(CheckType.SCA_PACKAGE)
@@ -179,7 +185,7 @@ def test_sca_packages_cyclonedx_bom():
             vulnerability_details={
                 "package_name": "testpkg",
                 "package_version": "1.1.1",
-                "licenses": "MIT"
+                "licenses": "MIT",
             }
         )
     )
@@ -188,7 +194,76 @@ def test_sca_packages_cyclonedx_bom():
     output = cyclonedx.get_xml_output()
 
     # then
+    assert record.file_line_range == [2, 6]
     assert output
+
+
+def test_duplicate_sca_packages_cyclonedx_bom():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
+    vulnerability_details = {
+        "id": "CVE-2019-19844",
+        "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+        "cvss": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+        "severity": "moderate",
+        "packageName": "django",
+        "packageVersion": "1.2",
+        "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+        "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
+        "impactedVersions": ["<1.11.27"],
+        "publishedDate": "2019-12-18T20:15:00+01:00",
+        "discoveredDate": "2019-12-18T19:15:00Z",
+        "fixDate": "2019-12-18T20:15:00+01:00",
+    }
+    package_1 = {
+        "package_registry": "https://registry.npmjs.org/",
+        "is_private_registry": False,
+        "linesNumbers": [2, 3],
+    }
+    package_2 = {
+        "package_registry": "https://registry.npmjs.org/",
+        "is_private_registry": False,
+        "linesNumbers": [5, 6],
+    }
+
+    record_1 = create_report_cve_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+        licenses="OSI_BDS",
+        package=package_1,
+        file_line_range=get_package_lines(package_1),
+    )
+    record_2 = create_report_cve_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+        licenses="OSI_BDS",
+        package=package_2,
+        file_line_range=get_package_lines(package_2),
+    )
+
+    report = Report(CheckType.SCA_PACKAGE)
+    report.add_resource(record_1.resource)
+    report.add_record(record_1)
+    report.add_resource(record_2.resource)
+    report.add_record(record_2)
+
+    # when
+    cyclonedx = CycloneDX([report], "repoid/test")
+
+    # then
+    assert len(cyclonedx.bom.components) == 1
+
+    component = next(iter(cyclonedx.bom.components))
+    assert component.bom_ref.value == "pkg:pypi/repoid/test/requirements.txt/django@1.2"
+
 
 def test_create_schema_version_1_3(mocker: MockerFixture):
     # given
@@ -204,7 +279,7 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
 
     # then
     assert len(cyclonedx.bom.components) == 1
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+    assert len(cyclonedx.bom.vulnerabilities) == 6
 
     assert "http://cyclonedx.org/schema/bom/1.3" in output
 
@@ -246,11 +321,12 @@ def test_create_library_component_maven_package_without_group_name() -> None:
         file_abs_path="/path/to/Dockerfile",
         file_path=rootless_file_path,
         resource=f"{rootless_file_path}.{package['name']}",
+        file_line_range=[2, 5],
         vulnerability_details={
             "package_name": package["name"],
             "package_version": package["version"],
             "licenses": "Unknown",
-            "package_type": 'jar',
+            "package_type": 'jar'
         },
     )
 
@@ -259,3 +335,40 @@ def test_create_library_component_maven_package_without_group_name() -> None:
     assert component.purl.name == 'bcpkix-jdk15on'
     assert component.purl.version == '1.69.00'
     assert component.purl.namespace == '12345/Dockerfile'
+    assert component.properties[0].name == 'endLine'
+    assert component.properties[0].value == '5'
+    assert component.properties[1].name == 'startLine'
+    assert component.properties[1].value == '2'
+
+    resource2 = ExtraResource(
+        file_abs_path="/path/to/package.json",
+        file_path='package.json',
+        resource=f"package.json.{package['name']}",
+        file_line_range=[0, 0],
+        vulnerability_details={
+            "package_name": package["name"],
+            "package_version": package["version"],
+            "licenses": "Unknown",
+            "package_type": 'jar'
+        },
+    )
+
+    component2 = cyclone.create_library_component(resource2, CheckType.SCA_PACKAGE)
+    assert component2.properties.key is None
+
+
+def test_create_json_output():
+    # given
+    test_file = Path(__file__).parent / "fixtures/main.tf"
+    repo_id = "acme/example"
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    # when
+    cyclonedx = CycloneDX(repo_id=repo_id, reports=[report])
+    output = json.loads(cyclonedx.get_json_output())
+
+    # then
+    assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
+    assert len(output["components"]) == 1
+    assert len(output["dependencies"]) == 1
+    assert len(output["vulnerabilities"]) == 6

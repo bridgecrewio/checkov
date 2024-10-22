@@ -1,0 +1,329 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_lightsail_container_service.example",
+          "mode": "managed",
+          "type": "aws_lightsail_container_service",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "is_disabled": false,
+            "name": "example",
+            "power": "nano",
+            "public_domain_names": [],
+            "scale": 1,
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "private_registry_access": [],
+            "public_domain_names": [],
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_lightsail_container_service_deployment_version.example",
+          "mode": "managed",
+          "type": "aws_lightsail_container_service_deployment_version",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "container": [
+              {
+                "command": [],
+                "container_name": "hello-world",
+                "environment": {
+                  "MY_ENVIRONMENT_VARIABLE": "my_value"
+                },
+                "image": "amazon/amazon-lightsail:hello-world",
+                "ports": {
+                  "80": "HTTP"
+                }
+              }
+            ],
+            "public_endpoint": [
+              {
+                "container_name": "hello-world",
+                "container_port": 80,
+                "health_check": [
+                  {
+                    "healthy_threshold": 2,
+                    "interval_seconds": 5,
+                    "path": "/",
+                    "success_codes": "200-499",
+                    "timeout_seconds": 2,
+                    "unhealthy_threshold": 2
+                  }
+                ]
+              }
+            ],
+            "service_name": "example",
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "container": [
+              {
+                "command": [],
+                "environment": {},
+                "ports": {}
+              }
+            ],
+            "public_endpoint": [
+              {
+                "health_check": [
+                  {}
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_lightsail_container_service.example",
+      "mode": "managed",
+      "type": "aws_lightsail_container_service",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "is_disabled": false,
+          "name": "example",
+          "power": "nano",
+          "public_domain_names": [],
+          "scale": 1,
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone": true,
+          "created_at": true,
+          "id": true,
+          "power_id": true,
+          "principal_arn": true,
+          "private_domain_name": true,
+          "private_registry_access": true,
+          "public_domain_names": [],
+          "resource_type": true,
+          "state": true,
+          "tags_all": true,
+          "url": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "private_registry_access": [],
+          "public_domain_names": [],
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "aws_lightsail_container_service_deployment_version.example",
+      "mode": "managed",
+      "type": "aws_lightsail_container_service_deployment_version",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "container": [
+            {
+              "command": [],
+              "container_name": "hello-world",
+              "environment": {
+                "MY_ENVIRONMENT_VARIABLE": "my_value"
+              },
+              "image": "amazon/amazon-lightsail:hello-world",
+              "ports": {
+                "80": "HTTP"
+              }
+            }
+          ],
+          "public_endpoint": [
+            {
+              "container_name": "hello-world",
+              "container_port": 80,
+              "health_check": [
+                {
+                  "healthy_threshold": 2,
+                  "interval_seconds": 5,
+                  "path": "/",
+                  "success_codes": "200-499",
+                  "timeout_seconds": 2,
+                  "unhealthy_threshold": 2
+                }
+              ]
+            }
+          ],
+          "service_name": "example",
+          "timeouts": null
+        },
+        "after_unknown": {
+          "container": [
+            {
+              "command": [],
+              "environment": {},
+              "ports": {}
+            }
+          ],
+          "created_at": true,
+          "id": true,
+          "public_endpoint": [
+            {
+              "health_check": [
+                {}
+              ]
+            }
+          ],
+          "state": true,
+          "version": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "container": [
+            {
+              "command": [],
+              "environment": {},
+              "ports": {}
+            }
+          ],
+          "public_endpoint": [
+            {
+              "health_check": [
+                {}
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_lightsail_container_service.example",
+          "mode": "managed",
+          "type": "aws_lightsail_container_service",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "is_disabled": {
+              "constant_value": false
+            },
+            "name": {
+              "constant_value": "example"
+            },
+            "power": {
+              "constant_value": "nano"
+            },
+            "scale": {
+              "constant_value": 1
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_lightsail_container_service_deployment_version.example",
+          "mode": "managed",
+          "type": "aws_lightsail_container_service_deployment_version",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "container": [
+              {
+                "command": {
+                  "constant_value": []
+                },
+                "container_name": {
+                  "constant_value": "hello-world"
+                },
+                "environment": {
+                  "constant_value": {
+                    "MY_ENVIRONMENT_VARIABLE": "my_value"
+                  }
+                },
+                "image": {
+                  "constant_value": "amazon/amazon-lightsail:hello-world"
+                },
+                "ports": {
+                  "constant_value": {
+                    "80": "HTTP"
+                  }
+                }
+              }
+            ],
+            "public_endpoint": [
+              {
+                "container_name": {
+                  "constant_value": "hello-world"
+                },
+                "container_port": {
+                  "constant_value": 80
+                },
+                "health_check": [
+                  {
+                    "healthy_threshold": {
+                      "constant_value": 2
+                    },
+                    "interval_seconds": {
+                      "constant_value": 5
+                    },
+                    "path": {
+                      "constant_value": "/"
+                    },
+                    "success_codes": {
+                      "constant_value": "200-499"
+                    },
+                    "timeout_seconds": {
+                      "constant_value": 2
+                    },
+                    "unhealthy_threshold": {
+                      "constant_value": 2
+                    }
+                  }
+                ]
+              }
+            ],
+            "service_name": {
+              "references": [
+                "aws_lightsail_container_service.example.name",
+                "aws_lightsail_container_service.example"
+              ]
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_105
+  name: Ensure Redshift uses SSL
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $REDSHIFT.CfnClusterParameterGroup(<ANY>)
+      conditions:
+        - not_pattern: |
+            new $REDSHIFT.CfnClusterParameterGroup(<ANY>, {<ANY>, parameters: [<ANY>, {<ANY>, parameterName: 'require_ssl' ,<ANY>, parameterValue: 'true', <ANY>} ,<ANY>], <ANY>}, <ANY>)
+        - not_pattern: |
+            new $REDSHIFT.CfnClusterParameterGroup(<ANY>, {<ANY>, parameters: [<ANY>, {<ANY>, parameterValue: 'true', <ANY>, parameterName: 'require_ssl' ,<ANY>} ,<ANY>], <ANY>}, <ANY>)

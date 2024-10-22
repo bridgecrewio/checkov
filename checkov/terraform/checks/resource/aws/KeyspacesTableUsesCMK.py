@@ -3,6 +3,10 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 
 class KeyspacesTableUsesCMK(BaseResourceCheck):
+    """
+    Valid values for encryption_specification type:
+    AWS_OWNED_KMS_KEY (default), CUSTOMER_MANAGED_KMS_KEY (requires kms_key_identifier:ARN)
+    """
     def __init__(self):
         name = "Ensure Keyspaces Table uses CMK"
         id = "CKV_AWS_265"
@@ -14,7 +18,7 @@ class KeyspacesTableUsesCMK(BaseResourceCheck):
         if conf.get("encryption_specification") and isinstance(conf.get("encryption_specification"), list):
             encrypt = conf.get("encryption_specification")[0]
             if encrypt.get("kms_key_identifier") and isinstance(encrypt.get("kms_key_identifier"), list):
-                if encrypt.get("type") == ["CUSTOMER_MANAGED_KEY"]:
+                if encrypt.get("type") == ["CUSTOMER_MANAGED_KMS_KEY"]:
                     return CheckResult.PASSED
                 self.evaluated_keys = ["encryption_specification/[0]/type"]
             self.evaluated_keys = ["encryption_specification/[0]/kms_key_identifier"]

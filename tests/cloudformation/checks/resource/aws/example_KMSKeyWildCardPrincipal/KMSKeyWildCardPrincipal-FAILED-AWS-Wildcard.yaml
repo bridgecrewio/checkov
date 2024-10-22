@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: KMS key example template
 Resources:
-  myKey:
+  AwsWildcard:
     Type: AWS::KMS::Key
     Properties:
       KeyPolicy:
@@ -15,3 +15,18 @@ Resources:
           Action: kms:*
           Resource: '*'
       EnableKeyRotation: true
+  AwsWildcardList:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: key-default-1
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: 
+                - '*' # <-- wildcarded principal tucked inside of a list
+                - 'arn:aws:iam::123456789012:root'
+            Action: 'kms:*'
+            Resource: '*'

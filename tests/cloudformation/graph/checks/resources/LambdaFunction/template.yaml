@@ -21,8 +21,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
@@ -42,8 +42,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
@@ -63,8 +63,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
@@ -84,8 +84,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
@@ -105,8 +105,8 @@ Resources:
           console.log("Hello World");
       Environment:
         Variables:
-          access_key: "AKIAIOSFODNN7EXAMPLE"
-          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+          access_key: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
       Tags:
         - Key: Name
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"

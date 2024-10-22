@@ -46,3 +46,28 @@ resource "aws_cloudfront_response_headers_policy" "pass" {
 resource "aws_cloudfront_distribution" "no_response_headers_policy" {
   enabled = true
 }
+
+data "aws_cloudfront_response_headers_policy" "simple_cors" {
+  name = "SimpleCORS"
+}
+
+resource "aws_cloudfront_distribution" "pass2" {
+  default_cache_behavior {
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.simple_cors.id
+    allowed_methods            = []
+    cached_methods             = []
+    target_origin_id           = ""
+    viewer_protocol_policy     = ""
+  }
+  enabled = false
+  origin {
+    domain_name = ""
+    origin_id   = ""
+  }
+  restrictions {
+    geo_restriction {
+      restriction_type = ""
+    }
+  }
+  viewer_certificate {}
+}

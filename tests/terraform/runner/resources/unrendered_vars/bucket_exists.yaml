@@ -1,0 +1,10 @@
+metadata:
+  id: "BUCKET_EXISTS"
+  name: "Ensure S3 bucket name is present"
+  category: "general"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_s3_bucket"
+  attribute: "bucket"
+  operator: "exists"

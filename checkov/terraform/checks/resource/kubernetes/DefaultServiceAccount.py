@@ -12,7 +12,7 @@ class DefaultServiceAccount(BaseResourceCheck):
         name = "Ensure that default service accounts are not actively used"
         # Check automountServiceAccountToken in default service account in runtime
         id = "CKV_K8S_41"
-        supported_resources = ["kubernetes_service_account"]
+        supported_resources = ["kubernetes_service_account", "kubernetes_service_account_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

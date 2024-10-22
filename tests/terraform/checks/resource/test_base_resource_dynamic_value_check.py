@@ -135,3 +135,5 @@ class Test(unittest.TestCase):
         super().tearDown()
         resource_registry.checks = self.check_list_before
         self.check_list_before = None
+
+

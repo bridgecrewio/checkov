@@ -16,7 +16,7 @@ class TestPostgreSQLServerPublicAccessDisabled(unittest.TestCase):
               resource_group_name = azurerm_resource_group.example.name
             
               administrator_login          = "psqladminun"
-              administrator_login_password = "H@Sh1CoR3!"
+              administrator_login_password = "H@Sh1CoR3!"  # checkov:skip=CKV_SECRET_80 test secret
             
               sku_name   = "GP_Gen5_4"
               version    = "9.6"

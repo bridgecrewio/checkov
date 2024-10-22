@@ -1,0 +1,360 @@
+{
+  "format_version": "1.1",
+  "terraform_version": "1.4.6",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.bad3",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "bad3",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 6,
+          "values": {
+            "advanced_machine_features": [],
+            "allow_stopping_for_update": true,
+            "attached_disk": [],
+            "boot_disk": [
+              {
+                "auto_delete": true,
+                "disk_encryption_key_raw": null,
+                "initialize_params": [
+                  {
+                    "image": "debian-cloud/debian-11",
+                    "size": 30,
+                    "type": "pd-ssd"
+                  }
+                ],
+                "mode": "READ_WRITE"
+              }
+            ],
+            "can_ip_forward": false,
+            "deletion_protection": false,
+            "description": null,
+            "desired_status": null,
+            "enable_display": null,
+            "hostname": null,
+            "labels": null,
+            "machine_type": "e2-small",
+            "metadata": {
+              "enable-oslogin": "false"
+            },
+            "metadata_startup_script": null,
+            "name": "third-instance",
+            "network_interface": [
+              {
+                "access_config": [],
+                "alias_ip_range": [],
+                "ipv6_access_config": [],
+                "nic_type": null,
+                "queue_count": null,
+                "subnetwork": "default"
+              }
+            ],
+            "network_performance_config": [],
+            "project": "blah",
+            "resource_policies": null,
+            "scratch_disk": [],
+            "service_account": [
+              {
+                "email": "example@developer.gserviceaccount.com",
+                "scopes": [
+                  "https://www.googleapis.com/auth/cloud-platform"
+                ]
+              }
+            ],
+            "shielded_instance_config": [],
+            "tags": null,
+            "timeouts": null,
+            "zone": "blah"
+          },
+          "sensitive_values": {
+            "advanced_machine_features": [],
+            "attached_disk": [],
+            "boot_disk": [
+              {
+                "initialize_params": [
+                  {
+                    "labels": {}
+                  }
+                ]
+              }
+            ],
+            "confidential_instance_config": [],
+            "guest_accelerator": [],
+            "metadata": {},
+            "network_interface": [
+              {
+                "access_config": [],
+                "alias_ip_range": [],
+                "ipv6_access_config": []
+              }
+            ],
+            "network_performance_config": [],
+            "reservation_affinity": [],
+            "scheduling": [],
+            "scratch_disk": [],
+            "service_account": [
+              {
+                "scopes": [
+                  false
+                ]
+              }
+            ],
+            "shielded_instance_config": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "google_compute_instance.bad3",
+      "mode": "managed",
+      "type": "google_compute_instance",
+      "name": "bad3",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "advanced_machine_features": [],
+          "allow_stopping_for_update": true,
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "auto_delete": true,
+              "disk_encryption_key_raw": null,
+              "initialize_params": [
+                {
+                  "image": "debian-cloud/debian-11",
+                  "size": 30,
+                  "type": "pd-ssd"
+                }
+              ],
+              "mode": "READ_WRITE"
+            }
+          ],
+          "can_ip_forward": false,
+          "deletion_protection": false,
+          "description": null,
+          "desired_status": null,
+          "enable_display": null,
+          "hostname": null,
+          "labels": null,
+          "machine_type": "e2-small",
+          "metadata": {
+            "enable-oslogin": "false"
+          },
+          "metadata_startup_script": null,
+          "name": "third-instance",
+          "network_interface": [
+            {
+              "access_config": [],
+              "alias_ip_range": [],
+              "ipv6_access_config": [],
+              "nic_type": null,
+              "queue_count": null,
+              "subnetwork": "default"
+            }
+          ],
+          "network_performance_config": [],
+          "project": "blah",
+          "resource_policies": null,
+          "scratch_disk": [],
+          "service_account": [
+            {
+              "email": "example@developer.gserviceaccount.com",
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ]
+            }
+          ],
+          "shielded_instance_config": [],
+          "tags": null,
+          "timeouts": null,
+          "zone": "blah"
+        },
+        "after_unknown": {
+          "advanced_machine_features": [],
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "device_name": true,
+              "disk_encryption_key_sha256": true,
+              "initialize_params": [
+                {
+                  "labels": true
+                }
+              ],
+              "kms_key_self_link": true,
+              "source": true
+            }
+          ],
+          "confidential_instance_config": true,
+          "cpu_platform": true,
+          "current_status": true,
+          "guest_accelerator": true,
+          "id": true,
+          "instance_id": true,
+          "label_fingerprint": true,
+          "metadata": {},
+          "metadata_fingerprint": true,
+          "min_cpu_platform": true,
+          "network_interface": [
+            {
+              "access_config": [],
+              "alias_ip_range": [],
+              "ipv6_access_config": [],
+              "ipv6_access_type": true,
+              "name": true,
+              "network": true,
+              "network_ip": true,
+              "stack_type": true,
+              "subnetwork_project": true
+            }
+          ],
+          "network_performance_config": [],
+          "reservation_affinity": true,
+          "scheduling": true,
+          "scratch_disk": [],
+          "self_link": true,
+          "service_account": [
+            {
+              "scopes": [
+                false
+              ]
+            }
+          ],
+          "shielded_instance_config": [],
+          "tags_fingerprint": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "advanced_machine_features": [],
+          "attached_disk": [],
+          "boot_disk": [
+            {
+              "disk_encryption_key_raw": true,
+              "initialize_params": [
+                {
+                  "labels": {}
+                }
+              ]
+            }
+          ],
+          "confidential_instance_config": [],
+          "guest_accelerator": [],
+          "metadata": {},
+          "network_interface": [
+            {
+              "access_config": [],
+              "alias_ip_range": [],
+              "ipv6_access_config": []
+            }
+          ],
+          "network_performance_config": [],
+          "reservation_affinity": [],
+          "scheduling": [],
+          "scratch_disk": [],
+          "service_account": [
+            {
+              "scopes": [
+                false
+              ]
+            }
+          ],
+          "shielded_instance_config": []
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "full_name": "registry.terraform.io/hashicorp/google"
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.bad3",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "bad3",
+          "provider_config_key": "google",
+          "expressions": {
+            "allow_stopping_for_update": {
+              "constant_value": true
+            },
+            "boot_disk": [
+              {
+                "initialize_params": [
+                  {
+                    "image": {
+                      "constant_value": "debian-cloud/debian-11"
+                    },
+                    "size": {
+                      "constant_value": 30
+                    },
+                    "type": {
+                      "constant_value": "pd-ssd"
+                    }
+                  }
+                ]
+              }
+            ],
+            "can_ip_forward": {
+              "constant_value": false
+            },
+            "machine_type": {
+              "constant_value": "e2-small"
+            },
+            "metadata": {
+              "constant_value": {
+                "enable-oslogin": false
+              }
+            },
+            "name": {
+              "constant_value": "third-instance"
+            },
+            "network_interface": [
+              {
+                "subnetwork": {
+                  "constant_value": "default"
+                }
+              }
+            ],
+            "project": {
+              "references": [
+                "local.project_id"
+              ]
+            },
+            "service_account": [
+              {
+                "email": {
+                  "constant_value": "example@developer.gserviceaccount.com"
+                },
+                "scopes": {
+                  "constant_value": [
+                    "cloud-platform"
+                  ]
+                }
+              }
+            ],
+            "zone": {
+              "references": [
+                "local.zone"
+              ]
+            }
+          },
+          "schema_version": 6
+        }
+      ]
+    }
+  }
+}

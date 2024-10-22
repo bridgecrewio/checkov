@@ -2,7 +2,7 @@ from checkov.common.vcs.vcs_schema import VCSSchema
 
 
 class OrgWebhooksSchema(VCSSchema):
-    def __init__(self):
+    def __init__(self) -> None:
         schema = {
             "type": "array",
             "items": {
@@ -103,7 +103,8 @@ class OrgWebhooksSchema(VCSSchema):
                         ]
                     },
                     "type": {
-                        "type": "string"
+                        "type": "string",
+                        "const": "Organization"
                     }
                 },
                 "required": [

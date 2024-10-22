@@ -2,7 +2,7 @@ from checkov.common.vcs.vcs_schema import VCSSchema
 
 
 class RepositoryWebhookSchema(VCSSchema):
-    def __init__(self):
+    def __init__(self) -> None:
         schema = {
             "type": "array",
             "items": {
@@ -11,7 +11,8 @@ class RepositoryWebhookSchema(VCSSchema):
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string"
+                        "type": "string",
+                        "const": "Repository"
                     },
                     "id": {
                         "description": "Unique identifier of the webhook.",

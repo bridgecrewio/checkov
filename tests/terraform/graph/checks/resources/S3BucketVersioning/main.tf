@@ -41,6 +41,39 @@ resource "aws_s3_bucket" "legacy_syntax" {
   }
 }
 
+# Reference by name
+variable "bucket_name" {
+}
+
+resource "aws_s3_bucket" "ref_by_name" {
+  bucket = var.bucket_name
+}
+
+resource "aws_s3_bucket_versioning" "aws_bucket_versioning" {
+  bucket = var.bucket_name
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+variable "bucket_name_2" {
+}
+
+locals {
+  bucketName = var.bucket_name_2
+}
+
+resource "aws_s3_bucket" "ref_by_name_local" {
+  bucket = local.bucketName
+}
+
+resource "aws_s3_bucket_versioning" "aws_bucket_versioning_local" {
+  bucket = local.bucketName
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 # fail
 
 resource "aws_s3_bucket" "default" {
@@ -91,4 +124,38 @@ resource "aws_s3_bucket_versioning" "legacy_syntax_v4" {
   versioning_configuration {
     status = "${var.whatever}"
   }
+}
+
+
+
+locals {
+  prefix = "kevin-code-sec"
+  buckets = [
+    "test-code-sec-a",
+    "test-code-sec-b",
+  ]
+  test_buckets = [
+    "test-bucket1",
+    "test-bucket2"
+  ]
+  additional_tags = {
+    Env                  = "DEV"
+    Point_of_Contact     = "CloudSec"
+    Managed_by_Terraform = true
+  }
+}
+
+resource "aws_s3_bucket" "this" {
+  for_each = toset(local.test_buckets)
+  bucket   = "${local.prefix}-${each.key}"
+  tags     = local.additional_tags
+}
+
+
+resource "aws_s3_bucket_versioning" "this" {
+  for_each = toset(local.test_buckets)
+  bucket = aws_s3_bucket.this[each.key].id
+
+  versioning_configuration {
+    status = "Enabled"}
 }

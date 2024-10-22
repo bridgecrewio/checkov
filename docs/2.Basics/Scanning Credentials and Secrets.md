@@ -8,7 +8,7 @@ nav_order: 5
 # Scanning Credentials and Secrets
 
 Checkov can scan for a number of different common credentials such as AWS access keys, Azure service credentials, or private keys that are hard-coded in a Terraform code block.
-See list of regular expressions [here](https://github.com/bridgecrewio/checkov/blob/master/checkov/common/util/secrets.py).
+See list of regular expressions [here](https://github.com/bridgecrewio/checkov/blob/main/checkov/common/util/secrets.py).
 
 Let’s assume we have the following Terraform provider block:
 

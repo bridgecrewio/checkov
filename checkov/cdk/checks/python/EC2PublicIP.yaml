@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_88
+  name: EC2 instance should not have public IP
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: | 
+          aws_cdk.aws_ec2.CfnInstance(<ANY>, network_interfaces=[<ANY>, {'associate_public_ip_address': True} ,<ANY>] ,<ANY>)
+      - pattern: | 
+          aws_cdk.aws_ec2.CfnLaunchTemplate(<ANY>, launch_template_data={'network_interfaces':[<ANY>, {'associate_public_ip_address': True} ,<ANY>]} ,<ANY>)

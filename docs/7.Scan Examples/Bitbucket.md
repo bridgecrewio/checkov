@@ -16,10 +16,10 @@ Full list of bitbucket organization and repository settings related checks can b
 |-------------|----------|-------------------------------------------|
 | CKV_BITBUCKET_CONFIG_FETCH_DATA| "True" | checkov will try to fetch Bitbucket configuration from API by default (unless no access token provided)  |
 | CKV_BITBUCKET_CONF_DIR_NAME   | "bitbucket_conf" | checkov will create a new directory named "bitbucket_conf" under current working directory                          |
-| BITBUCKET_API_URL   | "https://api.bitbucket.com/" |  |
+| CI_SERVER_URL   | "https://api.bitbucket.com/" |  |
 | APP_PASSWORD   |  | Bitbucket personal access token to be used to fetch Bitbucket configuration |
 | BITBUCKET_USERNAME |  | Bitbucket username (not email) |
-| BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example bridgecrewio/terragoat |
+| BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example prisma/terragoat |
 
 ### Example branch restrictions configuration
 
@@ -135,7 +135,7 @@ check = MergeRequestRequiresApproval()
 #configure bitbucket personal access token
 export APP_PASSWORD="ghp_abc"
 export BITBUCKET_USERNAME="username"
-export BITBUCKET_REPO_FULL_NAME="bridgecrewio/terragoat"
+export BITBUCKET_REPO_FULL_NAME="prisma/terragoat"
 
 checkov -d . --framework bitbucket_configuration
 ```
@@ -298,4 +298,4 @@ Check: CKV_BITBUCKET_1: "Merge requests should require at least 2 approvals"
 
 ```
 
-To add more Bitbucket policies and configuration to be inspected take a look at [Github policy contribution guide](/docs/6.Contribution/Contribute%20New%20Bitbucket%20Policies.md)
+To add more Bitbucket policies and configuration to be inspected take a look at the [Bitbucket policy contribution guide](https://www.checkov.io/6.Contribution/Contribute%20New%20Bitbucket%20Policies.html)

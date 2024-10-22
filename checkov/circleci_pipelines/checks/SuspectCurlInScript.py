@@ -5,6 +5,7 @@ from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleC
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 
+
 class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
     def __init__(self) -> None:
         name = "Suspicious use of curl in run task"
@@ -13,14 +14,16 @@ class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['jobs.*.steps[]']
+            supported_entities=('jobs.*.steps[]',)
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if not isinstance(conf, dict):
+            return CheckResult.UNKNOWN, conf
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
-        if type(run) == dict:
+        if isinstance(run, dict):
             run = run.get("command", "")
         if "curl" in run:
             badstuff = ['curl', 'POST']
@@ -29,5 +32,6 @@ class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
                 if all(x in line for x in badstuff):
                     return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
+
 
 check = SuspectCurlInScript()

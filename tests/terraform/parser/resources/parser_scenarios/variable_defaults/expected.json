@@ -1,5 +1,5 @@
 {
-  "name_doesnt_matter.tf": {
+  "{\"file_path\": \"name_doesnt_matter.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "aws_s3_bucket": {
@@ -8,7 +8,8 @@
               "this-is-my-default"
             ],
             "__start_line__": 6,
-            "__end_line__": 8
+            "__end_line__": 8,
+            "__address__": "aws_s3_bucket.test"
           }
         }
       }
@@ -19,7 +20,8 @@
           "type": ["string"],
           "default": ["this-is-my-default"],
           "__start_line__": 1,
-          "__end_line__": 4
+          "__end_line__": 4,
+          "__address__": "BUCKET_NAME"
         }
       }
     ]

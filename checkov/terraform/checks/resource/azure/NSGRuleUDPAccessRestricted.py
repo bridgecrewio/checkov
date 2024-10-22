@@ -32,6 +32,8 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
                                            f'{evaluated_key_prefix}access',
                                            f'{evaluated_key_prefix}source_address_prefix']
                     return CheckResult.FAILED
+                return CheckResult.PASSED
+            return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
 

@@ -7,11 +7,13 @@ from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_or_equal
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_attribute_solver import LessThanAttributeSolver
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_or_equal_attribute_solver import \
     LessThanOrEqualAttributeSolver
+from tests.graph_utils.utils import PARAMETERIZED_GRAPH_FRAMEWORKS
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
+from parameterized import parameterized_class
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
-
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
@@ -60,7 +62,7 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def test_greater_than_solver_unrendered(self):
         root_folder = '../../../resources/variable_rendering/unrendered'
         check_id = "GT"
-        should_pass = ['aws_s3_bucket.pass1', 'aws_s3_bucket.pass2', 'aws_s3_bucket.pass3']
+        should_pass = []
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -69,7 +71,7 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def test_less_than_solver_unrendered(self):
         root_folder = '../../../resources/variable_rendering/unrendered'
         check_id = "LT"
-        should_pass = ['aws_s3_bucket.pass1', 'aws_s3_bucket.pass2', 'aws_s3_bucket.pass3']
+        should_pass = []
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -78,7 +80,7 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def test_greater_than_or_equal_solver_unrendered(self):
         root_folder = '../../../resources/variable_rendering/unrendered'
         check_id = "GTE"
-        should_pass = ['aws_s3_bucket.pass1', 'aws_s3_bucket.pass2', 'aws_s3_bucket.pass3']
+        should_pass = []
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -87,7 +89,7 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def test_less_than_or_equal_solver_unrendered(self):
         root_folder = '../../../resources/variable_rendering/unrendered'
         check_id = "LTE"
-        should_pass = ['aws_s3_bucket.pass1', 'aws_s3_bucket.pass2', 'aws_s3_bucket.pass3']
+        should_pass = []
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -203,7 +205,7 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertFalse(cls([], None, 2)._get_operation({'a': 1, 'source_': 'Terraform'}, 'b'))
 
         # unrendered variable
-        self.assertTrue(cls([], None, '1')._get_operation({'a': 'var.x', 'source_': 'Terraform'}, 'a'))
+        self.assertIsNone(cls([], 'a', '1').get_operation({'a': 'var.x', 'source_': 'Terraform'}))
 
     def test_lte_combinations(self):
         cls = LessThanOrEqualAttributeSolver
@@ -239,4 +241,4 @@ class TestGreaterThanLessThanSolvers(TestBaseSolver):
         self.assertFalse(cls([], None, 2)._get_operation({'a': 1, 'source_': 'Terraform'}, 'b'))
 
         # unrendered variable
-        self.assertTrue(cls([], None, '1')._get_operation({'a': 'var.x', 'source_': 'Terraform'}, 'a'))
+        self.assertIsNone(cls([], 'a', '1').get_operation({'a': 'var.x', 'source_': 'Terraform'}))

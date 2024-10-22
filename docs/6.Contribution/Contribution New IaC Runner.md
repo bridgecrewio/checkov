@@ -208,7 +208,7 @@ Example: [https://github.com/bridgecrewio/checkov/pull/2551/files#diff-5c3fa5974
 #### Create an example check
 
 Reference: 
-[Contribute Python-Based Policies](https://github.com/bridgecrewio/checkov/blob/master/docs/6.Contribution/Contribute%20Python-Based%20Policies.md)
+[Contribute Python-Based Policies](https://github.com/bridgecrewio/checkov/blob/main/docs/6.Contribution/Contribute%20Python-Based%20Policies.md)
 
 
 #### Create test cases

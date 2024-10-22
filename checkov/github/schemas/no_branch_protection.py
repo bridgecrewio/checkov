@@ -2,7 +2,7 @@ from checkov.common.vcs.vcs_schema import VCSSchema
 
 
 class NoBranchProtectionSchema(VCSSchema):
-    def __init__(self):
+    def __init__(self) -> None:
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",

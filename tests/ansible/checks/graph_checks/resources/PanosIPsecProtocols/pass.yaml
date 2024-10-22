@@ -1,0 +1,20 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: ipsec_pass_1
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_authentication: ['sha512']
+        esp_encryption: ['aes-256-gcm'] # Encrypted ESP, not unencrypted AH, should be used

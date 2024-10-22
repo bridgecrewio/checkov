@@ -1,0 +1,10 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "test",
+    "version": "1.0.0"
+  },
+  "schemes": [
+    "https"
+  ]
+}

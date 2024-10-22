@@ -11,7 +11,7 @@ When using checkov to scan a directory that contains Argo Workflows specs and te
 
 Full list of Argo Workflows policies checks can be found [here](https://www.checkov.io/5.Policy%20Index/argo_workflows.html).
 
-### Example misconfigured OpenAPI
+### Example misconfigured Argo Workflows template
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -43,10 +43,10 @@ checkov -d . --framework argo_workflows
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1210
+By Prisma Cloud | version: 2.0.1210
 
 
-openapi scan results:
+argo_workflows scan results:
 
 Passed checks: 1, Failed checks: 1, Skipped checks: 0
 

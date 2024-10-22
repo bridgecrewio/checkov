@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import os
 import platform
 import re
 import logging
+from typing import TYPE_CHECKING
 
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
-from checkov.terraform.module_loading.module_params import ModuleParams
+
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.module_params import ModuleParams
+
+WINDOWS_MODULE_SOURCE_PATH_PATTERN = re.compile("[a-zA-Z]:\\\\")
 
 
 class LocalPathLoader(ModuleLoader):
@@ -13,21 +20,20 @@ class LocalPathLoader(ModuleLoader):
         super().__init__()
         self.is_external = False
 
-    def discover(self, module_params: ModuleParams):
+    def discover(self, module_params: ModuleParams) -> None:
         pass
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
-        if (
-            module_params.module_source.startswith("./")
-            or module_params.module_source.startswith("../")
-            or module_params.module_source.startswith(module_params.current_dir)
-            or module_params.module_source.startswith("/")
-        ):
+        if module_params.tf_managed:
+            # Terraform managed modules are already downloaded and can be handled as local modules
+            return True
+
+        if module_params.module_source.startswith(("./", "../", module_params.current_dir, "/")):
             return True
 
         if platform.system() == "Windows":
             logging.debug("Platform: Windows")
-            if re.match(re.compile("[a-zA-Z]:\\\\"), module_params.module_source):
+            if re.match(WINDOWS_MODULE_SOURCE_PATH_PATTERN, module_params.module_source):
                 return True
 
         return False

@@ -1,8 +1,8 @@
 # flake8: noqa
 terms = [
-    "\$*CIRCLE_PR_REPONAME*",
-    "\$*CIRCLE_PR_USERNAME*",
-    "\$*CIRCLE_PULL_REQUESTS*",
-    "\$*CIRCLE_TAG*",
-    "\$*CIRCLE_BRANCH*"
+    r"\$*CIRCLE_PR_REPONAME*",
+    r"\$*CIRCLE_PR_USERNAME*",
+    r"\$*CIRCLE_PULL_REQUESTS*",
+    r"\$*CIRCLE_TAG*",
+    r"\$*CIRCLE_BRANCH*"
 ]

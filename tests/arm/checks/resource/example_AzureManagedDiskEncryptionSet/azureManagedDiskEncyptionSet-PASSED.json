@@ -1,0 +1,46 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "disks_pike_name": {
+            "defaultValue": "pike",
+            "type": "String"
+        },
+        "diskEncryptionSets_pike_externalid": {
+            "defaultValue": "/subscriptions/037ce662-dfc1-4b8b-a8a7-6c414b540ed6/resourceGroups/PIKE/providers/Microsoft.Compute/diskEncryptionSets/pike",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2023-01-02",
+            "name": "[parameters('disks_pike_name')]",
+            "location": "uksouth",
+            "tags": {
+                "createdby": "Terraform",
+                "module": "terraform-azurerm-disk"
+            },
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": 10,
+                "diskIOPSReadWrite": 500,
+                "diskMBpsReadWrite": 60,
+                "encryption": {
+                    "type": "EncryptionAtRestWithCustomerKey",
+                    "diskEncryptionSetId": "[parameters('diskEncryptionSets_pike_externalid')]"
+                },
+                "networkAccessPolicy": "DenyAll",
+                "publicNetworkAccess": "Disabled",
+                "diskState": "Unattached"
+            }
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_4"
+  name: "Ensure that certificate validation isn't disabled with the pip '--trusted-host' option"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(pip3?[^\\|&;]*\\s+--trusted-host).*"

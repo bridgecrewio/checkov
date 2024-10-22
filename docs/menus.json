@@ -1,8 +1,8 @@
 {
   "utility": [
     {
-      "label": "About Bridgecrew by Prisma Cloud",
-      "url": "https://bridgecrew.io/?utm_source=checkovio&utm_medium=organic_oss&utm_campaign=checkov",
+      "label": "About Prisma Cloud",
+      "url": "https://prismacloud.io/?utm_source=checkovio&utm_medium=organic_oss&utm_campaign=checkov",
       "target": "_self",
       "submenu": false
     }

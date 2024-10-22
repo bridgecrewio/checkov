@@ -1,4 +1,0 @@
-recursive-include checkov/common/util/templates *.jinja2
-recursive-include checkov/bicep/checks/graph_checks *.yaml *.yml
-recursive-include checkov/cloudformation/checks/graph_checks *.yaml *.yml
-recursive-include checkov/terraform/checks/graph_checks *.yaml *.yml

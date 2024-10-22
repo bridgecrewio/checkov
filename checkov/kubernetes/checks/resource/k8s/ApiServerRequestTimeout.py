@@ -4,6 +4,8 @@ from typing import Dict, Any
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
+TIMEOUT_PATTERN = re.compile(r"^(\d{1,2}[h])(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[s])$")
+
 
 class ApiServerRequestTimeout(BaseK8sContainerCheck):
     def __init__(self) -> None:
@@ -22,10 +24,7 @@ class ApiServerRequestTimeout(BaseK8sContainerCheck):
                     if "=" in cmd:
                         [field, value, *_] = cmd.split("=")
                         if field == "--request-timeout":
-                            regex = re.compile(
-                                r"^(\d{1,2}[h])(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[m])?(\d{1,2}[s])?$|^(\d{1,2}[s])$"
-                            )
-                            matches = re.match(regex, value)
+                            matches = re.match(TIMEOUT_PATTERN, value)
                             if not matches:
                                 return CheckResult.FAILED
         return CheckResult.PASSED

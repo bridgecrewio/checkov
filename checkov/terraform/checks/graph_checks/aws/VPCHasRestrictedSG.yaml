@@ -61,3 +61,15 @@ definition:
       connected_resource_types:
         - "aws_security_group_rule"
       operator: "not_exists"
+    - cond_type: "connection"
+      resource_types:
+        - "aws_default_security_group"
+      connected_resource_types:
+        - "aws_vpc_security_group_egress_rule"
+      operator: "not_exists"
+    - cond_type: "connection"
+      resource_types:
+        - "aws_default_security_group"
+      connected_resource_types:
+        - "aws_vpc_security_group_ingress_rule"
+      operator: "not_exists"

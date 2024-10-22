@@ -1,0 +1,7 @@
+pass:
+  - "tasks.ansible.builtin.get_url.https"
+  - "tasks.get_url.unknown" # update test when variable rendering is supported
+fail:
+  - "tasks.get_url.http"
+evaluated_keys:
+  - "url"

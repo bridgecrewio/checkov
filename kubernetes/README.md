@@ -10,7 +10,7 @@ that is not compliant, but in runtime there is no concept of files.
 Checkov can be deployed in Kubernetes as a Job to get immediate feedback on the state of resources in your cluster. 
 
 ```$xslt
-kubectl apply -f https://raw.githubusercontent.com/bridgecrewio/checkov/master/kubernetes/checkov-job.yaml
+kubectl apply -f https://raw.githubusercontent.com/bridgecrewio/checkov/main/kubernetes/checkov-job.yaml
 ```
 
 Review the output of the job.  

@@ -1,0 +1,12 @@
+---
+
+- name: Check that you can connect (GET) to a page
+  uri:
+    url: https://www.example.com
+
+- name: Download foo.conf
+  ansible.builtin.get_url:
+    url: https://example.com/path/file.conf
+    dest: /etc/foo.conf
+    mode: '0440'
+    validate_certs: false

@@ -36,7 +36,7 @@ Installation options for Kustomize can be found here: [https://kubectl.docs.kube
 Here we ask for `--compact` output and only a single Kubernetes check `CKV_K8S_43` to make the output easier to read, you can see each Kustomization environment has been templated and scanned with the overlay name appended to the resource.
 
 ```
-➜  ~ checkov -d ./testdir --framework kustomize --check CKV_K8S_43 --no-guide --quiet --compact
+➜  ~ checkov -d ./testdir --framework kustomize --check CKV_K8S_43 --quiet --compact
 
 kustomize scan results:
 

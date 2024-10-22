@@ -1,0 +1,10 @@
+metadata:
+  name: "Tests resource_types value to be a string"
+  id: "CUSTOM_2"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types: "aws_sqs_queue"
+  attribute: "delay_seconds"
+  operator: "equals"
+  value: 900

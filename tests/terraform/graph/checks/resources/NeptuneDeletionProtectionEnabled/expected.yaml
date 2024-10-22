@@ -1,0 +1,5 @@
+pass:
+  - "aws_neptune_cluster.pass"
+fail:
+  - "aws_neptune_cluster.fail_1"
+  - "aws_neptune_cluster.fail_2"

@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_DOCKER_17"
+  name: "Ensure that 'chpasswd' is not used to set or remove passwords"
+  category: "APPLICATION_SECURITY"
+definition:
+    and:
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_starting_with
+      value: "chpasswd "
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_contains
+      value: " chpasswd "
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_ending_with
+      value: " chpasswd"

@@ -1,0 +1,33 @@
+openapi: 3.0.0
+info:
+  title: Simple API overview
+  version: 1.0.0
+servers:
+  - url: https://localhost:8000
+    description: Local server
+paths:
+  /pets:
+    post:
+      description: Creates a new pet in the store
+      responses:
+        '200':
+          description: 200 response
+      operationId: addPet
+      security:
+        - apiKey1: []
+          apiKey2: []
+          apiKey3: []
+components:
+  securitySchemes:
+    apiKey1:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    apiKey2:
+      type: apiKey
+      name: X-API-Key
+      in: cookie
+    apiKey3:
+      type: apiKey
+      name: X-API-Key
+      in: query

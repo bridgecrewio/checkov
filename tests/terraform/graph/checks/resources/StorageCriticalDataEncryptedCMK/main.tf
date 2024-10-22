@@ -49,6 +49,23 @@ resource "azurerm_storage_account" "ok_storage_account" {
   }
 }
 
+resource "azurerm_storage_account" "ok_inline" {
+  name                     = "examplestor"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  customer_managed_key {
+    key_vault_key_id          = "azurerm_key_vault.example.id"
+    user_assigned_identity_id = "identity_id"
+  }
+}
+
 resource "azurerm_storage_account" "not_ok_storage_account" {
   name                     = "examplestor"
   resource_group_name      = azurerm_resource_group.example.name

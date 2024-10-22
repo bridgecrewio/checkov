@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import Any
 
 from checkov.common.models.enums import CheckCategories
 from checkov.common.models.consts import ANY_VALUE
@@ -16,8 +16,8 @@ class SNSTopicEncryption(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "kms_master_key_id"
 
-    def get_expected_values(self) -> List[Any]:
-        return [ANY_VALUE]
+    def get_expected_value(self) -> Any:
+        return ANY_VALUE
 
 
 check = SNSTopicEncryption()

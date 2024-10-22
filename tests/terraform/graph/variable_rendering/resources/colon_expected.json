@@ -1,5 +1,5 @@
 {
-  "colon.tf": {
+  "{\"file_path\": \"colon.tf\", \"tf_source_modules\": null}": {
     "variable": [
       {
         "tags": {
@@ -8,7 +8,8 @@
             "${list(object({'key': '${string}', 'value': '${string}', 'propagate_at_launch': '${bool}'}))}"
           ],
           "__start_line__": 1,
-          "__end_line__": 4
+          "__end_line__": 4,
+          "__address__": "tags"
         }
       }
     ]

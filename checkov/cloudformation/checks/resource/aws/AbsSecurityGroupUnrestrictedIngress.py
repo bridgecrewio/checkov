@@ -32,10 +32,19 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
 
         for rule in rules:
             if rule.__contains__('FromPort') and rule.__contains__('ToPort'):
-                if isinstance(rule['FromPort'], int) and isinstance(rule['ToPort'], int):
-                    if int(rule['FromPort']) == int(self.port) and int(rule['ToPort']) == int(self.port):
-                        if 'CidrIp' in rule.keys() and rule['CidrIp'] == '0.0.0.0/0':  # nosec  # nosec
-                            return CheckResult.FAILED
-                        elif 'CidrIpv6' in rule.keys() and rule['CidrIpv6'] in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0']:
+                if (isinstance(rule['FromPort'], int) and isinstance(rule['ToPort'], int)) or \
+                        isinstance(rule['FromPort'], str) and isinstance(rule['ToPort'], str):
+                    if self.range(rule):
+                        if 'CidrIp' in rule.keys():
+                            cidr = rule['CidrIp']
+                            if cidr == '0.0.0.0/0':  # nosec  # nosec
+                                return CheckResult.FAILED
+                        elif 'CidrIpv6' in rule.keys() and \
+                                rule['CidrIpv6'] in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0']:
                             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def range(self, rule):
+        if int(rule['FromPort']) <= int(self.port) <= int(rule['ToPort']):
+            return True
+        return False

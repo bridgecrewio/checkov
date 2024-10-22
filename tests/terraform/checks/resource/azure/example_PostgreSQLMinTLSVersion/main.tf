@@ -18,6 +18,6 @@ resource "azurerm_postgresql_server" "pass" {
 resource "azurerm_postgresql_server" "fail2" {
   name = "fail"
 
-  public_network_access_enabled    = true
-  ssl_enforcement_enabled          = true
+  public_network_access_enabled = true
+  ssl_enforcement_enabled       = true
 }

@@ -40,6 +40,6 @@ class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
             max_port = force_int(rule[protocol_name][0]['max'][0])
             min_port = force_int(rule[protocol_name][0]['min'][0])
             if min_port and max_port and min_port <= self.port <= max_port:
-                return CheckResult.SKIPPED
+                return CheckResult.UNKNOWN
         self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/protocol/[0]/{protocol_name}']
         return CheckResult.FAILED

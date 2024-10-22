@@ -1,0 +1,40 @@
+metadata:
+  id: "CKV_PAN_7"
+  name: "Ensure security rules do not have 'source_ip' and 'destination_ip' both containing values of 'any'"
+  category: "NETWORKING"
+definition:
+  or:
+  - and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_ip
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_ip
+      operator: is_not_empty
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_ip
+      operator: not_equals_ignore_case
+      value: 'any'
+  - and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_ip
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_ip
+      operator: is_not_empty
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_ip
+      operator: not_equals_ignore_case
+      value: 'any'

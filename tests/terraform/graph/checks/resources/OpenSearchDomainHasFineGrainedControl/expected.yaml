@@ -1,0 +1,8 @@
+pass:
+  - "aws_elasticsearch_domain.es_pass"
+  - "aws_opensearch_domain.os_pass"
+fail:
+  - "aws_opensearch_domain.os_fail_1"
+  - "aws_opensearch_domain.os_fail_2"
+  - "aws_elasticsearch_domain.es_fail_2"
+  - "aws_elasticsearch_domain.es_fail_1"

@@ -32,13 +32,13 @@ definition:
         - cond_type: attribute
           resource_types:
             - azurerm_mssql_server_vulnerability_assessment 
-          attribute: 'recurring_scans.email_subscription_admins'
+          attribute: 'recurring_scans.*.email_subscription_admins'
           operator:  equals
           value: true
         - cond_type: attribute
           resource_types:
             - azurerm_mssql_server_vulnerability_assessment 
-          attribute: 'recurring_scans.emails'
+          attribute: 'recurring_scans.*.emails'
           operator:  exists
         - cond_type: filter
           attribute: resource_type

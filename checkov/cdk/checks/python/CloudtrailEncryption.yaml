@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_35
+  name: Ensure CloudTrail logs are encrypted at rest using KMS CMKs
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_cloudtrail.CfnTrail(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_cloudtrail.CfnTrail(<ANY>, kms_key_id=$ARG ,<ANY>)

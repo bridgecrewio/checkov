@@ -1,0 +1,24 @@
+# !!! Important !!!
+# any change to this workflow will not take into effect on the same PR and only after,
+# because of security implications from target 'pull_request_target'
+
+name: security
+
+on:
+  pull_request_target:  # this is needed to use the API key in a PR
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  start-security-scan:
+    runs-on: ubuntu-latest
+    environment: scan-security
+    steps:
+      - run: echo start security scan  # just needs a simple step to better control the follow-up jobs
+  security:
+    needs: start-security-scan
+    uses: ./.github/workflows/security-shared.yml
+    secrets: inherit

@@ -7,7 +7,7 @@ import pytest
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.util.docs_generator import get_checks
+from checkov.docs_generator import get_checks
 
 
 def test_get_checks_returned_check_number():
@@ -27,8 +27,10 @@ def test_get_checks_returned_check_number():
         (
             ["all"],
             {
+                "Ansible",
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",
@@ -49,8 +51,10 @@ def test_get_checks_returned_check_number():
         (
             None,
             {
+                "Ansible",
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",

@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "string"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "organizationName": {
+            "type": "string"
+        },
+        "virtualNetworkType": {
+            "type": "string"
+        },
+        "tagsByResource": {
+            "type": "object"
+        },
+        "vnet": {
+            "type": "object"
+        },
+        "customProperties": {
+            "type": "object"
+        },
+        "identity": {
+            "type": "object"
+        },
+        "appInsightsObject": {
+            "type": "object"
+        },
+        "privateEndpoint": {
+            "type": "object"
+        },
+        "privateDnsDeploymentName": {
+            "type": "string"
+        },
+        "subnetDeploymentName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "apimNsgName": "[concat('apimnsg', uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service",
+            "apiVersion": "2021-01-01-preview",
+            "name": "fail",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": "[parameters('identity')]",
+            "tags": "[parameters('tagsByResource')]",
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('organizationName')]",
+                "customProperties": "[parameters('customProperties')]"
+            },
+            "resources": [],
+            "dependsOn": []
+        }
+    ]
+}

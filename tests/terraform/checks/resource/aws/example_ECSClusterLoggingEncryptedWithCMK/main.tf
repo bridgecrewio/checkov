@@ -13,7 +13,7 @@ resource "aws_ecs_cluster" "unknown" {
   tags = { test = "fail" }
 }
 
-resource "aws_ecs_cluster" "unknown" {
+resource "aws_ecs_cluster" "unknown2" {
   name = "white-hart"
   configuration {
     execute_command_configuration {
@@ -87,6 +87,18 @@ resource "aws_ecs_cluster" "fail3" {
         # s3_bucket_name=   and
         # s3_bucket_encryption_enabled =true
       }
+    }
+  }
+  tags = { test = "fail" }
+}
+
+resource "aws_ecs_cluster" "fail5" {
+  name = "white-hart"
+  configuration {
+    execute_command_configuration {
+      kms_key_id = aws_kms_key.example.arn
+
+      log_configuration = [null]
     }
   }
   tags = { test = "fail" }

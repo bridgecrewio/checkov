@@ -30,3 +30,21 @@ resource "google_compute_subnetwork" "internal_https_lb" {
   purpose = "INTERNAL_HTTPS_LOAD_BALANCER"
   role    = "ACTIVE"
 }
+
+resource "google_compute_subnetwork" "regional_managed_proxy" {
+  name          = "example"
+  ip_cidr_range = "10.0.0.0/22"
+  network       = "google_compute_network.vpc.id"
+
+  purpose = "REGIONAL_MANAGED_PROXY"
+  role    = "ACTIVE"
+}
+
+resource "google_compute_subnetwork" "global_managed_proxy" {
+  name          = "example"
+  ip_cidr_range = "10.0.0.0/22"
+  network       = "google_compute_network.vpc.id"
+
+  purpose = "GLOBAL_MANAGED_PROXY"
+  role    = "ACTIVE"
+}

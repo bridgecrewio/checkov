@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "google_compute_instance": {
@@ -9,14 +9,16 @@
               "block-project-ssh-keys": true
             }],
             "__start_line__": 29,
-            "__end_line__": 31
+            "__end_line__": 31,
+            "__address__": "google_compute_instance.a"
           },
           "b": {
             "metadata": [{
               "block-project-ssh-keys": true
             }],
             "__start_line__": 33,
-            "__end_line__": 35
+            "__end_line__": 35,
+            "__address__": "google_compute_instance.b"
           },
           "c": {
             "metadata": [{
@@ -24,24 +26,28 @@
               "block-project-ssh-keys": true
             }],
             "__start_line__": 37,
-            "__end_line__": 39
+            "__end_line__": 39,
+            "__address__": "google_compute_instance.c"
           },
           "d": {
             "metadata": [{
               "block-project-ssh-keys": true
             }],
             "__start_line__": 41,
-            "__end_line__": 43
+            "__end_line__": 43,
+            "__address__": "google_compute_instance.d"
           },
           "e": {
             "metadata": [["123", "xyz"]],
             "__start_line__": 45,
-            "__end_line__": 47
+            "__end_line__": 47,
+            "__address__": "google_compute_instance.e"
           },
           "f": {
             "metadata": [["xyz"]],
             "__start_line__": 49,
-            "__end_line__": 51
+            "__end_line__": 51,
+            "__address__": "google_compute_instance.f"
           }
         }
       }

@@ -1,0 +1,5 @@
+pass:
+  - "google_sql_database_instance.pass_1"
+  - "google_sql_database_instance.pass_2"
+fail:
+  - "google_sql_database_instance.fail"

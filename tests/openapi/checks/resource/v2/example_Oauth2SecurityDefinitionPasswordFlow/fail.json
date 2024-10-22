@@ -1,0 +1,13 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "test",
+    "version": "1.0.0"
+  },
+  "securityDefinitions": {
+    "some_auth": {
+      "type": "oauth2",
+      "flow": "password"
+    }
+  }
+}

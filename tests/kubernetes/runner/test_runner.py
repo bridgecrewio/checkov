@@ -5,15 +5,23 @@ import unittest
 from collections import defaultdict
 from pathlib import Path
 
+from parameterized import parameterized_class
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
 from checkov.kubernetes.checks.resource.registry import registry
 
-
+@parameterized_class([
+   {"db_connector": NetworkxConnector},
+   {"db_connector": RustworkxConnector}
+])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = registry.checks
@@ -27,7 +35,7 @@ class TestRunnerValid(unittest.TestCase):
 
         external_checks = os.path.join(current_dir, '..', 'graph', 'checks', 'test_checks')
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         filter = RunnerFilter(framework=['kubernetes'], use_enforcement_rules=True)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
@@ -52,7 +60,7 @@ class TestRunnerValid(unittest.TestCase):
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['kubernetes'], checks=checks_allowlist))
@@ -74,7 +82,7 @@ class TestRunnerValid(unittest.TestCase):
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['kubernetes'], checks=checks_allowlist))
@@ -96,7 +104,7 @@ class TestRunnerValid(unittest.TestCase):
         # this is the relative path to the file to scan (what would actually get passed to the -f arg)
         file_rel_path = os.path.relpath(scan_file_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                             runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
@@ -118,7 +126,7 @@ class TestRunnerValid(unittest.TestCase):
         file_rel_path = os.path.relpath(scan_file_path)
         file_abs_path = os.path.abspath(scan_file_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_K8S_21']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
                             runner_filter=RunnerFilter(framework='kubernetes', checks=checks_allowlist))
@@ -133,7 +141,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "list_annotation", "example.yaml")
         file_rel_path = os.path.relpath(scan_file_path)
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         try:
             runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                                 runner_filter=RunnerFilter(framework='kubernetes'))
@@ -161,7 +169,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "example_multiple.yaml")
         file_rel_path = os.path.relpath(scan_file_path)
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         try:
             report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                        runner_filter=RunnerFilter(framework='kubernetes'))
@@ -191,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['kubernetes'], checks=[custom_check_id])
@@ -220,7 +228,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.MEDIUM]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['kubernetes'], checks=['LOW'])
@@ -250,7 +258,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.MEDIUM]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['kubernetes'], checks=['HIGH'])
@@ -280,7 +288,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.HIGH]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['kubernetes'], skip_checks=['MEDIUM'])
@@ -310,7 +318,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['kubernetes'], skip_checks=['MEDIUM'])
@@ -321,6 +329,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self):
         registry.checks = self.orig_checks
+        get_graph_checks_registry("kubernetes").checks = []
 
 
 if __name__ == '__main__':

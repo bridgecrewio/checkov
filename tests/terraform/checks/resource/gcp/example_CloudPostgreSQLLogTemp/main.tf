@@ -84,7 +84,7 @@ resource "google_sql_database_instance" "pass" {
 }
 
 resource "google_sql_database_instance" "pass2" {
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
@@ -151,6 +151,19 @@ resource "google_sql_database_instance" "unknown" {
       name  = "local_infile"
       value = "on"
     }
+    tier = "db-custom-1-3840"
+  }
+}
+
+resource "google_sql_database_instance" "unknown_var" {
+  database_version = "POSTGRES_12"
+  name             = "general-pos121"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+    database_flags = ["${var.test_var}"]
     tier = "db-custom-1-3840"
   }
 }

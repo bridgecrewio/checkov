@@ -9,27 +9,55 @@ import time
 import os
 import aiohttp
 import asyncio
-from typing import Any, TYPE_CHECKING, cast, Optional
+from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
+from urllib3.util import parse_url
 
-from checkov.common.bridgecrew.bc_source import SourceType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.type_forcers import force_int, force_float
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
+    from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
 
+# https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1
+REQUEST_READ_TIMEOUT = force_int(os.getenv("CHECKOV_REQUEST_READ_TIMEOUT")) or 30
+DEFAULT_TIMEOUT = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
+
+# https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
+REQUEST_RETRIES = force_int(os.getenv("CHECKOV_REQUEST_RETRIES")) or 3
+
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
+
+
+@overload
+def normalize_bc_url(url: None) -> None:
+    ...
+
+
+@overload
+def normalize_bc_url(url: str) -> str:
+    ...
+
+
+def normalize_bc_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    return url.lower().replace('http:', 'https:').strip().rstrip('/')
 
 
 def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
-    return url.lower().replace('//app', '//api').replace('http:', 'https:').rstrip('/')
+    return url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
 
 
 def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:
@@ -96,13 +124,28 @@ def get_prisma_get_headers() -> dict[str, str]:
     return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
 
 
+def valid_url(url: str | None) -> bool:
+    """Checks for a valid URL, otherwise returns False"""
+
+    if not url:
+        return False
+
+    try:
+        result = parse_url(url)
+        return all([result.scheme, result.netloc])
+    except Exception:
+        return False
+
+
 def request_wrapper(
         method: str,
         url: str,
         headers: dict[str, Any],
         data: Any | None = None,
         json: dict[str, Any] | None = None,
-        should_call_raise_for_status: bool = False
+        should_call_raise_for_status: bool = False,
+        params: dict[str, Any] | None = None,
+        log_json_body: bool = True
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -119,28 +162,41 @@ def request_wrapper(
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
-            response = requests.request(method, url, headers=headers, data=data, json=json)
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                params=params,
+                timeout=DEFAULT_TIMEOUT,
+            )
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
-            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
-            logging.exception("request_wrapper connection error")
+            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
+
+            logging.exception("request_wrapper connection error")
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
-            status_code = http_error.response.status_code
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
-            logging.exception("request_wrapper http error")
+            status_code = 520  # set unknown error, if http_error.response is None
+            if http_error.response is not None:
+                status_code = http_error.response.status_code
+
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
+
+            logging.error("request_wrapper http error", exc_info=True)
             raise http_error
     else:
         raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"

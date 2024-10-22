@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import fnmatch
 import json
 import logging
 from abc import abstractmethod
 from collections import defaultdict
+from functools import partial
 from typing import Any
 
 from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.multi_signature import multi_signature
 from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_converter import \
     convert_cloudformation_conf_to_iam_policy
 
@@ -18,7 +19,7 @@ from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_c
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
-    policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(lambda: defaultdict(PolicyDocument))  # noqa: CCE003
+    policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(partial(defaultdict, PolicyDocument))  # noqa: CCE003
 
     def __init__(self, name: str, id: str) -> None:
         super().__init__(
@@ -66,6 +67,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                         if statement_key in converted_policy_doc:
                             policy_statement = PolicyDocument(converted_policy_doc)
                             self.policy_document_cache[self.entity_path][policy.get("PolicyName")] = policy_statement
+                    self.cloudsplaining_enrich_evaluated_keys(policy_statement)
                     violations = self.cloudsplaining_analysis(policy_statement)
                     if violations:
                         logging.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
@@ -76,7 +78,30 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                     return CheckResult.UNKNOWN
             return CheckResult.PASSED
 
-    @multi_signature()
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> list[str]:
         raise NotImplementedError()
+
+    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument) -> None:
+        try:
+            violating_actions = self.cloudsplaining_analysis(policy)
+            if violating_actions:
+                # in case we have violating actions for this policy we start looking for it through the statements
+                for stmt_idx, statement in enumerate(policy.statements):
+                    actions = statement.statement.get('Action')  # get the actions for this statement
+                    if actions:
+                        if isinstance(actions, str):
+                            for violating_action in violating_actions:
+                                if fnmatch.fnmatch(violating_action, actions):  # found the violating action in our list of actions
+                                    self.evaluated_keys = [f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action"]
+                                    break
+                        if isinstance(actions, list):
+                            for action_idx, action in enumerate(actions):      # go through the actions of this statement and try to match one violation
+                                for violating_action in violating_actions:
+                                    if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
+                                        self.evaluated_keys.append(
+                                            f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action/[{action_idx}]/"
+                                        )
+                                        break
+        except Exception as e:
+            logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')

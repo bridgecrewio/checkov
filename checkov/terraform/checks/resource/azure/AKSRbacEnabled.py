@@ -1,4 +1,4 @@
-import dpath.util
+import dpath
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -23,10 +23,10 @@ class AKSRbacEnabled(BaseResourceCheck):
         ]
 
         for key in self.evaluated_keys:
-            if dpath.search(conf, key) and dpath.get(conf, key)[0]:
-                return CheckResult.PASSED
+            if dpath.search(conf, key):
+                return CheckResult.PASSED if dpath.get(conf, key)[0] else CheckResult.FAILED
 
-        return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = AKSRbacEnabled()

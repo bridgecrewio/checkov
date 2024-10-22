@@ -1,0 +1,18 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_193
+  name: Ensure AppSync has Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, cloud_watch_logs_role_arn=$ARG , <ANY>) , <ANY>)
+    - not_pattern: |
+        $LOG = aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, cloud_watch_logs_role_arn=$ARG , <ANY>)
+        <ANY>
+        aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)

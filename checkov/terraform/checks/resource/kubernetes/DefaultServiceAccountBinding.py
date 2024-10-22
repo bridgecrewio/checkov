@@ -8,7 +8,8 @@ class DefaultServiceAccountBinding(BaseResourceCheck):
         name = "Ensure that default service accounts are not actively used"
         # Check no role/clusterrole is bound to a default service account (to ensure not actively used)
         id = "CKV_K8S_42"
-        supported_resources = ["kubernetes_role_binding", "kubernetes_cluster_role_binding"]
+        supported_resources = ["kubernetes_role_binding", "kubernetes_role_binding_v1",
+                               "kubernetes_cluster_role_binding", "kubernetes_cluster_role_binding_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

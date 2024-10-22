@@ -2,7 +2,7 @@ from checkov.kubernetes.checks.resource.base_rbac_check import BaseRbacK8sCheck,
 
 
 class RbacBindRoleBindings(BaseRbacK8sCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Minimize Roles and ClusterRoles that grant permissions to bind RoleBindings or ClusterRoleBindings"
         id = "CKV_K8S_157"
         super().__init__(name=name, id=id)

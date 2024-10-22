@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "common_tags": [
@@ -14,7 +14,8 @@
       {
         "ENV": {
           "__start_line__": 8,
-          "__end_line__": 8
+          "__end_line__": 8,
+          "__address__": "ENV"
         }
       }
     ],
@@ -30,7 +31,8 @@
               }
             ],
             "__start_line__": 10,
-            "__end_line__": 14
+            "__end_line__": 14,
+            "__address__": "aws_s3_bucket.bucket"
           }
         }
       }

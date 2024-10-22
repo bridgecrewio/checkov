@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_53
+  name: Ensure S3 bucket has block public ACLS enabled
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, block_public_access=aws_cdk.aws_s3.BlockPublicAccess(<ANY>, block_public_acls=True, <ANY>), <ANY>)
+      - pattern: aws_cdk.aws_s3.CfnBucket(<ANY>)
+        conditions:
+          - not_pattern: 'aws_cdk.aws_s3.CfnBucket(<ANY>, public_access_block_configuration={<ANY>, "blockPublicAcls": True, <ANY>} , <ANY>)'

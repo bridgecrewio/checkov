@@ -204,3 +204,13 @@ resource "google_sql_database_instance" "unknown" {
   }
 }
 
+resource "google_sql_database_instance" "unknown_var" {
+  database_version = "SQLSERVER_2017_STANDARD"
+  name             = "general-sqlserver12"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+   database_flags = ["${var.test_var}"]
+    tier = "db-custom-1-4096"
+  }
+}

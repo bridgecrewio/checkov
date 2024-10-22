@@ -5,7 +5,7 @@ from typing import List
 
 class EKSControlPlaneLogging(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Amazon EKS control plane logging enabled for all log types"
+        name = "Ensure Amazon EKS control plane logging is enabled for all log types"
         id = "CKV_AWS_37"
         supported_resources = ['aws_eks_cluster']
         categories = [CheckCategories.KUBERNETES]
@@ -19,7 +19,8 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :return: <CheckResult>
         """
         log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-        if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"][0] is not None \
+        if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"] and \
+                conf["enabled_cluster_log_types"][0] is not None \
                 and all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
             return CheckResult.PASSED
         return CheckResult.FAILED

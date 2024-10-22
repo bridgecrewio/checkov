@@ -1,9 +1,9 @@
-from typing import Dict
+from __future__ import annotations
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from checkov.common.output.report import CheckType
-from cyclonedx.output import SchemaVersion
+from cyclonedx.schema import SchemaVersion
 
 SCA_CHECKTYPES = (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE)
 
@@ -11,7 +11,7 @@ PURL_TYPE_MAVEN = "maven"
 
 DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
 
-CYCLONE_SCHEMA_VERSION: Dict[str, str] = {
+CYCLONE_SCHEMA_VERSION: "dict[str, SchemaVersion]" = {
     "1.4": DEFAULT_CYCLONE_SCHEMA_VERSION,
     "1.3": SchemaVersion.V1_3,
     "1.2": SchemaVersion.V1_2,

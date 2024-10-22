@@ -1,0 +1,59 @@
+metadata:
+  id: "CKV2_AZURE_39"
+
+  name: "Ensure Azure VM is not configured with public IP and serial console access"
+  category: "NETWORKING"
+
+definition:
+  or:
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          value:
+            - azurerm_network_interface
+          operator: within
+
+        - resource_types:
+            - azurerm_network_interface
+          connected_resource_types:
+            - azurerm_linux_virtual_machine
+            - azurerm_windows_virtual_machine
+            - azurerm_virtual_machine
+          operator: exists
+          cond_type: connection
+
+        - cond_type: attribute
+          resource_types:
+             - azurerm_network_interface
+          attribute: ip_configuration.public_ip_address_id
+          operator: length_greater_than
+          value: 0
+
+        - cond_type: attribute
+          resource_types:
+            - azurerm_linux_virtual_machine
+            - azurerm_windows_virtual_machine
+            - azurerm_virtual_machine
+          attribute: boot_diagnostics
+          operator: not_exists
+
+    - cond_type: attribute
+      resource_types:
+        - azurerm_network_interface
+      attribute: ip_configuration.public_ip_address_id
+      operator: not_exists
+
+    - cond_type: attribute
+      resource_types:
+        - azurerm_network_interface
+      attribute: ip_configuration.public_ip_address_id
+      operator: length_less_than_or_equal
+      value: 0
+
+    - cond_type: attribute
+      resource_types:
+        - azurerm_network_interface
+      attribute: ip_configuration.public_ip_address_id
+      operator: equals
+      value: null
+

@@ -1,0 +1,38 @@
+metadata:
+  id: "CKV2_AZURE_41"
+  name: "Ensure storage account is configured with SAS expiration policy"
+  category: "IAM"
+
+definition:
+  or:
+
+    - cond_type: "attribute"
+      resource_types: "azurerm_storage_account"
+      attribute: "shared_access_key_enabled"
+      operator: "equals_ignore_case"
+      value: "false"
+
+    - and:
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "shared_access_key_enabled"
+          operator: "exists"
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "shared_access_key_enabled"
+          operator: "equals_ignore_case"
+          value: "true"
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "sas_policy"
+          operator: "exists"
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "sas_policy.expiration_period"
+          operator: "length_greater_than"
+          value: "0"
+
+

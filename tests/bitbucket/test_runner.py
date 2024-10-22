@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from checkov.bitbucket.runner import Runner
@@ -69,6 +70,25 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.skipped_checks, [])
+
+    @mock.patch.dict(os.environ, {"CKV_BITBUCKET_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1"}, clear=True)
+    def test_runner_files_ignore(self):
+        # given
+        test_file = Path(__file__).parent / "resources/bitbucket_conf/pass/branch_restrictions.json"
+        checks = ["CKV_BITBUCKET_1"]
+
+        # when
+        report = Runner().run(
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(checks=checks)
+        )
+
+        # then
+        # even it points to a file with scannable content, it should skip it
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_117
+  name: Ensure that AWS Lambda function is configured inside a VPC
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_lambda.Function(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_lambda.Function(<ANY>, vpc=$VPC, <ANY>)
+      - pattern: aws_cdk.aws_sam.CfnFunction(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, vpc_config=$ARG, <ANY>)

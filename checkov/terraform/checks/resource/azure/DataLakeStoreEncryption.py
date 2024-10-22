@@ -6,8 +6,8 @@ class DataLakeStoreEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Data Lake Store accounts enables encryption"
         id = "CKV_AZURE_105"
-        supported_resources = ['azurerm_data_lake_store']
-        categories = [CheckCategories.IAM]
+        supported_resources = ('azurerm_data_lake_store',)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, missing_block_result=CheckResult.PASSED)
 
     def get_inspected_key(self):

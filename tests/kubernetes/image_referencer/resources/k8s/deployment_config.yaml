@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: rhel-tools
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        deploymentconfig: rhel-tools
+    spec:
+      serviceAccountName: hostaccess
+      containers:
+        - name: rhel-tools
+          image: rhel7/rhel-tools
+          command: [ "/bin/sh", "-c", "while true ; do date; sleep 1; done;" ]
+          volumeMounts:
+            - name: host
+              mountPath: /host
+      volumes:
+        - name: host
+          hostPath:
+            path: /
+  triggers:
+  - type: ConfigChange

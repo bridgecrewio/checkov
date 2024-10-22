@@ -32,6 +32,9 @@ def get_vertices_references(str_value: str, vertices_block_name_map: Dict[str, D
 
 
 def remove_interpolation(str_value: str, replace_str: str = " ") -> str:
+    if "${" not in str_value:
+        # otherwise it is not an interpolation
+        return str_value
     return re.sub(REMOVE_INTERPOLATION_PATTERN, replace_str, str_value)
 
 

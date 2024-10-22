@@ -51,7 +51,7 @@ checkov -d . --framework cloudformation
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.740 
+By Prisma Cloud | version: x.x.x 
 
 
 cloudformation scan results:
@@ -65,12 +65,12 @@ Check: CKV_AWS_120: "Ensure API Gateway caching is enabled"
 Check: CKV_AWS_73: "Ensure API Gateway has X-Ray Tracing enabled"
 	PASSED for resource: AWS::Serverless::Api.Enabled
 	File: /sam.yaml:5-12
-	Guide: https://docs.bridgecrew.io/docs/logging_15
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/logging-15
 
 Check: CKV_AWS_76: "Ensure API Gateway has Access Logging enabled"
 	PASSED for resource: AWS::Serverless::Api.Enabled
 	File: /sam.yaml:5-12
-	Guide: https://docs.bridgecrew.io/docs/logging_17
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/logging-17
 
 Check: CKV_AWS_120: "Ensure API Gateway caching is enabled"
 	FAILED for resource: AWS::Serverless::Api.Default
@@ -85,7 +85,7 @@ Check: CKV_AWS_120: "Ensure API Gateway caching is enabled"
 Check: CKV_AWS_73: "Ensure API Gateway has X-Ray Tracing enabled"
 	FAILED for resource: AWS::Serverless::Api.Default
 	File: /sam.yaml:14-17
-	Guide: https://docs.bridgecrew.io/docs/logging_15
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/logging-15
 
 		14 |   Default:
 		15 |     Type: AWS::Serverless::Api
@@ -96,7 +96,7 @@ Check: CKV_AWS_73: "Ensure API Gateway has X-Ray Tracing enabled"
 Check: CKV_AWS_76: "Ensure API Gateway has Access Logging enabled"
 	FAILED for resource: AWS::Serverless::Api.Default
 	File: /sam.yaml:14-17
-	Guide: https://docs.bridgecrew.io/docs/logging_17
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/logging-17
 
 		14 |   Default:
 		15 |     Type: AWS::Serverless::Api

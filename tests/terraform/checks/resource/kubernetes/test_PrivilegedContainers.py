@@ -20,18 +20,30 @@ class TestPrivilegedContainer(unittest.TestCase):
         passing_resources = {
             "kubernetes_pod.pass",
             "kubernetes_pod.pass2",
+            "kubernetes_pod_v1.pass",
+            "kubernetes_pod_v1.pass2",
+            "kubernetes_deployment.pass",
+            "kubernetes_deployment.pass2",
+            "kubernetes_deployment_v1.pass",
+            "kubernetes_deployment_v1.pass2",
         }
 
         failing_resources = {
             "kubernetes_pod.fail",
             "kubernetes_pod.fail2",
+            "kubernetes_pod_v1.fail",
+            "kubernetes_pod_v1.fail2",
+            "kubernetes_deployment.fail",
+            "kubernetes_deployment.fail2",
+            "kubernetes_deployment_v1.fail",
+            "kubernetes_deployment_v1.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 4 * 2)
+        self.assertEqual(summary["failed"], 4 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

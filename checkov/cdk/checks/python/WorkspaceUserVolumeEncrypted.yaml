@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_155
+  name: Ensure that Workspace user volumes are encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_workspaces.CfnWorkspace(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_workspaces.CfnWorkspace(<ANY>, user_volume_encryption_enabled=True , <ANY>)

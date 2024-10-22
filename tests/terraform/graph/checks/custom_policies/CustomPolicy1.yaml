@@ -1,0 +1,34 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  scope:
+  provider: "aws"
+  id: "CKV2_AWS_888"
+definition:
+  and:
+      - cond_type: "connection"
+        resource_types:
+              - "aws_sqs_queue_policy"
+        connected_resource_types:
+              - "aws_sqs_queue"
+        operator: "exists"
+      - cond_type: "filter"
+        attribute: "resource_type"
+        operator: "within"
+        value: "aws_sqs_queue"
+      - cond_type: "attribute"
+        resource_types:
+              - "aws_sqs_queue_policy"
+        attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+        operator: "jsonpath_not_exists"
+      - cond_type: "attribute"
+        resource_types:
+              - "aws_sqs_queue_policy"
+        attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+              - "aws_sqs_queue_policy"
+        attribute: "policy.Statement[?(@.Effect == 'Allow')].NotPrincipal"
+        operator: "jsonpath_not_exists"

@@ -20,7 +20,7 @@ resource "azurerm_virtual_machine" "virtual_machine_good" {
   os_profile {
     computer_name  = "hostname"
     admin_username = "testadmin"
-    admin_password = "Password1234!"
+    admin_password = "Password1234!"  # checkov:skip=CKV_SECRET_80 test secret
   }
   os_profile_linux_config {
     disable_password_authentication = false

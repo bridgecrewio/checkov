@@ -1,0 +1,29 @@
+# Access worker node file system from within a pod 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged
+spec:
+  containers:
+  - name: busybox
+    image: busybox
+    resources:
+      limits:
+        cpu: 200m
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    stdin: true
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: host-root-volume
+      mountPath: /host
+      readOnly: false
+  volumes:
+  - name: host-root-volume
+    hostPath:
+      path: /
+  restartPolicy: Always
+# And access host: kubectl exec -ti privileged-xxxxx chroot /host

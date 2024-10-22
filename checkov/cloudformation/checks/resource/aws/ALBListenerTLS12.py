@@ -8,11 +8,14 @@ from checkov.common.util.type_forcers import force_list
 from checkov.cloudformation.parser.cfn_keywords import ConditionFunctions, IntrinsicFunctions
 
 supported_policy_prefixes = {
-    # ALBs support TLS v1.2
-    'HTTPS': ("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2"),
+    # ALBs support TLS v1.2 and 1.3
+    'HTTPS': ("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2", "ELBSecurityPolicy-TLS13-1-2",
+              "ELBSecurityPolicy-TLS13-1-3"),
     # NLBs support TLS v1.2 and 1.3
-    'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2")
+    'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2",
+            "ELBSecurityPolicy-TLS-1-2")
 }
+
 
 class ALBListenerTLS12(BaseResourceCheck):
     def __init__(self) -> None:
@@ -37,12 +40,13 @@ class ALBListenerTLS12(BaseResourceCheck):
                 protocol = conf['Properties']['Protocol']
                 if protocol in ('HTTPS', 'TLS'):
                     if 'SslPolicy' in conf['Properties'].keys():
-                        if conf['Properties']['SslPolicy'].startswith(supported_policy_prefixes[protocol]):
+                        if isinstance(conf['Properties']['SslPolicy'], str) and conf['Properties']['SslPolicy'].startswith(supported_policy_prefixes[protocol]):
                             return CheckResult.PASSED
                     return CheckResult.FAILED
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):
                     return CheckResult.PASSED
-                for action in conf['Properties']['DefaultActions']:
+                actions = conf['Properties'].get('DefaultActions', [])
+                for action in actions:
                     if action in ConditionFunctions.__dict__.values() or action in IntrinsicFunctions.__dict__.values():
                         return CheckResult.UNKNOWN
                     redirects = action.get("RedirectConfig", [])

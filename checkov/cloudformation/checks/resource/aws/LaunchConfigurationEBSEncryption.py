@@ -17,13 +17,20 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
-        if 'Properties' in conf.keys() and conf['Properties'].get('BlockDeviceMappings'):
-            for block_device_mapping in conf['Properties']['BlockDeviceMappings']:
-                if not isinstance(block_device_mapping, dict):
-                    return CheckResult.UNKNOWN
-                if block_device_mapping.get('Ebs'):
-                    if not block_device_mapping['Ebs'].get('Encrypted'):
-                        return CheckResult.FAILED
+        properties = conf.get('Properties', {})
+        if properties is None:
+            return CheckResult.UNKNOWN
+        block_device_mappings = properties.get('BlockDeviceMappings')
+        if block_device_mappings is None:
+            return CheckResult.UNKNOWN
+        if not isinstance(block_device_mappings, list):
+            return CheckResult.UNKNOWN
+        for block_device_mapping in block_device_mappings:
+            if not isinstance(block_device_mapping, dict):
+                return CheckResult.UNKNOWN
+            if block_device_mapping.get('Ebs'):
+                if not block_device_mapping['Ebs'].get('Encrypted'):
+                    return CheckResult.FAILED
 
         return CheckResult.PASSED
 

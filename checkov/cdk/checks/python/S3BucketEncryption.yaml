@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  id: CKV_AWS_19
+  name: Ensure all data stored in the S3 bucket is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, encryption=aws_cdk.aws_s3.BucketEncryption.$ANY_VAR, <ANY>)
+      - pattern: aws_cdk.aws_s3.Bucket(<ANY>, encryption=aws_cdk.aws_s3.BucketEncryption.UNENCRYPTED, <ANY>)

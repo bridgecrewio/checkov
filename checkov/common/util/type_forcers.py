@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
+import typing
 from json import JSONDecodeError
-from typing import TypeVar, overload, Any, Dict
+from typing import TypeVar, overload, Any, Tuple, List
 
 import yaml
 
@@ -44,26 +45,29 @@ def force_float(var: Any) -> float | None:
         return None
 
 
-def convert_str_to_bool(bool_str: bool | str) -> bool | str:
-    if bool_str in ["true", '"true"', "True", '"True"']:
-        return True
-    elif bool_str in ["false", '"false"', "False", '"False"']:
-        return False
-    else:
-        return bool_str
+def convert_str_to_bool(bool_str: bool | str) -> bool:
+    if isinstance(bool_str, str):
+        bool_str_lower = bool_str.lower()
+        if bool_str_lower in ("true", '"true"'):
+            return True
+        elif bool_str_lower in ("false", '"false"'):
+            return False
+
+    # If we got here it must be a boolean, mypy doesn't understand it, so we use cast
+    return typing.cast(bool, bool_str)
 
 
 def force_dict(obj: Any) -> dict[str, Any] | None:
     """
-    If the specified object is a dict, returns the object. If the object is a list of length 1 or more, and the first
-    element is a dict, returns the first element. Else returns None.
+    If the specified object is a dict, returns the object. If the specified object is a list or a tuple
+    of length 1 or more, force_dict is called recursively on the first element. Else returns None.
     :param obj:
     :return:
     """
     if isinstance(obj, dict):
         return obj
-    if isinstance(obj, list) and len(obj) > 0 and isinstance(obj[0], dict):
-        return obj[0]
+    if (isinstance(obj, list) or isinstance(obj, tuple)) and len(obj) > 0:
+        return force_dict(obj[0])
     return None
 
 
@@ -126,21 +130,26 @@ def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> li
         return csv_string_arg
 
 
-def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
+def convert_prisma_policy_filter_to_params(filter_string: str) -> List[Tuple[str, str]]:
     """
-    Converts the filter string to a dict. For example:
+    Converts the filter string to a list of tuples. For example:
     'policy.label=label,cloud.type=aws' becomes -->
-    {'policy.label': 'label1', 'cloud.type': 'aws'}
-    Note that the API does not accept lists https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policies-v2
-    This is not allowed: policy.label=label1,label2
+    [('policy.label', 'label1'), ('cloud.type', 'aws')]
+
+    Multiple values for the same attribute, like policy.label, will be separate items in the tuple. For example,
+    'policy.label=label,policy.label=anotherlabel' becomes -->
+    [('policy.label', 'label1'), ('policy.label', 'anotherlabel')]
+
+    Note that the urllib3 library seems to work best with tuples only (not lists), so this result may need to be converted.
+    It is returned as a list so that it can be modified separately, and converted to a tuple only when ready
     """
-    filter_params = {}
+    filter_params: List[Tuple[str, str]] = []
     if isinstance(filter_string, str) and filter_string:
-        filter_string = "".join(filter_string.split())
-        try:
-            for f in filter_string.split(','):
+        for f in filter_string.split(','):
+            try:
                 f_name, f_value = f.split('=')
-                filter_params[f_name] = f_value
-        except (IndexError, ValueError) as e:
-            logging.debug(f"Invalid filter format: {e}")
+                filter_params.append((f_name.strip(), f_value.strip()))
+            except (IndexError, ValueError) as e:
+                logging.debug(f"Invalid filter format: {e}")
+
     return filter_params

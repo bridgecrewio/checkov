@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from collections.abc import Collection
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
@@ -15,9 +16,13 @@ if TYPE_CHECKING:
 
 
 BICEP_POSSIBLE_ENDINGS = [".bicep"]
+BICEP_START_LINE = "__start_line__"
+BICEP_END_LINE = "__end_line__"
 
 
-def get_scannable_file_paths(root_folder: str | Path | None = None, files: list[str] | None = None) -> set[Path]:
+def get_scannable_file_paths(
+    root_folder: str | Path | None = None, files: list[str] | None = None, excluded_paths: list[str] | None = None
+) -> set[Path]:
     """Finds Bicep files"""
 
     file_paths: set[Path] = set()
@@ -25,6 +30,12 @@ def get_scannable_file_paths(root_folder: str | Path | None = None, files: list[
     if root_folder:
         root_path = Path(root_folder)
         file_paths = {file_path for file_path in root_path.rglob("*.bicep") if file_path.is_file()}
+
+        if excluded_paths:
+            compiled = [re.compile(p.replace(".terraform", r"\.terraform")) for p in excluded_paths]
+            file_paths = {
+                file_path for file_path in file_paths if not any(pattern.search(str(file_path)) for pattern in compiled)
+            }
     if files:
         for file in files:
             if file.endswith(".bicep"):
@@ -57,9 +68,9 @@ def get_folder_definitions(
 
 
 def create_definitions(
-        root_folder: str,
-        files: "Collection[Path] | None" = None,
-        runner_filter: RunnerFilter | None = None,
+    root_folder: str,
+    files: "Collection[Path] | None" = None,
+    runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
     definitions: dict[Path, BicepJson] = {}
     definitions_raw: dict[Path, list[tuple[int, str]]] = {}
@@ -71,8 +82,7 @@ def create_definitions(
         definitions, definitions_raw, parsing_errors = parser.get_files_definitions(file_paths=files)
 
     if root_folder:
-        definitions, definitions_raw, parsing_errors = get_folder_definitions(root_folder,
-                                                                              runner_filter.excluded_paths)
+        definitions, definitions_raw, parsing_errors = get_folder_definitions(root_folder, runner_filter.excluded_paths)
 
     if parsing_errors:
         logging.warning(f"[bicep] found errors while parsing definitions: {parsing_errors}")

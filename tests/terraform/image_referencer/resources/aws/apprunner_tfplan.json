@@ -1,0 +1,229 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_apprunner_service.example",
+          "mode": "managed",
+          "type": "aws_apprunner_service",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "encryption_configuration": [],
+            "observability_configuration": [],
+            "service_name": "example",
+            "source_configuration": [
+              {
+                "authentication_configuration": [],
+                "auto_deployments_enabled": false,
+                "code_repository": [],
+                "image_repository": [
+                  {
+                    "image_configuration": [
+                      {
+                        "port": "8000",
+                        "runtime_environment_variables": null,
+                        "start_command": null
+                      }
+                    ],
+                    "image_identifier": "public.ecr.aws/aws-containers/hello-app-runner:latest",
+                    "image_repository_type": "ECR_PUBLIC"
+                  }
+                ]
+              }
+            ],
+            "tags": {
+              "Name": "example-apprunner-service"
+            },
+            "tags_all": {
+              "Name": "example-apprunner-service"
+            }
+          },
+          "sensitive_values": {
+            "encryption_configuration": [],
+            "health_check_configuration": [],
+            "instance_configuration": [],
+            "network_configuration": [],
+            "observability_configuration": [],
+            "source_configuration": [
+              {
+                "authentication_configuration": [],
+                "code_repository": [],
+                "image_repository": [
+                  {
+                    "image_configuration": [
+                      {}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "tags": {},
+            "tags_all": {}
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_apprunner_service.example",
+      "mode": "managed",
+      "type": "aws_apprunner_service",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "encryption_configuration": [],
+          "observability_configuration": [],
+          "service_name": "example",
+          "source_configuration": [
+            {
+              "authentication_configuration": [],
+              "auto_deployments_enabled": false,
+              "code_repository": [],
+              "image_repository": [
+                {
+                  "image_configuration": [
+                    {
+                      "port": "8000",
+                      "runtime_environment_variables": null,
+                      "start_command": null
+                    }
+                  ],
+                  "image_identifier": "public.ecr.aws/aws-containers/hello-app-runner:latest",
+                  "image_repository_type": "ECR_PUBLIC"
+                }
+              ]
+            }
+          ],
+          "tags": {
+            "Name": "example-apprunner-service"
+          },
+          "tags_all": {
+            "Name": "example-apprunner-service"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "auto_scaling_configuration_arn": true,
+          "encryption_configuration": [],
+          "health_check_configuration": true,
+          "id": true,
+          "instance_configuration": true,
+          "network_configuration": true,
+          "observability_configuration": [],
+          "service_id": true,
+          "service_url": true,
+          "source_configuration": [
+            {
+              "authentication_configuration": [],
+              "code_repository": [],
+              "image_repository": [
+                {
+                  "image_configuration": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "status": true,
+          "tags": {},
+          "tags_all": {}
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "encryption_configuration": [],
+          "health_check_configuration": [],
+          "instance_configuration": [],
+          "network_configuration": [],
+          "observability_configuration": [],
+          "source_configuration": [
+            {
+              "authentication_configuration": [],
+              "code_repository": [],
+              "image_repository": [
+                {
+                  "image_configuration": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "tags": {},
+          "tags_all": {}
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_apprunner_service.example",
+          "mode": "managed",
+          "type": "aws_apprunner_service",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "service_name": {
+              "constant_value": "example"
+            },
+            "source_configuration": [
+              {
+                "auto_deployments_enabled": {
+                  "constant_value": false
+                },
+                "image_repository": [
+                  {
+                    "image_configuration": [
+                      {
+                        "port": {
+                          "constant_value": "8000"
+                        }
+                      }
+                    ],
+                    "image_identifier": {
+                      "constant_value": "public.ecr.aws/aws-containers/hello-app-runner:latest"
+                    },
+                    "image_repository_type": {
+                      "constant_value": "ECR_PUBLIC"
+                    }
+                  }
+                ]
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "Name": "example-apprunner-service"
+              }
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

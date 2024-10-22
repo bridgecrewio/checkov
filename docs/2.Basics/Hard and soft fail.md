@@ -23,7 +23,7 @@ Use the `--soft-fail` (`-s`) option to have Checkov always return a `0` exit cod
 
 Use the `--soft-fail-on` option to pass one or more check IDs (including wildcards) and / or severity levels to specify which failed checks will result in a soft fail result. Any failed check that does not match a criteria in the soft-fail list will result in an error exit code (`1`).
 
-For soft fails, a a failed check *matches* the threshold if its severity is less than or equal to the soft fail severity. If you specify more than one severity for soft fail, then the highest severity will be used as the threshold.
+For soft fails, a failed check *matches* the threshold if its severity is less than or equal to the soft fail severity. If you specify more than one severity for soft fail, then the highest severity will be used as the threshold.
 
 ### --hard-fail-on
 
@@ -57,7 +57,7 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 |Soft Fail|Soft Fail On|Hard Fail On|Scan Result|Comments|
 |-|-|-|-|-|
 |True | - | - |0 (soft fail)|All errors are soft fails|
-|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail critera|
+|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail criteria|
 |False|-|CKV_999|0|Every failed check did not match a hard fail criteria, so the result is implicitly soft fail|
 |False|LOW,CKV_789|CKV_123|1|The explicit match of the hard fail criteria results in a hard fail|
 |False|CKV_789|HIGH|1|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to the value of `--soft-fail`, which is false|
@@ -65,7 +65,7 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 
 # Platform enforcement rules
 
-Checkov can download [enforcement rules](https://docs.bridgecrew.io/docs/enforcement) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
+Checkov can download [enforcement rules](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/enforcement) that you configure in the Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
 
 To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
 

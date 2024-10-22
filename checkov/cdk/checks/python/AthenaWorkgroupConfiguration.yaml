@@ -1,0 +1,18 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_82
+  name: Ensure Athena Workgroup should enforce configuration to prevent client disabling encryption
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_athena.CfnWorkGroup(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_athena.CfnWorkGroup(<ANY>, work_group_configuration=aws_cdk.aws_athena.CfnWorkGroup.WorkGroupConfigurationProperty(<ANY>, enforce_work_group_configuration=True , <ANY>) , <ANY>)
+    - not_pattern: |
+        $ARG = aws_cdk.aws_athena.CfnWorkGroup.WorkGroupConfigurationProperty(<ANY>, enforce_work_group_configuration=True , <ANY>)
+        <ANY>
+        aws_cdk.aws_athena.CfnWorkGroup(<ANY>, work_group_configuration=$ARG , <ANY>)

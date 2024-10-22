@@ -15,6 +15,8 @@ class MemoryLimits(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["resources/limits/memory"]
         res = conf.get("resources")
         if res:
+            if not isinstance(res, dict):
+                return CheckResult.UNKNOWN
             limits = res.get("limits")
             if limits and limits.get("memory"):
                 return CheckResult.PASSED

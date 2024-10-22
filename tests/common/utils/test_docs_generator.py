@@ -1,6 +1,8 @@
 import unittest
 
-from checkov.common.util.docs_generator import get_compare_key
+from pytest_mock import MockerFixture
+
+from checkov.docs_generator import get_compare_key, get_check_link
 
 
 class TestOutputSorting(unittest.TestCase):
@@ -65,6 +67,31 @@ class TestOutputSorting(unittest.TestCase):
         self.assertEqual(sorted_list[1], ['CKV_AWS_1', '', 'AWS::S3::Bucket', '', ''])
         self.assertEqual(sorted_list[2], ['CKV_AWS_1', '', 'aws_ebs_volume', '', ''])
         self.assertEqual(sorted_list[3], ['CKV_AWS_1', '', 'aws_s3_bucket', '', ''])
+
+
+def test_get_check_link():
+    # given
+    abs_path = "/path/to/checkov/checkov/terraform/checks/resource/aws/LambdaXrayEnabled.py"
+
+    # when
+    link = get_check_link(absolute_path=abs_path)
+
+    # then
+    assert link == "https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LambdaXrayEnabled.py"
+
+
+def test_get_check_link_for_markdown(mocker: MockerFixture):
+    # given
+    abs_path = "/path/to/checkov/checkov/terraform/checks/resource/aws/LambdaXrayEnabled.py"
+
+    mocker.patch("checkov.docs_generator.CREATE_MARKDOWN_HYPERLINKS", return_value=True)
+
+    # when
+    link = get_check_link(absolute_path=abs_path)
+
+    # then
+    assert link == "[LambdaXrayEnabled.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/LambdaXrayEnabled.py)"
+
 
 if __name__ == '__main__':
     unittest.main()

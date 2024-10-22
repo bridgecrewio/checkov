@@ -8,13 +8,13 @@ nav_order: 20
 # SCA scanning
 Checkov is an SCA (Software Composition Analysis) tool. This means it scans package files and container images for Common Vulnerabilities and Exposures (CVEs).
 
-You can find the full list of the supported package manager types [here](https://docs.bridgecrew.io/docs/open-source-vulnerability-scanning).
+You can find the full list of the supported package manager types [here](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/software-composition-analysis/supported-package-managers).
 
-In order to use this feature, you first need to create an [API token using Bridgecrew](https://docs.bridgecrew.io/docs/integrations#open-the-api-token-grid), and make sure you have an internet connection.
+In order to use this feature, you first need to create an [API token using Prisma Cloud](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/get-started/connect-code-and-build-providers/ci-cd-runs/add-checkov), and make sure you have an internet connection.
 
 ## Package scanning
 ```bash
-checkov -d . --framework sca_package --bc-api-key <your_api_key>
+checkov -d . --framework sca_package --bc-api-key <access key>::<secret key> --prisma-api-url <prisma api url> --repo-id <repo/name>
 ```
 
 ### Example output
@@ -25,7 +25,7 @@ checkov -d . --framework sca_package --bc-api-key <your_api_key>
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1140 
+By Prisma Cloud | version: x.x.x 
 
 
 sca_package scan results:
@@ -36,7 +36,7 @@ Found CVEs: 35, Skipped CVEs: 0
 	┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐
 	│ Total CVEs: 35     │ critical: 3        │ high: 19           │ medium: 10         │ low: 3             │ skipped: 0         │
 	├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤
-	│ To fix 34/35 CVEs, go to https://www.bridgecrew.cloud/                                                                      │
+	│ To fix 34/35 CVEs, go to Prisma Cloud                                                                                       │
 	├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤
 	│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │
 	├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤
@@ -104,6 +104,3 @@ Found CVEs: 35, Skipped CVEs: 0
 	│ moment             │ CVE-2022-24785     │ high               │ 2.24.0             │ 2.29.2             │ 2.29.2             │
 	└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘
 ```
-
-## Image scanning
-[Find here how to run image scanning with checkov](https://docs.bridgecrew.io/docs/image-scanning)

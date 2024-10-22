@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class CloudfrontDistributionLogging(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Cloudfront distribution has Access Logging enabled"
+        name = "Ensure CloudFront Distribution has Access Logging enabled"
         id = "CKV_AWS_86"
         supported_resources = ['AWS::CloudFront::Distribution']
         categories = [CheckCategories.LOGGING]

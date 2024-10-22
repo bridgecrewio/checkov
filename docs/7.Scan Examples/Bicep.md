@@ -56,7 +56,7 @@ checkov -d . --framework bicep
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.918 
+By Prisma Cloud | version: x.x.x 
 
 bicep scan results:
 
@@ -65,7 +65,7 @@ Passed checks: 0, Failed checks: 5, Skipped checks: 0
 Check: CKV_AZURE_15: "Ensure web app is using the latest version of TLS encryption"
         FAILED for resource: Microsoft.Web/sites.webApp
         File: anton/bicep/playground/example.bicep:19-26
-        Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_6
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-6
 
                 19 | resource webApp 'Microsoft.Web/sites@2020-06-01' = {
                 20 |   name: appName
@@ -79,7 +79,7 @@ Check: CKV_AZURE_15: "Ensure web app is using the latest version of TLS encrypti
 Check: CKV_AZURE_17: "Ensure the web app has 'Client Certificates (Incoming client certificates)' set"
         FAILED for resource: Microsoft.Web/sites.webApp
         File: anton/bicep/playground/example.bicep:19-26
-        Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_7
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-7
 
                 19 | resource webApp 'Microsoft.Web/sites@2020-06-01' = {
                 20 |   name: appName
@@ -93,7 +93,7 @@ Check: CKV_AZURE_17: "Ensure the web app has 'Client Certificates (Incoming clie
 Check: CKV_AZURE_14: "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service"
         FAILED for resource: Microsoft.Web/sites.webApp
         File: anton/bicep/playground/example.bicep:19-26
-        Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_5
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-5
 
                 19 | resource webApp 'Microsoft.Web/sites@2020-06-01' = {
                 20 |   name: appName
@@ -107,7 +107,7 @@ Check: CKV_AZURE_14: "Ensure web app redirects all HTTP traffic to HTTPS in Azur
 Check: CKV_AZURE_16: "Ensure that Register with Azure Active Directory is enabled on App Service"
         FAILED for resource: Microsoft.Web/sites.webApp
         File: anton/bicep/playground/example.bicep:19-26
-        Guide: https://docs.bridgecrew.io/docs/bc_azr_iam_1
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/bc-azr-iam-1
 
                 19 | resource webApp 'Microsoft.Web/sites@2020-06-01' = {
                 20 |   name: appName
@@ -121,7 +121,7 @@ Check: CKV_AZURE_16: "Ensure that Register with Azure Active Directory is enable
 Check: CKV_AZURE_18: "Ensure that 'HTTP Version' is the latest if used to run the web app"
         FAILED for resource: Microsoft.Web/sites.webApp
         File: anton/bicep/playground/example.bicep:19-26
-        Guide: https://docs.bridgecrew.io/docs/bc_azr_networking_8
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/bc-azr-networking-8
 
                 19 | resource webApp 'Microsoft.Web/sites@2020-06-01' = {
                 20 |   name: appName

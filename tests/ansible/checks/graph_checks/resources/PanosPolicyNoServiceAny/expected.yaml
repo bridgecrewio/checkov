@@ -1,0 +1,10 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_1"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_2"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_2"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_3"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_4"
+evaluated_keys:
+  - "service"

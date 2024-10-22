@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  id: CKV_AWS_18
+  name: Ensure the S3 bucket has access logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, server_access_logs_bucket=$ANY_VAR, <ANY>)

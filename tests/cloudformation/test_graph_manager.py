@@ -14,7 +14,7 @@ class TestCloudformationGraphManager(TestCase):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False,
-                                                                                   excluded_paths=["skip.*"])
+                                                                                   excluded_paths=["skip.*", "double_state.*"])
 
         expected_resources_by_file = {
             os.path.join(root_dir, "no_properties.yaml"): [
@@ -57,10 +57,14 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::WAFv2::WebACL.GoodWAFv2WebACL",
                 "AWS::WAFv2::WebACLAssociation.WebACLAssociation",
                 "AWS::AppSync::GraphQLApi.NoWAFAppSyncGraphQLApi"
+            ],
+            os.path.join(root_dir, "suppress_graph_check.yaml"): [
+                "AWS::AppSync::GraphQLApi.CommentSuppress",
+                "AWS::AppSync::GraphQLApi.MetadataSuppress"
             ]
         }
-        self.assertEqual(47, len(local_graph.vertices))
-        self.assertEqual(27, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(49, len(local_graph.vertices))
+        self.assertEqual(29, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
         self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
         self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
         self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))

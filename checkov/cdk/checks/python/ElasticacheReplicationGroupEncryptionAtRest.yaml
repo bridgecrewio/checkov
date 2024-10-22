@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_29
+  name: Ensure all data stored in the ElastiCache Replication Group is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticache.CfnReplicationGroup(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticache.CfnReplicationGroup(<ANY>, at_rest_encryption_enabled=True, <ANY>)

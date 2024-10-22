@@ -1,69 +1,43 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.StorageAccountDisablePublicAccess import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestStorageAccountDisablePublicAccess(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_StorageAccountDisablePublicAccess"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "storageaccountname"
-              resource_group_name      = azurerm_resource_group.example.name
-              location                 = azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-              enable_https_traffic_only = false
-              allow_blob_public_access = true
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-              tags = {
-                environment = "staging"
-              }
-            }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "storageaccountname"
-              resource_group_name      = azurerm_resource_group.example.name
-              location                 = azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
+        passing_resources = {
+            "azurerm_storage_account.pass",
 
-              tags = {
-                environment = "staging"
-              }
-            }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        }
+        failing_resources = {
+            "azurerm_storage_account.fail",
+            "azurerm_storage_account.fail2",
+        }
 
-    def test_success_2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "storageaccountname"
-              resource_group_name      = azurerm_resource_group.example.name
-              location                 = azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-              allow_blob_public_access = false
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-              tags = {
-                environment = "staging"
-              }
-            }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-if __name__ == '__main__':
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()

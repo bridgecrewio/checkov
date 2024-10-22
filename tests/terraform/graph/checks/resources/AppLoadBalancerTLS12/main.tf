@@ -49,6 +49,19 @@ resource "aws_lb_listener" "tcp_udp" {
   }
 }
 
+resource "aws_lb_listener" "tls_1_3" {
+  load_balancer_arn = var.aws_lb_arn
+  protocol          = "TLS"
+  port              = "8080"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.certificate_arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = var.aws_lb_target_group_arn
+  }
+}
+
 resource "aws_lb_listener" "tls_fs_1_2" {
   load_balancer_arn = var.aws_lb_arn
   protocol          = "TLS"

@@ -12,16 +12,16 @@ Full list of github organization and repository settings related checks can be f
 
 ## GitHub scanning configuration
 
-| Environment Variable          | Default value             | Description                                                                                          |
-|-------------|---------------------------|------------------------------------------------------------------------------------------------------|
-| CKV_GITHUB_CONFIG_FETCH_DATA| "True"                    | checkov will try to fetch GitHub configuration from API by default (unless no access token provided) |
-| CKV_GITHUB_CONF_DIR_NAME   | "github_conf"             | checkov will create a new directory named "github_conf" under current working directory              |
-| GITHUB_API_URL   | "https://api.github.com/" |                                                                                                      |
-| GITHUB_TOKEN   |                           | GitHub personal access token to be used to fetch GitHub configuration                                |
-| GITHUB_REF | refs/heads/master                    | Github branch for which to fetch branch protection rules configuration                               |
- | GITHUB_ORG   |                           | Github organization                                                                                  |
- | GITHUB_REPOSITORY |                      | Github repositry for which to fetch repository configuration info                                    |
- | GITHUB_REPO_OWNER |                           | Github repository owner user name                                                                    |
+| Environment Variable          | Default value             | Description                                                                                                                                   |
+|-------------|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| CKV_GITHUB_CONFIG_FETCH_DATA| "True"                    | checkov will try to fetch GitHub configuration from API by default (unless no access token provided)                                          |
+| CKV_GITHUB_CONF_DIR_NAME   | "github_conf"             | checkov will create a new directory named "github_conf" under current working directory                                                       |
+| GITHUB_API_URL   | "https://api.github.com/" |                                                                                                                                               |
+| GITHUB_TOKEN   |                           | GitHub personal access token to be used to fetch GitHub configuration                                                                         |
+| GITHUB_REF | refs/heads/master                    | Github branch for which to fetch branch protection rules configuration                                                                        |
+ | GITHUB_ORG   |                           | Github organization                                                                                                                           |
+ | GITHUB_REPOSITORY |                      | Github repositry for which to fetch repository configuration info                                                                             |
+ | GITHUB_REPO_OWNER |                           | The owner of the repository. This could be either Github repository owner user name or the organization name, in which the user is the owner. |
 
 ### Example organization security configuration
 
@@ -29,14 +29,14 @@ Full list of github organization and repository settings related checks can be f
 {
     "data": {
         "organization": {
-            "name": "Bridgecrew",
-            "login": "bridgecrewio",
+            "name": "Prisma",
+            "login": "prismaio",
             "description": "Secure public cloud infrastructure",
             "ipAllowListEnabledSetting": "ENABLED",
             "ipAllowListForInstalledAppsEnabledSetting": "ENABLED",
             "requiresTwoFactorAuthentication": false,
             "samlIdentityProvider": {
-                "ssoUrl": "https://bridgecrew.okta.com/app/githubcloud/foo/sso/saml"
+                "ssoUrl": "https://prisma.okta.com/app/githubcloud/foo/sso/saml"
             }
         }
     }
@@ -89,7 +89,7 @@ checkov -d . --framework github_configuration
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.707 
+By Prisma Cloud | version: 2.0.707 
 
 github_configuration scan results:
 
@@ -109,14 +109,14 @@ Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
 
 		2  |     "data": {
 		3  |         "organization": {
-		4  |             "name": "Bridgecrew",
-		5  |             "login": "bridgecrewio",
+		4  |             "name": "Prisma",
+		5  |             "login": "prismaio",
 		6  |             "description": "Secure public cloud infrastructure",
 		7  |             "ipAllowListEnabledSetting": "ENABLED",
 		8  |             "ipAllowListForInstalledAppsEnabledSetting": "ENABLED",
 		9  |             "requiresTwoFactorAuthentication": false,
 		10 |             "samlIdentityProvider": {
-		11 |                                 "ssoUrl": "https://bridgecrew.okta.com/app/githubcloud/foo/sso/saml"
+		11 |                                 "ssoUrl": "https://prisma.okta.com/app/githubcloud/foo/sso/saml"
 		12 |             }
 		13 |         }
 		14 |     }
@@ -125,4 +125,4 @@ Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
 
 ```
 
-To add more GitHub policies and configuration to be inspected take a look at [Github policy contribution guide](/docs/6.Contribution/Contribute%20New%20GitHub%20Policies.md)
+To add more GitHub policies and configuration to be inspected take a look at the [GitHub policy contribution guide](https://www.checkov.io/6.Contribution/Contribute%20New%20GitHub%20Policies.html)

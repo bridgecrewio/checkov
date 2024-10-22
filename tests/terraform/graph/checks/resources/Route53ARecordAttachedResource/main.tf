@@ -74,7 +74,7 @@ resource "aws_route53_record" "ignore2" {
   records = ["1.1.1.1"]
 }
 
-resource "aws_route53_record" "pass3" {
+resource "aws_route53_record" "unknown" {
   zone_id = var.zone_id
   name = "test.example.com"
   type = "A"
@@ -85,7 +85,7 @@ resource "aws_route53_record" "pass3" {
   }
 }
 
-resource "aws_route53_record" "pass4" {
+resource "aws_route53_record" "unknown2" {
   zone_id = data.aws_route53_zone.example.zone_id
   name    = "example"
   type    = "A"
@@ -131,7 +131,7 @@ resource "aws_route53_record" "pass5" {
 variable "aws_alb_dns_name" {}
 variable "aws_alb_zone_id" {}
 
-resource "aws_route53_record" "pass_var" {
+resource "aws_route53_record" "unknown3" {
   zone_id = data.aws_route53_zone.example.zone_id
   name    = "example"
   type    = "A"
@@ -287,4 +287,16 @@ resource "aws_lightsail_instance" "example" {
   availability_zone = "us-east-1f"
   blueprint_id      = "ubuntu_20_04"
   bundle_id         = "medium_2_0"
+}
+
+resource "aws_route53_record" "pass_lightsail2" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name = "mydomian.com"
+  type = "A"
+  ttl = "30"
+  records = [aws_lightsail_static_ip.example.ip_address]
+}
+
+resource "aws_lightsail_static_ip" "example" {
+  name = "pike"
 }

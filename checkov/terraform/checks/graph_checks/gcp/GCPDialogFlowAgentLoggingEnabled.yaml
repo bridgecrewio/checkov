@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_29"
+  name: "Ensure logging is enabled for Dialogflow agents"
+  category: "LOGGING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_dialogflow_agent
+  attribute: enable_logging
+  operator: equals
+  value: "true"

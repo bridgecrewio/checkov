@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV_PAN_2"
+  name: "Ensure plain-text management HTTP is not enabled for an Interface Management Profile"
+  category: "NETWORKING"
+definition:
+  or:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_management_profile
+    attribute: http
+    operator: not_exists
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_management_profile
+    attribute: http
+    operator: not_equals
+    value: true

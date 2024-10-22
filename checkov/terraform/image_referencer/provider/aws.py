@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from checkov.common.typing import LibraryGraph
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.common.util.type_forcers import force_list, extract_json
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
 
-if TYPE_CHECKING:
-    from networkx import DiGraph
-
 
 class AwsTerraformProvider(BaseTerraformProvider):
-    def __init__(self, graph_connector: DiGraph) -> None:
+    def __init__(self, graph_connector: LibraryGraph) -> None:
         super().__init__(
             graph_connector=graph_connector,
             supported_resource_types=SUPPORTED_AWS_IMAGE_RESOURCE_TYPES,
@@ -39,12 +37,9 @@ def extract_images_from_aws_batch_job_definition(resource: dict[str, Any]) -> li
         name = properties.get("image")
         if name and isinstance(name, str):
             image_names.append(name)
-        node_range = find_in_dict(input_dict=properties, key_path="nodeProperties/nodeRangeProperties")
-        if isinstance(node_range, list):
-            for node in node_range:
-                name = find_in_dict(input_dict=node, key_path="container/image")
-                if name and isinstance(name, str):
-                    image_names.append(name)
+
+    # node properties are not supported yet
+    # https://github.com/hashicorp/terraform-provider-aws/issues/20983
 
     return image_names
 
@@ -67,9 +62,10 @@ def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> lis
     definitions = extract_json(resource.get("container_definitions"))
     if isinstance(definitions, list):
         for definition in definitions:
-            name = definition.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(definition, dict):
+                name = definition.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 
@@ -80,9 +76,42 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
     containers = resource.get("container")
     if containers:
         for container in force_list(containers):
-            name = container.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
+
+    return image_names
+
+
+def extract_images_from_aws_sagemaker_image_version(resource: dict[str, Any]) -> list[str]:
+    image_names: list[str] = []
+
+    image_name = find_in_dict(input_dict=resource, key_path="base_image")
+    if image_name and isinstance(image_name, str):
+        image_names.append(image_name)
+
+    return image_names
+
+
+def extract_images_from_aws_sagemaker_model(resource: dict[str, Any]) -> list[str]:
+    image_names: list[str] = []
+
+    containers = resource.get("container")
+    if containers:
+        for container in force_list(containers):
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
+
+    containers = resource.get("primary_container")
+    if containers:
+        for container in force_list(containers):
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 
@@ -94,4 +123,6 @@ SUPPORTED_AWS_IMAGE_RESOURCE_TYPES = {
     "aws_codebuild_project": extract_images_from_aws_codebuild_project,
     "aws_ecs_task_definition": extract_images_from_aws_ecs_task_definition,
     "aws_lightsail_container_service_deployment_version": extract_images_from_aws_lightsail_container_service_deployment_version,
+    "aws_sagemaker_image_version": extract_images_from_aws_sagemaker_image_version,
+    "aws_sagemaker_model": extract_images_from_aws_sagemaker_model,
 }

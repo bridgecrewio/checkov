@@ -1,4 +1,4 @@
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -16,8 +16,12 @@ class OrSolver(BaseComplexSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(or_, args)
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
+    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+        has_unrendered_attribute = False
         for solver in self.solvers:
-            if solver.get_operation(vertex):
+            operation = solver.get_operation(vertex)
+            if operation:
                 return True
-        return False
+            if operation is None:
+                has_unrendered_attribute = True
+        return None if has_unrendered_attribute else False

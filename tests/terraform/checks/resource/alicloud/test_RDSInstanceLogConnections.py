@@ -19,6 +19,7 @@ class TestRDSInstanceLogConnections(unittest.TestCase):
 
         passing_resources = {
             'alicloud_db_instance.pass',
+            'alicloud_db_instance.pass2',
         }
         failing_resources = {
             'alicloud_db_instance.fail',

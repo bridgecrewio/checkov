@@ -13,7 +13,7 @@ class TestRedshitClusterPubliclyAccessible(unittest.TestCase):
             cluster_identifier  = "tf-redshift-cluster"
             database_name       = "mydb"
             master_username     = "foo"
-            master_password     = "Mustbe8characters"
+            master_password     = "Mustbe8characters"  # checkov:skip=CKV_SECRET_6 test secret
             node_type           = "dc1.large"
             publicly_accessible = true
           }

@@ -1,0 +1,6 @@
+pass:
+  - "aws_route53_zone.pass"
+  - "aws_route53_zone.private_with_inline_vpc"
+  - "aws_route53_zone.private_with_zone_association"
+fail:
+  - "aws_route53_zone.fail"

@@ -1,0 +1,5 @@
+pass:
+  - "aws_kms_key.pass"
+  - "aws_kms_key.pass2"
+fail:
+  - "aws_kms_key.fail"

@@ -1,0 +1,391 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_cloudwatch_log_group.aws_route53_example_com",
+          "mode": "managed",
+          "type": "aws_cloudwatch_log_group",
+          "name": "aws_route53_example_com",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "kms_key_id": null,
+            "name": "/aws/route53/example.com",
+            "name_prefix": null,
+            "retention_in_days": 30,
+            "tags": null
+          },
+          "sensitive_values": {
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_cloudwatch_log_resource_policy.route53-query-logging-policy",
+          "mode": "managed",
+          "type": "aws_cloudwatch_log_resource_policy",
+          "name": "route53-query-logging-policy",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "policy_document": "{\"Statement\":[{\"Action\":[\"logs:PutLogEvents\",\"logs:CreateLogStream\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"route53.amazonaws.com\"},\"Resource\":\"arn:aws:logs:*:*:log-group:/aws/route53/*\",\"Sid\":\"\"}],\"Version\":\"2012-10-17\"}",
+            "policy_name": "route53-query-logging-policy"
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route53_query_log.example_com",
+          "mode": "managed",
+          "type": "aws_route53_query_log",
+          "name": "example_com",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_route53_zone.example_com",
+          "mode": "managed",
+          "type": "aws_route53_zone",
+          "name": "example_com",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "comment": "Managed by Terraform",
+            "delegation_set_id": null,
+            "force_destroy": false,
+            "name": "example.com",
+            "tags": null,
+            "vpc": []
+          },
+          "sensitive_values": {
+            "name_servers": [],
+            "tags_all": {},
+            "vpc": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_cloudwatch_log_group.aws_route53_example_com",
+      "mode": "managed",
+      "type": "aws_cloudwatch_log_group",
+      "name": "aws_route53_example_com",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "kms_key_id": null,
+          "name": "/aws/route53/example.com",
+          "name_prefix": null,
+          "retention_in_days": 30,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "tags_all": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "aws_cloudwatch_log_resource_policy.route53-query-logging-policy",
+      "mode": "managed",
+      "type": "aws_cloudwatch_log_resource_policy",
+      "name": "route53-query-logging-policy",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "policy_document": "{\"Statement\":[{\"Action\":[\"logs:PutLogEvents\",\"logs:CreateLogStream\"],\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"route53.amazonaws.com\"},\"Resource\":\"arn:aws:logs:*:*:log-group:/aws/route53/*\",\"Sid\":\"\"}],\"Version\":\"2012-10-17\"}",
+          "policy_name": "route53-query-logging-policy"
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_route53_query_log.example_com",
+      "mode": "managed",
+      "type": "aws_route53_query_log",
+      "name": "example_com",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {},
+        "after_unknown": {
+          "arn": true,
+          "cloudwatch_log_group_arn": true,
+          "id": true,
+          "zone_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_route53_zone.example_com",
+      "mode": "managed",
+      "type": "aws_route53_zone",
+      "name": "example_com",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "comment": "Managed by Terraform",
+          "delegation_set_id": null,
+          "force_destroy": false,
+          "name": "example.com",
+          "tags": null,
+          "vpc": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "name_servers": true,
+          "tags_all": true,
+          "vpc": [],
+          "zone_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "name_servers": [],
+          "tags_all": {},
+          "vpc": []
+        }
+      }
+    }
+  ],
+  "prior_state": {
+    "format_version": "1.0",
+    "terraform_version": "1.1.5",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "data.aws_iam_policy_document.route53-query-logging-policy",
+            "mode": "data",
+            "type": "aws_iam_policy_document",
+            "name": "route53-query-logging-policy",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "id": "1584671853",
+              "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"logs:PutLogEvents\",\n        \"logs:CreateLogStream\"\n      ],\n      \"Resource\": \"arn:aws:logs:*:*:log-group:/aws/route53/*\",\n      \"Principal\": {\n        \"Service\": \"route53.amazonaws.com\"\n      }\n    }\n  ]\n}",
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "route53.amazonaws.com"
+                      ],
+                      "type": "Service"
+                    }
+                  ],
+                  "resources": [
+                    "arn:aws:logs:*:*:log-group:/aws/route53/*"
+                  ],
+                  "sid": ""
+                }
+              ],
+              "version": "2012-10-17"
+            },
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false,
+                    false
+                  ],
+                  "condition": [],
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        false
+                      ]
+                    }
+                  ],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "aws.us-east-1": {
+        "name": "aws",
+        "alias": "us-east-1",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev"
+          },
+          "region": {
+            "constant_value": "us-east-1"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_cloudwatch_log_group.aws_route53_example_com",
+          "mode": "managed",
+          "type": "aws_cloudwatch_log_group",
+          "name": "aws_route53_example_com",
+          "provider_config_key": "aws.us-east-1",
+          "expressions": {
+            "name": {
+              "references": [
+                "aws_route53_zone.example_com.name",
+                "aws_route53_zone.example_com"
+              ]
+            },
+            "retention_in_days": {
+              "constant_value": 30
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_cloudwatch_log_resource_policy.route53-query-logging-policy",
+          "mode": "managed",
+          "type": "aws_cloudwatch_log_resource_policy",
+          "name": "route53-query-logging-policy",
+          "provider_config_key": "aws.us-east-1",
+          "expressions": {
+            "policy_document": {
+              "references": [
+                "data.aws_iam_policy_document.route53-query-logging-policy.json",
+                "data.aws_iam_policy_document.route53-query-logging-policy"
+              ]
+            },
+            "policy_name": {
+              "constant_value": "route53-query-logging-policy"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_route53_query_log.example_com",
+          "mode": "managed",
+          "type": "aws_route53_query_log",
+          "name": "example_com",
+          "provider_config_key": "aws",
+          "expressions": {
+            "cloudwatch_log_group_arn": {
+              "references": [
+                "aws_cloudwatch_log_group.aws_route53_example_com.arn",
+                "aws_cloudwatch_log_group.aws_route53_example_com"
+              ]
+            },
+            "zone_id": {
+              "references": [
+                "aws_route53_zone.example_com.zone_id",
+                "aws_route53_zone.example_com"
+              ]
+            }
+          },
+          "schema_version": 0,
+          "depends_on": [
+            "aws_cloudwatch_log_resource_policy.route53-query-logging-policy"
+          ]
+        },
+        {
+          "address": "aws_route53_zone.example_com",
+          "mode": "managed",
+          "type": "aws_route53_zone",
+          "name": "example_com",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "example.com"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "data.aws_iam_policy_document.route53-query-logging-policy",
+          "mode": "data",
+          "type": "aws_iam_policy_document",
+          "name": "route53-query-logging-policy",
+          "provider_config_key": "aws",
+          "expressions": {
+            "statement": [
+              {
+                "actions": {
+                  "constant_value": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ]
+                },
+                "principals": [
+                  {
+                    "identifiers": {
+                      "constant_value": [
+                        "route53.amazonaws.com"
+                      ]
+                    },
+                    "type": {
+                      "constant_value": "Service"
+                    }
+                  }
+                ],
+                "resources": {
+                  "constant_value": [
+                    "arn:aws:logs:*:*:log-group:/aws/route53/*"
+                  ]
+                }
+              }
+            ]
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

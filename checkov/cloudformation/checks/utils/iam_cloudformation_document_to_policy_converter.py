@@ -1,13 +1,15 @@
-import copy
+from __future__ import annotations
 
-from checkov.common.parsers.node import DictNode
+from typing import Any
+
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 
-def convert_cloudformation_conf_to_iam_policy(conf: DictNode) -> DictNode:
+def convert_cloudformation_conf_to_iam_policy(conf: dict[str, Any]) -> dict[str, Any]:
     """
         converts terraform parsed configuration to iam policy document
     """
-    result = copy.deepcopy(conf)
+    result = pickle_deepcopy(conf)
     if "Statement" in result.keys():
         result["Statement"] = result.pop("Statement")
         for statement in map(dict, result["Statement"]):

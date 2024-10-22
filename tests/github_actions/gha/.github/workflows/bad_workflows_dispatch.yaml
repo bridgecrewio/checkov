@@ -1,0 +1,18 @@
+name: read-only
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+
+permissions: read-all
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@12345678
+      - run: |
+          echo "working hard"

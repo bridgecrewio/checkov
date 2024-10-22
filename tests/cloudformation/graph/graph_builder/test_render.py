@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 from unittest.case import TestCase
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
@@ -8,12 +9,8 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@mock.patch.dict(os.environ, {"RENDER_ASYNC_MAX_WORKERS": "50", "RENDER_VARIABLES_ASYNC": "False"})
 class TestRenderer(TestCase):
-    def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
-        os.environ['RENDER_ASYNC_MAX_WORKERS'] = '50'
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-
     def test_render_ref(self):
         relative_path = './resources/variable_rendering/render_ref/'
         yaml_test_dir = os.path.realpath(os.path.join(TEST_DIRNAME, relative_path, 'yaml'))

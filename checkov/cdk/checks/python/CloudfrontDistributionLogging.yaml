@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_86
+  name: Ensure CloudFront distribution has Access Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>, distribution_config=aws_cdk.aws_cloudfront.CfnDistribution.DistributionConfigProperty(<ANY>, logging=aws_cdk.aws_cloudfront.CfnDistribution.LoggingProperty(<ANY>, bucket=$ARG ,<ANY>) ,<ANY>) ,<ANY>)

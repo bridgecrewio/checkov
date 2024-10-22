@@ -1,0 +1,55 @@
+metadata:
+  id: "CKV2_AWS_49"
+  name: "Ensure AWS Database Migration Service endpoints have SSL configured"
+  category: "NETWORKING"
+definition:
+  or:
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_dms_endpoint"
+          attribute: "endpoint_type"
+          operator: "equals"
+          value: "source"
+        - or:
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_dms_endpoint"
+              attribute: "engine_name"
+              operator: "subset"
+              value: 
+                - "s3"
+                - "azuredb"
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_dms_endpoint"
+              attribute: "ssl_mode"
+              operator: "not_equals"
+              value: "none" 
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_dms_endpoint"
+          attribute: "endpoint_type"
+          operator: "equals"
+          value: "target"
+        - or:
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_dms_endpoint"
+              attribute: "engine_name"
+              operator: "subset"
+              value: 
+                - "dynamodb"
+                - "kinesis"
+                - "neptune"
+                - "redshift"
+                - "s3"
+                - "elasticsearch"
+                - "kafka"
+            - cond_type: "attribute"
+              resource_types:
+              - "aws_dms_endpoint"
+              attribute: "ssl_mode"
+              operator: "not_equals"
+              value: "none"

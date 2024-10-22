@@ -6,6 +6,9 @@ class WinVMEncryptionAtHost(BaseResourceValueCheck):
     def __init__(self):
         """
         If enabled, all the disks (including the temp disk) attached to this Virtual Machine will be encrypted
+
+        if not enabled:
+        https://learn.microsoft.com/en-gb/azure/virtual-machines/disks-enable-host-based-encryption-portal?tabs=azure-cli#prerequisites
         """
         name = "Ensure Windows VM enables encryption"
         id = "CKV_AZURE_151"

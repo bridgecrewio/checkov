@@ -1,0 +1,15 @@
+name: read-only
+
+on:
+  pull_request:
+    types: [ opened, synchronize, labeled, unlabeled ]
+
+permissions: write-all
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@12345678
+      - run: |
+          echo "working hard"

@@ -42,7 +42,7 @@ class GlueSecurityConfiguration(BaseResourceCheck):
 
         if s3_enc and cw_enc and book_enc:
             return CheckResult.PASSED
-        
+
         return CheckResult.FAILED
 
 

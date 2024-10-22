@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from checkov.bicep.graph_manager import BicepGraphManager
-from checkov.common.graph.db_connectors.db_connector import DBConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 
 
 def test_render_parameter():
     # given
     test_dir = Path(__file__).parent / "examples/parameter"
-    graph_manager = BicepGraphManager(db_connector=DBConnector())
+    graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, _ = graph_manager.build_graph_from_source_directory(source_dir=str(test_dir), render_variables=True)
@@ -45,7 +45,7 @@ def test_render_parameter():
 def test_render_variable():
     # given
     test_dir = Path(__file__).parent / "examples/variable"
-    graph_manager = BicepGraphManager(db_connector=DBConnector())
+    graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, _ = graph_manager.build_graph_from_source_directory(source_dir=str(test_dir), render_variables=True)
@@ -83,7 +83,7 @@ def test_render_variable():
 def test_render_mixed():
     # given
     test_dir = Path(__file__).parent / "examples/mixed"
-    graph_manager = BicepGraphManager(db_connector=DBConnector())
+    graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, _ = graph_manager.build_graph_from_source_directory(source_dir=str(test_dir), render_variables=True)

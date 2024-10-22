@@ -9,17 +9,22 @@ from checkov.runner_filter import RunnerFilter
 @pytest.mark.parametrize(
     "input_frameworks,input_skip_frameworks,expected_frameworks",
     [
-        (["all"], None, {"all"}),
+        (["all"], None, {"all", "sast"}),
         (None, None, {"all"}),
         (["terraform"], None, {"terraform"}),
         (["cloudformation", "serverless"], None, {"cloudformation", "serverless"}),
+        (["cdk"], None, {"cdk"}),
+        (["cdk", "sast"], None, {"cdk", "sast"}),
         (
             ["all"],
             ["terraform", "secrets"],
             {
+                "ansible",
                 "argo_workflows",
                 "arm",
+                "azure_pipelines",
                 "bicep",
+                "cdk",
                 "cloudformation",
                 "dockerfile",
                 "helm",
@@ -27,6 +32,7 @@ from checkov.runner_filter import RunnerFilter
                 "yaml",
                 "kubernetes",
                 "serverless",
+                "terraform_json",
                 "terraform_plan",
                 "github_configuration",
                 "github_actions",
@@ -38,12 +44,14 @@ from checkov.runner_filter import RunnerFilter
                 "kustomize",
                 "sca_package",
                 "openapi",
-                "sca_image"
+                "sca_image",
+                "sast",
+                "3d_policy"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),
     ],
-    ids=["all", "none", "terraform", "multiple", "all_with_skip", "multiple_with_skip"],
+    ids=["all", "none", "terraform", "multiple", "only cdk", "cdk and sast", "all_with_skip", "multiple_with_skip"],
 )
 def test_runner_filter_constructor_framework(
         input_frameworks: Optional[List[str]], input_skip_frameworks: Optional[List[str]], expected_frameworks: Set[str]

@@ -1,0 +1,6 @@
+pass:
+  - "block.Handle the error"
+fail:
+  - "block.Install, configure, and start Apache"
+evaluated_keys:
+  - "rescue"

@@ -1,22 +1,25 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "variable": [
       {
         "foo": {
           "__start_line__": 1,
-          "__end_line__": 1
+          "__end_line__": 1,
+          "__address__": "foo"
         }
       },
       {
         "list_data": {
           "__start_line__": 2,
-          "__end_line__": 2
+          "__end_line__": 2,
+          "__address__": "list_data"
         }
       },
       {
         "map_data": {
           "__start_line__": 3,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "map_data"
         }
       }
     ],
@@ -28,7 +31,8 @@
               "hello-nimrodIsCöoler-${nine}-${dev}-abc-xyz-qwerty"
             ],
             "__start_line__": 17,
-            "__end_line__": 19
+            "__end_line__": 19,
+            "__address__": "aws_s3_bucket.my_bucket"
           }
         }
       }

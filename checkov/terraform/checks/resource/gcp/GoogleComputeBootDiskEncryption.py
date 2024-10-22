@@ -12,8 +12,10 @@ class GoogleComputeBootDiskEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         self.evaluated_keys = ['boot_disk', 'boot_disk/[0]/disk_encryption_key_raw', 'boot_disk/[0]/kms_key_self_link']
-        if 'boot_disk' in conf.keys() and ('disk_encryption_key_raw' in conf['boot_disk'][0] or
-                                           'kms_key_self_link' in conf['boot_disk'][0]):
+        if 'boot_disk' in conf.keys() and (('disk_encryption_key_raw' in conf['boot_disk'][0] and
+                                            conf['boot_disk'][0]['disk_encryption_key_raw'][0] is not None) or
+                                           ('kms_key_self_link' in conf['boot_disk'][0] and
+                                            conf['boot_disk'][0]['kms_key_self_link'][0] is not None)):
             return CheckResult.PASSED
         return CheckResult.FAILED
 

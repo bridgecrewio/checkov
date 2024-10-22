@@ -23,10 +23,12 @@ definition:
       attribute: blob_container_names
     - resource_types:
         - azurerm_storage_container
-      operator:  equals
+      operator: within
       cond_type: attribute
       attribute: container_access_type
-      value: "blob"
+      value:
+        - "private"
+        - "blob"
     - cond_type: filter
       attribute: resource_type
       value:

@@ -3,10 +3,10 @@ from pathlib import Path
 
 from checkov.kubernetes.parser.k8_yaml import load
 
-
 EXAMPLES_DIR = Path(__file__).parent / "examples"
-class TestScannerRegistry(unittest.TestCase):
 
+
+class TestScannerRegistry(unittest.TestCase):
     def test_load_pod(self):
         # given
         file_path = EXAMPLES_DIR / "yaml/busybox.yaml"
@@ -54,6 +54,20 @@ class TestScannerRegistry(unittest.TestCase):
         # then
         assert template == [{}]
         assert file_lines == []
-        
+
+    def test_load_utf8_bom_file(self):
+        # given
+        file_path = EXAMPLES_DIR / "yaml/busybox_utf8_bom.yaml"
+
+        # when
+        template, file_lines = load(file_path)
+
+        # then
+        assert len(template) == 1
+        assert template[0]["apiVersion"] == "v1"
+        assert template[0]["kind"] == "Pod"
+        assert len(file_lines) == 28
+
+
 if __name__ == '__main__':
     unittest.main()

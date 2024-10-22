@@ -1,4 +1,6 @@
 metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
   id: "NameWithin"
 scope:
   provider: "AWS"

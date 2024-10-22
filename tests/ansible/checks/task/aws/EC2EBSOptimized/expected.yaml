@@ -1,0 +1,5 @@
+pass:
+  - "tasks.amazon.aws.ec2_instance.enabled"
+fail:
+  - "tasks.amazon.aws.ec2_instance.default"
+  - "tasks.ec2_instance.disabled"

@@ -4,7 +4,7 @@ resource "azurerm_windows_virtual_machine" "fail" {
   location            = azurerm_resource_group.example.location
   size                = "Standard_F2"
   admin_username      = "adminuser"
-  admin_password      = "P@$$w0rd1234!"
+  admin_password      = "P@$$w0rd1234!"  # checkov:skip=CKV_SECRET_80 test secret
 
   network_interface_ids = [
     azurerm_network_interface.example.id,
@@ -49,7 +49,7 @@ resource "azurerm_windows_virtual_machine" "fail2" {
     version   = "latest"
   }
 
-   encryption_at_host_enabled=false
+  encryption_at_host_enabled = false
 }
 
 resource "azurerm_windows_virtual_machine" "pass" {
@@ -76,5 +76,5 @@ resource "azurerm_windows_virtual_machine" "pass" {
     version   = "latest"
   }
 
-   encryption_at_host_enabled=true
+  encryption_at_host_enabled = true
 }

@@ -1,17 +1,18 @@
+from __future__ import annotations
+
 import re
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, Dict
+from typing import List, Any
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser import DictNode
-from checkov.common.parsers.node import StrNode
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.common.util.var_utils import is_cloudformation_variable_dependent
 
+ARRAY_INDEX_PATTERN = re.compile(r"^\[?\d+\]?$")
 VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
 
@@ -34,8 +35,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        regex = re.compile(r"^\[?\d+\]?$")
-        return [x for x in path.split("/") if not re.search(regex, x)]
+        return [x for x in path.split("/") if not re.search(ARRAY_INDEX_PATTERN, x)]
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
@@ -51,7 +51,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         return any(x in key for x in inspected_attributes)
 
-    def scan_resource_conf(self, conf: Dict[StrNode, DictNode]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         path_elements = inspected_key.split("/")
@@ -61,8 +61,9 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # CFN files are parsed differently from terraform, which causes the path search above to behave differently.
                 # The tesult is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
                 # those, allowing inspected_keys in checks to use the same syntax.
-                for i in range(0, len(match)):
-                    if type(match[i]) == int:
+                # The last value shouldn't be changed, because it could be indeed a valid number
+                for i in range(0, len(match) - 1):
+                    if type(match[i]) is int:
                         match[i] = f"[{match[i]}]"
 
                 if match[:-1] == path_elements:

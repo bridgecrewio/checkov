@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  NeptuneDBClusterDefault:
+    Type: "AWS::Neptune::DBCluster"
+    Properties:
+      DBClusterIdentifier: DBClusterIdentifier
+  NeptuneDBClusterNotAdequate:
+    Type: "AWS::Neptune::DBCluster"
+    Properties:
+      DBClusterIdentifier: DBClusterIdentifier
+      BackupRetentionPeriod: 3

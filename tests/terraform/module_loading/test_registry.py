@@ -20,19 +20,19 @@ from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader impo
         (
             "terraform-aws-modules/security-group/aws",
             "4.0.0",
+            "github.com/terraform-aws-modules/terraform-aws-security-group/ff2efb814c924572d27280b99a799fc34d061109",
+            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
-            "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "",
         ),
         (
             "terraform-aws-modules/security-group/aws//modules/http-80",
             "4.0.0",
-            "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0/modules/http-80",
-            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "github.com/terraform-aws-modules/terraform-aws-security-group/ff2efb814c924572d27280b99a799fc34d061109/modules/http-80",
+            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "modules/http-80",
         )
     ],
@@ -341,12 +341,12 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
         (
             "github.com/kartikp10/terraform-aws-s3-bucket1",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
-            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",  # checkov:skip=CKV_SECRET_4 test secret
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
             "",
         ),
-       ( 
+       (
             "git::https://github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -354,7 +354,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "",
         ),
-       ( 
+       (
            "git@github.com:kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -362,7 +362,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "",
         ),
-       ( 
+       (
            "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -386,7 +386,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
             "",
         ),
-       ( 
+       (
            "git@github.com:kartikp10/terraform-aws-security-group.git//modules/http-80",
             "github.com/kartikp10/terraform-aws-security-group/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
@@ -429,7 +429,7 @@ def test_load_github_private(
         (
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1/HEAD",
-            "https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
+            "https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",  # checkov:skip=CKV_SECRET_4 test secret
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
             "",
@@ -437,7 +437,7 @@ def test_load_github_private(
     ],
     ids=["module"],
 )
-@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})
+@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})  # checkov:skip=CKV_SECRET_6 test secret
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_bitbucket_private(
     git_getter,
@@ -482,7 +482,9 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     )
 
     assert content.loaded()
-    assert content.path().startswith(f"{expected_content_path}/v3.")
+    content_path = content.path()
+    assert content_path.startswith(f"{expected_content_path}/v3.") or \
+           content_path.startswith(f"{expected_content_path}/2cd10c8aca557fd858f401616d5c3b27e2a7b595")
 
 
 def test_load_terraform_registry_check_cache(tmp_path: Path):
@@ -505,3 +507,23 @@ def test_load_terraform_registry_check_cache(tmp_path: Path):
     # then
     assert source1 in registry.failed_urls_cache
     assert source2 in registry.failed_urls_cache
+
+
+def test_loader_equality():
+    githubLoaderOne = GithubLoader()
+    githubLoaderTwo = GithubLoader()
+    assert githubLoaderOne == githubLoaderTwo
+    bitLoader = BitbucketLoader()
+    assert githubLoaderOne != bitLoader
+    genericLoader = GenericGitLoader()
+    assert githubLoaderOne != genericLoader and bitLoader != genericLoader
+
+
+def test_multiple_similar_loaders():
+    registry = ModuleLoaderRegistry(download_external_modules=True)
+    assert len(registry.loaders) == 7
+    GithubLoader()
+    GithubLoader()
+    GenericGitLoader()
+    BitbucketLoader()
+    assert len(registry.loaders) == 7

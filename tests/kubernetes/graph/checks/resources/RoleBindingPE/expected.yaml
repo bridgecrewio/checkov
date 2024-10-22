@@ -1,0 +1,8 @@
+pass:
+  - "ClusterRoleBinding.default.passing-crb1"
+  - "ClusterRoleBinding.default.passing-crb2"
+  - "ClusterRoleBinding.default.passing-crb3"
+fail:
+  - "ClusterRoleBinding.default.failing-crb1"
+  - "ClusterRoleBinding.default.failing-crb2"
+  - "RoleBinding.kube-system.failing-rb3"

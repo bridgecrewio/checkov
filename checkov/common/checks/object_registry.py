@@ -24,7 +24,7 @@ class Registry(BaseCheckRegistry):
         self,
         scanned_file: str,
         check: BaseCheck,
-        skip_info: _SkippedCheck,
+        skip_info: list[_SkippedCheck],
         entity: dict[str, Any],
         entity_name: str,
         entity_type: str,
@@ -41,7 +41,7 @@ class Registry(BaseCheckRegistry):
                         entity_type,
                         results,
                         scanned_file,
-                        skip_info,
+                        skip_info[0],
                     )
         if isinstance(entity, list):
             for item in entity:
@@ -53,7 +53,7 @@ class Registry(BaseCheckRegistry):
                         entity_type,
                         results,
                         scanned_file,
-                        skip_info,
+                        skip_info[0],
                     )
                     if result == CheckResult.FAILED:
                         break
@@ -62,7 +62,7 @@ class Registry(BaseCheckRegistry):
         self,
         scanned_file: str,
         check: BaseCheck,
-        skip_info: _SkippedCheck,
+        skip_info: list[_SkippedCheck],
         entity: dict[str, Any],
         entity_name: str,
         entity_type: str,
@@ -76,21 +76,21 @@ class Registry(BaseCheckRegistry):
                 entity_type,
                 results,
                 scanned_file,
-                skip_info,
+                skip_info[0],
             )
 
     def _scan_document(
         self,
         scanned_file: str,
         check: BaseCheck,
-        skip_info: _SkippedCheck,
+        skip_info: list[_SkippedCheck],
         entity: dict[str, Any],
         entity_name: str,
         entity_type: str,
         results: dict[str, Any],
     ) -> None:
         self.update_result(
-            check, entity, entity_name, entity_type, results, scanned_file, skip_info
+            check, entity, entity_name, entity_type, results, scanned_file, skip_info[0]
         )
 
     def _scan(
@@ -105,7 +105,7 @@ class Registry(BaseCheckRegistry):
         results: dict[str, Any],
     ) -> None:
         for check in checks:
-            skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
+            skip_infos = ([x for x in skipped_checks if x["id"] == check.id] or [{}])
 
             if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_document)
@@ -124,7 +124,7 @@ class Registry(BaseCheckRegistry):
                 scanner(
                     scanned_file,
                     check,
-                    skip_info,
+                    skip_infos,
                     target,
                     entity_name,
                     entity_type,
@@ -195,7 +195,7 @@ class Registry(BaseCheckRegistry):
             results[result_key] = {
                 "check": check,
                 "result": result,
-                "suppress_comment": check_result["suppress_comment"],
+                "suppress_comment": check_result.get("suppress_comment", ""),
                 "results_configuration": None,
             }
             return result
@@ -219,4 +219,4 @@ class Registry(BaseCheckRegistry):
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}

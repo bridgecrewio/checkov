@@ -98,7 +98,7 @@ IaC
 <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
     Resource: aws_s3_bucket.example
     File: /main.tf: 6-9
-    Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+    Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
     
         6 | resource "aws_s3_bucket" "example" {
         7 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket
@@ -126,7 +126,10 @@ SCA
     Base Score: 7.5
     Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
     Risk Factors: ["Has fix", "High severity", "Attack complexity: low", "Attack vector: network", "DoS"]
-    
+    Fix Details:
+      Status: fixed in 2.8.1 
+      Fixed Version: 2.8.1
+  
     Resource: package-lock.json.connect
     File: /package-lock.json: 0-0
     
@@ -141,6 +144,9 @@ SCA
   Link: <CVE link>
   Vector: <CVSS vector string>
   Risk Factors: <list of risk factors>
+  Fix Details:
+    Status: <status of possible fixed versions>
+    Fixed Version: <lowest fixed version>
   
   Resource: <resource ID>
   File: <file path>
@@ -186,7 +192,7 @@ SCA
             <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
                 Resource: aws_s3_bucket.example
                 File: /main.tf: 6-9
-                Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+                Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
                 
                     6 | resource "aws_s3_bucket" "example" {
                     7 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket
@@ -198,7 +204,7 @@ SCA
             <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
                 Resource: aws_s3_bucket.example_2
                 File: /main.tf: 12-15
-                Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+                Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
                 
                     12 | resource "aws_s3_bucket" "example_2" {
                     13 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket
@@ -223,7 +229,10 @@ SCA
                 Base Score: 7.5
                 Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
                 Risk Factors: ["Has fix", "High severity", "Attack complexity: low", "Attack vector: network", "DoS"]
-                
+                Fix Details:
+                  Status: fixed in 2.8.1 
+                  Fixed Version: 2.8.1
+
                 Resource: package-lock.json.connect
                 File: /package-lock.json: 0-0
                 

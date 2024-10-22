@@ -18,11 +18,11 @@ class TestCosmosDBLocalAuthDisabled(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_cosmosdb_account.ckv_unittest_pass'
+            'azurerm_cosmosdb_account.pass'
         }
         failing_resources = {
-            'azurerm_cosmosdb_account.ckv_unittest_fail',
-            'azurerm_cosmosdb_account.ckv_unittest_fail_2'
+            'azurerm_cosmosdb_account.fail',
+            'azurerm_cosmosdb_account.fail2'
         }
         skipped_resources = {}
 

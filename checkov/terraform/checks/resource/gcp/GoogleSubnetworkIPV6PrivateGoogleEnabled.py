@@ -13,9 +13,12 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        purpose = conf.get("purpose")
+        if purpose and isinstance(purpose, list) and purpose[0] == "INTERNAL_HTTPS_LOAD_BALANCER":
+            return CheckResult.UNKNOWN
 
         stack = conf.get("stack_type")
-        if stack and stack[0] != "IPV4_IPV6":
+        if not stack or (stack and isinstance(stack, list) and stack[0] != "IPV4_IPV6"):
             return CheckResult.UNKNOWN
 
         return super().scan_resource_conf(conf)
@@ -23,7 +26,7 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "private_ipv6_google_access"
 
-    def get_expected_values(self):
+    def get_expected_values(self) -> List[Any]:
         return ["ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE", "ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE"]
 
 

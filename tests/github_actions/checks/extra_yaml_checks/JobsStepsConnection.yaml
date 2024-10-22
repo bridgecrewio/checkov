@@ -1,0 +1,44 @@
+metadata:
+  id: "CKV2_GHA_CUSTOM_2"
+  name: "Ensure job permissions write is not used with docker/login-action action"
+  category: "IAM"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - steps
+    - or:
+        - and:
+          - cond_type: connection
+            resource_types:
+              - jobs
+            connected_resource_types:
+              - steps
+            operator: exists
+          - cond_type: attribute
+            resource_types:
+              - jobs
+            attribute: permissions.contents
+            operator: not_equals
+            value: write
+        - and:
+            - cond_type: connection
+              resource_types:
+                - jobs
+              connected_resource_types:
+                - steps
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - jobs
+              attribute: permissions.contents
+              operator: equals
+              value: write
+            - cond_type: attribute
+              resource_types:
+                - steps
+              attribute: uses
+              operator: not_starting_with
+              value: "docker/login-action"

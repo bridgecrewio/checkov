@@ -8,6 +8,7 @@ from collections.abc import Iterable
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories
 
+
 # Change the class name to your runner
 # Eg. BaseXXXXXXXXXXXXXCheck
 class BaseExampleRunnerCheck(BaseCheck):

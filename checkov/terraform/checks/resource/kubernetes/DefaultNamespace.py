@@ -7,11 +7,19 @@ class DefaultNamespace(BaseResourceCheck):
         # CIS-1.5 5.7.4
         name = "The default namespace should not be used"
         id = "CKV_K8S_21"
-        supported_resources = ["kubernetes_pod", "kubernetes_deployment", "kubernetes_daemonset",
-                               "kubernetes_stateful_set", "kubernetes_replication_controller", "kubernetes_job",
-                               "kubernetes_cron_job", "kubernetes_service", "kubernetes_secret",
-                               "kubernetes_service_account", "kubernetes_role_binding", "kubernetes_config_map",
-                               "kubernetes_ingress"]
+        supported_resources = ["kubernetes_pod", "kubernetes_pod_v1",
+                               "kubernetes_deployment", "kubernetes_deployment_v1",
+                               "kubernetes_daemonset", "kubernetes_daemon_set_v1",
+                               "kubernetes_stateful_set", "kubernetes_stateful_set_v1",
+                               "kubernetes_replication_controller", "kubernetes_replication_controller_v1",
+                               "kubernetes_job", "kubernetes_job_v1",
+                               "kubernetes_cron_job", "kubernetes_cron_job_v1",
+                               "kubernetes_service", "kubernetes_service_v1",
+                               "kubernetes_secret", "kubernetes_secret_v1",
+                               "kubernetes_service_account", "kubernetes_service_account_v1",
+                               "kubernetes_role_binding", "kubernetes_role_binding_v1",
+                               "kubernetes_config_map", "kubernetes_config_map_v1",
+                               "kubernetes_ingress", "kubernetes_ingress_v1"]
 
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

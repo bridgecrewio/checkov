@@ -6,10 +6,36 @@ from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray  # type:ignore[attr-defined]  # they are not explicitly exported
 from typing import Any, Callable, Pattern, Match
 
-from json.scanner import NUMBER_RE  # type:ignore[import]  # is not explicitly exported
+from json.scanner import NUMBER_RE  # type:ignore[import-not-found]  # is not explicitly exported
 
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
+
+
+class SimpleDecoder(JSONDecoder):
+    def __init__(
+        self,
+        *,
+        object_hook: Callable[[dict[str, Any]], Any] | None = None,
+        parse_float: Callable[[str], Any] | None = None,
+        parse_int: Callable[[str], Any] | None = None,
+        parse_constant: Callable[[str], Any] | None = None,
+        strict: bool = True,
+        object_pairs_hook: Callable[[list[tuple[str, Any]]], Any] | None = None,
+    ) -> None:
+        super().__init__(
+            object_hook=self.object_hook,
+            parse_float=parse_float,
+            parse_int=parse_int,
+            parse_constant=parse_constant,
+            strict=strict,
+            object_pairs_hook=object_pairs_hook,
+        )
+
+    def object_hook(self, obj: dict[str, Any]) -> Any:
+        obj["start_line"] = 0
+        obj["end_line"] = 0
+        return obj
 
 
 class Mark:
@@ -105,11 +131,11 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
     parse_string = context.parse_string
     match_number = NUMBER_RE.match
     strict = context.strict
-    parse_float = context.parse_float  # type:ignore[misc]  # mypy bug
-    parse_int = context.parse_int  # type:ignore[misc]
-    parse_constant = context.parse_constant  # type:ignore[misc]
-    object_hook = context.object_hook  # type:ignore[misc]
-    object_pairs_hook = context.object_pairs_hook  # type:ignore[misc]
+    parse_float = context.parse_float
+    parse_int = context.parse_int
+    parse_constant = context.parse_constant
+    object_hook = context.object_hook
+    object_pairs_hook = context.object_pairs_hook
     memo = context.memo
 
     # pylint: disable=R0911
@@ -121,8 +147,20 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         except IndexError as err:
             raise StopIteration(idx) from err
 
-        if nextchar == '"':
+        try:
+            nextchar_plus_1 = string[idx + 1]
+        except IndexError:
+            nextchar_plus_1 = None
+        try:
+            nextchar_plus_2 = string[idx + 2]
+        except IndexError:
+            nextchar_plus_2 = None
+
+        if nextchar == '"' and (nextchar_plus_1 != '"' or nextchar_plus_2 != '"'):
             return parse_string(string, idx + 1, strict)
+        if nextchar == '"' and nextchar_plus_1 == '"' and nextchar_plus_2 == '"':
+            result, end = parse_string(string, idx + 3, strict)
+            return result, end + 2
         if nextchar == '{':
             return parse_object(
                 (string, idx + 1), strict,
@@ -140,16 +178,16 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         if m is not None:
             integer, frac, exp = m.groups()
             if frac or exp:
-                res = parse_float(integer + (frac or '') + (exp or ''))  # type:ignore[call-arg]  # mypy bug
+                res = parse_float(integer + (frac or '') + (exp or ''))
             else:
-                res = parse_int(integer)  # type:ignore[call-arg]  # mypy bug
+                res = parse_int(integer)
             return res, m.end()
         if nextchar == 'N' and string[idx:idx + 3] == 'NaN':
-            return parse_constant('NaN'), idx + 3  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('NaN'), idx + 3
         if nextchar == 'I' and string[idx:idx + 8] == 'Infinity':
-            return parse_constant('Infinity'), idx + 8  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('Infinity'), idx + 8
         if nextchar == '-' and string[idx:idx + 9] == '-Infinity':
-            return parse_constant('-Infinity'), idx + 9  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('-Infinity'), idx + 9
 
         raise StopIteration(idx)
 

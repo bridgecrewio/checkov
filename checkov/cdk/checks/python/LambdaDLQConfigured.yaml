@@ -1,0 +1,22 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_116
+  name: Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_lambda.Function(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_lambda.Function(<ANY>, dead_letter_queue=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_lambda.CfnFunction(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_lambda.CfnFunction(<ANY>, dead_letter_config=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_sam.CfnFunction(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, dead_letter_queue=$ARG, <ANY>)

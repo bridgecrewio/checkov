@@ -1,6 +1,7 @@
 import argparse
 import os
 import unittest
+from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
@@ -11,11 +12,243 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.typing import _ScaExitCodeThresholds
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.runner_filter import RunnerFilter
 
 
+# for convenience
+OFF = Severities[BcSeverities.OFF]
+LOW = Severities[BcSeverities.LOW]
+MEDIUM = Severities[BcSeverities.MEDIUM]
+HIGH = Severities[BcSeverities.HIGH]
+CRITICAL = Severities[BcSeverities.CRITICAL]
+
+
 class TestGetExitCode(unittest.TestCase):
+
+    def test_sca_get_exit_code(self):
+        report = Report('sca_package')
+        report.add_record(Record(
+            bc_check_id='BC_CVE_2022_123',
+            check_id='BC_VUL_2',
+            check_result={"result": CheckResult.FAILED},
+            severity=Severities[BcSeverities.LOW],
+            file_path='/requirements.txt',
+            resource='/requirements.txt.protobuf',
+            check_name='SCA package scan',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_CVE_2022_456',
+            check_id='BC_VUL_2',
+            check_result={"result": CheckResult.FAILED},
+            severity=Severities[BcSeverities.HIGH],
+            file_path='/requirements.txt',
+            resource='/requirements.txt.protobuf',
+            check_name='SCA package scan',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_CVE_2023_123',
+            check_id='BC_VUL_2',
+            check_result={"result": CheckResult.PASSED},
+            severity=Severities[BcSeverities.LOW],
+            file_path='/requirements.txt',
+            resource='/requirements.txt.click',
+            check_name='SCA package scan',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_CVE_2023_456',
+            check_id='BC_VUL_2',
+            check_result={"result": CheckResult.PASSED},
+            severity=Severities[BcSeverities.HIGH],
+            file_path='/requirements.txt',
+            resource='/requirements.txt.click',
+            check_name='SCA package scan',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_LIC_1',
+            check_id='BC_LIC_1',
+            check_result={"result": CheckResult.FAILED},
+            severity=Severities[BcSeverities.MEDIUM],
+            file_path='/requirements.txt',
+            resource='requirements.txt.django',
+            check_name='SCA license',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_LIC_2',
+            check_id='BC_LIC_2',
+            check_result={"result": CheckResult.FAILED},
+            severity=Severities[BcSeverities.LOW],
+            file_path='/requirements.txt',
+            resource='requirements.txt.django',
+            check_name='SCA license',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_LIC_1',
+            check_id='BC_LIC_1',
+            check_result={"result": CheckResult.PASSED},
+            severity=Severities[BcSeverities.MEDIUM],
+            file_path='/requirements.txt',
+            resource='requirements.txt.mysqlclient',
+            check_name='SCA license',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+        report.add_record(Record(
+            bc_check_id='BC_LIC_2',
+            check_id='BC_LIC_2',
+            check_result={"result": CheckResult.PASSED},
+            severity=Severities[BcSeverities.LOW],
+            file_path='/requirements.txt',
+            resource='requirements.txt.mysqlclient',
+            check_name='SCA license',
+            code_block=[],
+            file_line_range=[],
+            evaluations=None,
+            check_class='checkov.sca_package_2.scanner.Scanner',
+            file_abs_path='/requirements.txt'
+        ))
+
+        def reset_fail_thresholds() -> _ScaExitCodeThresholds:
+            return {
+                'LICENSES': {
+                    'soft_fail': False,
+                    'soft_fail_checks': [],
+                    'soft_fail_threshold': None,
+                    'hard_fail_checks': [],
+                    'hard_fail_threshold': None,
+                },
+                'VULNERABILITIES': {
+                    'soft_fail': False,
+                    'soft_fail_checks': [],
+                    'soft_fail_threshold': None,
+                    'hard_fail_checks': [],
+                    'hard_fail_threshold': None,
+                }
+            }
+
+        def set_key_in_both(key, value):
+            thresholds['LICENSES'][key] = value
+            thresholds['VULNERABILITIES'][key] = value
+
+        thresholds = reset_fail_thresholds()
+
+        # empty report
+        self.assertEqual(Report('sca_package').get_exit_code(thresholds), 0)
+
+        # test plain old soft fail
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+        thresholds['VULNERABILITIES']['soft_fail'] = True
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+        thresholds['LICENSES']['soft_fail'] = True
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        thresholds = reset_fail_thresholds()
+
+        # soft fail via --hard-fail-on OFF (or enforcement rules)
+        thresholds['VULNERABILITIES']['hard_fail_threshold'] = OFF
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+        thresholds['LICENSES']['hard_fail_threshold'] = OFF
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        thresholds = reset_fail_thresholds()
+        # we can use BC_VUL_2 or list CVEs - this is easier
+        # soft fail and hard fail check lists are not specified by framework, so we combine them
+        set_key_in_both('soft_fail_checks', ['BC_LIC_1', 'BC_LIC_2'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # vuln causes failure
+        set_key_in_both('soft_fail_checks', ['BC_LIC_1', 'BC_LIC_2', 'BC_CVE_2022_123'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # one vuln still causes failure
+        set_key_in_both('soft_fail_checks', ['BC_VUL_2'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # license causes failure
+        set_key_in_both('soft_fail_checks', ['BC_VUL_2', 'BC_LIC_1'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # one license still causes failure
+        set_key_in_both('soft_fail_checks', ['BC_VUL_2', 'BC_LIC_1', 'BC_LIC_2'])
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        thresholds = reset_fail_thresholds()
+        set_key_in_both('soft_fail_checks', ['BC_LIC_1', 'BC_LIC_2', 'BC_CVE_2022_456'])
+        set_key_in_both('soft_fail_threshold', MEDIUM)  # filters out the low
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        set_key_in_both('soft_fail_checks', ['BC_VUL_2', 'BC_LIC_1'])
+        set_key_in_both('soft_fail_threshold', MEDIUM)  # filters out the low BC_LIC_2
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        thresholds = reset_fail_thresholds()
+        set_key_in_both('soft_fail_threshold', CRITICAL)
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        set_key_in_both('soft_fail_threshold', MEDIUM)
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+
+        thresholds = reset_fail_thresholds()
+        set_key_in_both('hard_fail_checks', ['BC_CVE_2023_123'])  # passing
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        set_key_in_both('hard_fail_checks', ['BC_LIC_1'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+
+        set_key_in_both('hard_fail_checks', ['BC_CVE_2022_123'])  # failing
+        self.assertEqual(report.get_exit_code(thresholds), 1)
+
+        thresholds = reset_fail_thresholds()
+        thresholds['VULNERABILITIES']['hard_fail_threshold'] = HIGH
+        thresholds['LICENSES']['hard_fail_threshold'] = MEDIUM
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # both hard fail
+        thresholds['LICENSES']['hard_fail_threshold'] = HIGH
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # vuln still hard fail
+        thresholds['VULNERABILITIES']['hard_fail_threshold'] = CRITICAL
+        thresholds['LICENSES']['hard_fail_threshold'] = MEDIUM
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # license still hard fail
+        thresholds['LICENSES']['hard_fail_threshold'] = HIGH
+        self.assertEqual(report.get_exit_code(thresholds), 0)
+
+        thresholds = reset_fail_thresholds()
+        set_key_in_both('soft_fail_threshold', CRITICAL)
+        set_key_in_both('hard_fail_checks', ['BC_CVE_2022_123'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # hard fail because it was explicitly listed
+        thresholds['VULNERABILITIES']['soft_fail'] = True
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # hard fail because it was explicitly listed
+
+        thresholds = reset_fail_thresholds()
+        set_key_in_both('soft_fail_threshold', CRITICAL)
+        set_key_in_both('hard_fail_checks', ['BC_LIC_1'])
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # hard fail because it was explicitly listed
+        thresholds['LICENSES']['soft_fail'] = True
+        self.assertEqual(report.get_exit_code(thresholds), 1)  # hard fail because it was explicitly listed
 
     def test_get_exit_code(self):
         record1 = Record(check_id='CKV_AWS_157',
@@ -72,12 +305,6 @@ class TestGetExitCode(unittest.TestCase):
         r.add_record(record2)
         r.add_record(record3)
         r.add_record(record4)
-
-        OFF = Severities[BcSeverities.OFF]
-        LOW = Severities[BcSeverities.LOW]
-        MEDIUM = Severities[BcSeverities.MEDIUM]
-        HIGH = Severities[BcSeverities.HIGH]
-        CRITICAL = Severities[BcSeverities.CRITICAL]
 
         # When soft_fail=True, the exit code should always be 0 if there are no other soft/hard fail exceptions.
         test_default = r.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None})
@@ -138,10 +365,20 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev, 1)
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev_fail, 0)
 
-        os.environ[PARSE_ERROR_FAIL_FLAG] = 'true'
-        r.add_parsing_error('some_file.tf')
-        self.assertEqual(r.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
-        del os.environ[PARSE_ERROR_FAIL_FLAG]
+        with mock.patch.dict(os.environ, {PARSE_ERROR_FAIL_FLAG: "true"}):
+            r.add_parsing_error("some_file.tf")
+            self.assertEqual(
+                r.get_exit_code(
+                    {
+                        "soft_fail": False,
+                        "soft_fail_checks": [],
+                        "soft_fail_threshold": None,
+                        "hard_fail_checks": [],
+                        "hard_fail_threshold": None,
+                    }
+                ),
+                1,
+            )
 
     def test_get_fail_thresholds_enforcement_rules(self):
 

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.runner_filter import RunnerFilter
 from pathlib import Path
@@ -10,7 +10,7 @@ from checkov.terraform.runner import Runner
 
 class TestGraphChecks(unittest.TestCase):
     def test_internal_graph_checks_load(self):
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         registry.load_checks()
         runner_filter = RunnerFilter()
@@ -37,6 +37,9 @@ class TestGraphChecks(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         runner_filter = RunnerFilter(framework=['terraform'])
         external_graph_checks = 0
+
+        # make sure internal checks are loaded beforehand
+        runner.graph_registry.load_checks()
 
         # with external yaml checks external graph registry checks count should be equal to the external graph checks
         extra_checks_dir_path = [current_dir + "/extra_checks", current_dir + "/extra_yaml_checks"]

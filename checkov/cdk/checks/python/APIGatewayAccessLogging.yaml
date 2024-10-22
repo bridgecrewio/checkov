@@ -1,0 +1,28 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_76
+  name: Ensure API Gateway has Access Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_apigateway.CfnStage(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_apigateway.CfnStage(<ANY>, access_log_setting=aws_cdk.aws_apigateway.CfnStage.AccessLogSettingProperty(<ANY>, destination_arn=$ARG , <ANY>) , <ANY>)
+          - not_pattern: |
+              $P = aws_cdk.aws_apigateway.CfnStage.AccessLogSettingProperty(<ANY>, destination_arn=$ARG , <ANY>)
+              <ANY>
+              aws_cdk.aws_apigateway.CfnStage(<ANY>, access_log_setting=$P, <ANY>)
+      - pattern: aws_cdk.aws_serverless.Api(<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_serverless.Api(<ANY>, default_stage={<ANY>, "access_log_setting": aws_cdk.aws_serverless.AccessLogSetting(<ANY>, destination_arn=$ARG,<ANY>), <ANY>} , <ANY>)
+          - not_pattern: |
+              $P = aws_cdk.aws_serverless.AccessLogSetting(<ANY>, destination_arn=$ARG , <ANY>)
+              <ANY>
+              aws_cdk.aws_serverless.Api(<ANY>, default_stage={<ANY>, "access_log_setting": $P, <ANY>}, <ANY>)

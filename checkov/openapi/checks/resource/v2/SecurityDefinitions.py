@@ -11,8 +11,8 @@ class SecurityDefinitions(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_1"
         name = "Ensure that securityDefinitions is defined and not empty - version 2.0 files"
-        categories = [CheckCategories.API_SECURITY]
-        supported_resources = ['securityDefinitions']
+        categories = (CheckCategories.API_SECURITY,)
+        supported_resources = ('securityDefinitions',)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
@@ -25,5 +25,6 @@ class SecurityDefinitions(BaseOpenapiCheckV2):
         if not security_definitions or (not isinstance(security_definitions, DictNode) and len(security_definitions) <= 2):
             return CheckResult.FAILED, security_definitions
         return CheckResult.PASSED, security_definitions
+
 
 check = SecurityDefinitions()

@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV_PAN_4"
+  name: "Ensure DSRI is not enabled within security policies"
+  category: "NETWORKING"
+definition:
+  or:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: disable_server_response_inspection
+    operator: equals
+    value: false
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: disable_server_response_inspection
+    operator: not_exists # Default value is false which passes the check

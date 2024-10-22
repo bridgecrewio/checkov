@@ -1,0 +1,4 @@
+pass:
+  - "aws_elasticsearch_domain.pass"
+fail:
+  - "aws_elasticsearch_domain.fail"

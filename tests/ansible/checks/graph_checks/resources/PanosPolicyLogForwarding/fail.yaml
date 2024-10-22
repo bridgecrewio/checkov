@@ -1,0 +1,41 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Security_rule_fail_1
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['10.10.10.1']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: '' # Log forwarding profile specified is empty
+
+    - name: Security_rule_fail_2
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['10.10.10.1']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        # Log forwarding profile not specified

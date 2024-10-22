@@ -20,5 +20,5 @@ def read_key() -> str | None:
     key = None
     if os.path.exists(bridgecrew_file):
         with open(bridgecrew_file, "r") as f:
-            key = f.readline()
+            key = f.readline() or None  # in Mac, if the credentials file is empty, f.readline() == '' and it causes bugs
     return key

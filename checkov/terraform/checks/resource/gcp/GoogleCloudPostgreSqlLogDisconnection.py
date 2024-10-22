@@ -34,16 +34,16 @@ class GoogleCloudPostgreSqlLogDisconnection(BaseResourceCheck):
                         # treating use cases of the following database_flags parsing
                         # (list of dictionaries with arrays): 'database_flags':
                         # [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
-                        flags = [{key: flag[key][0] for key in flag} for flag in flags]
+                        flags = [{key: flag[key][0] for key in flag if key in ['name', 'value']} for flag in flags]
                     for flag in flags:
-                        if (flag['name'] == 'log_disconnections') and (flag['value'] == 'off'):
+                        if (isinstance(flag, dict) and flag['name'] == 'log_disconnections') and (flag['value'] == 'on'):  # Must be explicitly set for check to pass
                             self.evaluated_keys = ['database_version/[0]/POSTGRES',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/name',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']
-                            return CheckResult.FAILED
+                            return CheckResult.PASSED
                     self.evaluated_keys = ['database_version/[0]/POSTGRES', 'settings/[0]/database_flags']
 
-            return CheckResult.PASSED
+            return CheckResult.FAILED
         return CheckResult.UNKNOWN
 
 

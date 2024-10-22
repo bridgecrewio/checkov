@@ -1,0 +1,18 @@
+metadata:
+  version: '0.1'
+  id: CKV3_SAST_11
+  name: 'Ensure superuser port is not set'
+  guidelines: 'module setting superuser port'
+  category: 'sast'
+  cwe: 'CWE-289: Authentication Bypass by Alternate Name'
+scope:
+  languages:
+    - python
+definition:
+  - cond_type: "pattern"
+    operator: "equals"
+    value: "set_port($ARG)"
+  - cond_type: "variable"
+    variable: "$ARG"
+    operator: less_than
+    value: 1024

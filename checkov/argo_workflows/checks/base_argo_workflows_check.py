@@ -31,7 +31,7 @@ class BaseArgoWorkflowsCheck(BaseCheck):
         self.path = path
         registry.register(self)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # multi_signature decorator is problematic
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         self.entity_type = entity_type
 
         return self.scan_conf(conf)

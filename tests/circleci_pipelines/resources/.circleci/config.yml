@@ -1,93 +1,103 @@
---- 
-orbs: 
-  neworb: "whtever/orbname@goodorb"
-  someorb: "orbns/orbname@dev:blah"
-jobs: 
-  test-docker-hash-img: 
-    docker: 
-      - 
+---
+orbs:
+  new-orb: "whatever/orbname@goodorb"
+  some-orb: "orbs/orbname@dev:blah"
+
+executors:
+  image-executor:
+    docker:
+      - "image": "mongo:2.6.8"
+
+jobs:
+  test-job-single-line: say-hello-workflow/script
+  test-job-list-line:
+    - checkout
+  test-docker-hash-img:
+    docker:
+      -
         image: "redis@sha256:54057dd7e125ca41afe526a877e8bd35ec2cdd33b9217e022ed37bdcf7d09673"
-      - 
-        auth: 
+      -
+        auth:
           password: $DOCKERHUB_PASSWORD
           username: mydockerhub-user
-  test-docker-latest-img: 
-    docker: 
-      - 
+  test-docker-latest-img:
+    docker:
+      -
         image: "buildpack-deps:latest"
-      - 
-        auth: 
+      -
+        auth:
           password: $DOCKERHUB_PASSWORD
           username: mydockerhub-user
-        command: 
+        command:
           - "--smallfiles"
-  test-docker-versioned-img: 
-    docker: 
-      - 
+  test-docker-versioned-img:
+    docker:
+      -
         image: "mongo:2.6.8"
-      - 
-        auth: 
+      -
+        auth:
           password: $DOCKERHUB_PASSWORD
           username: mydockerhub-user
-        environment: 
+        environment:
           POSTGRES_USER: user
         image: "postgres:14.2"
-  test-echo: 
-    docker: 
-      - 
+  test-echo:
+    docker:
+      -
         image: "cimg/python:latest"
-    steps: 
+    steps:
       - checkout
-      - 
+      -
         run: "echo \"this is an echo in a script.\""
-  test-inject: 
-    docker: 
-      - 
+  test-inject:
+    docker:
+      -
         image: "cimg/python:latest"
-    steps: 
+    steps:
       - checkout
-      - run: 
+      - run:
           command: |
               curl -sSJL https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
               echo ${CIRCLE_BRANCH}
           name: "Multi-line run with injection via vars"
-  test-inject2: 
-    docker: 
-      - 
+  test-inject2:
+    docker:
+      -
         image: "cimg/python:latest"
-    steps: 
+    steps:
       - checkout
-      - 
-        run: 
+      -
+        run:
           command: |
               curl -sSJL https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
               echo $CIRCLE_BRANCH
           name: "Multi-line run with injection via vars"
-  test-curl-secret: 
-    docker: 
-      - 
+  test-curl-secret:
+    docker:
+      -
         image: "cimg/python:latest"
-    steps: 
+    steps:
       - checkout
-      - run: 
+      - run:
           command: |
               curl -x POST someurl $SECRET
           name: "Multi-line export secret"
-  test-inject-ci-vars: 
-    docker: 
-      - 
+  test-inject-ci-vars:
+    docker:
+      -
         image: "cimg/python:latest"
-    steps: 
+    steps:
       - checkout
-      - 
-        run: 
+      -
+        run:
           command: |
               echo ${CIRCLE_PR_REPONAME}
           name: "Echo the PR Reponame"
+
 version: 2.1
-workflows: 
-  say-hello-workflow: 
-    jobs: 
+workflows:
+  say-hello-workflow:
+    jobs:
       - test-docker-hash-img
       - test-docker-latest-img
       - test-docker-versioned-img
@@ -95,4 +105,3 @@ workflows:
       - test-inject
       - test-inject2
       - test-inject-ci-vars
-

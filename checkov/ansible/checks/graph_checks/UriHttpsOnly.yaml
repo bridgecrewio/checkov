@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_ANSIBLE_1"
+  name: "Ensure that HTTPS url is used with uri"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.ansible.builtin.uri
+    - tasks.uri
+  attribute: url
+  operator: starting_with
+  value: "https://"

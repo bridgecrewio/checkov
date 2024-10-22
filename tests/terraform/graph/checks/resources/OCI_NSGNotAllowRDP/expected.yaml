@@ -1,0 +1,8 @@
+pass:
+  - "oci_core_network_security_group_security_rule.pass_1"
+  - "oci_core_network_security_group_security_rule.pass_2"
+  - "oci_core_network_security_group_security_rule.pass_3"
+
+fail:
+  - "oci_core_network_security_group_security_rule.fail_1"
+  - "oci_core_network_security_group_security_rule.fail_2"

@@ -2,7 +2,7 @@ from checkov.kubernetes.checks.resource.base_rbac_check import BaseRbacK8sCheck,
 
 
 class RbacControlWebhooks(BaseRbacK8sCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Minimize ClusterRoles that grant control over validating or mutating admission webhook configurations"
         id = "CKV_K8S_155"
         supported_entities = ["ClusterRole"]

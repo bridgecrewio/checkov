@@ -1,0 +1,32 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "test",
+    "version": "1.0.0"
+  },
+  "security": [
+    {
+      "good_auth_1": [
+        "write:api"
+      ],
+      "good_auth_2": [
+        "write:api"
+      ],
+      "good_auth_3": [
+        "write:api"
+      ]
+    }
+  ],
+  "securityDefinitions": {
+    "good_auth_1": {
+      "type": "basic"
+    },
+    "good_auth_2": {
+      "type": "oauth2"
+    },
+    "good_auth_3": {
+      "type": "oauth2",
+      "flow": "accessCode"
+    }
+  }
+}

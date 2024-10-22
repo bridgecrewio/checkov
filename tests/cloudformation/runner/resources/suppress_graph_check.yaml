@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Suppress Test"
+Resources:
+  CommentSuppress:
+    # checkov:skip=CKV2_AWS_33 inline suppression
+    Type: "AWS::AppSync::GraphQLApi"
+    Properties:
+      Name: "My Checkov Test App with no WAF"
+      AuthenticationType: "API_KEY"
+  MetadataSuppress:
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV2_AWS_33
+            comment: inline suppression
+    Type: "AWS::AppSync::GraphQLApi"
+    Properties:
+      Name: "My Checkov Test App with no WAF"
+      AuthenticationType: "API_KEY"

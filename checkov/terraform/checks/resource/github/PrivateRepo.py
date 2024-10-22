@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class PrivateRepo(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure Repository is Private"
+        name = "Ensure GitHub repository is Private"
         id = "CKV_GIT_1"
         supported_resources = ["github_repository"]
         categories = [CheckCategories.GENERAL_SECURITY]

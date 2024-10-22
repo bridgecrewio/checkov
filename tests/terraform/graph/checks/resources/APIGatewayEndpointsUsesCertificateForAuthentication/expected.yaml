@@ -1,0 +1,6 @@
+pass:
+  - "aws_apigatewayv2_stage.pass_v2"
+  - "aws_api_gateway_stage.pass_v1"
+fail:
+  - "aws_apigatewayv2_stage.fail_v2"
+  - "aws_api_gateway_stage.fail_v1"

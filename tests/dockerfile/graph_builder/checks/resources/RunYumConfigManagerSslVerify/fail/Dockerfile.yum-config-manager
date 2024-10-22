@@ -1,0 +1,27 @@
+FROM fedora:rawhide
+
+RUN yum-config-manager --save --setopt=\*.sslverify=0
+RUN yum-config-manager --save --setopt=\*.sslverify=false
+RUN yum-config-manager --save --setopt=\*.sslverify=no
+
+RUN yum-config-manager --setopt=\*.sslverify=0 --save
+RUN yum-config-manager --setopt=\*.sslverify=false --save
+RUN yum-config-manager --setopt=\*.sslverify=no --save
+
+RUN yum-config-manager --save --setopt=sslverify='0'
+RUN yum-config-manager --save --setopt=sslverify='False'
+RUN yum-config-manager --save --setopt=sslverify='no'
+
+RUN yum-config-manager --save --setopt=sslverify="0"
+RUN yum-config-manager --save --setopt=sslverify="false"
+RUN yum-config-manager --save --setopt=sslverify="No"
+
+RUN yum-config-manager \
+    --setopt=sslverify=0 \
+    --save
+
+RUN echo "prodsec" && yum-config-manager --setopt="lol.sslverify"=0 --save
+RUN echo "prodsec" && yum-config-manager --setopt="lol.sslverify=no" --save
+
+RUN echo "prodsec" && yum-config-manager --setopt='lol.sslverify'=False --save
+RUN echo "prodsec" && yum-config-manager --setopt='lol.sslverify=false' --save

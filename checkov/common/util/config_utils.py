@@ -24,8 +24,3 @@ def get_default_config_paths(argv: list[str]) -> list[str]:
         if v in ('-d', '--directory'):
             dir_paths += config_file_paths(argv[i + 1])
     return dir_paths + cwd_path + home_paths
-
-
-def should_scan_hcl_files() -> bool:
-    from checkov.common.models.consts import SCAN_HCL_FLAG  # prevent circular import
-    return os.getenv(SCAN_HCL_FLAG, default="false").lower() == "true"

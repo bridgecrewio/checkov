@@ -29,17 +29,16 @@ else
 
 fi
 
-if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
+if [[ "$2" == "3.8" && "$1" == "ubuntu-latest" ]]
 then
-  pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
-  pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
-  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True
+  pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
+  pipenv run checkov -s -d terragoat/terraform/azure/ --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
+  pipenv run checkov -s -d terragoat/terraform/azure/ --repo-id checkov/integration_test --skip-results-upload --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat_no_upload.txt
   echo "running image referencing"
-  pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
-  pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
+  pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --repo-id checkov/integration_test --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
   echo "running list"
   pipenv run checkov --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
   echo "running tfc"
-  GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
+#  GITHUB_PAT="$GITHUB_PAT" TF_REGISTRY_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
 
 fi

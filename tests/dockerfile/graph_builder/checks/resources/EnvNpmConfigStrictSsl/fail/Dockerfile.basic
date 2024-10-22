@@ -1,0 +1,25 @@
+FROM node:18
+ENV NPM_CONFIG_STRICT_SSL false
+ENV NPM_CONFIG_STRICT_SSL=false
+ENV NPM_CONFIG_STRICT_SSL="false"
+ENV NPM_CONFIG_STRICT_SSL='false'
+ARG NPM_CONFIG_STRICT_SSL=false
+ARG NPM_CONFIG_STRICT_SSL="false"
+ARG NPM_CONFIG_STRICT_SSL='false'
+ARG NPM_CONFIG_STRICT_SSL false
+ENV LOL=555 NPM_CONFIG_STRICT_SSL=false
+ENV NPM_CONFIG_STRICT_SSL=false LOL=555
+ENV NPM_CONFIG_STRICT_SSL    false
+ARG NPM_CONFIG_STRICT_SSL    false
+ENV npm_config_strict_ssl false
+ENV npm_config_strict_ssl=false
+ENV npm_config_strict_ssl="false"
+ENV npm_config_strict_ssl='false'
+ARG npm_config_strict_ssl=false
+ARG npm_config_strict_ssl="false"
+ARG npm_config_strict_ssl='false'
+ARG npm_config_strict_ssl false
+ENV LOL=555 npm_config_strict_ssl=false
+ENV npm_config_strict_ssl=false LOL=555
+ENV npm_config_strict_ssl    false
+ARG npm_config_strict_ssl    false

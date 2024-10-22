@@ -8,11 +8,13 @@ from itertools import islice
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
-import dpath.util
+import dpath
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.terraform import TFDefinitionKey, get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
 OPEN_CURLY = "{"
@@ -23,6 +25,7 @@ class BaseContextParser(ABC):
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
         self.logger = logging.getLogger("{}".format(self.__module__))
+        add_resource_code_filter_to_logger(self.logger)
         if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
@@ -44,6 +47,14 @@ class BaseContextParser(ABC):
         :return: list of nested entity's keys in the context parser
         """
         raise NotImplementedError
+
+    def get_entity_definition_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
+        """
+        returns the entity's path in the entity definition block
+        :param entity_block: entity definition block
+        :return: list of nested entity's keys in the entity definition block
+        """
+        return self.get_entity_context_path(entity_block)
 
     def _is_block_signature(self, line_num: int, line_tokens: List[str], entity_context_path: List[str]) -> bool:
         """
@@ -74,8 +85,7 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
-        line_without_whitespace = line.replace(" ", "")
-        return "checkov:skip=" in line_without_whitespace or "bridgecrew:skip=" in line_without_whitespace
+        return "checkov:skip=" in line or "bridgecrew:skip=" in line
 
     def _collect_skip_comments(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
@@ -144,16 +154,12 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(
-            self, tf_file: str, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
+            self, tf_file: TFDefinitionKey, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
-        if tf_file.endswith("]") and "[" in tf_file:
-            self.tf_file = tf_file[: tf_file.index("[")]
-            self.tf_file_path = Path(tf_file[: tf_file.index("[")])
-        else:
-            self.tf_file = tf_file
-            self.tf_file_path = Path(tf_file)
+        self.tf_file = get_abs_path(tf_file)
+        self.tf_file_path = Path(self.tf_file)
         self.context = defaultdict(dict)
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)

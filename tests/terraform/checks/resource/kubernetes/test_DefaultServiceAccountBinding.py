@@ -20,18 +20,22 @@ class TestDefaultServiceAccountBinding(unittest.TestCase):
         passing_resources = {
             "kubernetes_cluster_role_binding.pass",
             "kubernetes_role_binding.pass",
+            "kubernetes_cluster_role_binding_v1.pass",
+            "kubernetes_role_binding_v1.pass",
         }
 
         failing_resources = {
             "kubernetes_cluster_role_binding.fail",
             "kubernetes_role_binding.fail",
+            "kubernetes_cluster_role_binding_v1.fail",
+            "kubernetes_role_binding_v1.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 2 * 2)
+        self.assertEqual(summary["failed"], 2 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

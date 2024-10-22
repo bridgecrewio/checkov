@@ -1,5 +1,5 @@
   {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "BAD_VAR": ["var.var_not_there"],
@@ -16,7 +16,8 @@
           "test_lambda": {
             "source_code_hash": ["${filemd5(\"${path.module}/templates/some-file.json\")}"],
             "__start_line__": 10,
-            "__end_line__": 12
+            "__end_line__": 12,
+            "__address__": "aws_lambda_function.test_lambda"
           }
         }
       }

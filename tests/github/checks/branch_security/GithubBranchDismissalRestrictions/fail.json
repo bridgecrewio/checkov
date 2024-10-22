@@ -1,0 +1,68 @@
+{
+  "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection",
+  "required_pull_request_reviews": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/required_pull_request_reviews",
+    "dismiss_stale_reviews": false,
+    "require_code_owner_reviews": false,
+    "require_last_push_approval": false,
+    "required_approving_review_count": 1,
+    "dismissal_restrictions": {
+      "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/dismissal_restrictions",
+      "users_url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/dismissal_restrictions/users",
+      "teams_url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/dismissal_restrictions/teams",
+      "users": [
+        {
+          "login": "deadpool",
+          "id": 12345,
+          "node_id": "12345",
+          "avatar_url": "https://avatars.githubusercontent.com/",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/deadpool",
+          "html_url": "https://github.com/deadpool",
+          "followers_url": "https://api.github.com/users/deadpool/followers",
+          "following_url": "https://api.github.com/users/deadpool/following{/other_user}",
+          "gists_url": "https://api.github.com/users/deadpool/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/deadpool/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/deadpool/subscriptions",
+          "organizations_url": "https://api.github.com/users/deadpool/orgs",
+          "repos_url": "https://api.github.com/users/deadpool/repos",
+          "events_url": "https://api.github.com/users/deadpool/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/deadpool/received_events",
+          "type": "User",
+          "site_admin": false
+        }
+      ],
+      "teams": [],
+      "apps": []
+    }
+  },
+  "required_signatures": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/required_signatures",
+    "enabled": false
+  },
+  "enforce_admins": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/enforce_admins",
+    "enabled": false
+  },
+  "required_linear_history": {
+    "enabled": false
+  },
+  "allow_force_pushes": {
+    "enabled": false
+  },
+  "allow_deletions": {
+    "enabled": false
+  },
+  "block_creations": {
+    "enabled": false
+  },
+  "required_conversation_resolution": {
+    "enabled": false
+  },
+  "lock_branch": {
+    "enabled": false
+  },
+  "allow_fork_syncing": {
+    "enabled": false
+  }
+}

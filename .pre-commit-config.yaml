@@ -1,10 +1,10 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.3.0
+    rev: v4.5.0
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 6.1.0
     hooks:
       - id: flake8
         language_version: python3.9
@@ -17,3 +17,25 @@ repos:
     hooks:
       - id: teyit
         language_version: python3.9
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.6.26
+    hooks:
+      - id: actionlint-docker
+        # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.
+        args: ["-ignore", "SC2129"]
+  - repo: https://github.com/Madoshakalaka/pipenv-setup  # Pipfile to setup.py sync checker
+    rev: v3.2.0
+    hooks:
+      - id: pipenv-setup
+        language_version: python3.9
+        entry: pipenv-setup check
+        args: []
+        additional_dependencies:
+          - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out
+          - plette<1.0.0  # Solve issue of import error for plette.models
+  - repo: https://github.com/seddonym/import-linter  # checks the import dependencies between each other
+    rev: v1.12.1
+    hooks:
+      - id: import-linter
+        language_version: python3.9
+        args: ["--show-timings"]

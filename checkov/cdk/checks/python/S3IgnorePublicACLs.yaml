@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_55
+  name: Ensure S3 bucket has ignore public ACLs enabled
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, block_public_access=aws_cdk.aws_s3.BlockPublicAccess.BLOCK_ALL, <ANY>)
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, block_public_access=aws_cdk.aws_s3.BlockPublicAccess.BLOCK_ACLS, <ANY>)
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, block_public_access=aws_cdk.aws_s3.BlockPublicAccess(ignore_public_acls=True), <ANY>)

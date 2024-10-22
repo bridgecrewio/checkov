@@ -18,11 +18,11 @@ class TestMLPublicAccess(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_machine_learning_workspace.ckv_unittest_pass',
-            'azurerm_machine_learning_workspace.ckv_unittest_pass_2'
+            'azurerm_machine_learning_workspace.ckv_unittest_pass'
         }
         failing_resources = {
             'azurerm_machine_learning_workspace.ckv_unittest_fail',
+            'azurerm_machine_learning_workspace.ckv_unittest_fail_2'
         }
         skipped_resources = {}
 

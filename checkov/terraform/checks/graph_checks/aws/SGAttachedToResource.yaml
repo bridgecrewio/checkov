@@ -13,15 +13,21 @@ definition:
         - aws_security_group
       connected_resource_types:
         - aws_alb
+        - aws_apprunner_vpc_connector
+        - aws_appstream_fleet
         - aws_batch_compute_environment
         - aws_cloudwatch_event_target
         - aws_codebuild_project
         - aws_codestarconnections_host
+        - aws_dax_cluster
         - aws_db_instance
         - aws_dms_replication_instance
+        - aws_dms_replication_config
         - aws_docdb_cluster
-        - aws_dax_cluster
+        - aws_docdbelastic_cluster
+        - aws_ec2_client_vpn_endpoint
         - aws_ec2_client_vpn_network_association
+        - aws_ec2_spot_fleet_request
         - aws_ecs_service
         - aws_efs_mount_target
         - aws_eks_cluster
@@ -31,23 +37,27 @@ definition:
         - aws_elasticsearch_domain
         - aws_elb
         - aws_emr_cluster
+        - aws_emr_studio
         - aws_glue_dev_endpoint
         - aws_instance
         - aws_lambda_function
         - aws_launch_configuration
         - aws_launch_template
         - aws_lb
+        - aws_memorydb_cluster
         - aws_mq_broker
         - aws_msk_cluster
         - aws_mwaa_environment
         - aws_neptune_cluster
         - aws_network_interface
+        - aws_quicksight_vpc_connection
         - aws_rds_cluster
         - aws_redshift_cluster
+        - aws_route53_resolver_endpoint
         - aws_sagemaker_notebook_instance
+        - aws_transfer_server
         - aws_vpc_endpoint
-        - aws_mq_broker
-        - aws_memorydb_cluster
-      operator:  exists
+        - aws_vpclattice_service_network_vpc_association
+      operator: exists
       attribute: networking
       cond_type: connection

@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: A simple AWS SAM template with a Lambda function.
+
+Resources:
+
+  Fail2:
+    Type: 'AWS::Serverless::Function'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2531
+            - E2533
+    Properties:
+      Handler: 'index.handler'
+      Runtime: 'python3.6'
+      CodeUri: './code/' # This should be the directory path where your Lambda code is.
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            Path: /hello1
+            Method: get
+      Environment:
+        Variables:
+          LOG_LEVEL: 'INFO'
+      MemorySize: 256
+      Timeout: 10
+      Role: arn:aws:iam::123456789012:role/lambda_execution_role
+  Pass2:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'index.handler'
+      Runtime: 'python3.11'
+      CodeUri: './code/' # This should be the directory path where your Lambda code is.
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            Path: /hello2
+            Method: get
+      Environment:
+        Variables:
+          LOG_LEVEL: 'INFO'
+      MemorySize: 256
+      Timeout: 10
+      Role: arn:aws:iam::123456789012:role/lambda_execution_role
+
+Outputs:
+  MyServerlessFunctionApi:
+    Description: "API Gateway endpoint URL for Prod environment"
+    Value: !Sub "https://${AWS::AccountId}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello1/"

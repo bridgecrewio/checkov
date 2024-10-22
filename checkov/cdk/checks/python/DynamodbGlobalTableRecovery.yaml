@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_165
+  name: Ensure DynamoDB global table point in time recovery (backup) is enabled
+  category: BACKUP_AND_RECOVERY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_dynamodb.CfnGlobalTable(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_dynamodb.CfnGlobalTable(<ANY>, replicas=[<ANY>, aws_cdk.aws_dynamodb.CfnGlobalTable.ReplicaSpecificationProperty(<ANY>, point_in_time_recovery_specification=aws_cdk.aws_dynamodb.CfnGlobalTable.PointInTimeRecoverySpecificationProperty(point_in_time_recovery_enabled=True) , <ANY>) , <ANY>], <ANY>)

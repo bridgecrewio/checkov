@@ -174,13 +174,28 @@ class Registry(BaseCheckRegistry):
                 "results_configuration": result[1],
             }
             return result[0]
+        evaluated_keys = check_result.get('evaluated_keys', [])
         results[result_key] = {
             "check": check,
             "result": result,
-            "results_configuration": entity_configuration,
+            "results_configuration": self.get_result_configuration(evaluated_keys, entity_configuration),
         }
         return result
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}
+
+    @staticmethod
+    def get_result_configuration(evaluated_keys: list[str], entity_conf: dict[str, Any] | list[Any]) \
+            -> dict[str, Any] | list[str | dict[str, Any]]:
+        if len(evaluated_keys) == 1 and isinstance(entity_conf, dict):
+            # the result configuration should be the smallest code block found by the evaluated_key path, that is of \
+            # type dict or list - the only types that currently have start_mark and end_mark lines configured
+            for path in evaluated_keys[0].split('/'):
+                reduced_conf = entity_conf.get(path)  # type:ignore[union-attr]
+                if not reduced_conf or isinstance(reduced_conf, str):
+                    return entity_conf
+                entity_conf = reduced_conf
+
+        return entity_conf

@@ -20,9 +20,16 @@ If not it can be added to that file like the following example:
 
 ```python
 
-class GitHub(BaseVCSDAL)
+class GitHub(BaseVCSDAL):
     ...
     ...
+    def setup_conf_dir(self) -> None:
+        ...
+        self.github_conf_file_paths = {
+            "branch_protection_rules": [Path(self.github_conf_dir_path) / "branch_protection_rules.json"],
+            ...
+        }
+        
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
@@ -33,7 +40,7 @@ class GitHub(BaseVCSDAL)
     def persist_branch_protection_rules(self):
         data = self.get_branch_protection_rules()
         if data:
-            BaseVCSDAL.persist(path=self.github_branch_protection_rules_file_path, conf=data)        
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["branch_protection_rules"][0], conf=data)        
     
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):

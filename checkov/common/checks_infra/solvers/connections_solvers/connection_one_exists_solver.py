@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 from checkov.common.checks_infra.solvers import ConnectionExistsSolver
+from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import Operators
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class ConnectionOneExistsSolver(ConnectionExistsSolver):
@@ -25,7 +26,18 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
-        passed, failed = super().get_operation(graph_connector)
+    def get_operation(self, graph_connector: LibraryGraph) -> \
+            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+        passed, failed, unknown = super()._get_operation(graph_connector)
         failed = [f for f in failed if f not in passed]
-        return passed, failed
+        unknown = [u for u in unknown if u not in passed]
+
+        debug.connection_block(
+            resource_types=self.resource_types,
+            connected_resource_types=self.connected_resources_types,
+            operator=self.operator,
+            passed_resources=passed,
+            failed_resources=failed,
+        )
+
+        return passed, failed, unknown

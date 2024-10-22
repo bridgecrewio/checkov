@@ -1,0 +1,20 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_20
+  name: Ensure the S3 bucket does not allow READ permissions to everyone
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  or:
+    - pattern: aws_cdk.aws_s3.Bucket(<ANY>, access_control=$ARG, <ANY>)
+      conditions:
+        or:
+          - metavariable: $ARG
+            pattern: aws_cdk.aws_s3.BucketAccessControl.PUBLIC_READ
+          - metavariable: $ARG
+            pattern: aws_cdk.aws_s3.BucketAccessControl.PUBLIC_READ_WRITE
+    -  pattern: aws_cdk.aws_s3.Bucket(<ANY>, public_read_access=True, <ANY>)

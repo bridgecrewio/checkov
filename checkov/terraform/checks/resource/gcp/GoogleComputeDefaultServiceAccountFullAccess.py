@@ -4,6 +4,7 @@ import re
 
 DEFAULT_SERVICE_ACCOUNT = re.compile(r'\d+-compute@developer\.gserviceaccount\.com')
 FULL_ACCESS_API = 'https://www.googleapis.com/auth/cloud-platform'
+FULL_ACCESS_API2 = 'cloud-platform'
 
 
 class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
@@ -23,9 +24,13 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         :param conf: google_compute_instance configuration
         :return: <CheckResult>
         """
-        if 'name' in conf and conf['name'][0].startswith('gke-'):
-            self.evaluated_keys = ['name']
-            return CheckResult.PASSED
+
+        if 'name' in conf:
+            if not isinstance(conf['name'][0], str):
+                return CheckResult.UNKNOWN
+            if conf['name'][0].startswith('gke-'):
+                self.evaluated_keys = ['name']
+                return CheckResult.PASSED
 
         if 'source_instance_template' in conf.keys() and 'service_account' not in conf.keys():
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
@@ -40,9 +45,11 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
                 if 'email' in service_account_conf:
                     self.evaluated_keys.append('service_account/[0]/email')
                     if re.match(DEFAULT_SERVICE_ACCOUNT, service_account_conf['email'][0]):
-                        if len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
+                        if len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0]
+                                                                        or FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                             return CheckResult.FAILED
-                elif len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
+                elif len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0] or
+                                                                  FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

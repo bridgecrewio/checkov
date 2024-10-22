@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_57
+  name: Ensure the S3 bucket does not allow WRITE permissions to everyone
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  or:
+    - pattern: aws_cdk.aws_s3.Bucket(<ANY>, access_control=$ARG, <ANY>)
+      conditions:
+        - metavariable: $ARG
+          pattern: aws_cdk.aws_s3.BucketAccessControl.PUBLIC_READ_WRITE
+    -  pattern: aws_cdk.aws_s3.Bucket(<ANY>, public_read_access=True, <ANY>)

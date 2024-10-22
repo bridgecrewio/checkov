@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class RejectUnsignedCommits(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure commits are signed"
+        name = "Ensure GitLab commits are signed"
         id = "CKV_GLB_4"
         supported_resources = ["gitlab_project"]
         categories = [CheckCategories.GENERAL_SECURITY]

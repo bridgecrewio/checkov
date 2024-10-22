@@ -17,16 +17,16 @@ performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
         'threshold': {
-            "Darwin": 18.0,
-            "Linux": 12.0,
-            "Windows": 14.0,
+            "Darwin": 19.0,
+            "Linux": 10.0,
+            "Windows": 15.0,
         }
     },
     'cloudformation': {
         'repo_name': 'aws-cloudformation-templates',
         'threshold': {
             "Darwin": 350.0,
-            "Linux": 250.0,
+            "Linux": 170.0,
             "Windows": 300.0,
         }
     },
@@ -34,7 +34,7 @@ performance_configurations = {
         'repo_name': 'kubernetes-yaml-templates',
         'threshold': {
             "Darwin": 550.0,
-            "Linux": 300.0,
+            "Linux": 180.0,
             "Windows": 500.0,
         }
     }
@@ -74,7 +74,7 @@ def test_terraform_performance(benchmark):
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=5,
+    min_rounds=10,
     timer=time.time,
     warmup=False
 )
@@ -99,7 +99,7 @@ def test_cloudformation_performance(benchmark):
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=5,
+    min_rounds=10,
     timer=time.time,
     warmup=False
 )

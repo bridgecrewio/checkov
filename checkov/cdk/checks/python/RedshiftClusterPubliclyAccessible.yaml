@@ -1,0 +1,12 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_87
+  name: Redshift cluster should not be publicly accessible
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>, publicly_accessible=True , <ANY>)

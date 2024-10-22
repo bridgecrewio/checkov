@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
+
+if TYPE_CHECKING:
+    from dockerfile_parse.parser import _Instruction
 
 
 class UserExists(BaseDockerfileCheck):
@@ -14,10 +17,10 @@ class UserExists(BaseDockerfileCheck):
         categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
-    def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any] | None]:
+    def scan_resource_conf(self, conf: dict[str, list[_Instruction]]) -> tuple[CheckResult, list[_Instruction] | None]:  # type:ignore[override]  # special wildcard behaviour
         for instruction, content in conf.items():
             if instruction == "USER":
-                return CheckResult.PASSED, content[0]
+                return CheckResult.PASSED, content
         return CheckResult.FAILED, None
 
 

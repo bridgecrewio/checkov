@@ -1,0 +1,228 @@
+{
+    "format_version": "1.1",
+    "terraform_version": "1.4.6",
+    "planned_values":
+    {
+        "root_module":
+        {
+            "resources":
+            [
+                {
+                    "address": "aws_security_group_rule.foo",
+                    "mode": "managed",
+                    "type": "aws_security_group_rule",
+                    "name": "foo",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 2,
+                    "values": {
+                        "cidr_blocks": null,
+                        "description": "foo",
+                        "from_port": 5432,
+                        "ipv6_cidr_blocks": null,
+                        "prefix_list_ids": [],
+                        "protocol": "tcp",
+                        "security_group_id": "sg-547cc4cd5f94bb695",
+                        "self": false,
+                        "source_security_group_id": "sg-8d21ab5963b0e7917",
+                        "timeouts": null,
+                        "to_port": 5433,
+                        "type": "ingress"
+                    },
+                    "sensitive_values": {
+                        "prefix_list_ids": []
+                    }
+                },
+                {
+                    "address": "aws_security_group_rule.bar",
+                    "mode": "managed",
+                    "type": "aws_security_group_rule",
+                    "name": "bar",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 2,
+                    "values": {
+                        "cidr_blocks": null,
+                        "description": "foo",
+                        "from_port": 8888,
+                        "ipv6_cidr_blocks": null,
+                        "prefix_list_ids": [],
+                        "protocol": "udp",
+                        "security_group_id": "sg-547cc4cd5f94bb696",
+                        "self": false,
+                        "source_security_group_id": "sg-8d21ab5963b0e7917",
+                        "timeouts": null,
+                        "to_port": 8888,
+                        "type": "ingress"
+                    },
+                    "sensitive_values": {
+                        "prefix_list_ids": []
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes":
+    [
+        {
+            "address": "aws_security_group_rule.foo",
+            "mode": "managed",
+            "type": "aws_security_group_rule",
+            "name": "foo",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 2,
+            "change":
+            {
+                "actions":
+                [
+                    "update"
+                ],
+                "before": {
+                    "cidr_blocks": [],
+                    "description": "foo",
+                    "from_port": 5432,
+                    "id": "sgrule-88888888",
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": [],
+                    "protocol": "tcp",
+                    "security_group_id": "sg-547cc4cd5f94bb695",
+                    "security_group_rule_id": null,
+                    "self": false,
+                    "source_security_group_id": "sg-8d21ab5963b0e7917",
+                    "timeouts": null,
+                    "to_port": 5432,
+                    "type": "ingress"
+                },
+                "after": {
+                    "cidr_blocks": [],
+                    "description": "foo",
+                    "from_port": 5432,
+                    "id": "sgrule-88888888",
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": [],
+                    "protocol": "tcp",
+                    "security_group_id": "sg-547cc4cd5f94bb695",
+                    "security_group_rule_id": "sgr-5a4b695164c564a8f",
+                    "self": false,
+                    "source_security_group_id": "sg-8d21ab5963b0e7917",
+                    "timeouts": null,
+                    "to_port": 5433,
+                    "type": "ingress"
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "cidr_blocks": [],
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": []
+                  },
+                "after_sensitive": {
+                    "cidr_blocks": [],
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": []
+                }
+            }
+        },
+        {
+            "address": "aws_security_group_rule.bar",
+            "mode": "managed",
+            "type": "aws_security_group_rule",
+            "name": "bar",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 2,
+            "change":
+            {
+                "actions":
+                [
+                    "update"
+                ],
+                "before": {
+                    "cidr_blocks": [],
+                    "description": "bar",
+                    "from_port": 8888,
+                    "id": "sgrule-88888888",
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": [],
+                    "protocol": "tcp",
+                    "security_group_id": "sg-547cc4cd5f94bb696",
+                    "security_group_rule_id": null,
+                    "self": false,
+                    "source_security_group_id": "sg-8d21ab5963b0e7917",
+                    "timeouts": null,
+                    "to_port": 8888,
+                    "type": "ingress"
+                },
+                "after": {
+                    "cidr_blocks": [],
+                    "description": "bar",
+                    "from_port": 8888,
+                    "id": "sgrule-88888888",
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": [],
+                    "protocol": "udp",
+                    "security_group_id": "sg-547cc4cd5f94bb696",
+                    "security_group_rule_id": "sgr-5a4b695164c564a90",
+                    "self": false,
+                    "source_security_group_id": "sg-8d21ab5963b0e7917",
+                    "timeouts": null,
+                    "to_port": 8888,
+                    "type": "ingress"
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "cidr_blocks": [],
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": []
+                  },
+                "after_sensitive": {
+                    "cidr_blocks": [],
+                    "ipv6_cidr_blocks": [],
+                    "prefix_list_ids": []
+                }
+            }
+        }
+    ],
+    "configuration":
+    {
+        "provider_config":
+        {
+            "aws":
+            {
+                "name": "aws"
+            }
+        },
+        "root_module":
+        {
+            "resources":
+            [
+                {
+                    "address": "aws_security_group_rule.foo",
+                    "mode": "managed",
+                    "type": "aws_security_group_rule",
+                    "name": "foo",
+                    "provider_config_key": "aws",
+                    "expressions":
+                    {
+                        "name":
+                        {
+                            "constant_value": "foo"
+                        }
+                    },
+                    "schema_version": 2
+                },
+                {
+                    "address": "aws_security_group_rule.bar",
+                    "mode": "managed",
+                    "type": "aws_security_group_rule",
+                    "name": "bar",
+                    "provider_config_key": "aws",
+                    "expressions":
+                    {
+                        "name":
+                        {
+                            "constant_value": "bar"
+                        }
+                    },
+                    "schema_version": 2
+                }
+            ]
+        }
+    }
+}

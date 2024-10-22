@@ -9,7 +9,7 @@ resource "aws_mq_broker" "unknown" {
   # auto_minor_version_upgrade = true
   user {
     username = "ExampleUser"
-    password = "MindTheGapps"
+    password = "MindTheGapps"  # checkov:skip=CKV_SECRET_6 test secret
   }
 }
 
@@ -35,7 +35,7 @@ resource "aws_mq_broker" "pass" {
   broker_name = "example"
 
   engine_type         = "ActiveMQ"
-  engine_version      = "5.16.0"
+  engine_version      = "5.17.6"
   host_instance_type  = "mq.t2.micro"
   publicly_accessible = true
   deployment_mode     = "SINGLE_INSTANCE"
@@ -52,7 +52,7 @@ resource "aws_mq_broker" "pass2" {
   broker_name = "example"
 
   engine_type         = "RabbitMQ"
-  engine_version      = "3.8.6"
+  engine_version      = "3.11.20"
   host_instance_type  = "mq.t2.micro"
   publicly_accessible = true
   deployment_mode     = "SINGLE_INSTANCE"
@@ -105,7 +105,7 @@ resource "aws_mq_configuration" "pass" {
   description    = "Example Configuration"
   name           = "example"
   engine_type    = "ActiveMQ"
-  engine_version = "5.16.3"
+  engine_version = "5.17.6"
 
   data = <<DATA
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

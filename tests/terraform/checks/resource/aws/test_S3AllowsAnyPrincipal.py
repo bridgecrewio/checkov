@@ -1,218 +1,53 @@
+import os
 import unittest
-import hcl2
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.S3AllowsAnyPrincipal import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestS3AllowsAnyPrincipal(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket" "s3" {
-  bucket = "bucket"
+        test_files_dir = current_dir + "/example_S3AllowsAnyPrincipal"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": {
-                "AWS": "*"
-            }
+        passing_resources = {
+            "aws_s3_bucket.pass",
+            "aws_s3_bucket.pass2",
+            "aws_s3_bucket_policy.pass",
+            "aws_s3_bucket_policy.pass_w_condition",
+            "aws_s3_bucket.pass_w_condition",
+            "aws_s3_bucket_policy.pass_w_condition2",
+            "aws_s3_bucket.pass_w_condition2",
+            "aws_s3_bucket.pass_w_condition3",
+            "aws_s3_bucket.pass_w_condition4",
+            "aws_s3_bucket.pass_w_condition5",
+            "aws_s3_bucket.pass_w_condition6",
         }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_policyobj(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket_policy" "s3" {
-  bucket = "bucket"
-
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": {
-                "AWS": "*"
-            }
+        failing_resources = {
+            "aws_s3_bucket.fail",
+            "aws_s3_bucket.fail2",
+            "aws_s3_bucket.fail3",
+            "aws_s3_bucket_policy.fail",
+            "aws_s3_bucket.fail_w_condition",
+            "aws_s3_bucket_policy.fail_w_condition",
         }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_failure_array(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket" "s3" {
-  bucket = "bucket"
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": {
-                "AWS": ["*"]
-            }
-        }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_failure_anon(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket" "s3" {
-  bucket = "bucket"
-
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": "*"
-        }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket" "s3" {
-  bucket = "bucket"
-
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": {
-                "AWS": "some_arn"
-            }
-        }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_deny(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket" "s3" {
-  bucket = "bucket"
-
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Deny",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": "*"
-        }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_policyobj(self):
-        hcl_res = hcl2.loads("""
-resource "aws_s3_bucket_policy" "s3" {
-  bucket = "bucket"
-
-  policy = <<POLICY
-{
-    "Id": "Policy1597273448050",
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "Stmt1597273446725",
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::bucket/*",
-            "Principal": {
-                "AWS": "some_arn"
-            }
-        }
-    ]
-}
-POLICY
-}        
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

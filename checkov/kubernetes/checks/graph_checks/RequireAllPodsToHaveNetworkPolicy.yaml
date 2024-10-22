@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_K8S_6"
+  name: "Minimize the admission of pods which lack an associated NetworkPolicy"
+  category: "KUBERNETES"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - Pod
+    - cond_type: connection
+      operator: exists
+      resource_types:
+        - Pod
+        - Deployment
+      connected_resource_types:
+        - NetworkPolicy

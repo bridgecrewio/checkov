@@ -1,15 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class SecurityGroupRuleDescription(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure every security groups rule has a description"
         id = "CKV_AWS_23"
-        supported_resource = ['AWS::EC2::SecurityGroup', 'AWS::EC2::SecurityGroupIngress', 'AWS::EC2::SecurityGroupEgress']
-        categories = [CheckCategories.NETWORKING]
+        supported_resource = ('AWS::EC2::SecurityGroup', 'AWS::EC2::SecurityGroupIngress', 'AWS::EC2::SecurityGroupEgress')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         """
             Looks for description in security group rules :
             https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html

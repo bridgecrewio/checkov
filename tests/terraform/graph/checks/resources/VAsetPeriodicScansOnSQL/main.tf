@@ -9,7 +9,7 @@ resource "azurerm_sql_server" "okLegacyExample" {
   location                     = azurerm_resource_group.okLegacyExample.location
   version                      = "12.0"
   administrator_login          = "4dm1n157r470r"
-  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd"  # checkov:skip=CKV_SECRET_6 test secret
 }
 
 resource "azurerm_storage_account" "okLegacyExample" {
@@ -45,6 +45,21 @@ resource "azurerm_mssql_server_vulnerability_assessment" "okLegacyExample" {
       "email@example2.com"
     ]
   }
+}
+
+resource "azurerm_mssql_server_vulnerability_assessment" "okLegacyExampleAsList" {
+  server_security_alert_policy_id = azurerm_mssql_server_security_alert_policy.okLegacyExample.id
+  storage_container_path          = "${azurerm_storage_account.okLegacyExample.primary_blob_endpoint}${azurerm_storage_container.okLegacyExample.name}/"
+  storage_account_access_key      = azurerm_storage_account.okLegacyExample.primary_access_key
+
+  recurring_scans = [{
+    enabled                   = true
+    email_subscription_admins = true
+    emails = [
+      "email@example1.com",
+      "email@example2.com"
+    ]
+  }]
 }
 
 resource "azurerm_resource_group" "okExample" {
@@ -115,7 +130,7 @@ resource "azurerm_sql_server" "badExample" {
   location                     = azurerm_resource_group.badExample.location
   version                      = "12.0"
   administrator_login          = "mradministrator"
-  administrator_login_password = "thisIsDog11"
+  administrator_login_password = "thisIsDog11"  # checkov:skip=CKV_SECRET_6 test secret
 
   extended_auditing_policy {
     storage_endpoint                        = azurerm_storage_account.badExample.primary_blob_endpoint

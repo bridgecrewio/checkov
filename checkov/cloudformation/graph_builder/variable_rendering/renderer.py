@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable, TypedDict
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
@@ -11,12 +10,26 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
+    from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
     from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
+    from typing_extensions import TypeAlias
+
+_EdgeEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any, dict[str, Any]], tuple[str | None, str | None]]]"
+_VertexEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any], str | None]]"
 
 
-class CloudformationVariableRenderer(VariableRenderer):
+class _EvaluatedEdge(TypedDict):
+    vertex_index: int
+    attribute_key: str
+    attribute_value: Any
+    change_origin_id: int | None
+    attribute_at_dest: str | None
+
+
+class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"]):
     EDGE_EVALUATION_CFN_FUNCTIONS = (
         IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.GET_ATT,
         IntrinsicFunctions.SUB, ConditionFunctions.IF)
@@ -26,13 +39,13 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def __init__(self, local_graph: "CloudformationLocalGraph") -> None:
         super().__init__(local_graph)
-        self.edge_evaluation_methods = {
+        self.edge_evaluation_methods: _EdgeEvaluationMethodsEntry = {
             IntrinsicFunctions.REF: self._evaluate_ref_connection,
             IntrinsicFunctions.FIND_IN_MAP: self._evaluate_findinmap_connection,
             IntrinsicFunctions.GET_ATT: self._evaluate_getatt_connection,
             IntrinsicFunctions.SUB: self._evaluate_sub_connection
         }
-        self.vertex_evaluation_methods = {
+        self.vertex_evaluation_methods: "dict[str, Callable[[Any], str | None]]" = {
             IntrinsicFunctions.SELECT: self._evaluate_select_function,
             IntrinsicFunctions.JOIN: self._evaluate_join_function
         }
@@ -46,7 +59,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         edge = edge_list[0]
         origin_vertex = self.local_graph.vertices[edge.origin]
         origin_vertex_attributes = origin_vertex.attributes
-        val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
+        val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         referenced_vertices = get_referenced_vertices_in_value(
             value=val_to_eval, vertices_block_name_map=self.vertices_block_name_map
@@ -63,7 +76,7 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def _render_variables_from_vertices(self) -> None:
         for vertex in self.local_graph.vertices:
-            vertex_attributes = deepcopy(vertex.attributes)
+            vertex_attributes = pickle_deepcopy(vertex.attributes)
             for attr_key, attr_value in vertex_attributes.items():
                 # Iterating on Fn::Join, Fn::Select and checking if they are
                 # in the current attribute value
@@ -91,17 +104,22 @@ class CloudformationVariableRenderer(VariableRenderer):
     """
 
     @staticmethod
-    def _evaluate_select_function(value: str) -> Optional[str]:
+    def _evaluate_select_function(value: list[int | str | list[str]]) -> Optional[str]:
         evaluated_value = None
         if len(value) != 2:
             return None
+
         idx_to_select = value[0]
+        if not isinstance(idx_to_select, (int, str)):
+            return None
+
         selection_list = value[1]
         if not isinstance(selection_list, (str, list)):
             return None
+
         if isinstance(selection_list, str):
             selection_list = selection_list.split(', ')
-        # convert idx_to_select to int if possible cause it might be a str_node
+        # convert idx_to_select to int if possible because it might be a str_node
         if isinstance(idx_to_select, str) and str.isdecimal(idx_to_select):
             idx_to_select = int(idx_to_select)
         if isinstance(idx_to_select, int) and isinstance(selection_list, list) \
@@ -119,7 +137,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         """
 
     @staticmethod
-    def _evaluate_join_function(value: str) -> Optional[str]:
+    def _evaluate_join_function(value: list[str | list[str]]) -> Optional[str]:
         evaluated_value = None
         if len(value) != 2:
             return None
@@ -129,8 +147,8 @@ class CloudformationVariableRenderer(VariableRenderer):
             return None
         if isinstance(values_list, str):
             values_list = values_list.split(', ')
-        for value in values_list:
-            if not isinstance(value, str):
+        for inner_value in values_list:
+            if not isinstance(inner_value, str):
                 return None
         if isinstance(delimiter, str) and isinstance(values_list, list):
             for curr_value in values_list:
@@ -141,7 +159,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         return evaluated_value
 
     @staticmethod
-    def _evaluate_ref_connection(value: str, dest_vertex_attributes: Dict[str, Any]) -> (Optional[str], Optional[str]):
+    def _evaluate_ref_connection(value: Any, dest_vertex_attributes: Dict[str, Any]) -> tuple[str | None, str | None]:
         # in case of Ref we take only Parameter's default value
         attribute_at_dest = 'Default'
         evaluated_value = dest_vertex_attributes.get(attribute_at_dest)
@@ -153,9 +171,9 @@ class CloudformationVariableRenderer(VariableRenderer):
             return str(evaluated_value), attribute_at_dest
         return None, None
 
-    def _fetch_vertex_attributes(self, block_name, block_type):
+    def _fetch_vertex_attributes(self, block_name: str, block_type: str) -> dict[str, Any] | None:
         vertex_attributes = None
-        vertex_index_list = self.local_graph.vertices_block_name_map.get(block_type, None).get(block_name, None)
+        vertex_index_list = self.local_graph.vertices_block_name_map.get(block_type, {}).get(block_name, None)
         if isinstance(vertex_index_list, list):
             vertex_index = vertex_index_list[0]
             vertex_attributes = self.local_graph.get_vertex_attributes_by_index(vertex_index)
@@ -189,7 +207,7 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         return self._evaluate_condition(condition_to_evaluate, value_to_evaluate)
 
-    def _evaluate_condition(self, condition_fn: str, value: Any) -> Optional[bool]:
+    def _evaluate_condition(self, condition_fn: str | None, value: Any) -> Optional[bool]:
         """
         Evaluate CFN condition function's value
         Examples
@@ -245,8 +263,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         return None
 
     @staticmethod
-    def _evaluate_findinmap_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
-            Optional[str], Optional[str]):
+    def _evaluate_findinmap_connection(
+        value: Any, dest_vertex_attributes: Dict[str, Any]
+    ) -> tuple[str | None, str | None]:
         # value = [ "MapName", "TopLevelKey", "SecondLevelKey"]
         if isinstance(value, list) and len(value) == 3:
             map_name = value[0]
@@ -264,14 +283,15 @@ class CloudformationVariableRenderer(VariableRenderer):
         return None, None
 
     @staticmethod
-    def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
-            Optional[str], Optional[str]):
+    def _evaluate_getatt_connection(
+        value: Any, dest_vertex_attributes: Dict[str, Any]
+    ) -> tuple[str | None, str | None]:
         # value = [ "logicalNameOfResource", "attributeName" ]
         try:
             if isinstance(value, list) and len(value) == 2:
                 resource_name = value[0]
                 attribute_at_dest = value[1]
-                dest_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME).split('.')[-1]
+                dest_name = dest_vertex_attributes[CustomAttributes.BLOCK_NAME].split('.')[-1]
                 evaluated_value = dest_vertex_attributes.get(
                     attribute_at_dest)  # we extract only build time atts, not runtime
 
@@ -285,8 +305,9 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         return None, None
 
-    def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> (
-            Optional[str], Optional[str]):
+    def _evaluate_sub_connection(
+        self, value: Any, dest_vertex_attributes: Dict[str, Any]
+    ) -> tuple[str | None, str | None]:
         if isinstance(value, (list, dict)):
             # TODO: Render values of list/dict types
             return None, None
@@ -320,8 +341,9 @@ class CloudformationVariableRenderer(VariableRenderer):
 
         return evaluated_value, attribute_at_dest
 
-    def _evaluate_if_connection(self, value: List[str], condition_vertex_attributes: Dict[str, Any]) -> (
-            Optional[str], Optional[str]):
+    def _evaluate_if_connection(
+        self, value: List[str], condition_vertex_attributes: Dict[str, Any]
+    ) -> tuple[str | None, str | None]:
         """
         Evaluate a Condition Function IF.
         This method receives 2 parameters:
@@ -359,7 +381,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             if isinstance(operand_to_eval, str):
                 # The operand is a simple string
                 evaluated_value = operand_to_eval
-                evaluated_value_hierarchy = operand_index
+                evaluated_value_hierarchy = str(operand_index)
             elif isinstance(operand_to_eval, dict) and ConditionFunctions.IF in operand_to_eval:
                 # The operand is {'Fn::If': new value to evaluate}
                 condition_to_eval = operand_to_eval[ConditionFunctions.IF]
@@ -392,7 +414,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         return [], ""
 
     def _extract_vertices_block_name_map(self) -> Dict[str, Dict[str, List[int]]]:
-        vertices_block_name_map = deepcopy(self.local_graph.vertices_block_name_map)
+        vertices_block_name_map = pickle_deepcopy(self.local_graph.vertices_block_name_map)
         resources_blocks_name_map = vertices_block_name_map[BlockType.RESOURCE]
 
         updated_resources_blocks_name_map = {}
@@ -403,7 +425,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         vertices_block_name_map[BlockType.RESOURCE] = updated_resources_blocks_name_map
         return vertices_block_name_map
 
-    def _handle_dependson_condition_connections(self, edge: Edge, origin_vertex: Block) -> None:
+    def _handle_dependson_condition_connections(self, edge: Edge, origin_vertex: CloudformationBlock) -> None:
         if edge.label == IntrinsicFunctions.CONDITION:
             dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
             evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
@@ -423,7 +445,7 @@ class CloudformationVariableRenderer(VariableRenderer):
         if cfn_evaluation_function:
             original_value = val_to_eval.get(cfn_evaluation_function, None)
 
-            evaluated_edges = list()
+            evaluated_edges: "list[_EvaluatedEdge]" = []
             for edge in edge_list:
                 dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
                 try:
@@ -431,6 +453,7 @@ class CloudformationVariableRenderer(VariableRenderer):
                         edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
                 except KeyError:
                     logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
+                    continue
 
                 if evaluated_value and evaluated_value != original_value:
                     # succeeded to evaluate an edge
@@ -448,13 +471,13 @@ class CloudformationVariableRenderer(VariableRenderer):
 
             if len(evaluated_edges) == len(edge_list):
                 # succeeded in evaluation all of the edges
-                for evaluated_value in evaluated_edges:
+                for evaluated_edge in evaluated_edges:
                     self.local_graph.update_vertex_attribute(
-                        vertex_index=evaluated_value['vertex_index'],
-                        attribute_key=evaluated_value['attribute_key'],
-                        attribute_value=evaluated_value['attribute_value'],
-                        change_origin_id=evaluated_value['change_origin_id'],
-                        attribute_at_dest=evaluated_value['attribute_at_dest']
+                        vertex_index=evaluated_edge['vertex_index'],
+                        attribute_key=evaluated_edge['attribute_key'],
+                        attribute_value=evaluated_edge['attribute_value'],
+                        change_origin_id=evaluated_edge['change_origin_id'],
+                        attribute_at_dest=evaluated_edge['attribute_at_dest']
                     )
 
     def _evaluate_cfn_function(
@@ -485,3 +508,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             changed_origin_id = edge.dest
 
         return evaluated_value, changed_origin_id, attribute_at_dest
+
+    def evaluate_non_rendered_values(self) -> None:
+        # not used
+        pass

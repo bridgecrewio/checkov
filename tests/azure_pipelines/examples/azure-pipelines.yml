@@ -1,0 +1,19 @@
+trigger:
+- master
+
+resources:
+  repositories:
+  - repository: AzureDevOps
+    type: git
+    endpoint: AzureDevOps
+    name: AzureDevOps/AzureDevOps
+
+jobs:
+- job: PassTag
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  container: ubuntu:20.04
+
+  steps:
+    - script: printenv

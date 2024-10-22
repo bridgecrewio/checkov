@@ -4,7 +4,8 @@ from termcolor import colored
 from checkov.version import version
 from checkov.common.version_manager import check_for_update
 
-tool = "Checkov"
+default_tool = "Checkov"
+
 banner = r"""
        _               _              
    ___| |__   ___  ___| | _______   __
@@ -12,7 +13,7 @@ banner = r"""
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: {} """.format(version)
+By Prisma Cloud | version: {} """.format(version)
 
 new_version = check_for_update("checkov", version)
 if new_version:

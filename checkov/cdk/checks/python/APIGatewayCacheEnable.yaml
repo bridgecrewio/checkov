@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_120
+  name: Ensure API Gateway caching is enabled
+  category: BACKUP_AND_RECOVERY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_apigateway.Stage(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_apigateway.Stage(<ANY>, cache_cluster_enabled=True, <ANY>)
+      - pattern: aws_cdk.aws_sam.CfnApi(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sam.CfnApi(<ANY>, cacheClusterEnabled=True , <ANY>)

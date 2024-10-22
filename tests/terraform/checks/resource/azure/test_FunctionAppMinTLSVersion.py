@@ -16,16 +16,28 @@ class TestFunctionAppMinTLSVersion(unittest.TestCase):
         passing_resources = {
             "azurerm_function_app.pass",
             "azurerm_function_app.pass2",
+            "azurerm_function_app.pass3",
+            "azurerm_function_app_slot.pass4",
+            "azurerm_linux_function_app.pass5",
+            "azurerm_windows_function_app.pass6",
+            "azurerm_linux_function_app_slot.pass7",
+            "azurerm_windows_function_app_slot.pass8",
+            "azurerm_windows_function_app_slot.pass9",
         }
         failing_resources = {
             "azurerm_function_app.fail",
+            "azurerm_function_app_slot.fail2",
+            "azurerm_linux_function_app.fail3",
+            "azurerm_windows_function_app.fail4",
+            "azurerm_linux_function_app_slot.fail5",
+            "azurerm_windows_function_app_slot.fail6",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

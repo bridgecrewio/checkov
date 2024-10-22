@@ -1,0 +1,12 @@
+metadata: 
+  id: "CKV2_AZURE_24"
+  name: "Ensure Azure automation account does NOT have overly permissive network access"
+  category: "GENERAL_SECURITY"
+
+definition:
+
+  cond_type: attribute
+  resource_types: "azurerm_automation_account"
+  attribute: "public_network_access_enabled"
+  operator: "equals"
+  value: "false"

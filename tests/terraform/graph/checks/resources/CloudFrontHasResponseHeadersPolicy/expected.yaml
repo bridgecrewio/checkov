@@ -2,3 +2,4 @@ fail:
   - "aws_cloudfront_distribution.no_response_headers_policy"
 pass:
   - "aws_cloudfront_distribution.pass"
+  - "aws_cloudfront_distribution.pass2"

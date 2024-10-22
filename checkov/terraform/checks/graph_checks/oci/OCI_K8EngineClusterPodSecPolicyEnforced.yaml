@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_OCI_6"
+  name: "Ensure Kubernetes Engine Cluster pod security policy is enforced"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "options.admission_controller_options.is_pod_security_policy_enabled"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "options.admission_controller_options.is_pod_security_policy_enabled"
+      operator: "equals_ignore_case"
+      value: "true"

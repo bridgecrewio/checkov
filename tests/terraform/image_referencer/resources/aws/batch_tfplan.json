@@ -1,0 +1,115 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_batch_job_definition.test",
+          "mode": "managed",
+          "type": "aws_batch_job_definition",
+          "name": "test",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "container_properties": "{\"command\":[\"ls\",\"-la\"],\"environment\":[{\"name\":\"VARNAME\",\"value\":\"VARVAL\"}],\"image\":\"busybox\",\"memory\":1024,\"mountPoints\":[{\"containerPath\":\"/tmp\",\"readOnly\":false,\"sourceVolume\":\"tmp\"}],\"ulimits\":[{\"hardLimit\":1024,\"name\":\"nofile\",\"softLimit\":1024}],\"vcpus\":1,\"volumes\":[{\"host\":{\"sourcePath\":\"/tmp\"},\"name\":\"tmp\"}]}",
+            "name": "tf_test_batch_job_definition",
+            "parameters": null,
+            "platform_capabilities": null,
+            "propagate_tags": false,
+            "retry_strategy": [],
+            "tags": null,
+            "timeout": [],
+            "type": "container"
+          },
+          "sensitive_values": {
+            "retry_strategy": [],
+            "tags_all": {},
+            "timeout": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_batch_job_definition.test",
+      "mode": "managed",
+      "type": "aws_batch_job_definition",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "container_properties": "{\"command\":[\"ls\",\"-la\"],\"environment\":[{\"name\":\"VARNAME\",\"value\":\"VARVAL\"}],\"image\":\"busybox\",\"memory\":1024,\"mountPoints\":[{\"containerPath\":\"/tmp\",\"readOnly\":false,\"sourceVolume\":\"tmp\"}],\"ulimits\":[{\"hardLimit\":1024,\"name\":\"nofile\",\"softLimit\":1024}],\"vcpus\":1,\"volumes\":[{\"host\":{\"sourcePath\":\"/tmp\"},\"name\":\"tmp\"}]}",
+          "name": "tf_test_batch_job_definition",
+          "parameters": null,
+          "platform_capabilities": null,
+          "propagate_tags": false,
+          "retry_strategy": [],
+          "tags": null,
+          "timeout": [],
+          "type": "container"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "retry_strategy": [],
+          "revision": true,
+          "tags_all": true,
+          "timeout": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "retry_strategy": [],
+          "tags_all": {},
+          "timeout": []
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          },
+          "access_key": {
+            "constant_value": "AKIAIOSFODNN7EXAMPLE"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_batch_job_definition.test",
+          "mode": "managed",
+          "type": "aws_batch_job_definition",
+          "name": "test",
+          "provider_config_key": "aws",
+          "expressions": {
+            "container_properties": {
+              "constant_value": "{\r\n    \"command\": [\"ls\", \"-la\"],\r\n    \"image\": \"busybox\",\r\n    \"memory\": 1024,\r\n    \"vcpus\": 1,\r\n    \"volumes\": [\r\n      {\r\n        \"host\": {\r\n          \"sourcePath\": \"/tmp\"\r\n        },\r\n        \"name\": \"tmp\"\r\n      }\r\n    ],\r\n    \"environment\": [\r\n        {\"name\": \"VARNAME\", \"value\": \"VARVAL\"}\r\n    ],\r\n    \"mountPoints\": [\r\n        {\r\n          \"sourceVolume\": \"tmp\",\r\n          \"containerPath\": \"/tmp\",\r\n          \"readOnly\": false\r\n        }\r\n    ],\r\n    \"ulimits\": [\r\n      {\r\n        \"hardLimit\": 1024,\r\n        \"name\": \"nofile\",\r\n        \"softLimit\": 1024\r\n      }\r\n    ]\r\n}\r\n"
+            },
+            "name": {
+              "constant_value": "tf_test_batch_job_definition"
+            },
+            "type": {
+              "constant_value": "container"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

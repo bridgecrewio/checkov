@@ -1,0 +1,7 @@
+pass:
+  - "azurerm_synapse_workspace_vulnerability_assessment.va_pass"
+
+fail:
+  - "azurerm_synapse_workspace_vulnerability_assessment.va_fail_1"
+  - "azurerm_synapse_workspace_vulnerability_assessment.va_fail_2"
+  - "azurerm_synapse_workspace_vulnerability_assessment.va_fail_3"

@@ -1,0 +1,13 @@
+FROM python:3
+ENV PIP_TRUSTED_HOST pypi.python.org
+ENV PIP_TRUSTED_HOST=pypi.python.org
+ENV PIP_TRUSTED_HOST="pypi.python.org"
+ENV PIP_TRUSTED_HOST='pypi.python.org'
+ARG PIP_TRUSTED_HOST=pypi.python.org
+ARG PIP_TRUSTED_HOST="pypi.python.org"
+ARG PIP_TRUSTED_HOST='pypi.python.org'
+ARG PIP_TRUSTED_HOST pypi.python.org
+ENV LOL=123 PIP_TRUSTED_HOST=pypi.python.org
+ENV PIP_TRUSTED_HOST=pypi.python.org LOL=123
+ENV PIP_TRUSTED_HOST    pypi.python.org
+ARG PIP_TRUSTED_HOST    pypi.python.org

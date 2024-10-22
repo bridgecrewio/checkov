@@ -1,0 +1,76 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: ipsec_fail_1
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['none'] # No authentication algorithm
+
+    - name: ipsec_fail_2
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['md5'] # Unacceptable authentication algorithm
+
+    - name: ipsec_fail_3
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha1'] # Unacceptable authentication algorithm
+
+    - name: ipsec_fail_4
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: [''] # Empty authentication algorithm
+
+    - name: ipsec_fail_5
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        # No authentication algorithm specified, default is 'sha1' which is unacceptable
+
+    - name: ipsec_fail_6
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['md5', 'sha1'] # Multiple unnacceptable authentication algorithms
+
+    - name: ipsec_fail_7
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['md5', 'sha512'] # Annacceptable authentication algorithm within a list including an acceptable algorithm
+
+    - name: ipsec_fail_8
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha512', 'md5'] # Annacceptable authentication algorithm within a list including an acceptable algorithm
+
+    - name: ipsec_fail_9
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha512', 'md5', 'sha384'] # Annacceptable authentication algorithm within a list including an acceptable algorithm

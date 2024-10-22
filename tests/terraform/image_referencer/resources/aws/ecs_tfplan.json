@@ -1,0 +1,136 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecs_task_definition.service",
+          "mode": "managed",
+          "type": "aws_ecs_task_definition",
+          "name": "service",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "container_definitions": "[{\"cpu\":10,\"essential\":true,\"image\":\"nginx\",\"memory\":512,\"name\":\"first\",\"portMappings\":[{\"containerPort\":80,\"hostPort\":80}]},{\"cpu\":10,\"essential\":true,\"image\":\"python:3.9-alpine\",\"memory\":256,\"name\":\"second\",\"portMappings\":[{\"containerPort\":443,\"hostPort\":443}]}]",
+            "cpu": null,
+            "ephemeral_storage": [],
+            "execution_role_arn": null,
+            "family": "service",
+            "inference_accelerator": [],
+            "ipc_mode": null,
+            "memory": null,
+            "pid_mode": null,
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "requires_compatibilities": null,
+            "runtime_platform": [],
+            "skip_destroy": false,
+            "tags": null,
+            "task_role_arn": null,
+            "volume": []
+          },
+          "sensitive_values": {
+            "ephemeral_storage": [],
+            "inference_accelerator": [],
+            "placement_constraints": [],
+            "proxy_configuration": [],
+            "runtime_platform": [],
+            "tags_all": {},
+            "volume": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_ecs_task_definition.service",
+      "mode": "managed",
+      "type": "aws_ecs_task_definition",
+      "name": "service",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "container_definitions": "[{\"cpu\":10,\"essential\":true,\"image\":\"nginx\",\"memory\":512,\"name\":\"first\",\"portMappings\":[{\"containerPort\":80,\"hostPort\":80}]},{\"cpu\":10,\"essential\":true,\"image\":\"python:3.9-alpine\",\"memory\":256,\"name\":\"second\",\"portMappings\":[{\"containerPort\":443,\"hostPort\":443}]}]",
+          "cpu": null,
+          "ephemeral_storage": [],
+          "execution_role_arn": null,
+          "family": "service",
+          "inference_accelerator": [],
+          "ipc_mode": null,
+          "memory": null,
+          "pid_mode": null,
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "requires_compatibilities": null,
+          "runtime_platform": [],
+          "skip_destroy": false,
+          "tags": null,
+          "task_role_arn": null,
+          "volume": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "ephemeral_storage": [],
+          "id": true,
+          "inference_accelerator": [],
+          "network_mode": true,
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "revision": true,
+          "runtime_platform": [],
+          "tags_all": true,
+          "volume": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "ephemeral_storage": [],
+          "inference_accelerator": [],
+          "placement_constraints": [],
+          "proxy_configuration": [],
+          "runtime_platform": [],
+          "tags_all": {},
+          "volume": []
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecs_task_definition.service",
+          "mode": "managed",
+          "type": "aws_ecs_task_definition",
+          "name": "service",
+          "provider_config_key": "aws",
+          "expressions": {
+            "container_definitions": {},
+            "family": {
+              "constant_value": "service"
+            }
+          },
+          "schema_version": 1
+        }
+      ]
+    }
+  }
+}

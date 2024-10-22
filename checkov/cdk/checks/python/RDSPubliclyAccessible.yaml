@@ -1,0 +1,12 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_17
+  name: Ensure all data stored in RDS is not publicly accessible
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_rds.DatabaseInstance(<ANY>, publicly_accessible=True , <ANY>)

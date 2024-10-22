@@ -1,10 +1,11 @@
-import os
 import warnings
 from pathlib import Path
 from typing import List
 
 from checkov.bicep.graph_manager import BicepGraphManager
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from parameterized import parameterized_class
+from tests.graph_utils.utils import set_db_connector_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS
+
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -12,10 +13,11 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
-
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
+        graph_manager = BicepGraphManager(db_connector=db_connector)
         super().__init__(
             graph_manager=graph_manager,
             real_graph_checks_path=str(
@@ -28,12 +30,14 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         )
 
     def setUp(self) -> None:
-        os.environ["UNIQUE_TAG"] = ""
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_SQLServerAuditingEnabled(self):
         self.go("SQLServerAuditingEnabled")
+
+    def test_SQLServerAuditingRetention90Days(self):
+        self.go("SQLServerAuditingRetention90Days")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

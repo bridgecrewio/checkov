@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV2_AWS_6
+  name: Ensure that S3 bucket has a Public Access block
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $S3.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (?i)(Bucket|CfnBucket)
+    - not_pattern: |
+        new $S3.$FUNC(<ANY>, { <ANY>, blockPublicAccess: <ANY> , <ANY> } ,<ANY>)

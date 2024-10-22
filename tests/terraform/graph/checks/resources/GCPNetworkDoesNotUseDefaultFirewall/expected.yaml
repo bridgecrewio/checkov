@@ -1,0 +1,4 @@
+pass:
+  - "google_compute_network.pass"
+fail:
+  - "google_compute_network.fail"

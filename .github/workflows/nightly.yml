@@ -6,48 +6,163 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
-  release:
+  github-release:
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     permissions:
       contents: write
-      pull-requests: write
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: Prepare Release
         id: prepare_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # grab latest release and tag to compare and decide to create a new one
           create_release=true
-          release_notes="minor improvements and fixes"
-          latest_gh_release=$(curl -s https://api.github.com/repos/bridgecrewio/checkov/releases/latest  | grep -Po '"tag_name": "\K.*?(?=")')
+          latest_gh_release=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest"  | grep -Po '"tag_name": "\K.*?(?=")')
           latest_tag=$(git describe --abbrev=0 --tags)
-          
+
           if [ "$latest_gh_release" = "$latest_tag" ]
           then
             create_release=false
           fi
-          
-          echo "::set-output name=create_release::$create_release"
-          echo "::set-output name=version::$latest_tag"
-          echo "::set-output name=notes::$release_notes"
-      - name: Create GitHub Release
+
+          echo "create_release=$create_release" >> "$GITHUB_OUTPUT"
+          echo "latest_release_version=$latest_gh_release" >> "$GITHUB_OUTPUT"
+          echo "version=$latest_tag" >> "$GITHUB_OUTPUT"
+      - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
-        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
+        id: build_github_release
+        uses: mikepenz/release-changelog-builder-action@5f3409748e2230350e149a7f7b5b8e9bcd785d44  # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
+        with:
+          configuration: ".github/release-changelog-config.json"
+          fromTag: ${{ steps.prepare_release.outputs.latest_release_version }}
+          toTag: ${{ steps.prepare_release.outputs.version }}
+      - name: Create GitHub Release
+        if: steps.build_github_release.outputs.changelog != ''
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v1
+        id: create_github_release
         with:
           tag_name: ${{ steps.prepare_release.outputs.version }}
           name: ${{ steps.prepare_release.outputs.version }}
-          body: ${{ steps.prepare_release.outputs.notes }}
+          body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
-        if: steps.prepare_release.outputs.create_release == 'true'
-        uses: BobAnkh/auto-generate-changelog@4a2eb69805db4af39f374dc95eb502669fb4af95  # v1
+        if: steps.build_github_release.outputs.changelog != ''
+        uses: stefanzweifel/changelog-updater-action@622311becab6b400fd95efaf29719f401ffa4691  # v1
         with:
-          ACCESS_TOKEN: ${{ secrets.GH_PAT_SECRET }}
-          PATH: "CHANGELOG.md"
-          TYPE: "feat:Feature,fix:Bug Fix,break:Breaking Change,platform:Platform,docs:Documentation"
+          latest-version: ${{ steps.prepare_release.outputs.version }}
+          release-notes: ${{ steps.build_github_release.outputs.changelog }}
+      - name: Commit updated CHANGELOG.md
+        if: steps.build_github_release.outputs.changelog != ''
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842  # v5
+        with:
+          commit_message: "chore: update release notes"
+          file_pattern: CHANGELOG.md
+    outputs:
+      upload_url: ${{ steps.create_github_release.outputs.upload_url }}
+      version: ${{ steps.prepare_release.outputs.version }}
+  build-release-artifacts:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: darwin
+            suffix: ''
+          - os: ubuntu-latest
+            name: linux
+            suffix: ''
+          - os: windows-latest
+            name: windows
+            suffix: '.exe'
+    needs: [github-release]
+    if: needs.github-release.outputs.upload_url != ''
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    env:
+      PYTHON_VERSION: "3.8"
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install deps and run pyinstaller
+        run: |
+          pipenv sync
+          pipenv run pip install pyinstaller
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: Windows - Test executable
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        # make sure it doesn't crash
+        run: ./dist/checkov.exe -s -d tests/terraform/checks/resource/alicloud
+      - name: Windows - zip artifact
+        if: matrix.os == 'windows-latest'
+        run: tar.exe -a -c -f checkov.zip dist\\checkov.exe
+      - name: Linux/Mac - Test executable
+        if: matrix.os != 'windows-latest'
+        # make sure it doesn't crash
+        run: ./dist/checkov -s -d tests/terraform/checks/resource/alicloud
+      - name: Linux/Mac - zip artifact
+        if: matrix.os != 'windows-latest'
+        run: zip checkov.zip dist/checkov
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.github-release.outputs.upload_url }}
+          asset_path: checkov.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64.zip
+          asset_content_type: application/zip
+  build-release-artifact-linux-arm:
+    needs: [ github-release ]
+    if: needs.github-release.outputs.upload_url != ''
+    runs-on: [self-hosted, public, linux, arm64]
+    container:
+      image: arm64v8/python:3.8
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install deps and run pyinstaller
+        run: |
+          pipenv sync
+          pipenv run pip install pyinstaller
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: zip artifact
+        run: |
+          apt-get update
+          apt install zip
+          zip checkov.zip dist/checkov
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.github-release.outputs.upload_url }}
+          asset_path: checkov.zip
+          asset_name: checkov_linux_arm64.zip
+          asset_content_type: application/zip

@@ -15,14 +15,17 @@ class TestAliasIsUnique(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        passing_resources = {"/success/Dockerfile."}
+        passing_resources = {
+            "/success/Dockerfile.",
+            "/success_platform/Dockerfile.",
+        }
         failing_resources = {"/failure/Dockerfile.FROM"}
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

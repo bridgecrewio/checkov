@@ -1,0 +1,18 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_40
+  name: Ensure IAM policies are attached only to groups or roles (Reducing access management complexity may in-turn reduce opportunity for a principal to inadvertently receive or retain excessive privileges.)
+  category: IAM
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_iam.Policy(<ANY>, users=[<ANY>], <ANY>)
+      - pattern: |
+          $P = aws_cdk.aws_iam.Policy(<ANY>)
+          <ANY>
+          $P.attachToUser(<ANY>)

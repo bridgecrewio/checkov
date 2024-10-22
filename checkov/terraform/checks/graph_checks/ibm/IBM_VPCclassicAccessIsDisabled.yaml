@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_IBM_2"
+  name: "Ensure VPC classic access is disabled"
+  category: "GENERAL_SECURITY"
+
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types: "ibm_is_vpc"
+      attribute: "classic_access"
+      operator: "not_exists"
+
+    - and:
+
+        - cond_type: "attribute"
+          resource_types: "ibm_is_vpc"
+          attribute: "classic_access"
+          operator: "exists"
+
+        - cond_type: "attribute"
+          resource_types: "ibm_is_vpc"
+          attribute: "classic_access"
+          operator: "equals_ignore_case"
+          value: "false"

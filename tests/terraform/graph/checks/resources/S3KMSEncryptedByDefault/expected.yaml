@@ -1,10 +1,7 @@
 pass:
   - "aws_s3_bucket.bucket_good_1"
   - "aws_s3_bucket.bucket_good_3"
-  - "aws_s3_bucket.bucket_good_4"
   - "aws_s3_bucket.bucket_good_6"
-  - "aws_s3_bucket.bucket_good_7"
-  - "aws_s3_bucket.bucket_good_8"
 fail:
   - "aws_s3_bucket.bucket_bad_1"
   - "aws_s3_bucket.bucket_bad_2"

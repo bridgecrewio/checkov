@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_27
+  name: Ensure all data stored in the SQS queue is encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_sqs.Queue(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sqs.Queue(<ANY>, encryption_master_key=$KEY, <ANY>)
+      - pattern: aws_cdk.aws_sqs.CfnQueue(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_sqs.CfnQueue(<ANY>, kms_master_key_id=$KEY, <ANY>)

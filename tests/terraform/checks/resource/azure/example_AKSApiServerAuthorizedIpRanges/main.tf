@@ -38,6 +38,17 @@ resource "azurerm_kubernetes_cluster" "private" {
   private_cluster_enabled = true
 }
 
+resource "azurerm_kubernetes_cluster" "version_3_39" {
+  name                = "example"
+  location            = "azurerm_resource_group.example.location"
+  resource_group_name = "azurerm_resource_group.example.name"
+  dns_prefix          = "example"
+
+  api_server_access_profile {
+    authorized_ip_ranges = ["192.168.0.0/16"]
+  }
+}
+
 # fail
 
 resource "azurerm_kubernetes_cluster" "default" {

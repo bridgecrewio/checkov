@@ -1,0 +1,18 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_83
+  name: Ensure Elasticsearch Domain enforces HTTPS
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticsearch.CfnDomain(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticsearch.CfnDomain(<ANY>, domain_endpoint_options=aws_cdk.aws_elasticsearch.CfnDomain.DomainEndpointOptionsProperty(<ANY>, enforce_https=True , <ANY>) , <ANY>)
+    - not_pattern: |
+        $P = aws_cdk.aws_elasticsearch.CfnDomain.DomainEndpointOptionsProperty(<ANY>, enforce_https=True , <ANY>)
+        <ANY>
+        aws_cdk.aws_elasticsearch.CfnDomain(<ANY>, domain_endpoint_options=$P , <ANY>)

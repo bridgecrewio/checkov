@@ -1,0 +1,17 @@
+metadata:
+  name: "Ensure PostgreSQL database flag 'log_duration' is set to 'on'"
+  id: "CKV2_GCP_13"
+  category: "LOGGING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "database_version"
+      operator: "not_contains"
+      value: "POSTGRES"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "settings.database_flags[?(@.name == log_duration & @.value == on)]"
+      operator: "jsonpath_exists"

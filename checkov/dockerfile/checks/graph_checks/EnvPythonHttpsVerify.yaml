@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_5"
+  name: "Ensure that certificate validation isn't disabled with the PYTHONHTTPSVERIFY environmnet variable"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(PYTHONHTTPSVERIFY(=|\\s+)((0)|('0')|(\"0\"))).*"
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(PYTHONHTTPSVERIFY=((0)|('0')|(\"0\"))) .*"

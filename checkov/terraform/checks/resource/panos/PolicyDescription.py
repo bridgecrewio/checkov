@@ -39,7 +39,7 @@ class PolicyDescription(BaseResourceCheck):
                 else:
                     # If a description attribute is not explicitly set, this is a fail
                     return CheckResult.FAILED
-            
+
             # If no fails have been found, this is a pass
             return CheckResult.PASSED
 

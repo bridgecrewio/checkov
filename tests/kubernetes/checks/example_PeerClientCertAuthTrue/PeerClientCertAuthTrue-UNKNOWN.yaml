@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: should-fail
+spec:
+  hostNetwork: true
+  containers:
+    - name: "kuku1"
+      image: "b.gcr.io/kuar/etcd:2.2.0"
+      args:
+        - "--name=etcd0"
+        - "--advertise-client-urls=http://10.0.0.1:2379"
+        - "--listen-client-urls=http://0.0.0.0:2379"
+        - "--listen-peer-urls=http://0.0.0.0:2380"
+        - "--data-dir=/var/lib/etcd/data"
+        - "--wal-dir=/var/lib/etcd/wal"
+        - "--election-timeout=1000"
+        - "--heartbeat-interval=100"
+        - "--snapshot-count=10000"
+        - "--max-snapshots=5"
+        - "--max-wals=5"
+        - "--initial-advertise-peer-urls=http://10.0.0.1:2380"
+        - "--initial-cluster=etcd0=http://10.0.0.1:2380,etcd1=http://10.0.0.2:2380,etcd2=http://10.0.0.2:2380"
+        - "--initial-cluster-state=new"
+        - "--initial-cluster-token=cluster0"
+        - "--peer-client-cert-auth=false"
+      ports:
+        - name: client
+          containerPort: 2379
+          protocol: "TCP"
+        - name: peer
+          containerPort: 2380
+          protocol: "TCP"
+      resources:
+        limits:
+          cpu: "1000m"
+          memory: "256Mi"
+      volumeMounts:
+        - name: "etcd-data"
+          mountPath: /var/lib/etcd/data
+        - name: "etcd-wal"
+          mountPath: /var/lib/etcd/wal
+  volumes:
+    - name: "etcd-wal"
+      awsElasticBlockStore:
+        volumeID: vol-1234wal0
+        fsType: ext4
+    - name: "etcd-data"
+      awsElasticBlockStore:
+        volumeID: vol-1234data0
+      fsType: ext4

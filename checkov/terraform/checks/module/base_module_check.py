@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from abc import abstractmethod
-from typing import List, Optional, Dict, Any
+from collections.abc import Iterable
+from typing import List, Dict, Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -8,8 +11,13 @@ from checkov.terraform.checks.module.registry import module_registry
 
 class BaseModuleCheck(BaseCheck):
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_resources: Optional[List[str]] = None,
-            guideline=None) -> None:
+        self,
+        name: str,
+        id: str,
+        categories: Iterable[CheckCategories],
+        supported_resources: Iterable[str] | None = None,
+        guideline: str | None = None
+    ) -> None:
         """
         Base class for terraform module call related checks.
 
@@ -37,3 +45,7 @@ class BaseModuleCheck(BaseCheck):
     @abstractmethod
     def scan_module_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         raise NotImplementedError()
+
+    @staticmethod
+    def is_git_source(source: str) -> bool:
+        return source.startswith('git@') or source.startswith('git::') or source.startswith('github.com') or source.startswith('bitbucket.org')

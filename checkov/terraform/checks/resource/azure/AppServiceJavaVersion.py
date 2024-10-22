@@ -9,7 +9,7 @@ class AppServiceJavaVersion(BaseResourceValueCheck):
         supported_resources = ['azurerm_app_service']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED)
+                         missing_block_result=CheckResult.UNKNOWN)
 
     def get_inspected_key(self):
         return "site_config/[0]/java_version/[0]"

@@ -28,6 +28,8 @@ class SSMSessionManagerDocumentEncryption(BaseResourceCheck):
             inputs = json.loads(content).get("inputs", {})
         elif doc_format == ["YAML"] and is_yaml(content):
             inputs = yaml.safe_load(content).get("inputs", {})
+        elif isinstance(content, dict):
+            inputs = content.get("inputs", None)
 
         if inputs and not inputs.get("kmsKeyId"):
             return CheckResult.FAILED

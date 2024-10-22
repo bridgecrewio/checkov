@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:1a074bba-f4db-4568-a508-86e676e0737c" version="1">
+	<metadata>
+		<timestamp>2023-10-25T07:58:16.083818+00:00</timestamp>
+		<tools>
+			<tool>
+				<vendor>CycloneDX</vendor>
+				<name>cyclonedx-python-lib</name>
+				<version>5.0.0</version>
+				<externalReferences>
+					<reference type="build-system">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/actions</url>
+					</reference>
+					<reference type="distribution">
+						<url>https://pypi.org/project/cyclonedx-python-lib/</url>
+					</reference>
+					<reference type="documentation">
+						<url>https://cyclonedx-python-library.readthedocs.io/</url>
+					</reference>
+					<reference type="issue-tracker">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/issues</url>
+					</reference>
+					<reference type="license">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/LICENSE</url>
+					</reference>
+					<reference type="release-notes">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/CHANGELOG.md</url>
+					</reference>
+					<reference type="vcs">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib</url>
+					</reference>
+					<reference type="website">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/#readme</url>
+					</reference>
+				</externalReferences>
+			</tool>
+			<tool>
+				<vendor>bridgecrew</vendor>
+				<name>checkov</name>
+				<version>3.0.0</version>
+				<externalReferences>
+					<reference type="build-system">
+						<url>https://github.com/bridgecrewio/checkov/actions</url>
+					</reference>
+					<reference type="distribution">
+						<url>https://pypi.org/project/checkov/</url>
+					</reference>
+					<reference type="documentation">
+						<url>https://www.checkov.io/1.Welcome/What%20is%20Checkov.html</url>
+					</reference>
+					<reference type="issue-tracker">
+						<url>https://github.com/bridgecrewio/checkov/issues</url>
+					</reference>
+					<reference type="license">
+						<url>https://github.com/bridgecrewio/checkov/blob/master/LICENSE</url>
+					</reference>
+					<reference type="social">
+						<url>https://twitter.com/bridgecrewio</url>
+					</reference>
+					<reference type="vcs">
+						<url>https://github.com/bridgecrewio/checkov</url>
+					</reference>
+					<reference type="website">
+						<url>https://www.checkov.io/</url>
+					</reference>
+				</externalReferences>
+			</tool>
+		</tools>
+	</metadata>
+	<components>
+		<component type="container" bom-ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456">
+			<name>bridgecrewio/example//sha256:123456</name>
+			<version/>
+			<purl>pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456</purl>
+		</component>
+		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1">
+			<name>bzip2</name>
+			<version>1.0.8-5build1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1">
+			<name>libidn2</name>
+			<version>2.3.2-2build1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy">
+			<name>pcre2</name>
+			<version>10.39-3build1</version>
+			<licenses>
+				<license>
+					<name>Apache-2.0</name>
+				</license>
+			</licenses>
+			<purl>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</purl>
+		</component>
+		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy">
+			<name>perl</name>
+			<version>5.34.0-3ubuntu1</version>
+			<licenses>
+				<license>
+					<name>Apache-2.0-Fake</name>
+				</license>
+			</licenses>
+			<purl>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</purl>
+		</component>
+	</components>
+	<dependencies>
+		<dependency ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy"/>
+		<dependency ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy"/>
+		<dependency ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1"/>
+		<dependency ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1"/>
+		<dependency ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456"/>
+	</dependencies>
+	<vulnerabilities>
+		<vulnerability bom-ref="785c4c75-ccc7-4969-bfd1-41434d172b7a">
+			<id>CVE-2020-16156</id>
+			<source>
+				<url>https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156</url>
+			</source>
+			<ratings>
+				<rating>
+					<source>
+						<url>https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156</url>
+					</source>
+					<score>7.8</score>
+					<severity>medium</severity>
+					<method>CVSSv3</method>
+					<vector>AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H</vector>
+				</rating>
+			</ratings>
+			<description>CPAN 2.28 allows Signature Verification Bypass.</description>
+			<recommendation>N/A</recommendation>
+			<published>2021-12-13T20:15:00+02:00</published>
+			<affects>
+				<target>
+					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</ref>
+				</target>
+			</affects>
+		</vulnerability>
+		<vulnerability bom-ref="c18f80db-eaf7-4870-8a81-5342e42f5ec9">
+			<id>CVE-2022-1587</id>
+			<source>
+				<url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</url>
+			</source>
+			<ratings>
+				<rating>
+					<source>
+						<url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</url>
+					</source>
+					<score>9.1</score>
+					<severity>low</severity>
+					<method>CVSSv3</method>
+					<vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H</vector>
+				</rating>
+			</ratings>
+			<description>An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.</description>
+			<recommendation>N/A</recommendation>
+			<published>2022-05-17T00:15:00+03:00</published>
+			<affects>
+				<target>
+					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</ref>
+				</target>
+			</affects>
+		</vulnerability>
+	</vulnerabilities>
+</bom>

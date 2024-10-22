@@ -48,7 +48,7 @@ A typical output looks like this
         </externalReferences>
       </tool>
       <tool>
-        <vendor>bridgecrew</vendor>
+        <vendor>prisma_cloud</vendor>
         <name>checkov</name>
         <version>2.1.38</version>
         <externalReferences>
@@ -68,7 +68,7 @@ A typical output looks like this
             <url>https://github.com/bridgecrewio/checkov/blob/master/LICENSE</url>
           </reference>
           <reference type="social">
-            <url>https://twitter.com/bridgecrewio</url>
+            <url>https://twitter.com/prisma_cloud</url>
           </reference>
           <reference type="vcs">
             <url>https://github.com/bridgecrewio/checkov</url>
@@ -108,7 +108,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure that S3 bucket has a Public Access block</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached</url>
         </advisory>
       </advisories>
       <affects>
@@ -125,7 +125,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure that S3 bucket has cross-region replication enabled</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/ensure-that-s3-bucket-has-cross-region-replication-enabled</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/ensure-that-s3-bucket-has-cross-region-replication-enabled</url>
         </advisory>
       </advisories>
       <affects>
@@ -142,7 +142,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure that S3 buckets are encrypted with KMS by default</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/ensure-that-s3-buckets-are-encrypted-with-kms-by-default</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/ensure-that-s3-buckets-are-encrypted-with-kms-by-default</url>
         </advisory>
       </advisories>
       <affects>
@@ -159,7 +159,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure the S3 bucket has access logging enabled</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/s3_13-enable-logging</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_13-enable-logging</url>
         </advisory>
       </advisories>
       <affects>
@@ -176,7 +176,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure all data stored in the S3 bucket is securely encrypted at rest</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/s3_14-data-encrypted-at-rest</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_14-data-encrypted-at-rest</url>
         </advisory>
       </advisories>
       <affects>
@@ -193,7 +193,7 @@ A typical output looks like this
       <description>Resource: aws_s3_bucket.example. Ensure all data stored in the S3 bucket have versioning enabled</description>
       <advisories>
         <advisory>
-          <url>https://docs.bridgecrew.io/docs/s3_16-enable-versioning</url>
+          <url>https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning</url>
         </advisory>
       </advisories>
       <affects>
@@ -254,6 +254,18 @@ A typical output looks like this
     </vulnerability>
   </vulnerabilities>
 </bom>
+```
+
+The output can be either created in a XML
+
+```shell
+checkov -d . -o cyclonedx
+```
+
+or JSON format.
+
+```shell
+checkov -d . -o cyclonedx_json
 ```
 
 The default schema version is currently `v1.4`, but can be adjusted by setting the environment variable `CHECKOV_CYCLONEDX_SCHEMA_VERSION`.

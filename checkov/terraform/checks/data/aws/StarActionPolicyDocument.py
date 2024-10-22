@@ -9,8 +9,8 @@ class StarActionPolicyDocument(BaseDataCheck):
     def __init__(self) -> None:
         name = 'Ensure no IAM policies documents allow "*" as a statement\'s actions'
         id = "CKV_AWS_49"
-        supported_data = ["aws_iam_policy_document"]
-        categories = [CheckCategories.IAM]
+        supported_data = ("aws_iam_policy_document",)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
     def scan_data_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
@@ -26,10 +26,11 @@ class StarActionPolicyDocument(BaseDataCheck):
             for statement in statements:
                 if (
                     isinstance(statement, dict)
-                    and statement.get("effect", ["Allow"]) == ["Allow"]
+                    and statement.get("effect", ["Allow"]) in (["Allow"], [None])
                     and statement.get("actions")
                     and "*" in force_list(statement["actions"][0])
                 ):
+                    # effect: [None] is the default in a TF plan file
                     return CheckResult.FAILED
 
         return CheckResult.PASSED

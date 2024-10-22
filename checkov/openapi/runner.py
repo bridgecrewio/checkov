@@ -6,6 +6,8 @@ from typing import Any, Callable, TYPE_CHECKING  # noqa: F401  # Callable is use
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 from pathlib import Path
@@ -13,10 +15,10 @@ from pathlib import Path
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-_ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
-_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
+_ParseFormatCallable: TypeAlias = "Callable[[str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 class Runner(YamlRunner, JsonRunner):
@@ -31,30 +33,29 @@ class Runner(YamlRunner, JsonRunner):
 
         return openapi_registry
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if f.endswith(".json"):
-            return self.parse_format(f, JsonRunner._parse_file)
+            return Runner.parse_format(f, JsonRunner._parse_file)
         elif f.endswith(".yml") or f.endswith(".yaml"):
-            return self.parse_format(f, YamlRunner._parse_file)
+            return Runner.parse_format(f, YamlRunner._parse_file)
         return None
 
+    @staticmethod
     def parse_format(
-        self,
-        f: str,
-        func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
+        f: str, func: _ParseFormatCallable
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         try:
-            if f.endswith(".json"):
-                parsed_file = func(self, f, None)
-            elif f.endswith(".yml") or f.endswith(".yaml"):
-                content = self.load_yaml_file(f)
-                valid_openapi_file = self.pre_validate_file(content)
-                if not valid_openapi_file:
-                    return None
-                parsed_file = func(self, f, content)
-            if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
+            content = Runner.load_file(f)
+            valid_openapi_file = Runner.pre_validate_file(content)
+            if not valid_openapi_file:
+                return None
+
+            parsed_file = func(f, content)
+
+            if isinstance(parsed_file, tuple) and Runner.is_valid(parsed_file[0]):
                 return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
         except ValueError:
             logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
@@ -76,7 +77,8 @@ class Runner(YamlRunner, JsonRunner):
     def require_external_checks(self) -> bool:
         return False
 
-    def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
+    @staticmethod
+    def is_valid(conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
         # 'info' object is required in v2.0 and v3:
@@ -92,15 +94,17 @@ class Runner(YamlRunner, JsonRunner):
         except Exception:
             return False
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         return ",".join(supported_entities)
 
-    def load_yaml_file(self, filename: str | Path) -> str:
-        file_path = filename if isinstance(filename, Path) else Path(filename)
-        content = file_path.read_text()
+    @staticmethod
+    def load_file(filename: str | Path) -> str:
+        content = read_file_with_any_encoding(file_path=filename)
         return content
 
-    def pre_validate_file(self, file_content: str) -> bool:
+    @staticmethod
+    def pre_validate_file(file_content: str) -> bool:
         openapi_keywords = ["swagger", "openapi"]
         match = any(keyword in file_content for keyword in openapi_keywords)
         if match:

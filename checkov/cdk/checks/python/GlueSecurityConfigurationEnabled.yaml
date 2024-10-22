@@ -1,0 +1,22 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_195
+  name: Ensure Glue component has a security configuration associated
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_glue.CfnCrawler(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_glue.CfnCrawler(<ANY>, crawler_security_configuration=$CON , <ANY>)
+      - pattern: aws_cdk.aws_glue.CfnDevEndpoint(<ANY>)
+        conditions:
+          not_pattern: aws_cdk.aws_glue.CfnDevEndpoint(<ANY>, security_configuration=$VAL , <ANY>)
+      - pattern: aws_cdk.aws_glue.CfnJob(<ANY>)
+        conditions:
+          not_pattern: aws_cdk.aws_glue.CfnJob(<ANY>, security_configuration=$VAL , <ANY>)

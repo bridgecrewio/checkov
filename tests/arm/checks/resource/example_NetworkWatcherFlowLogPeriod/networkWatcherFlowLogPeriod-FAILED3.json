@@ -21,7 +21,7 @@
         },
         "retentionPolicy": {
           "days": 700,
-          "enabled": False
+          "enabled": false
         },
         "format": {
           "type": "JSON",

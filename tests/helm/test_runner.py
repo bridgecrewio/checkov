@@ -1,19 +1,11 @@
 import os
-import subprocess
 import unittest
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.helm.runner import Runner
-
-
-def helm_exists() -> bool:
-    try:
-        subprocess.run([Runner.helm_command, "version"], check=True, stdout=subprocess.PIPE)
-    except Exception:
-        return False
-    return True
+from tests.helm.utils import helm_exists
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -77,6 +69,22 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         self.assertEqual(len(report.failed_checks), 0)
+
+    @unittest.skipIf(not helm_exists(), "helm not installed")
+    def test_get_binary_output_from_directory_equals_to_get_binary_result(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "schema-registry")
+
+        runner_filter = RunnerFilter(framework=['helm'], use_enforcement_rules=False)
+
+        chart_meta = Runner.parse_helm_chart_details(scan_dir_path)
+        chart_item = (scan_dir_path, chart_meta)
+        regular_result = Runner.get_binary_output(chart_item, target_dir='./tmp', helm_command="helm",
+                                                  runner_filter=runner_filter)
+        result_from_directory = Runner.get_binary_output_from_directory(str(scan_dir_path),
+                                                                        target_dir='./tmp', helm_command="helm",
+                                                                        runner_filter=runner_filter)
+        assert regular_result == result_from_directory
 
 
 if __name__ == "__main__":

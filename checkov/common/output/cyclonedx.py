@@ -3,8 +3,9 @@ from __future__ import annotations
 import itertools
 import logging
 import os
-import sys
 from datetime import datetime
+from hashlib import sha1
+from importlib.metadata import version as meta_version
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
 
@@ -12,14 +13,14 @@ from cyclonedx.model import (
     XsUri,
     ExternalReference,
     ExternalReferenceType,
-    sha1sum,
     HashAlgorithm,
     HashType,
-    LicenseChoice,
-    License,
+    Property,
+    Tool,
 )
-from cyclonedx.model.bom import Bom, Tool
+from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.license import DisjunctiveLicense
 from cyclonedx.model.vulnerability import (
     Vulnerability,
     VulnerabilityAdvisory,
@@ -29,10 +30,11 @@ from cyclonedx.model.vulnerability import (
     VulnerabilityScoreSource,
     VulnerabilitySeverity,
 )
-from cyclonedx.output import get_instance
-from packageurl import PackageURL  # type:ignore[import]
+from cyclonedx.schema import OutputFormat
+from cyclonedx.output import make_outputter
+from packageurl import PackageURL
 
-from checkov.common.output.common import ImageDetails
+from checkov.common.output.common import ImageDetails, format_string_to_licenses, validate_lines
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import (
     SCA_CHECKTYPES,
@@ -45,11 +47,7 @@ from checkov.common.output.cyclonedx_consts import (
     BC_SEVERITY_TO_CYCLONEDX_LEVEL,
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import version as meta_version
-else:
-    from importlib_metadata import version as meta_version
+from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -69,7 +67,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
+            version = meta_version("checkov")
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -102,28 +100,24 @@ class CycloneDX:
                     continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
-                if bom.has_component(component=component):
-                    component = (
-                        bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl
-                        )
-                    )
+                if existing_component := bom.get_component_by_purl(purl=component.purl):
+                    component = existing_component
+                else:
+                    bom.components.add(component)
 
                 vulnerability = self.create_vulnerability(
                     check_type=report.check_type, resource=check, component=component
                 )
-
-                component.add_vulnerability(vulnerability)
-                bom.components.add(component)
+                bom.vulnerabilities.add(vulnerability)
 
                 if is_image_report:
                     if check.file_path not in image_resources_for_image_components:
                         image_resources_for_image_components[check.file_path] = check
 
-            for resource in report.extra_resources:
+            for resource in sorted(report.extra_resources):
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
-                if not bom.has_component(component=component):
+                if not bom.get_component_by_purl(purl=component.purl):
                     bom.components.add(component)
 
             if is_image_report:
@@ -156,7 +150,7 @@ class CycloneDX:
         </component>
         """
 
-        sha1_hash = sha1sum(filename=resource.file_abs_path)
+        sha1_hash = file_sha1sum(filename=resource.file_abs_path)
         purl = PackageURL(
             type=check_type,
             namespace=f"{self.repo_id}/{resource.file_path}",
@@ -169,11 +163,11 @@ class CycloneDX:
             version=f"sha1:{sha1_hash}",
             hashes=[
                 HashType(
-                    algorithm=HashAlgorithm.SHA_1,
-                    hash_value=sha1_hash,
+                    alg=HashAlgorithm.SHA_1,
+                    content=sha1_hash,
                 )
             ],
-            component_type=ComponentType.APPLICATION,
+            type=ComponentType.APPLICATION,
             purl=purl,
         )
         return component
@@ -185,6 +179,10 @@ class CycloneDX:
           <name>flask</name>
           <version>0.6</version>
           <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
+          <properties>
+            <property name="startLine">5</property>
+            <property name="endLine">6</property>
+          </properties>
         </component>
         """
 
@@ -208,6 +206,10 @@ class CycloneDX:
         else:
             purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
             namespace = f"{self.repo_id}/{resource.file_path}"
+            registry_url = resource.vulnerability_details.get("package_registry")
+            is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
+            if registry_url and is_private_registry:
+                qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
@@ -216,12 +218,17 @@ class CycloneDX:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
 
+            if not package_name:
+                logging.info('maven package name format not as expected')
+                package_name = resource.vulnerability_details["package_name"]
+
         # add licenses, if exists
-        license_choices = None
+        disjunctive_licenses = None
         licenses = resource.vulnerability_details.get("licenses")
+
         if licenses:
-            license_choices = [
-                LicenseChoice(license_=License(license_name=license)) for license in licenses.split(", ")
+            disjunctive_licenses = [
+                DisjunctiveLicense(name=license) for license in format_string_to_licenses(licenses)
             ]
 
         purl = PackageURL(
@@ -231,14 +238,22 @@ class CycloneDX:
             version=package_version,
             qualifiers=qualifiers,
         )
+
+        lines = resource.file_line_range
+        lines = validate_lines(lines)
+        properties = None
+        if lines:
+            properties = [Property(name="endLine", value=str(lines[1])), Property(name="startLine", value=str(lines[0]))]
+
         component = Component(
             bom_ref=str(purl),
             group=package_group,
             name=package_name,
             version=package_version,
-            component_type=ComponentType.LIBRARY,
-            licenses=license_choices,
+            type=ComponentType.LIBRARY,
+            licenses=disjunctive_licenses,
             purl=purl,
+            properties=properties
         )
         return component
 
@@ -254,7 +269,7 @@ class CycloneDX:
         bom.components.add(
             Component(
                 bom_ref=str(image_purl),
-                component_type=ComponentType.CONTAINER,
+                type=ComponentType.CONTAINER,
                 name=f"{self.repo_id}/{image_id}",
                 version="",
                 purl=image_purl,
@@ -264,7 +279,7 @@ class CycloneDX:
     def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
         """Creates a vulnerability"""
 
-        if check_type == CheckType.SCA_PACKAGE:
+        if check_type in SCA_CHECKTYPES:
             vulnerability = self.create_cve_vulnerability(resource=resource, component=component)
         else:
             vulnerability = self.create_iac_vulnerability(resource=resource, component=component)
@@ -315,9 +330,11 @@ class CycloneDX:
                 )
             ],
             description=f"Resource: {resource.resource}. {resource.check_name}",
-            affects_targets=[BomTarget(ref=component.bom_ref.value)],
             advisories=advisories,
         )
+        if component.bom_ref.value:
+            vulnerability.affects = [BomTarget(ref=component.bom_ref.value)]
+
         return vulnerability
 
     def create_cve_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
@@ -362,7 +379,7 @@ class CycloneDX:
         source = None
         source_url = resource.vulnerability_details.get("link")
         if source_url:
-            source = VulnerabilitySource(url=source_url)
+            source = VulnerabilitySource(url=XsUri(source_url))
         method = None
         vector = resource.vulnerability_details["vector"]
 
@@ -370,6 +387,7 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
+        fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -383,54 +401,98 @@ class CycloneDX:
                 )
             ],
             description=resource.vulnerability_details.get("description"),
-            recommendation=resource.vulnerability_details.get("status"),
+            recommendation=fix_version,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
-            affects_targets=[BomTarget(ref=component.bom_ref.value)],
         )
+        if component.bom_ref.value:
+            vulnerability.affects = [BomTarget(ref=component.bom_ref.value)]
+
         return vulnerability
 
-    def get_xml_output(self) -> str:
+    def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str | None:
+        is_private_fix = vulnerability_details.get("is_private_fix")
+        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
+        fix_version: str = get_fix_version(vulnerability_details)
+        return f'{public_fix_version_prefix}Fixed in {fix_version}' if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
+
+    def get_output(self, output_format: OutputFormat) -> str:
+        """Returns the SBOM as a formatted string"""
+
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()  # type:ignore[arg-type]
+        output = make_outputter(
+            bom=self.bom,
+            output_format=output_format,
+            schema_version=schema_version,
+        ).output_as_string()
 
         return output
+
+    def get_xml_output(self) -> str:
+        """Returns the SBOM as a XML formatted string"""
+
+        return self.get_output(output_format=OutputFormat.XML)
+
+    def get_json_output(self) -> str:
+        """Returns the SBOM as a JSON formatted string"""
+
+        return self.get_output(output_format=OutputFormat.JSON)
 
     def update_tool_external_references(self, tool: Tool) -> None:
         tool.external_references.update(
             [
                 ExternalReference(
-                    reference_type=ExternalReferenceType.BUILD_SYSTEM,
+                    type=ExternalReferenceType.BUILD_SYSTEM,
                     url=XsUri("https://github.com/bridgecrewio/checkov/actions"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.DISTRIBUTION,
+                    type=ExternalReferenceType.DISTRIBUTION,
                     url=XsUri("https://pypi.org/project/checkov/"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.DOCUMENTATION,
+                    type=ExternalReferenceType.DOCUMENTATION,
                     url=XsUri("https://www.checkov.io/1.Welcome/What%20is%20Checkov.html"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.ISSUE_TRACKER,
+                    type=ExternalReferenceType.ISSUE_TRACKER,
                     url=XsUri("https://github.com/bridgecrewio/checkov/issues"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.LICENSE,
+                    type=ExternalReferenceType.LICENSE,
                     url=XsUri("https://github.com/bridgecrewio/checkov/blob/master/LICENSE"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.SOCIAL,
+                    type=ExternalReferenceType.SOCIAL,
                     url=XsUri("https://twitter.com/bridgecrewio"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.VCS,
+                    type=ExternalReferenceType.VCS,
                     url=XsUri("https://github.com/bridgecrewio/checkov"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.WEBSITE,
+                    type=ExternalReferenceType.WEBSITE,
                     url=XsUri("https://www.checkov.io/"),
                 ),
             ]
         )
+
+
+# Copy of https://github.com/CycloneDX/cyclonedx-python-lib/blob/74865f8e498c9723c2ce3556ceecb6a3cfc4c490/cyclonedx/_internal/hash.py
+# because it looks like it meant to be something not exposed for external usage
+def file_sha1sum(filename: str) -> str:
+    """
+    Generate a SHA1 hash of the provided file.
+
+    Args:
+        filename:
+            Absolute path to file to hash as `str`
+
+    Returns:
+        SHA-1 hash
+    """
+    h = sha1()  # nosec B303, B324
+    with open(filename, 'rb') as f:
+        for byte_block in iter(lambda: f.read(4096), b''):
+            h.update(byte_block)
+    return h.hexdigest()

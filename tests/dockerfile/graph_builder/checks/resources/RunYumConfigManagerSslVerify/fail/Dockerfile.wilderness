@@ -1,0 +1,7 @@
+FROM rolex:submariner
+
+RUN yum-config-manager --save --setopt=boca.sslverify=0 boca
+RUN yum-config-manager --setopt="epel.sslverify=0" --save
+RUN yum-config-manager --save --setopt=something-base.sslverify=0
+RUN yum-config-manager --setopt=sslverify=false --save
+RUN yum-config-manager --save --setopt=kubernetes.sslverify=false

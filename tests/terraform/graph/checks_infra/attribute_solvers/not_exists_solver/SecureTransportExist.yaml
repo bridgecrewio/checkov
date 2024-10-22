@@ -1,0 +1,15 @@
+---
+metadata:
+ name: "SecureTransport Testing"
+ category: "general"
+ id: "SecureTransport"
+ guidelines: "testing"
+ severity: "high"
+scope:
+ provider: "aws"
+definition:
+ cond_type: "attribute"
+ resource_types:
+ - "aws_s3_bucket_policy"
+ attribute: "policy.Statement.*.Condition.Bool.aws:SecureTransport"
+ operator: "not_exists"

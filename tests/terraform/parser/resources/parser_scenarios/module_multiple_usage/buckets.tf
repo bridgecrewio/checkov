@@ -3,7 +3,7 @@ module "bucket" {
   name     = "my_bucket1"
 }
 
-module "bucket" {
+module "bucket2" {
   source   = "./bucket"
   name     = "my_bucket2"
 }

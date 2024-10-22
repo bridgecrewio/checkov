@@ -4,6 +4,8 @@ from typing import Dict, Any
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
+PEM_PATTERN = re.compile(r"^(.*)\.pem$")
+
 
 class ApiServerServiceAccountKeyFile(BaseK8sContainerCheck):
     def __init__(self) -> None:
@@ -22,8 +24,7 @@ class ApiServerServiceAccountKeyFile(BaseK8sContainerCheck):
                         [field, value, *_] = cmd.split("=")
                         if field == "--service-account-key-file":
                             # should be a valid path and to end with .pem
-                            regex = re.compile(r"^(.*)\.pem$")
-                            matches = re.match(regex, value)
+                            matches = re.match(PEM_PATTERN, value)
                             if not matches:
                                 return CheckResult.FAILED
         return CheckResult.PASSED

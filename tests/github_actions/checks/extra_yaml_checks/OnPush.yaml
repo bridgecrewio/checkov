@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GHA_CUSTOM_3"
+  name: "Ensure workflow is used on main push"
+  category: "IAM"
+definition:
+  cond_type: attribute
+  resource_types:
+    - "on"
+  attribute: on.push.branches
+  operator: contains
+  value: main

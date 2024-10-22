@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_3
+  name: Ensure all data stored in the EBS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_ec2.Volume(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_ec2.Volume(<ANY>, encrypted=True , <ANY>)

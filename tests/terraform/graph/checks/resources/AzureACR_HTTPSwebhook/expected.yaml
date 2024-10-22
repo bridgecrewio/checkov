@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_container_registry_webhook.pass"
+fail:
+  - "azurerm_container_registry_webhook.fail"

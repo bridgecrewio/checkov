@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_7"
+  name: "Ensure that packages with untrusted or missing signatures are not used by apk via the '--allow-untrusted' option"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(apk[^\\|&;]*\\s+--allow-untrusted).*"

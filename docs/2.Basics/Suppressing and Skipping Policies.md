@@ -67,6 +67,19 @@ Resources:
       MasterUserPassword: 'password'
 ```
 
+### Dockerfile Example
+To suppress checks in Dockerfiles the comment can be addded to any line inside the file.
+
+```dockerfile
+#checkov:skip=CKV_DOCKER_5: no need to skip python check
+#checkov:skip=CKV2_DOCKER_7: no need to skip graph check
+FROM alpine:3.3
+RUN apk --no-cache add nginx
+EXPOSE 3000 80 443 22
+#checkov:skip=CKV_DOCKER_1: required
+CMD ["nginx", "-g", "daemon off;"]
+```
+
 ### Kubernetes Example
 To suppress checks in Kubernetes manifests, annotations are used with the following format:
 `checkov.io/skip#: <check_id>=<suppression_comment>`
@@ -102,7 +115,7 @@ Resources:
       # checkov:skip=CKV_SECRET_6 or after it
 ```
 
-## CloudFormation Metadata
+### CloudFormation Metadata
 Additionally, it is possible to suppress CloudFormation checks via the `Metadata` section inside a resource.
 ```yaml
 Resources:
@@ -166,7 +179,7 @@ $ checkov -f cdk.out/AppStack.template.json
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.727
+By Prisma Cloud | version: 3.0.1
 
 cloudformation scan results:
 
@@ -178,10 +191,98 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
         Suppress comment: Ensure the S3 bucket has access logging enabled
         File: /../anton/cfn.json:3-22
-        Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
 
 
 ```
+
+### Software Composition Analysis (SCA)
+Suppressing SCA findings can be done in a variety of ways to fit your needs. CVEs can be suppressed using `--skip-check CKV_CVE_2022_1234` to suppress a specific CVE for that run or `--skip-cve-package package_name` to skip all CVEs for a specific package.
+
+For inline SCA suppressions, depending on the package manager, there are different ways to suppress CVEs and License violations. Adding a skip comment to any package manager file will suppress all findings for that CVE or package and License combination for that file.
+
+#### Python (requirements.txt), .NET (Paket), Java/Kotlin (gradle.properties), Ruby (Gemfile)
+The skip comment can be anywhere in the file.
+
+The example below is for requirements.txt
+
+```requirements.txt
+# checkov:skip=CVE-2019-19844: ignore CVE-2019-19844 for all packages in this file
+# checkov:skip=jinja2[BC_LIC_1]: ignore non-OSI license violations for jinja2
+django==1.2
+jinja2==3.1.0
+```
+
+#### JavaScript (package.json and bower.json)
+The skip comment can be anywhere in the metadata. Add these skip comments to the non-lock file and ensure you scan the non-lock file with any lock file scan. For example, package.json and yarn.lock must be scanned together for the suppression from the package.json to apply to the yarn.lock violations.
+
+The example below is for multiple skip comments for package.json
+
+```package.json
+{
+  "name": "my-package",
+  "version": "1.0.0",
+  "description": "A sample package.json file",
+  "//": ["checkov:skip=express[BC_LIC_2]: ignore unknown license violations for express in this file",
+         "checkov:skip=CVE-2023-123: ignore this CVE for this file"]
+  "dependencies": {
+    "express": "4.17.1",
+    "lodash": "4.17.21"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  }
+}
+```
+
+Alternatively, you can add a single skip comment
+
+```
+"//": "checkov:skip=CVE-2023-123: ignore this CVE for this file"
+```
+
+### Java (pom.xml), .NET (*.csproj)
+The skip comment can be anywhere in the file.
+
+The example below is for pom.xml
+
+```pom.xml
+  <!--checkov:skip=CVE-2023-123: ignore this CVE for the file-->
+  <!--checkov:skip=junit[BC_LIC_1]: ignore non-compliant license findings for junit-->
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>5.3.9</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+```
+
+### Java/Kotlin (build.gradle), Go (go.mod)
+The skip comment can be anywhere in the file. Adding skips to the go.mod file will apply to the go.sum file.
+
+The example below is for go.mod
+
+```go.mod
+module example.com/myproject
+
+go 1.17
+
+require (
+    github.com/gin-gonic/gin v1.7.4
+    github.com/go-sql-driver/mysql v1.6.0
+    //checkov:skip=CVE-2023-123: ignore this CVE for this file
+    //checkov:skip=github.com/go-sql-driver/mysql[BC_LIC_2]: ignore unknown license violations for express in this file
+)
+```
+
 
 # Specifying or skipping checks for the entire run
 
@@ -248,7 +349,7 @@ checkov -d . --skip-check kube-system
 
 # Platform enforcement rules
 
-Checkov can download [enforcement rules](https://docs.bridgecrew.io/docs/enforcement) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
+Checkov can download [enforcement rules](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/enforcement) that you configure in Prisma Cloud. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
 
 To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
 

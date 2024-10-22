@@ -53,5 +53,6 @@ definition:
               - aws_db_instance
               - aws_apigatewayv2_domain_name
               - aws_lightsail_instance
+              - aws_lightsail_static_ip
            operator: exists
            attribute: networking

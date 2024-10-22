@@ -1,4 +1,6 @@
-from typing import Any, Dict, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
@@ -14,10 +16,10 @@ class EmptyWorkflowDispatch(BaseGithubActionsCheck):
             name=name,
             id=id,
             block_type=BlockType.OBJECT,
-            supported_entities=['on']
+            supported_entities=('on',)
         )
 
-    def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         if isinstance(conf, list):
             for sub_conf in conf:
                 if sub_conf == "workflow_dispatch":

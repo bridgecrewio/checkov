@@ -46,7 +46,7 @@ resource "azurerm_postgresql_server" "ok" {
   resource_group_name              = azurerm_resource_group.ok.name
   sku_name                         = "GP_Gen5_2"
   administrator_login              = "acctestun"
-  administrator_login_password     = "H@Sh1CoR3!"
+  administrator_login_password     = "H@Sh1CoR3!"  # checkov:skip=CKV_SECRET_80 test secret
   ssl_enforcement_enabled          = true
   ssl_minimal_tls_version_enforced = "TLS1_1"
   storage_mb                       = 51200

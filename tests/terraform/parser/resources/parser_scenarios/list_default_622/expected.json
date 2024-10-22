@@ -1,5 +1,5 @@
 {
-  "test.tf": {
+  "{\"file_path\": \"test.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "aws_eks_cluster": {
@@ -9,7 +9,8 @@
               ["api", "audit", "authenticator", "controllerManager", "scheduler"]
             ],
             "__start_line__": 1,
-            "__end_line__": 4
+            "__end_line__": 4,
+            "__address__": "aws_eks_cluster.example_direct"
           }
         }
       },
@@ -21,7 +22,8 @@
               ["api", "audit", "authenticator", "controllerManager", "scheduler"]
             ],
             "__start_line__": 6,
-            "__end_line__": 9
+            "__end_line__": 9,
+            "__address__": "aws_eks_cluster.example_var"
           }
         }
       }

@@ -11,6 +11,8 @@ from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
+from checkov.common.models.enums import CheckResult
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
@@ -26,6 +28,7 @@ class BaseCheckRegistry:
 
     def __init__(self, report_type: str) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
         self.checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         # IMPLEMENTATION NOTE: When using a wildcard, every pattern needs to be checked. To reduce the
@@ -34,6 +37,8 @@ class BaseCheckRegistry:
         self.wildcard_checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         self.check_id_allowlist: Optional[List[str]] = None
         self.report_type = report_type
+        self.definitions_raw: list[tuple[int, str]] | None = None
+        self.graph = None
 
     def register(self, check: BaseCheck) -> None:
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
@@ -87,7 +92,7 @@ class BaseCheckRegistry:
             res = self.checks[entity].copy() if entity in self.checks.keys() else []
             # check wildcards
             for pattern, checks in self.wildcard_checks.items():
-                if fnmatch.fnmatchcase(entity, pattern):
+                if entity and fnmatch.fnmatchcase(entity, pattern):
                     res += checks
             return res
 
@@ -107,10 +112,13 @@ class BaseCheckRegistry:
         runner_filter: RunnerFilter,
         report_type: Optional[str] = None  # allow runners like TF plan to override the type while using the same registry
     ) -> Dict[BaseCheck, _CheckResult]:
-
-        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
-
         results: Dict[BaseCheck, _CheckResult] = {}
+
+        try:
+            (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
+        except Exception:
+            logging.debug(f"Error in entity details extraction for file {scanned_file}", exc_info=True)
+            return results
 
         if not isinstance(entity_configuration, dict):
             return results
@@ -122,7 +130,11 @@ class BaseCheckRegistry:
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check, report_type=report_type or self.report_type):
+            if runner_filter.should_run_check(
+                    check,
+                    report_type=report_type or self.report_type,
+                    file_origin_paths=[scanned_file]
+            ):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -137,14 +149,21 @@ class BaseCheckRegistry:
         skip_info: _SkippedCheck,
     ) -> _CheckResult:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-        result = check.run(
-            scanned_file=scanned_file,
-            entity_configuration=entity_configuration,
-            entity_name=entity_name,
-            entity_type=entity_type,
-            skip_info=skip_info,
-        )
-        return result
+        check.graph = self.graph
+        try:
+            result = check.run(
+                scanned_file=scanned_file,
+                entity_configuration=entity_configuration,
+                entity_name=entity_name,
+                entity_type=entity_type,
+                skip_info=skip_info,
+            )
+            return result
+        except Exception:
+            return _CheckResult(
+                result=CheckResult.UNKNOWN, suppress_comment="", evaluated_keys=[],
+                results_configuration=entity_configuration, check=check, entity=entity_configuration
+            )
 
     @staticmethod
     def _directory_has_init_py(directory: str) -> bool:

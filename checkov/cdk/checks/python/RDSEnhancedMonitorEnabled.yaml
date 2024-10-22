@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_118
+  name: Ensure that enhanced monitoring is enabled for Amazon RDS instances
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_rds.DatabaseInstance(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_rds.DatabaseInstance(<ANY>, monitoring_interval=$COUNT , <ANY>)
+    - metavariable: $COUNT
+      comparison: $COUNT != 0

@@ -1,0 +1,61 @@
+FROM node:18
+
+RUN NPM_CONFIG_STRICT_SSL=false npm ci
+RUN NPM_CONFIG_STRICT_SSL="false" npm ci
+RUN NPM_CONFIG_STRICT_SSL='false' npm ci
+
+RUN npm_config_strict_ssl=false npm ci
+RUN npm_config_strict_ssl="false" npm ci
+RUN npm_config_strict_ssl='false' npm ci
+
+RUN NPM_CONFIG_STRICT_SSL=false TEST="lol" npm ci
+RUN NPM_CONFIG_STRICT_SSL="false" TEST='lol' npm ci
+RUN NPM_CONFIG_STRICT_SSL='false' TEST=lol npm ci
+
+RUN npm_config_strict_ssl=false TEST="lol" npm ci
+RUN npm_config_strict_ssl="false" TEST='lol' npm ci
+RUN npm_config_strict_ssl='false' TEST=lol npm ci
+
+RUN LOL=123 NPM_CONFIG_STRICT_SSL=false npm ci
+RUN LOL="123" NPM_CONFIG_STRICT_SSL="false" npm ci
+RUN LOL='123' NPM_CONFIG_STRICT_SSL='false' npm ci
+
+RUN LOL=123 npm_config_strict_ssl=false npm ci
+RUN LOL="123" npm_config_strict_ssl="false" npm ci
+RUN LOL='123' npm_config_strict_ssl='false' npm ci
+
+RUN TEST_123="456" NPM_CONFIG_STRICT_SSL=false TEST="lol" npm ci
+RUN TEST_123='456' NPM_CONFIG_STRICT_SSL="false" TEST='lol' npm ci
+RUN TEST_123=456 NPM_CONFIG_STRICT_SSL='false' TEST="lol" npm ci
+
+RUN TEST_123="456" npm_config_strict_ssl=false TEST="lol" npm ci
+RUN TEST_123='456' npm_config_strict_ssl="false" TEST='lol' npm ci
+RUN TEST_123=456 npm_config_strict_ssl='false' TEST="lol" npm ci
+
+RUN TEST_123="456" \
+    NPM_CONFIG_STRICT_SSL=false \
+    TEST="lol" \
+    npm ci
+RUN TEST_123='456' \
+    NPM_CONFIG_STRICT_SSL="false" \
+    TEST='lol'\
+     npm ci
+RUN \
+     TEST_123=456\
+     NPM_CONFIG_STRICT_SSL='false' \
+     TEST="lol" \
+     npm ci
+
+RUN TEST_123="456" \
+    npm_config_strict_ssl=false \
+    TEST="lol" \
+    npm ci
+RUN TEST_123='456' \
+    npm_config_strict_ssl="false" \
+    TEST='lol'\
+     npm ci
+RUN \
+     TEST_123=456\
+     npm_config_strict_ssl='false' \
+     TEST="lol" \
+     npm ci

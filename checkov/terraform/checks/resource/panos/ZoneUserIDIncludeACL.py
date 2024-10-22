@@ -1,20 +1,24 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class ZoneUserIDIncludeACL(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure an Include ACL is defined for a Zone when User-ID is enabled"
         id = "CKV_PAN_15"
-        supported_resources = ['panos_zone', 'panos_panorama_zone']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('panos_zone', 'panos_panorama_zone')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 
         # Report the area of evaluation
         self.evaluated_keys = ['include_acls']
-    
+
         # Get User-ID status, boolean value
         user_id_enabled = conf.get('enable_user_id')
 
@@ -32,10 +36,10 @@ class ZoneUserIDIncludeACL(BaseResourceCheck):
 
                     # Check for empty strings
                     if acl.strip() == "":
-                        
+
                         # An empty string is no ACL, which is a fail
                         return CheckResult.FAILED
-                
+
                 # No empty strings found in Include ACL definition, so this is a pass
                 return CheckResult.PASSED
 
@@ -46,5 +50,6 @@ class ZoneUserIDIncludeACL(BaseResourceCheck):
         # If User-ID is not enabled for the zone, the Include ACL check is not needed
         else:
             return CheckResult.PASSED
+
 
 check = ZoneUserIDIncludeACL()

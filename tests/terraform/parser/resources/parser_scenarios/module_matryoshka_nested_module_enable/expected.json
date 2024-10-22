@@ -1,0 +1,98 @@
+{
+    "{\"file_path\": \"buckets.tf\", \"tf_source_modules\": null}": {
+        "module": [
+            {
+                "bucket1": {
+                    "source": ["./bucket1"],
+                    "__resolved__": [
+                        "{\"file_path\": \"bucket1/bucket.tf\", \"tf_source_modules\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}"
+                    ],
+                    "__start_line__": 1,
+                    "__end_line__": 3,
+                    "__address__": "bucket1"
+                }
+            }
+        ],
+        "resource": [
+            {
+                "aws_s3_bucket": {
+                    "example0": {
+                        "__end_line__": 7,
+                        "__start_line__": 5,
+                        "bucket": ["bucket0"],
+                        "__address__": "aws_s3_bucket.example0"
+                    }
+                }
+            }
+        ]
+    },
+    "{\"file_path\": \"bucket1/bucket.tf\", \"tf_source_modules\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}": {
+        "module": [
+            {
+                "bucket2": {
+                    "source": ["./bucket2"],
+                    "__resolved__": [
+                        "{\"file_path\": \"bucket1/bucket2/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}"
+                    ],
+                    "__start_line__": 1,
+                    "__end_line__": 3,
+                    "__address__": "module.bucket1.bucket2"
+                }
+            }
+        ],
+        "resource": [
+            {
+                "aws_s3_bucket": {
+                    "example1": {
+                        "bucket": ["bucket1"],
+                        "__start_line__": 5,
+                        "__end_line__": 7,
+                        "__address__": "module.bucket1.aws_s3_bucket.example1"
+                    }
+                }
+            }
+        ]
+    },
+    "{\"file_path\": \"bucket1/bucket2/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}": {
+        "module": [
+            {
+                "bucket3": {
+                    "source": ["./bucket3"],
+                    "__resolved__": [
+                        "{\"file_path\": \"bucket1/bucket2/bucket3/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket2/bucket.tf\", \"name\": \"bucket3\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}}"
+                    ],
+                    "__start_line__": 1,
+                    "__end_line__": 3,
+                    "__address__": "module.bucket1.module.bucket2.bucket3"
+                }
+            }
+        ],
+        "resource": [
+            {
+                "aws_s3_bucket": {
+                    "example2": {
+                        "bucket": ["bucket2"],
+                        "__start_line__": 5,
+                        "__end_line__": 7,
+                        "__address__": "module.bucket1.module.bucket2.aws_s3_bucket.example2"
+                    }
+                }
+            }
+        ]
+    },
+    "{\"file_path\": \"bucket1/bucket2/bucket3/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket2/bucket.tf\", \"name\": \"bucket3\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}}": {
+        "resource": [
+            {
+                "aws_s3_bucket": {
+                    "example3": {
+                        "bucket": ["bucket3"],
+                        "acl": ["public-read"],
+                        "__start_line__": 1,
+                        "__end_line__": 4,
+                        "__address__": "module.bucket1.module.bucket2.module.bucket3.aws_s3_bucket.example3"
+                    }
+                }
+            }
+        ]
+    }
+}

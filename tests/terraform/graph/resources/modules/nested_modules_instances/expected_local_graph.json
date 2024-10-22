@@ -1,0 +1,2569 @@
+{
+  "vertices": [
+    {
+      "attributes": {
+        "__end_line__": 5,
+        "__start_line__": 1,
+        "bucket": [
+          "aws_s3_bucket.example_another.id"
+        ],
+        "source": [
+          "../module3"
+        ],
+        "__address__": "another_s3_module"
+      },
+      "block_type": "module",
+      "breadcrumbs": {},
+      "config": {
+        "another_s3_module": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "/module3/main.tf([{/another_one/main.tf#*#0}])",
+            "/module3/variable.tf([{/another_one/main.tf#*#0}])"
+          ],
+          "__start_line__": 1,
+          "bucket": [
+            "aws_s3_bucket.example_another.id"
+          ],
+          "source": [
+            "../module3"
+          ],
+          "__address__": "another_s3_module"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "another_s3_module",
+      "path": "/another_one/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 9,
+        "__start_line__": 7,
+        "bucket": [
+          "example_another"
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "aws_s3_bucket.example_another"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {},
+      "config": {
+        "aws_s3_bucket": {
+          "example_another": {
+            "__end_line__": 9,
+            "__start_line__": 7,
+            "bucket": [
+              "example_another"
+            ],
+            "__address__": "aws_s3_bucket.example_another"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.example_another",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "aws_s3_bucket.example_another",
+      "path": "/another_one/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "__address__": "bucket"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {},
+      "config": {
+        "bucket": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "bucket"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "bucket",
+      "path": "/another_one/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "bucket": [
+          "example"
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "aws_s3_bucket.example3"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {},
+      "config": {
+        "aws_s3_bucket": {
+          "example3": {
+            "__end_line__": 3,
+            "__start_line__": 1,
+            "bucket": [
+              "example"
+            ],
+            "__address__": "aws_s3_bucket.example3"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.example3",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "aws_s3_bucket.example3",
+      "path": "/example.tfcloud/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 9,
+        "__start_line__": 5,
+        "bucket": [
+          "aws_s3_bucket.example.id"
+        ],
+        "source": [
+          "./module"
+        ],
+        "__address__": "s3_module"
+      },
+      "block_type": "module",
+      "breadcrumbs": {},
+      "config": {
+        "s3_module": {
+          "__end_line__": 9,
+          "__resolved__": [
+            "/module/main.tf([{/main.tf#*#0}])",
+            "/module/variable.tf([{/main.tf#*#0}])"
+          ],
+          "__start_line__": 5,
+          "bucket": [
+            "aws_s3_bucket.example.id"
+          ],
+          "source": [
+            "./module"
+          ],
+          "__address__": "s3_module"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "s3_module",
+      "path": "/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 15,
+        "__start_line__": 11,
+        "bucket": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "source": [
+          "./module"
+        ],
+        "__address__": "s3_module2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {},
+      "config": {
+        "s3_module2": {
+          "__end_line__": 15,
+          "__resolved__": [
+            "/module/main.tf([{/main.tf#*#1}])",
+            "/module/variable.tf([{/main.tf#*#1}])"
+          ],
+          "__start_line__": 11,
+          "bucket": [
+            "aws_s3_bucket.example2.id"
+          ],
+          "source": [
+            "./module"
+          ],
+          "__address__": "s3_module2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "s3_module2",
+      "path": "/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "region": [
+          "us-west-2"
+        ],
+        "__address__": "aws.default"
+      },
+      "block_type": "provider",
+      "breadcrumbs": {},
+      "config": {
+        "aws": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "region": [
+            "us-west-2"
+          ],
+          "__address__": "aws.default"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "aws",
+      "path": "/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 19,
+        "__start_line__": 17,
+        "bucket": [
+          "example"
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "aws_s3_bucket.example"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {},
+      "config": {
+        "aws_s3_bucket": {
+          "example": {
+            "__end_line__": 19,
+            "__start_line__": 17,
+            "bucket": [
+              "example"
+            ],
+            "__address__": "aws_s3_bucket.example"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.example",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "aws_s3_bucket.example",
+      "path": "/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 23,
+        "__start_line__": 21,
+        "bucket": [
+          "example"
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "aws_s3_bucket.example2"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {},
+      "config": {
+        "aws_s3_bucket": {
+          "example2": {
+            "__end_line__": 23,
+            "__start_line__": 21,
+            "bucket": [
+              "example"
+            ],
+            "__address__": "aws_s3_bucket.example2"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.example2",
+      "module_connections": {},
+      "module_dependency": null,
+      "module_dependency_num": null,
+      "name": "aws_s3_bucket.example2",
+      "path": "/main.tf",
+      "source": "TERRAFORM",
+      "source_module": []
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "source": [
+          "../module2"
+        ],
+        "__address__": "module.s3_module.inner_s3_module"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#0}])}])",
+            "/module2/variable.tf([{/module/main.tf#*#0([{/main.tf#*#0}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example.id"
+          ],
+          "source": [
+            "../module2"
+          ],
+          "__address__": "module.s3_module.inner_s3_module"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "0",
+      "name": "inner_s3_module",
+      "path": "/module/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        4
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 9,
+        "__start_line__": 6,
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "source": [
+          "../module2"
+        ],
+        "__address__": "module.s3_module.inner_s3_module_2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module_2": {
+          "__end_line__": 9,
+          "__resolved__": [
+            "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#0}])}])",
+            "/module2/variable.tf([{/module/main.tf#*#1([{/main.tf#*#0}])}])"
+          ],
+          "__start_line__": 6,
+          "bucket2": [
+            "aws_s3_bucket.example.id"
+          ],
+          "source": [
+            "../module2"
+          ],
+          "__address__": "module.s3_module.inner_s3_module_2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "0",
+      "name": "inner_s3_module_2",
+      "path": "/module/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        4
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "source": [
+          "../module2"
+        ],
+        "__address__": "module.s3_module2.inner_s3_module"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#1}])}])",
+            "/module2/variable.tf([{/module/main.tf#*#0([{/main.tf#*#1}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example2.id"
+          ],
+          "source": [
+            "../module2"
+          ],
+          "__address__": "module.s3_module2.inner_s3_module"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "1",
+      "name": "inner_s3_module",
+      "path": "/module/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        5
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 9,
+        "__start_line__": 6,
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "source": [
+          "../module2"
+        ],
+        "__address__": "module.s3_module2.inner_s3_module_2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module_2": {
+          "__end_line__": 9,
+          "__resolved__": [
+            "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#1}])}])",
+            "/module2/variable.tf([{/module/main.tf#*#1([{/main.tf#*#1}])}])"
+          ],
+          "__start_line__": 6,
+          "bucket2": [
+            "aws_s3_bucket.example2.id"
+          ],
+          "source": [
+            "../module2"
+          ],
+          "__address__": "module.s3_module2.inner_s3_module_2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "1",
+      "name": "inner_s3_module_2",
+      "path": "/module/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        5
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.bucket"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          }
+        ]
+      },
+      "config": {
+        "bucket": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module.bucket"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "0",
+      "name": "bucket",
+      "path": "/module/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        4
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.bucket"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket",
+            "path": "/module/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          }
+        ]
+      },
+      "config": {
+        "bucket": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2.bucket"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/main.tf",
+      "module_dependency_num": "1",
+      "name": "bucket",
+      "path": "/module/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        5
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "source": [
+          "../module3"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module.inner_s3_module2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 9
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module2": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module3/main.tf([{/module2/main.tf#*#0([{/module/main.tf#*#0([{/main.tf#*#0}])}])}])",
+            "/module3/variable.tf([{/module2/main.tf#*#0([{/module/main.tf#*#0([{/main.tf#*#0}])}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example.id"
+          ],
+          "source": [
+            "../module3"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module.inner_s3_module2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#0}])",
+      "module_dependency_num": "0",
+      "name": "inner_s3_module2",
+      "path": "/module2/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        9
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "source": [
+          "../module3"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module.inner_s3_module2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 11
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module2": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module3/main.tf([{/module2/main.tf#*#0([{/module/main.tf#*#0([{/main.tf#*#1}])}])}])",
+            "/module3/variable.tf([{/module2/main.tf#*#0([{/module/main.tf#*#0([{/main.tf#*#1}])}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example2.id"
+          ],
+          "source": [
+            "../module3"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module.inner_s3_module2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#1}])",
+      "module_dependency_num": "0",
+      "name": "inner_s3_module2",
+      "path": "/module2/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        11
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "source": [
+          "../module3"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module_2.inner_s3_module2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 10
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module2": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module3/main.tf([{/module2/main.tf#*#0([{/module/main.tf#*#1([{/main.tf#*#0}])}])}])",
+            "/module3/variable.tf([{/module2/main.tf#*#0([{/module/main.tf#*#1([{/main.tf#*#0}])}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example.id"
+          ],
+          "source": [
+            "../module3"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module_2.inner_s3_module2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#0}])",
+      "module_dependency_num": "1",
+      "name": "inner_s3_module2",
+      "path": "/module2/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        10
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 4,
+        "__start_line__": 1,
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "source": [
+          "../module3"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module_2.inner_s3_module2"
+      },
+      "block_type": "module",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 12
+          }
+        ]
+      },
+      "config": {
+        "inner_s3_module2": {
+          "__end_line__": 4,
+          "__resolved__": [
+            "/module3/main.tf([{/module2/main.tf#*#0([{/module/main.tf#*#1([{/main.tf#*#1}])}])}])",
+            "/module3/variable.tf([{/module2/main.tf#*#0([{/module/main.tf#*#1([{/main.tf#*#1}])}])}])"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            "aws_s3_bucket.example2.id"
+          ],
+          "source": [
+            "../module3"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module_2.inner_s3_module2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#1}])",
+      "module_dependency_num": "1",
+      "name": "inner_s3_module2",
+      "path": "/module2/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        12
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 9
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#0}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module2/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        9
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 11
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#1}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module2/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        11
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module_2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 10
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module_2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#0}])",
+      "module_dependency_num": "1",
+      "name": "bucket2",
+      "path": "/module2/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        10
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module_2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module2/variable.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 12
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module_2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module/main.tf([{/main.tf#*#1}])",
+      "module_dependency_num": "1",
+      "name": "bucket2",
+      "path": "/module2/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        12
+      ]
+    },
+    {
+      "attributes": {
+        "bucket2": [
+          "var.bucket2"
+        ],
+        "__address__": "module.another_s3_module.bucket2"
+      },
+      "block_type": "locals",
+      "breadcrumbs": {
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "another_s3_module",
+            "path": "/another_one/main.tf",
+            "idx": 0
+          }
+        ]
+      },
+      "config": {
+        "bucket2": [
+          "var.bucket2"
+        ],
+        "__address__": "module.another_s3_module.bucket2"
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/another_one/main.tf",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        0
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 11,
+        "__start_line__": 5,
+        "block_public_acls": [
+          true
+        ],
+        "block_public_policy": [
+          true
+        ],
+        "bucket": [
+          "var.bucket2"
+        ],
+        "ignore_public_acls": [
+          true
+        ],
+        "restrict_public_buckets": [
+          true
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "module.another_s3_module.aws_s3_bucket.var_bucket"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {
+        "bucket": [
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "another_s3_module",
+            "path": "/another_one/main.tf",
+            "idx": 0
+          }
+        ]
+      },
+      "config": {
+        "aws_s3_bucket": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              "var.bucket2"
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.another_s3_module.aws_s3_bucket.var_bucket"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.var_bucket",
+      "module_connections": {},
+      "module_dependency": "/another_one/main.tf",
+      "module_dependency_num": "0",
+      "name": "aws_s3_bucket.var_bucket",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        0
+      ]
+    },
+    {
+      "attributes": {
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "locals",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 9
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 15
+          }
+        ]
+      },
+      "config": {
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        15
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 11,
+        "__start_line__": 5,
+        "block_public_acls": [
+          true
+        ],
+        "block_public_policy": [
+          true
+        ],
+        "bucket": [
+          "aws_s3_bucket.example.id"
+        ],
+        "ignore_public_acls": [
+          true
+        ],
+        "restrict_public_buckets": [
+          true
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {
+        "bucket": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 9
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 15
+          }
+        ]
+      },
+      "config": {
+        "aws_s3_bucket": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              "aws_s3_bucket.example.id"
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.var_bucket",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "aws_s3_bucket.var_bucket",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        15
+      ]
+    },
+    {
+      "attributes": {
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "locals",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 11
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 16
+          }
+        ]
+      },
+      "config": {
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        16
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 11,
+        "__start_line__": 5,
+        "block_public_acls": [
+          true
+        ],
+        "block_public_policy": [
+          true
+        ],
+        "bucket": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "ignore_public_acls": [
+          true
+        ],
+        "restrict_public_buckets": [
+          true
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {
+        "bucket": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 11
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 16
+          }
+        ]
+      },
+      "config": {
+        "aws_s3_bucket": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              "aws_s3_bucket.example2.id"
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.var_bucket",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "aws_s3_bucket.var_bucket",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        16
+      ]
+    },
+    {
+      "attributes": {
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "locals",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 10
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 17
+          }
+        ]
+      },
+      "config": {
+        "bucket2": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        17
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 11,
+        "__start_line__": 5,
+        "block_public_acls": [
+          true
+        ],
+        "block_public_policy": [
+          true
+        ],
+        "bucket": [
+          "aws_s3_bucket.example.id"
+        ],
+        "ignore_public_acls": [
+          true
+        ],
+        "restrict_public_buckets": [
+          true
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {
+        "bucket": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 10
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 17
+          }
+        ]
+      },
+      "config": {
+        "aws_s3_bucket": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              "aws_s3_bucket.example.id"
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.var_bucket",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "aws_s3_bucket.var_bucket",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        17
+      ]
+    },
+    {
+      "attributes": {
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "locals",
+      "breadcrumbs": {
+        "bucket2": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 12
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 18
+          }
+        ]
+      },
+      "config": {
+        "bucket2": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        18
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 11,
+        "__start_line__": 5,
+        "block_public_acls": [
+          true
+        ],
+        "block_public_policy": [
+          true
+        ],
+        "bucket": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "ignore_public_acls": [
+          true
+        ],
+        "restrict_public_buckets": [
+          true
+        ],
+        "resource_type": [
+          "aws_s3_bucket"
+        ],
+        "encryption_": "ENCRYPTED",
+        "encryption_details_": "AES256",
+        "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+      },
+      "block_type": "resource",
+      "breadcrumbs": {
+        "bucket": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 12
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 18
+          }
+        ]
+      },
+      "config": {
+        "aws_s3_bucket": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              "aws_s3_bucket.example2.id"
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.aws_s3_bucket.var_bucket"
+          }
+        }
+      },
+      "id": "aws_s3_bucket.var_bucket",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "aws_s3_bucket.var_bucket",
+      "path": "/module3/main.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        18
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "__address__": "module.another_s3_module.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "another_s3_module",
+            "path": "/another_one/main.tf",
+            "idx": 0
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.another_s3_module.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/another_one/main.tf",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        0
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 9
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 15
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        15
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module",
+            "path": "/module/main.tf",
+            "idx": 11
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 16
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#0([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        16
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example.id"
+        ],
+        "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module",
+            "path": "/main.tf",
+            "idx": 4
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 10
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 17
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#0}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        17
+      ]
+    },
+    {
+      "attributes": {
+        "__end_line__": 3,
+        "__start_line__": 1,
+        "type": [
+          "string"
+        ],
+        "default": [
+          "aws_s3_bucket.example2.id"
+        ],
+        "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+      },
+      "block_type": "variable",
+      "breadcrumbs": {
+        "default": [
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "module_connection": false
+          },
+          {
+            "type": "variable",
+            "name": "bucket2",
+            "path": "/module3/variable.tf",
+            "module_connection": false
+          },
+          {
+            "type": "locals",
+            "name": "bucket2",
+            "path": "/module3/main.tf",
+            "module_connection": false
+          }
+        ],
+        "source_module_": [
+          {
+            "type": "module",
+            "name": "s3_module2",
+            "path": "/main.tf",
+            "idx": 5
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module_2",
+            "path": "/module/main.tf",
+            "idx": 12
+          },
+          {
+            "type": "module",
+            "name": "inner_s3_module2",
+            "path": "/module2/main.tf",
+            "idx": 18
+          }
+        ]
+      },
+      "config": {
+        "bucket2": {
+          "__end_line__": 3,
+          "__start_line__": 1,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2.bucket2"
+        }
+      },
+      "id": "",
+      "module_connections": {},
+      "module_dependency": "/module2/main.tf([{/module/main.tf#*#1([{/main.tf#*#1}])}])",
+      "module_dependency_num": "0",
+      "name": "bucket2",
+      "path": "/module3/variable.tf",
+      "source": "TERRAFORM",
+      "source_module": [
+        18
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "origin": 0,
+      "dest": 1,
+      "label": "bucket"
+    },
+    {
+      "origin": 4,
+      "dest": 7,
+      "label": "bucket"
+    },
+    {
+      "origin": 13,
+      "dest": 4,
+      "label": "default"
+    },
+    {
+      "origin": 5,
+      "dest": 8,
+      "label": "bucket"
+    },
+    {
+      "origin": 14,
+      "dest": 5,
+      "label": "default"
+    },
+    {
+      "origin": 9,
+      "dest": 13,
+      "label": "bucket2"
+    },
+    {
+      "origin": 19,
+      "dest": 9,
+      "label": "default"
+    },
+    {
+      "origin": 10,
+      "dest": 13,
+      "label": "bucket2"
+    },
+    {
+      "origin": 21,
+      "dest": 10,
+      "label": "default"
+    },
+    {
+      "origin": 11,
+      "dest": 14,
+      "label": "bucket2"
+    },
+    {
+      "origin": 20,
+      "dest": 11,
+      "label": "default"
+    },
+    {
+      "origin": 12,
+      "dest": 14,
+      "label": "bucket2"
+    },
+    {
+      "origin": 22,
+      "dest": 12,
+      "label": "default"
+    },
+    {
+      "origin": 15,
+      "dest": 19,
+      "label": "bucket2"
+    },
+    {
+      "origin": 34,
+      "dest": 15,
+      "label": "default"
+    },
+    {
+      "origin": 16,
+      "dest": 20,
+      "label": "bucket2"
+    },
+    {
+      "origin": 35,
+      "dest": 16,
+      "label": "default"
+    },
+    {
+      "origin": 17,
+      "dest": 21,
+      "label": "bucket2"
+    },
+    {
+      "origin": 36,
+      "dest": 17,
+      "label": "default"
+    },
+    {
+      "origin": 18,
+      "dest": 22,
+      "label": "bucket2"
+    },
+    {
+      "origin": 37,
+      "dest": 18,
+      "label": "default"
+    },
+    {
+      "origin": 23,
+      "dest": 33,
+      "label": "bucket2"
+    },
+    {
+      "origin": 24,
+      "dest": 23,
+      "label": "bucket"
+    },
+    {
+      "origin": 25,
+      "dest": 34,
+      "label": "bucket2"
+    },
+    {
+      "origin": 26,
+      "dest": 25,
+      "label": "bucket"
+    },
+    {
+      "origin": 27,
+      "dest": 35,
+      "label": "bucket2"
+    },
+    {
+      "origin": 28,
+      "dest": 27,
+      "label": "bucket"
+    },
+    {
+      "origin": 29,
+      "dest": 36,
+      "label": "bucket2"
+    },
+    {
+      "origin": 30,
+      "dest": 29,
+      "label": "bucket"
+    },
+    {
+      "origin": 31,
+      "dest": 37,
+      "label": "bucket2"
+    },
+    {
+      "origin": 32,
+      "dest": 31,
+      "label": "bucket"
+    },
+    {
+      "origin": 26,
+      "dest": 7,
+      "label": "[cross-variable] bucket"
+    },
+    {
+      "origin": 28,
+      "dest": 8,
+      "label": "[cross-variable] bucket"
+    },
+    {
+      "origin": 30,
+      "dest": 7,
+      "label": "[cross-variable] bucket"
+    },
+    {
+      "origin": 32,
+      "dest": 8,
+      "label": "[cross-variable] bucket"
+    }
+  ]
+}

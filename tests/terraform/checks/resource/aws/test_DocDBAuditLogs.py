@@ -42,21 +42,22 @@ class TestDocDBAuditLogs(unittest.TestCase):
         self.assertEqual(CheckResult.FAILED, scan_result)
 
     def test_success_with_parameters(self):
-        hcl_res = hcl2.loads("""
-                resource "aws_docdb_cluster_parameter_group" "test" {
-                  family      = "docdb3.6"
-                  name        = "test"
-                  description = "docdb cluster parameter group"
+        for accepted_value in ["enabled", "ddl", "all", "ddl, dml_write"]:
+            hcl_res = hcl2.loads(f"""
+                    resource "aws_docdb_cluster_parameter_group" "test" {{
+                      family      = "docdb3.6"
+                      name        = "test"
+                      description = "docdb cluster parameter group"
 
-                  parameter {
-                    name  = "audit_logs"
-                    value = "enabled"
-                  }
-                }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_docdb_cluster_parameter_group']['test']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+                      parameter {{
+                        name  = "audit_logs"
+                        value = "{accepted_value}"
+                      }}
+                    }}
+            """)
+            resource_conf = hcl_res['resource'][0]['aws_docdb_cluster_parameter_group']['test']
+            scan_result = check.scan_resource_conf(conf=resource_conf)
+            self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()

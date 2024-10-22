@@ -1,0 +1,4 @@
+pass:
+  - "ClusterRoleBinding.default.read-pods-global"
+fail:
+  - "ClusterRoleBinding.default.read-secrets-global"

@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_95
+  name: Ensure API Gateway V2 has Access Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_apigatewayv2.$FUNC(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_apigatewayv2.$FUNC(<ANY>, access_log_settings=aws_cdk.aws_apigatewayv2.$FUNC.AccessLogSettingsProperty(<ANY>, destination_arn=$ARG ,<ANY>) ,<ANY>)
+    - metavariable: $FUNC
+      regex: (CfnStage|CfnApi)

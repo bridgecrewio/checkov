@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -62,6 +63,25 @@ class TestGitlabRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.skipped_checks, [])
+
+    @mock.patch.dict(os.environ, {"CKV_GITLAB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1"}, clear=True)
+    def test_runner_files_ignore(self):
+        # given
+        test_file = Path(__file__).parent / "resources/gitlab_conf/pass/merge_request_approval_conf.json"
+        checks = ["CKV_GITLAB_1", "CKV_GITLAB_2"]
+
+        # when
+        report = Runner().run(
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(checks=checks)
+        )
+
+        # then
+        # even it points to a file with scannable content, it should skip it
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
 
     def test_registry_has_type(self):
         self.assertEqual(registry.report_type, CheckType.GITLAB_CONFIGURATION)

@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_3"
+  name: "Ensure that certificate validation isn't disabled with wget"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(wget[^\\|&;]*\\s+--no-check-certificate).*"

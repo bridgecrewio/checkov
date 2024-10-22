@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_AWS_43"
+  name: "Ensure S3 Bucket does not allow access to all Authenticated users"
+  category: "IAM"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_s3_bucket_acl"
+  attribute: "access_control_policy.grant.*.grantee.uri"
+  operator: "not_equals"  
+  value: "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"

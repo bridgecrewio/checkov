@@ -1,0 +1,8 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_management_profile.Interface_mgmt_profile_pass_1"
+  - "tasks.paloaltonetworks.panos.panos_management_profile.Interface_mgmt_profile_pass_2"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_management_profile.Interface_mgmt_profile_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_management_profile.Interface_mgmt_profile_fail_2"
+evaluated_keys:
+  - "telnet"

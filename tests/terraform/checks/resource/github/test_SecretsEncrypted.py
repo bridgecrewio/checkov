@@ -20,8 +20,8 @@ class TestSecretsEncrypted(unittest.TestCase):
         passing_resources = {
             "github_actions_environment_secret.pass",
             "github_actions_organization_secret.pass",
+            "github_actions_organization_secret.pass_empty_value",
             "github_actions_secret.pass",
-            "github_actions_secret.value_ref",
         }
         failing_resources = {
             "github_actions_environment_secret.fail",
@@ -32,10 +32,12 @@ class TestSecretsEncrypted(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 4)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+        # github_actions_secret.value_ref is dependent on azuread_service_principal_password.gh_actions
+        self.assertEqual(summary["resource_count"], 9)  # 2 extra
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

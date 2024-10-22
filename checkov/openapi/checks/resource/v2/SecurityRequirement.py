@@ -36,11 +36,13 @@ class SecurityRequirement(BaseOpenapiCheckV2):
             return CheckResult.FAILED, conf
 
         for path, http_method in paths.items():
-            if self.is_start_end_line(path):
+            if self.is_start_end_line(path) or not http_method:
                 continue
             for op_name, op_val in http_method.items():
                 if self.is_start_end_line(op_name):
                     continue
+                if not isinstance(op_val, dict):
+                    return CheckResult.FAILED, conf
                 if not self.check_security_conf(op_val, security_definitions):
                     return CheckResult.FAILED, op_val["security"]
 

@@ -1,0 +1,20 @@
+FROM alpine:3.5
+ENV GIT_SSL_NO_VERIFY=1
+ENV GIT_SSL_NO_VERIFY true
+RUN export GIT_SSL_NO_VERIFY=1
+ARG GIT_SSL_NO_VERIFY=true
+RUN     GIT_SSL_NO_VERIFY=1 git clone https://github.com/bridgecrewio/checkov.git
+ENV GIT_SSL_NO_VERIFY ${GIT_SSL_NO_VERIFY}
+RUN export GIT_SSL_NO_VERIFY=1 && git clone --depth 1 https://github.com/bridgecrewio/checkov.git
+RUN cd $HOME && export GIT_SSL_NO_VERIFY=true \
+    && git clone https://github.com/bridgecrewio/checkov.git
+RUN GIT_SSL_NO_VERIFY=yes \
+    git clone https://github.com/bridgecrewio/checkov.git
+RUN apk add git && GIT_SSL_NO_VERIFY=true git clone https://github.com/bridgecrewio/checkov.git
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    GIT_SSL_NO_VERIFY=1
+RUN export DEBIAN_FRONTEND='noninteractive' && \
+    export GIT_SSL_NO_VERIFY=1 && echo Hybrid_Theory

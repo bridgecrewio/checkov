@@ -1,0 +1,13 @@
+swagger: "2.0"
+info:
+  title: Simple API Overview
+  version: 1.0.0
+securityDefinitions:
+  some_auth:
+    type: oauth2
+    scopes:
+      read:api: read your apis
+security:
+  - some_auth:
+    - read:api
+    - error:api

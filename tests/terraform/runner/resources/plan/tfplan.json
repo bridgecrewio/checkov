@@ -747,7 +747,7 @@
               "delete": null
             },
             "transit_gateway_id": null,
-            "vpc_peering_connection_id": null
+            "vpc_peering_connection_id": ""
           }
         },
         {

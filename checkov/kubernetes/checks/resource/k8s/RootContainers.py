@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_root_container_check import BaseK8sRootContainerCheck
 
 
 class RootContainers(BaseK8sRootContainerCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # CIS-1.3 1.7.6
         # CIS-1.5 5.2.6
         name = "Minimize the admission of root containers"
@@ -14,12 +18,12 @@ class RootContainers(BaseK8sRootContainerCheck):
         id = "CKV_K8S_23"
         super().__init__(name=name, id=id)
 
-    def scan_spec_conf(self, conf):
+    def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         spec = self.extract_spec(conf)
 
         # Collect results
-        if spec:
-            results = {"pod": {}, "container": []}
+        if spec and isinstance(spec, dict):
+            results: dict[str, Any] = {"pod": {}, "container": []}
             results["pod"]["runAsNonRoot"] = self.check_runAsNonRoot(spec)
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 1)
 

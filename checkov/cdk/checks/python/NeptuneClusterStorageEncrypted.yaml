@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_44
+  name: Ensure Neptune storage is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_neptune.CfnDBCluster(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_neptune.CfnDBCluster(<ANY>, storage_encrypted=True , <ANY>)
+      - pattern: aws_cdk.aws_neptune.DatabaseCluster(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_neptune.DatabaseCluster(<ANY>, storage_encrypted=True , <ANY>)

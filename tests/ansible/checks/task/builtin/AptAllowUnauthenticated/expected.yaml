@@ -1,0 +1,8 @@
+pass:
+  - "tasks.ansible.builtin.apt.long_implicit_ok"
+  - "tasks.apt.short_implicit_ok"
+  - "tasks.ansible.builtin.apt.long_explicit_ok"
+  - "tasks.apt.short_explicit_ok"
+fail:
+  - "tasks.ansible.builtin.apt.long_unsafe"
+  - "tasks.apt.short_unsafe"

@@ -1,5 +1,5 @@
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class S3Encryption(BaseResourceValueCheck):
@@ -10,6 +10,7 @@ class S3Encryption(BaseResourceValueCheck):
         supported_resources = ['AWS::S3::Bucket']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        self.missing_block_result = CheckResult.PASSED  # The default value for this resource is to encrypt
 
     def get_inspected_key(self):
         return 'Properties/BucketEncryption/ServerSideEncryptionConfiguration/[0]/ServerSideEncryptionByDefault/SSEAlgorithm'

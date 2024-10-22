@@ -9,7 +9,6 @@ Resources:
       DBClusterParameterGroupName: NeptuneDBClusterParameterGroup
       DBSubnetGroupName: NeptuneDBSubnetGroup
       IamAuthEnabled: true
-      Port: 8080
       PreferredBackupWindow: NeptuneDBClusterPreferredBackupWindow
       PreferredMaintenanceWindow: NeptuneDBClusterPreferredMaintenanceWindow
       StorageEncrypted: true

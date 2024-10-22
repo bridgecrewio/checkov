@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_31
+  name: Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit and has auth token
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticache.CfnReplicationGroup(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticache.CfnReplicationGroup(<ANY>, transit_encryption_enabled=True ,<ANY>, auth_token=$ARG, <ANY>)
+    - not_pattern: aws_cdk.aws_elasticache.CfnReplicationGroup(<ANY>, auth_token=$ARG ,<ANY>, transit_encryption_enabled=True, <ANY>)

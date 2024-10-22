@@ -75,6 +75,25 @@ resource "aws_lb_listener" "http_redirector" {
         result = check.scan_resource_conf(resource_conf)
         self.assertEqual(CheckResult.UNKNOWN, result)
 
+    def test_unknown_not_rendered(self):
+        hcl_res = hcl2.loads("""
+resource "aws_lb_listener" "http_redirector" {
+  load_balancer_arn = aws_lb.redirector.arn
+  port              = "80"
+  protocol          = var.lb_protocol
+  default_action {
+    type = "redirect"
+    redirect {
+      host        = "example.com"
+      status_code = "HTTP_302"
+    }
+  }
+}
+        """)
+        resource_conf = hcl_res['resource'][0]['aws_lb_listener']['http_redirector']
+        result = check.scan_resource_conf(resource_conf)
+        self.assertEqual(CheckResult.UNKNOWN, result)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,17 +8,16 @@ from checkov.common.util.type_forcers import force_int
 class LengthEqualsAttributeSolver(BaseAttributeSolver):
     operator = Operators.LENGTH_EQUALS  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
 
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
-        # if this value contains an underendered variable, then we cannot evaluate the check,
-        # so return True (since we cannot return UNKNOWN)
-        if self._is_variable_dependant(attr, vertex['source_']):
-            return True
-
         if isinstance(attr, Sized):
+            # this resolver assumes the attribute is a string or a list.
+            # if a dict is received, default the length to 1.
+            if isinstance(attr, dict):
+                return 1 == force_int(self.value)
             return len(attr) == force_int(self.value)
 
         return False

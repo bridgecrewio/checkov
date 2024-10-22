@@ -1,5 +1,7 @@
 pass:
-  - "aws_guardduty_detector.ok"
+  - "aws_guardduty_detector.all"
+  - "aws_guardduty_detector.ok_old"
 fail:
   - "aws_guardduty_detector.not_ok"
-  - "aws_guardduty_detector.not_ok_false"
+  - "aws_guardduty_detector.not_ok_false_old"
+  - "aws_guardduty_detector.none"

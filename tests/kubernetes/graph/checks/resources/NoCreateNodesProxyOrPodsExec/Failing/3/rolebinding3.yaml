@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: failing-rb3
+  namespace: kube-system
+subjects:
+- kind: ServiceAccount
+  name: over-privileged-sa3
+  namespace: test
+roleRef:
+  kind: Role
+  name: failing-role3
+  apiGroup: rbac.authorization.k8s.io

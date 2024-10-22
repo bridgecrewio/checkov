@@ -11,6 +11,8 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
@@ -47,7 +49,8 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.debug("Scanning without applying scanning configs from the platform.", exc_info=True)
 
     @staticmethod
-    def _get_code_category_object(code_category_config: dict[str, Any], code_category_type: str) -> CodeCategoryConfiguration | None:
+    def _get_code_category_object(code_category_config: dict[str, Any],
+                                  code_category_type: str) -> CodeCategoryConfiguration | None:
         if code_category_type not in code_category_config:
             return None
         soft_fail_threshold = Severities[code_category_config[code_category_type]['softFailThreshold']]
@@ -67,6 +70,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         rules = enforcement_rules_config['rules']
         default_rule = next(r for r in rules if r['mainRule'] is True)
         other_rules = [r for r in rules if r != default_rule]
+
+        logging.debug(f'Default enforcement rule: {json.dumps(default_rule, indent=2)}')
+        logging.debug(f'Other enforcement rules ({len(other_rules)} total): {json.dumps(other_rules, indent=2)}')
 
         matched_rules = []
 
@@ -104,11 +110,20 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.info('Found exactly one matching enforcement rule for the specified repo')
             self.enforcement_rule = matched_rules[0]
 
-        logging.debug('Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
+        logging.debug(
+            'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
-        for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:
-            config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'], code_category_type)
+        # handle the rename in the platform side
+        if 'SAST' in self.enforcement_rule['codeCategories'] and 'WEAKNESSES' not in self.enforcement_rule['codeCategories']:
+            self.enforcement_rule['codeCategories']['WEAKNESSES'] = self.enforcement_rule['codeCategories']['SAST']
+
+        if 'WEAKNESSES' in self.enforcement_rule['codeCategories'] and 'SAST' not in self.enforcement_rule['codeCategories']:
+            self.enforcement_rule['codeCategories']['SAST'] = self.enforcement_rule['codeCategories']['WEAKNESSES']
+
+        for code_category_type in [e.value for e in CodeCategoryType]:
+            config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'],
+                                                                     code_category_type)
             if config:
                 self.code_category_configs[code_category_type] = config
 
@@ -117,6 +132,18 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]:
             return True
         return False
+
+    def pre_runner(self, runner: _BaseRunner) -> None:
+        # not used
+        pass
+
+    def post_runner(self, scan_reports: Report) -> None:
+        # not used
+        pass
+
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
 
 
 integration = RepoConfigIntegration(bc_integration)

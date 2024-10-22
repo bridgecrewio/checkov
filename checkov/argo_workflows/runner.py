@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 # Import of the checks registry for a specific resource type
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 API_VERSION_PATTERN = re.compile(r"^apiVersion:\s*argoproj.io/", re.MULTILINE)
+KIND_PATTERN = re.compile(r"^kind:\s*Workflow", re.MULTILINE)
 
 
 class Runner(YamlRunner, ImageReferencer):
@@ -30,23 +31,32 @@ class Runner(YamlRunner, ImageReferencer):
     def import_registry(self) -> BaseCheckRegistry:
         return self.block_type_registries["template"]
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        content = self._get_workflow_file_content(file_path=f)
+        content = Runner._get_workflow_file_content(file_path=f)
         if content:
-            return super()._parse_file(f=f, file_content=content)
+            return YamlRunner._parse_file(f=f, file_content=content)
 
         return None
 
-    def _get_workflow_file_content(self, file_path: str) -> str | None:
-        if not file_path.endswith((".yaml", ",yml")):
+    @staticmethod
+    def _get_workflow_file_content(file_path: str) -> str | None:
+        if not file_path.endswith((".yaml", ".yml")):
             return None
 
-        content = Path(file_path).read_text()
-        match = re.search(API_VERSION_PATTERN, content)
-        if match:
-            return content
+        content = read_file_with_any_encoding(file_path=file_path)
+        if "argoproj.io" not in content:
+            # the following regex will search more precisely, but no need to further process
+            return None
+
+        match_api = re.search(API_VERSION_PATTERN, content)
+        if match_api:
+            match_kind = re.search(KIND_PATTERN, content)
+            if match_kind:
+                # only scan Argo Workflows
+                return content
 
         return None
 

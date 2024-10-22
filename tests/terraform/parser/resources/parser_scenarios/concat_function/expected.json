@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "inline_map": [
@@ -53,7 +53,8 @@
             ]
           ],
           "__start_line__": 10,
-          "__end_line__": 23
+          "__end_line__": 23,
+          "__address__": "extra_tags"
         }
       }
     ],
@@ -100,7 +101,8 @@
               ]
             ],
             "__start_line__": 25,
-            "__end_line__": 46
+            "__end_line__": 46,
+            "__address__": "aws_autoscaling_group.bar"
           }
         }
       },
@@ -131,7 +133,8 @@
               ]
             ],
             "__start_line__": 48,
-            "__end_line__": 66
+            "__end_line__": 66,
+            "__address__": "aws_autoscaling_group.bar_simplified"
           }
         }
       }

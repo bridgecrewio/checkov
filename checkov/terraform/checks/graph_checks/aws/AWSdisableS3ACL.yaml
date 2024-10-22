@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_AWS_65"
+  name: "Ensure access control lists for S3 buckets are disabled"
+  category: "GENERAL_SECURITY"
+
+definition:
+
+  cond_type: "attribute"
+  resource_types: "aws_s3_bucket_ownership_controls"
+  attribute: "rule.object_ownership"
+  operator: "equals"
+  value: "BucketOwnerEnforced"

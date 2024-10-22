@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_68
+  name: CloudFront Distribution should have WAF enabled
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>)
+  conditions:
+    - not_pattern: 'aws_cdk.aws_cloudfront.CfnDistribution(<ANY>, distribution_config={"webAclId": $ARG} , <ANY>)'

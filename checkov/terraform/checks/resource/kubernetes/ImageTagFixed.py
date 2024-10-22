@@ -12,32 +12,44 @@ class ImageTagFixed(BaseResourceCheck):
          """
         name = "Image Tag should be fixed - not latest or blank"
         id = "CKV_K8S_14"
-        supported_resources = ["kubernetes_pod"]
+        supported_resources = ["kubernetes_pod", "kubernetes_pod_v1",
+                               "kubernetes_deployment", "kubernetes_deployment_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
-        if isinstance(spec, dict) and spec.get("container"):
-            containers = spec.get("container")
-            for idx, container in enumerate(containers):
-                if not isinstance(container, dict):
-                    return CheckResult.UNKNOWN
-                if container.get("image"):
-                    name = container.get("image")[0]
-                    if ":" in name:
-                        if name.split(":")[1] in ("latest", ""):
-                            self.evaluated_keys = [f'spec/[0]/container/[{idx}]/image']
-                            return CheckResult.FAILED
-                        continue
-                    if "@" in name:
-                        continue
-                    self.evaluated_keys = [f'spec/[0]/container/[{idx}]/image']
+        if isinstance(spec, dict) and spec:
+            evaluated_keys_path = "spec"
+
+            template = spec.get("template")
+            if template and isinstance(template, list):
+                template = template[0]
+                template_spec = template.get("spec")
+                if template_spec and isinstance(template_spec, list):
+                    spec = template_spec[0]
+                    evaluated_keys_path = f'{evaluated_keys_path}/[0]/template/[0]/spec'
+
+            if spec.get("container"):
+                containers = spec.get("container")
+                for idx, container in enumerate(containers):
+                    if not isinstance(container, dict):
+                        return CheckResult.UNKNOWN
+                    if container.get("image"):
+                        name = container.get("image")[0]
+                        if ":" in name:
+                            if name.split(":")[1] in ("latest", ""):
+                                self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/image']
+                                return CheckResult.FAILED
+                            continue
+                        if "@" in name:
+                            continue
+                        self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/image']
+                        return CheckResult.FAILED
+                    self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]']
                     return CheckResult.FAILED
-                self.evaluated_keys = [f'spec/[0]/container/[{idx}]']
-                return CheckResult.FAILED
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+                return CheckResult.PASSED
+            return CheckResult.FAILED
 
 
 check = ImageTagFixed()

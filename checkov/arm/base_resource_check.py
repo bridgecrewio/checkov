@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, Callable
+from typing import Any
 
 from checkov.arm.registry import arm_resource_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.multi_signature import multi_signature
 
 
 class BaseResourceCheck(BaseCheck):
@@ -43,23 +42,19 @@ class BaseResourceCheck(BaseCheck):
                 return CheckResult.UNKNOWN
 
             self.api_version = conf["api_version"]
+            conf["config"]["apiVersion"] = conf["api_version"]  # set for better reusability of existing ARM checks
 
-            return self.scan_resource_conf(conf["config"], entity_type)
+            resource_conf = conf["config"]
+            if "loop_type" in resource_conf:
+                # this means the whole resource block is surrounded by a for loop
+                resource_conf = resource_conf["config"]
+
+            return self.scan_resource_conf(resource_conf)
 
         self.api_version = None
 
-        return self.scan_resource_conf(conf, entity_type)
+        return self.scan_resource_conf(conf)
 
-    @multi_signature()
     @abstractmethod
-    def scan_resource_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         raise NotImplementedError()
-
-    @classmethod
-    @scan_resource_conf.add_signature(args=["self", "conf"])
-    def _scan_resource_conf_self_conf(cls, wrapped: Callable[..., CheckResult]) -> Callable[..., CheckResult]:
-        def wrapper(self: BaseCheck, conf: dict[str, Any], entity_type: str | None = None) -> CheckResult:
-            # keep default argument for entity_type so old code, that doesn't set it, will work.
-            return wrapped(self, conf)
-
-        return wrapper

@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "common_tags": [
@@ -113,7 +113,8 @@
               }
             ],
             "__start_line__": 45,
-            "__end_line__": 48
+            "__end_line__": 48,
+            "__address__": "aws_something.something"
           }
         }
       }

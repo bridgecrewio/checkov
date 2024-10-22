@@ -1,0 +1,6 @@
+pass:
+  - "azurerm_recovery_services_vault.pass"
+
+fail:
+  - "azurerm_recovery_services_vault.fail_1"
+  - "azurerm_recovery_services_vault.fail_2"

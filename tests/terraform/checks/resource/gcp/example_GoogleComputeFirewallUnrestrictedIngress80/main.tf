@@ -87,3 +87,15 @@ resource "google_compute_firewall" "allow_unknown" {
 
   source_ranges = ["0.0.0.0/0"]
 }
+
+resource "google_compute_firewall" "allow_null" {
+  name    = "exampe"
+  network = "google_compute_network.vpc.name"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["1024-65535", "80"]
+  }
+
+  source_ranges = null
+}

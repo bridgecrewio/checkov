@@ -1,0 +1,50 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: long_unused
+      ansible.builtin.dnf:
+        name: httpd
+        state: latest
+
+    - name: short_unused
+      dnf:
+        name: nikto
+        state: latest
+
+    - name: long_true
+      ansible.builtin.dnf:
+        name: nikto
+        state: latest
+        sslverify: true
+
+    - name: short_true
+      dnf:
+        name: nikto
+        state: latest
+        sslverify: True
+
+    - name: long_yes
+      ansible.builtin.dnf:
+        name: sslverify
+        state: latest
+        sslverify: yes
+
+    - name: short_yes
+      dnf:
+        name: sslverify
+        state: latest
+        sslverify: Yes
+    
+    - name: long_on
+      ansible.builtin.dnf:
+        name: sslverify
+        state: latest
+        sslverify: on
+
+    - name: short_on
+      dnf:
+        name: sslverify
+        state: latest
+        sslverify: ON

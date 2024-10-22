@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_mysql_server.pass"
+fail:
+  - "azurerm_mysql_server.fail"

@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV_PAN_9"
+  name: "Ensure a Log Forwarding Profile is selected for each security policy rule"
+  category: "NETWORKING"
+definition:
+  and:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: log_setting
+    operator: exists
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: log_setting
+    operator: is_not_empty

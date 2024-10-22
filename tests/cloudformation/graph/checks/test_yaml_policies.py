@@ -3,8 +3,10 @@ import os
 import warnings
 from typing import List
 
+from parameterized import parameterized_class
+
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from tests.graph_utils.utils import set_db_connector_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -15,15 +17,16 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 file_dir = os.path.dirname(__file__)
 
 
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
+        graph_manager = CloudformationGraphManager(db_connector=db_connector)
         super().__init__(graph_manager,
                          os.path.abspath(os.path.join(file_dir, "../../../../checkov/cloudformation/checks/graph_checks")),
                          os.path.join(file_dir, "test_checks"), "cloudformation", __file__, args)
 
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -36,11 +39,23 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_LambdaFunction(self):
         self.go("LambdaFunction")
 
+    def test_SageMakerIAMPolicyOverlyPermissiveToAllTraffic(self):
+        self.go("SageMakerIAMPolicyOverlyPermissiveToAllTraffic")
+
     def test_ALBRedirectHTTPtoHTTPS(self):
         self.go("ALBRedirectHTTPtoHTTPS")
 
     def test_AppSyncProtectedByWAF(self):
         self.go("AppSyncProtectedByWAF")
+
+    def test_RDSEncryptionInTransit(self):
+        self.go("RDSEncryptionInTransit")
+
+    def test_ACMWildcardDomainName(self):
+        self.go("ACMWildcardDomainName")
+
+    def test_CloudfrontOriginNotHTTPSOnly(self):
+        self.go("CloudfrontOriginNotHTTPSOnly")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

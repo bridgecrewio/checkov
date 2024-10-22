@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
 
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
-from checkov.terraform.module_loading.module_params import ModuleParams
+
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 class GithubAccessTokenLoader(GenericGitLoader):
-    def discover(self, module_params: ModuleParams):
+    def discover(self, module_params: ModuleParams) -> None:
         self.module_source_prefix = "github.com"
         module_params.username = "x-access-token"
         module_params.token = os.getenv('GITHUB_PAT', '')

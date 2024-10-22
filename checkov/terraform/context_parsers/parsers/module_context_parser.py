@@ -12,12 +12,12 @@ class ModuleContextParser(BaseContextParser):
 
     def get_entity_context_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
         entity_name = next(iter(entity_block.keys()))
-        return ["module", entity_name]
+        return [entity_name]
 
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         for entity_block in definition_blocks:
             entity_name, entity_config = next(iter(entity_block.items()))
-            self.context["module"][entity_name] = {
+            self.context[entity_name] = {
                 "start_line": entity_config[START_LINE],
                 "end_line": entity_config[END_LINE],
                 "code_lines": self.file_lines[entity_config[START_LINE] - 1: entity_config[END_LINE]],

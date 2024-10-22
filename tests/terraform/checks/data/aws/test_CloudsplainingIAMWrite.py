@@ -8,10 +8,9 @@ from checkov.terraform.runner import Runner
 
 class TestCloudsplainingIAMWrite(unittest.TestCase):
     def setUp(self):
-        from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
-
+        from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
         # needs to be reset, because the cache belongs to the class not instance
-        BaseCloudsplainingIAMCheck.policy_document_cache = {}
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
 
     def test(self):
         test_files_dir = Path(__file__).parent / "example_CloudsplainingIAMWrite"
@@ -34,6 +33,8 @@ class TestCloudsplainingIAMWrite(unittest.TestCase):
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(['statement/[0]/actions'], report.failed_checks[0].check_result.get('evaluated_keys'))
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

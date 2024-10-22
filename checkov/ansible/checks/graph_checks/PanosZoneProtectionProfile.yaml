@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV_PAN_14"
+  name: "Ensure a Zone Protection Profile is defined within Security Zones"
+  category: "NETWORKING"
+definition:
+  and:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_zone
+    attribute: zone_profile
+    operator: exists
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_zone
+    attribute: zone_profile
+    operator: is_not_empty

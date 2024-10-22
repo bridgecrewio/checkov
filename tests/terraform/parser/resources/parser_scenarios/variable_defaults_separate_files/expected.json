@@ -1,5 +1,5 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "aws_s3_bucket": {
@@ -8,20 +8,22 @@
               "this-is-my-default"
             ],
             "__start_line__": 1,
-            "__end_line__": 3
+            "__end_line__": 3,
+            "__address__": "aws_s3_bucket.test"
           }
         }
       }
     ]
   },
-  "variables.tf": {
+  "{\"file_path\": \"variables.tf\", \"tf_source_modules\": null}": {
     "variable": [
       {
         "BUCKET_NAME": {
           "type": ["string"],
           "default": ["this-is-my-default"],
           "__start_line__": 1,
-          "__end_line__": 4
+          "__end_line__": 4,
+          "__address__": "BUCKET_NAME"
         }
       }
     ]

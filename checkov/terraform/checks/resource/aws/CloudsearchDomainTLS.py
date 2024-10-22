@@ -4,11 +4,11 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 
 class CloudsearchDomainTLS(BaseResourceValueCheck):
-    def __init__(self):
-        name = "Ensure that Cloudsearch is using latest TLS"
+    def __init__(self) -> None:
+        name = "Ensure that CloudSearch is using latest TLS"
         id = "CKV_AWS_218"
-        supported_resources = ["aws_cloudsearch_domain"]
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ("aws_cloudsearch_domain",)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(
             name=name,
             id=id,

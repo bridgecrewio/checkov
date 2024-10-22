@@ -19,7 +19,7 @@ class TestMQBrokerNotPubliclyExposed(unittest.TestCase):
 
             user {
                 username = "ExampleUser"
-                password = "MindTheGap"
+                password = "MindTheGap"  # checkov:skip=CKV_SECRET_6 test secret
             }
         }
         """)

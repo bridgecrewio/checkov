@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_GCP_18"
+  name: "Ensure GCP network defines a firewall and does not use the default firewall"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - google_compute_network
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      operator: exists
+      resource_types:
+      - google_compute_network
+      connected_resource_types:
+      - google_compute_firewall

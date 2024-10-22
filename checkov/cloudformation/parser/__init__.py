@@ -1,23 +1,27 @@
+from __future__ import annotations
+
 import logging
-from typing import Tuple, List, Union, Dict, Optional
+from typing import Dict, Optional, Any
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.common.parsers.json import parse as json_parse
-from checkov.common.parsers.node import DictNode
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
-from yaml.parser import ScannerError
+from yaml.scanner import ScannerError
 from yaml import YAMLError
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
 def parse(
     filename: str, out_parsing_errors: Optional[Dict[str, str]] = None
-) -> Union[Tuple[DictNode, List[Tuple[int, str]]], Tuple[None, None]]:
+) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | tuple[None, None]:
     """
     Decode filename into an object
     """
-    template = None
+    template: "dict[str, Any] | list[dict[str, Any]] | None" = None
     template_lines = None
     error = None
 
@@ -52,13 +56,24 @@ def parse(
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
-                (template, template_lines) = json_parse(filename, allow_nulls=False)
+                result = json_parse(filename, allow_nulls=False)
+                if result:
+                    template, template_lines = result
             except Exception as json_err:  # pylint: disable=W0703
                 error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
                 LOGGER.info(error)
     except YAMLError as err:
-        error = f"Parsing error in file: {filename} - {err}"
-        LOGGER.info(error)
+        if hasattr(err, 'problem') and err.problem in ["expected ',' or '}', but got '<scalar>'"]:
+            try:
+                result = json_parse(filename, allow_nulls=False)
+                if result:
+                    template, template_lines = result
+            except Exception as json_err:  # pylint: disable=W0703
+                error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
+                LOGGER.info(error)
+        else:
+            error = f"Parsing error in file: {filename} - {err}"
+            LOGGER.info(error)
 
     if error:
         out_parsing_errors[filename] = error
@@ -70,4 +85,8 @@ def parse(
                 del resources["__startline__"]
             if "__endline__" in resources:
                 del resources["__endline__"]
+
+    if template is None or template_lines is None:
+        return None, None
+
     return template, template_lines

@@ -4,6 +4,11 @@ Resources:
     Type: AWS::S3::Bucket
   S3BucketPublicRead:
     Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3045
     Properties:
       AccessControl: PublicRead
       BucketEncryption:
@@ -12,6 +17,11 @@ Resources:
               SSEAlgorithm: AES256
   S3Bucket:
     Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3045
     Properties:
       AccessControl: PublicRead
       BucketEncryption:
@@ -25,6 +35,11 @@ Resources:
     DeletionPolicy: Retain
   S3Bucket2:
     Type: AWS::S3::Bucket
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3045
     Properties:
       AccessControl: PublicReadWrite
       VersioningConfiguration:

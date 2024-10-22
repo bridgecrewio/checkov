@@ -1,4 +1,5 @@
 pass:
   - "azurerm_storage_container.storage_container_ok"
+  - "azurerm_storage_container.storage_account_ok_private"
 fail:
   - "azurerm_storage_container.storage_container_not_ok"

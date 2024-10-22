@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckResult
 
 class RedshiftClusterAllowVersionUpgrade(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensured that redshift cluster allowing version upgrade by default"
+        name = "Ensured that Redshift cluster allowing version upgrade by default"
         id = "CKV_AWS_141"
         supported_resources = ['aws_redshift_cluster']
         categories = [CheckCategories.GENERAL_SECURITY]

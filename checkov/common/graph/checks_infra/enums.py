@@ -20,6 +20,9 @@ class SolverType(str, Enum):
     FILTER = "FILTER"
     # Filters results according to specific value / type, i.e. resource type is aws_s3_bucket
 
+    RESOURCE = "RESOURCE"
+    # Used to define allow/deny lists of resource types
+
 
 class Operators:
     ANY = 'any'
@@ -43,6 +46,7 @@ class Operators:
     SUBSET = 'subset'
     NOT_SUBSET = 'not_subset'
     WITHIN = 'within'
+    NOT_WITHIN = 'not_within'
     AND = 'and'
     OR = 'or'
     NOT = 'not'
@@ -60,3 +64,15 @@ class Operators:
     LENGTH_LESS_THAN_OR_EQUAL = 'length_less_than_or_equal'
     IS_TRUE = 'is_true'
     IS_FALSE = 'is_false'
+    INTERSECTS = 'intersects'
+    NOT_INTERSECTS = 'not_intersects'
+    EQUALS_IGNORE_CASE = 'equals_ignore_case'
+    NOT_EQUALS_IGNORE_CASE = 'not_equals_ignore_case'
+    RANGE_INCLUDES = 'range_includes'
+    RANGE_NOT_INCLUDES = 'range_not_includes'
+    NUMBER_OF_WORDS_EQUALS = 'number_of_words_equals'
+    NUMBER_OF_WORDS_NOT_EQUALS = 'number_of_words_not_equals'
+    NUMBER_OF_WORDS_GREATER_THAN = 'number_of_words_greater_than'
+    NUMBER_OF_WORDS_GREATER_THAN_OR_EQUAL = 'number_of_words_greater_than_or_equal'
+    NUMBER_OF_WORDS_LESS_THAN = 'number_of_words_less_than'
+    NUMBER_OF_WORDS_LESS_THAN_OR_EQUAL = 'number_of_words_less_than_or_equal'

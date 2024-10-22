@@ -4,6 +4,9 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
+# flow logs can't be enabled for subnetworks with the following purpose set
+PURPOSE_EXCEPTIONS = ["INTERNAL_HTTPS_LOAD_BALANCER", "REGIONAL_MANAGED_PROXY", "GLOBAL_MANAGED_PROXY"]
+
 
 class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
@@ -14,9 +17,8 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        # flow logs can't be enabled for `INTERNAL_HTTPS_LOAD_BALANCER` subnetworks
         purpose = conf.get("purpose")
-        if purpose and purpose[0] == "INTERNAL_HTTPS_LOAD_BALANCER":
+        if purpose and purpose[0] in PURPOSE_EXCEPTIONS:
             return CheckResult.UNKNOWN
 
         return super().scan_resource_conf(conf)

@@ -6,7 +6,7 @@ resource "oci_core_network_security_group_security_rule" "pass" {
     source = "0.0.0.0/0"
 
     tcp_options {
-        source_port_range {
+        destination_port_range {
             max = 22
             min = 22
         }
@@ -28,7 +28,7 @@ resource "oci_core_network_security_group_security_rule" "pass2" {
     source_type = "CIDR_BLOCK"
 
     tcp_options {
-        source_port_range {
+        destination_port_range {
             max = 25
             min = 25
         }
@@ -43,7 +43,7 @@ resource "oci_core_network_security_group_security_rule" "pass3" {
     source_type = "CIDR_BLOCK"
 
     tcp_options {
-        source_port_range {
+        destination_port_range {
             max = 21
             min = 1
         }
@@ -59,7 +59,7 @@ resource "oci_core_network_security_group_security_rule" "fail" {
     source_type = "CIDR_BLOCK"
 
     tcp_options {
-        source_port_range {
+        destination_port_range {
             max = 22
             min = 22
         }
@@ -74,7 +74,7 @@ resource "oci_core_network_security_group_security_rule" "fail1" {
     source_type = "CIDR_BLOCK"
 
     tcp_options {
-        source_port_range {
+        destination_port_range {
             max = 25
             min = 21
         }

@@ -1,7 +1,9 @@
-import re
-from typing import List, Dict, Optional
+from __future__ import annotations
 
-from packaging import version
+import re
+from typing import List, Dict, Optional, cast, Callable
+
+from checkov.common.packaging import version
 
 VERSION_REGEX = re.compile(r"^(?P<operator>=|!=|>=|>|<=|<|~>)?\s*(?P<version>[\d.]+-?\w*)$")
 
@@ -15,15 +17,15 @@ class VersionConstraint:
         """
         :param constraint_parts: a dictionary representing a version constraint: {"version": "v1.2.3", "operator": ">="}
         """
-        self.version = version.parse(constraint_parts.get("version") or "")
+        self.version = cast("version.Version", version.parse(constraint_parts.get("version") or ""))
         self.operator = constraint_parts.get("operator") or "="
 
     def get_max_version_for_most_specific_segment(self) -> version.Version:
-        return version.parse(f"{self.version.major + 1}.0.0")
+        return cast("version.Version", version.parse(f"{self.version.major + 1}.0.0"))
 
     def versions_matching(self, other_version_str: str) -> bool:
-        other_version = version.parse(other_version_str)
-        res = {
+        other_version = cast("version.Version", version.parse(other_version_str))
+        version_matchers: dict[str, Callable[[version.Version], bool]] = {
             "=": lambda other: other == self.version,
             "!=": lambda other: other != self.version,
             ">": lambda other: other > self.version,
@@ -31,8 +33,8 @@ class VersionConstraint:
             "<": lambda other: other < self.version,
             "<=": lambda other: other <= self.version,
             "~>": lambda other: self.version <= other < self.get_max_version_for_most_specific_segment(),
-        }[self.operator](other_version)
-        return res
+        }
+        return version_matchers[self.operator](other_version)
 
     def __str__(self) -> str:
         return f"{self.operator}{self.version}"

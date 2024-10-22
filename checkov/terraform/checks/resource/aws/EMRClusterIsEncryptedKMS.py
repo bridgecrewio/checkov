@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class EMRClusterIsEncryptedKMS(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Cluster security configuration encryption is using SSE-KMS"
+        name = "Ensure EMR Cluster security configuration encryption is using SSE-KMS"
         id = "CKV_AWS_171"
         supported_resources = ['aws_emr_security_configuration']
         categories = [CheckCategories.ENCRYPTION]
@@ -14,9 +14,9 @@ class EMRClusterIsEncryptedKMS(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'configuration' not in conf:
-            return CheckResult.SKIPPED
+            return CheckResult.UNKNOWN
         configuration = conf['configuration'][0]
-        if "SSE-KMS" in configuration:
+        if "SSE-KMS" in str(configuration):
             return CheckResult.PASSED
         return CheckResult.FAILED
 

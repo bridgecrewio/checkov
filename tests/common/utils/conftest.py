@@ -56,3 +56,119 @@ def scan_result_success_response() -> Dict[str, Any]:
                    "anz3q7neGie2cS8HcBin/BL8U8U/AL0XOSX+jt75P82r6+RIV6DoZDXW14oKMNz5rR2TA6fr6j3WG52dFumrjvsG"
                    "sp7dAH12j5wbWz+sG1vfOD6+m3b/8HQd/FwVgXAAA=",
      'compressionMethod': 'gzip'}
+
+
+@pytest.fixture
+def aws_provider_config_with_secrets():
+    return {
+            '__end_line__': 12,
+            '__start_line__': 7,
+            'access_key': ['AKIAIOSFODNN7EXAMPLE'],
+            'alias': ['plain_text_access_keys_provider'],
+            'region': ['us-west-1'],
+            'secret_key': ['wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'],
+            'CKV_AWS_41_secret_access_key': 'AKIAIOSFODNN7EXAMPLE',
+            'CKV_AWS_41_secret_secret_key': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+            }
+
+
+@pytest.fixture
+def aws_provider_lines_with_secrets():
+    return [(7, 'provider "aws" {\n'),
+            (8, '  alias      = "plain_text_access_keys_provider"\n'),
+            (9, '  region     = "us-west-1"\n'),
+            (10, '  access_key = "AKIAIOSFODNN7EXAMPLE"\n'),
+            (11, '  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"\n'),
+            (12, '}\n')]
+
+
+@pytest.fixture
+def aws_provider_lines_without_secrets():
+    return [(7, 'provider "aws" {\n'),
+            (8, '  alias      = "plain_text_access_keys_provider"\n'),
+            (9, '  region     = "us-west-1"\n'),
+            (10, '  access_key = "AKIAI**********"\n'),
+            (11, '  secret_key = "wJalrX**********"\n'),
+            (12, '}\n')]
+
+
+@pytest.fixture
+def tfplan_resource_config_with_secrets():
+    return {
+        'content_type': [''],
+        'expiration_date': [None],
+        'id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5'],
+        'key_vault_id': ['/subscriptions/resourceGroups/'],
+        'name': ['test-123-abcdse-02-primary-key'],
+        'not_before_date': [None],
+        'resource_id': ['/subscriptions/resourceGroups/'],
+        'resource_versionless_id': ['/subscriptions/resourceGroups/'],
+        'tags': [{'__startline__': 45, '__endline__': 45, 'start_line': 44, 'end_line': 44}],
+        'timeouts': [None],
+        'value': ['IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5='],
+        'version': ['123d0b12ab123c123456ab123e120bc1'],
+        'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02'],
+        '__startline__': [35],
+        '__endline__': [50],
+        'start_line': [34],
+        'end_line': [49],
+        '__address__': 'module.test.azurerm_key_vault_secret.te_primary_key["test-123-abcdse-02"]'}
+
+
+@pytest.fixture
+def tfplan_resource_lines_with_secrets():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5=",\n'),
+            (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
+            (49, '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
+
+
+@pytest.fixture
+def tfplan_resource_lines_without_secrets():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "IClnje**********",\n'),
+            (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
+            (49,
+             '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
+
+@pytest.fixture
+def tfplan_resource_lines_without_secrets_multiple_keys():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "IClnje**************************************",\n'),
+            (48, '                                "version": "123d0b**************************",\n'),
+
+            (49,
+             '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]

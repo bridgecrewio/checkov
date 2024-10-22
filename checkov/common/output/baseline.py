@@ -24,10 +24,10 @@ class Baseline:
         for check in report.failed_checks:
             try:
                 existing = next(
-                    x for x in self.path_failed_checks_map[check.file_path] if x["resource"] == check.resource
+                    x for x in self.path_failed_checks_map[check.file_path] if x["resource"] == check.resource  # type:ignore[has-type]
                 )
             except StopIteration:
-                existing = {"resource": check.resource, "check_ids": []}
+                existing = {"resource": check.resource, "check_ids": []}  # type:ignore[has-type]
                 self.path_failed_checks_map[check.file_path].append(existing)
             existing["check_ids"].append(check.check_id)
             existing["check_ids"].sort()  # Sort the check IDs to be nicer to the eye
@@ -58,7 +58,8 @@ class Baseline:
             formatted_findings = []
             for finding in findings:
                 formatted_findings.append({"resource": finding["resource"], "check_ids": finding["check_ids"]})
-            failed_checks_list.append({"file": file, "findings": sorted(formatted_findings, key=itemgetter("resource"))})
+            sorted_findings = sorted(formatted_findings, key=itemgetter("resource"))
+            failed_checks_list.append({"file": file, "findings": sorted_findings})
 
         resp = {"failed_checks": sorted(failed_checks_list, key=itemgetter("file"))}
         return resp
@@ -83,7 +84,7 @@ class Baseline:
 
     def _is_check_in_baseline(self, check: Record) -> bool:
         failed_check_id = check.check_id
-        failed_check_resource = check.resource
+        failed_check_resource = check.resource  # type:ignore[has-type]
         for baseline_failed_check in self.failed_checks:
             for finding in baseline_failed_check["findings"]:
                 if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:

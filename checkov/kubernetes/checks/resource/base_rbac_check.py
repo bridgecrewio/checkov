@@ -47,7 +47,7 @@ class BaseRbacK8sCheck(BaseK8Check):
                     return CheckResult.PASSED
             # all operations were found, therefore the check fails
             return CheckResult.FAILED
-        
+
         return CheckResult.PASSED
 
     # Check if a rule has an apigroup, verb, and resource specified in @operation
@@ -78,7 +78,7 @@ class BaseRbacK8sCheck(BaseK8Check):
 
     # Check if rule has a key with a wildcard or a value from @value_list
     def value_or_wildcard(self, rule: Dict[str, Any], key: str, value_list: List[str]) -> bool:
-        if key in rule:
+        if rule.get(key):
             for value in rule[key]:
                 if self.is_wildcard(value) or value in value_list:
                     return True

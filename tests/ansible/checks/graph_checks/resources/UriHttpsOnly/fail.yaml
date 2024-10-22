@@ -1,0 +1,11 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: http
+      uri:
+        url: http://www.example.com
+        return_content: yes
+      register: this
+      failed_when: "'AWESOME' not in this.content"

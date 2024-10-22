@@ -12,7 +12,7 @@ Installing Checkov is quick and straightforward—just install, configure input,
 pip install checkov
 ```
 
-### Install on Python
+or
 
 ```shell
 pip3 install checkov
@@ -20,31 +20,18 @@ pip3 install checkov
 
 ### Install on Alpine
 
+In general, it is not recommended to use Alpine with larger Python projects, like Checkov, because of incompatible C extensions.
+Currently, Checkov can only be installed on Alpine with Python 3.11+, but it is not officially tested or supported.
+
 ```shell
 pip3 install --upgrade pip && pip3 install --upgrade setuptools
 pip3 install checkov
 ```
 
-### Install on Ubuntu 18.04 LTS
-
-Ubuntu 18.04 ships with Python 3.6. Before you can install Checkov, you need to install python 3.7 (from the PPA repository):
-
-```shell
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.7
-sudo apt install python3-pip
-sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
-```
-
-or using homebrew (MacOS only)
+### Install with Homebrew
 
 ```shell
 brew install checkov
-or
-
-brew upgrade checkov
 ```
 
 ## Upgrading Checkov
@@ -53,6 +40,12 @@ If you installed Checkov with pip3, use the following command to upgrade:
 
 ```shell
 pip3 install -U checkov
+```
+
+or with Homebrew
+
+```sh
+brew upgrade checkov
 ```
 
 ## Configure an input folder or file
@@ -90,7 +83,7 @@ Note: The Terraform show output file `tf.json` will be a single line. For that r
 check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
 	FAILED for resource: aws_s3_bucket.customer
 	File: /tf/tf.json:0-0
-	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 ```
 
 If you have installed jq, you can convert a JSON file into multiple lines with the command `terraform show -json tf.plan | jq '.' > tf.json`, making it easier to read the scan result.
@@ -100,7 +93,7 @@ checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
 	FAILED for resource: aws_s3_bucket.customer
 	File: /tf/tf1.json:224-268
-	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 
 		225 |               "values": {
 		226 |                 "acceleration_status": "",

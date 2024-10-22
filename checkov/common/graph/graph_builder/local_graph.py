@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections import defaultdict
+from functools import partial
 from typing import List, Dict, Callable, Union, Any, Set, Iterable, TypeVar, Generic, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
@@ -23,7 +24,7 @@ class LocalGraph(Generic[_Block]):
         self.out_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges exiting it
         self.vertices_by_block_type: Dict[str, List[int]] = defaultdict(list)
         self.vertex_hash_cache: Dict[int, str] = defaultdict(str)
-        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self._graph_resource_encryption_manager = GraphResourcesEncryptionManager()
 
     @abstractmethod
@@ -70,7 +71,7 @@ class LocalGraph(Generic[_Block]):
 
     @staticmethod
     @abstractmethod
-    def update_vertex_config(vertex: _Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(vertex: _Block, changed_attributes: Union[List[str], Dict[str, Any]], has_dynamic_blocks: bool = False) -> None:
         pass
 
     @abstractmethod
@@ -85,12 +86,12 @@ class LocalGraph(Generic[_Block]):
         vertex_index: int,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int,
-        attribute_at_dest: str,
+        change_origin_id: int | None,
+        attribute_at_dest: str | None,
         transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
-        if attribute_at_dest:
+        if attribute_at_dest and change_origin_id is not None:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest, transform_step

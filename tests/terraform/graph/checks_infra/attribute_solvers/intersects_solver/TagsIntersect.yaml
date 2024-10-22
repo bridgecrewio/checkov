@@ -1,0 +1,15 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "TagsIntersect"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "all"
+  attribute: "tags"
+  operator: "intersects"
+  value:
+    - "acme"
+    - "foo"

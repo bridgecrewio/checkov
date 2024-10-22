@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_IBM_4"
+  name: "Ensure Multi-Factor Authentication (MFA) is enabled at the account level"
+  category: "IAM"
+
+definition:
+  and:
+
+    - cond_type: "attribute"
+      resource_types: "ibm_iam_account_settings"
+      attribute: "mfa"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "ibm_iam_account_settings"
+      attribute: "mfa"
+      operator: "not_equals_ignore_case"
+      value: "None"

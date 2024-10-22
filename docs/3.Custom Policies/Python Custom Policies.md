@@ -16,17 +16,17 @@ Read also how to [create custom YAML Policies for attribute and composite scanni
 
 Specify a `name`, `ID`, `relevant resources` and `categories`.
 
-| Parameter | Description | Example/Comments |
-| -------- | -------- | -------- |
-| ``name`` | A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy. |  |
-| ``id`` | A mandatory unique identifier of a policy. Native policies written by Bridgecrew contributors will follow the following convention:
-``CKV_providerType_serialNumber`` | `CKV_AWS_9` , `CKV_GCP_12` |
-| ``supported_resources`` | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
-| ``categories`` | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc. |  |
+| Parameter                         | Description                                                                                                                                                                                                                    | Example/Comments                                                                                                                                                                               |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ``name``                          | A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy.                                                                                                                           |                                                                                                                                                                                                |
+| ``id``                            | A mandatory unique identifier of a policy. Native policies written by Prisma Cloud contributors will follow the following convention: ``CKV_providerType_serialNumber``                                                          | `CKV_AWS_9` , `CKV_GCP_12`                                                                                                                                                                                                     |
+| ``supported_resources``           | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
+| ``categories``                    | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc.                                                                                               |                                                                                                                                                                                                |
+| ``guideline``                     | (Optional) Add extra info to help the user to solve the issue.                                                                                                                                                                 | This is not needed                                                                                                                                                                             |
 
 **Note for Supported Resources Parameter:** If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all Terraform resources.
 
-The following example produces a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
+The following example produces a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
 1. Create a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``.
 2. Import the following:
 
@@ -39,18 +39,18 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 ```python
 class RDSEncryption(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
         id = "CKV_AWS_16"
-        supported_resources = ['aws_db_instance']
-        categories = [CheckCategories.ENCRYPTION]
+        supported_resources = ("aws_db_instance",)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 ```
 
 4. Define a simple check of the ```aws_db_instance``` resource block to determine if ```aws_db_instance``` is disabled. If it is disabled, that needs to cause a ```CheckResult.FAILED``` to occur.
 
 ```python
-def scan_resource_conf(self, conf):
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
     """
         Looks for encryption configuration at aws_db_instance:
         https://www.terraform.io/docs/providers/aws/d/db_instance.html
@@ -64,6 +64,49 @@ def scan_resource_conf(self, conf):
     return CheckResult.FAILED
 ```
 
+**Note:**
+
+The `conf` parameter is dependent on the resource type, which was chosen via the `supported_resources` class instance attribute.
+For example, for the `aws_db_instance` resource, we get the following value:
+
+```python
+conf = {
+    "__end_line__": 11,  # internal field
+    "__start_line__": 3,  # internal field
+    "allocated_storage": [5],
+    "enabled_cloudwatch_logs_exports": [["postgresql", "upgrade"]],
+    "engine": ["postgres"],
+    "instance_class": ["db.t3.small"],
+    "password": ["postgres"],
+    "username": ["postgres"],
+    "__address__": "aws_db_instance.postgres",  # internal field
+}
+```
+
+which is the internal representation of following Terraform resource block
+
+```hcl
+resource "aws_db_instance" "postgres" {
+  allocated_storage = 5
+  engine            = "postgres"
+  instance_class    = "db.t3.small"
+  password          = "postgres"
+  username          = "postgres"
+
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+}
+```
+
+If more than one resource type was set for `supported_resources`, then it is possible to retrieve the info via the class instance attribute `self.entity_type`.
+
+```python
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    if self.entity_type == "aws_db_instance":
+        ...
+    elif self.entity_type == "aws_rds_cluster_instance":
+        ...
+```
+
 5. Implement `get_evaluated_keys` to allow the check results report show the specified key.
 
 ```python
@@ -73,7 +116,7 @@ def get_evaluated_keys(self) -> List[str]:
 
 If the evaluated keys are determined dynamically, you can set the evaluated key when scanning the resource configuration:
 ```python
-def scan_resource_conf(self, conf):
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
     """
         Looks for encryption configuration at aws_db_instance:
         https://www.terraform.io/docs/providers/aws/d/db_instance.html
@@ -91,7 +134,7 @@ def scan_resource_conf(self, conf):
 
 6. You can also add `details` to be printed on the execution report:
 ```python
-def scan_resource_conf(self, conf):
+def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
     """
         Looks for encryption configuration at aws_db_instance:
         https://www.terraform.io/docs/providers/aws/d/db_instance.html
@@ -111,7 +154,7 @@ def scan_resource_conf(self, conf):
 ```
 
 Produces the following CLI report:
-![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan-cli-details.png)
+![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/checkov-scan-cli-details.png)
 
 7. Conclude the policy name and operationalize it with the statement:
 
@@ -119,32 +162,31 @@ Produces the following CLI report:
 check = RDSEncryption()
 ```
 
-#### Selecting the best base check class to extend
+### Selecting the best base check class to extend
 Terraform and CloudFormation have two base classes extending `BaseResourceCheck`:
 
 1. **BaseResourceValueCheck**: This check will pass only if the `inspected_key` is within the `expected_values`. If `get_expected_value` is not implemented, the default value is `[True]`. 
 
 ```python
 class RDSPubliclyAccessible(BaseResourceValueCheck):
-
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure all data stored in RDS is not publicly accessible"
         id = "CKV_AWS_17"
-        supported_resources = ['AWS::RDS::DBInstance']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ("AWS::RDS::DBInstance",)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.PASSED)
     
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return 'Properties/PubliclyAccessible'    
         
-    def get_expected_values(self):
+    def get_expected_values(self) -> list[Any]:
         return [False]
 ```
 
 Another option is to use `ANY_VALUE`:
 ```python
-def get_expected_values(self):
+def get_expected_values(self) -> list[Any]:
     return [ANY_VALUE]
 ```
 
@@ -152,7 +194,7 @@ def get_expected_values(self):
 
 ```python
 class NeptuneClusterInstancePublic(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Neptune Cluster instance is not publicly available"
         id = "CKV_AWS_102"
         supported_resources = ['aws_neptune_cluster_instance']
@@ -230,40 +272,42 @@ __all__ = [ basename(f)[:-3] for f in modules if isfile(f) and not f.endswith('_
   b. Complete the matching logic in `S3PCIPrivateACL.py`:
 
 ```python
-from lark import Token
+from __future__ import annotations
+
+from typing import Any
 
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class S3PCIPrivateACL(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
         id = "CKV_AWS_999"
-        supported_resources = ['aws_s3_bucket']
+        supported_resources = ("aws_s3_bucket",)
         # CheckCategories are defined in models/enums.py
-        categories = [CheckCategories.BACKUP_AND_RECOVERY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        categories = (CheckCategories.BACKUP_AND_RECOVERY,)
+        guideline = "Follow the link to get more info https://docs.prismacloud.io/en/enterprise-edition/policy-reference"
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         """
             Looks for ACL configuration at aws_s3_bucket and Tag values:
             https://www.terraform.io/docs/providers/aws/r/s3_bucket.html
         :param conf: aws_s3_bucket configuration
         :return: <CheckResult>
         """
-        if 'tags' in conf.keys():
-            environment_tag = Token("IDENTIFIER", "Scope")
-            if environment_tag in conf['tags'][0].keys():
-                if conf['tags'][0][environment_tag] == "PCI":
-                    if 'acl' in conf.keys():
-                        acl_block = conf['acl']
-                        if acl_block in [["public-read"], ["public-read-write"], ["website"]]:
-                            return CheckResult.FAILED
+        tags = conf.get("tags")
+        if tags and isinstance(tags, list):
+            tags = tags[0]
+            if tags.get("Scope") == "PCI":
+                acl_block = conf['acl']
+                if acl_block in [["public-read"], ["public-read-write"], ["website"]]:
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 
-scanner = S3PCIPrivateACL()
+check = S3PCIPrivateACL()
 ```
 
 2. With the new custom check in place, run Checkov:
@@ -278,21 +322,22 @@ checkov -d . --external-checks-dir my_extra_checks
 ```
 Verify the results:
 
-```python
+```shell
 Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
 	FAILED for resource: aws_s3_bucket.credit_cards_bucket
 	File: /main.tf:80-90
+	Guide: Follow the link to get more info https://docs.prismacloud.io/en/enterprise-edition/policy-reference
 
 		80 | resource "aws_s3_bucket" "credit_cards_bucket" {
-		81 | region        = var.region
-		82 | bucket        = local.bucket_name
-		83 | acl           = "public-read"
-		84 | force_destroy = true
-		85 | 
-		86 | tags = {
-		87 | Scope = "PCI",
-		88 | 
-		89 | }
+		81 |   region        = var.region
+		82 |   bucket        = local.bucket_name
+		83 |   acl           = "public-read"
+		84 |   force_destroy = true
+		85 |
+		86 |   tags = {
+		87 |     Scope = "PCI",
+		88 |
+		89 |   }
 		90 | }
 ```
 

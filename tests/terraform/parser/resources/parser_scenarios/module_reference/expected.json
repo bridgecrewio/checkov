@@ -1,12 +1,13 @@
 {
-  "main.tf": {
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
     "module": [
       {
         "bucket": {
           "source": ["./bucket"],
-          "__resolved__": ["bucket/bucket.tf[main.tf#0]"],
+          "__resolved__": ["{\"file_path\": \"bucket/bucket.tf\", \"tf_source_modules\": {\"path\": \"main.tf\", \"name\": \"bucket\", \"foreach_idx\": null, \"nested_tf_module\": null}}"],
           "__start_line__": 1,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "bucket"
         }
       }
     ],
@@ -16,7 +17,7 @@
       }
     ]
   },
-  "bucket/bucket.tf[main.tf#0]": {
+  "{\"file_path\": \"bucket/bucket.tf\", \"tf_source_modules\": {\"path\": \"main.tf\", \"name\": \"bucket\", \"foreach_idx\": null, \"nested_tf_module\": null}}": {
     "output": [
       {
         "bucket_name": {
@@ -32,7 +33,8 @@
               "my_bucket"
             ],
             "__start_line__": 5,
-            "__end_line__": 7
+            "__end_line__": 7,
+            "__address__": "module.bucket.aws_s3_bucket.example"
           }
         }
       }

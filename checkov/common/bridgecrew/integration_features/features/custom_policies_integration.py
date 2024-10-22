@@ -4,30 +4,38 @@ import json
 import logging
 import re
 from collections import defaultdict
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any
+import tempfile
+from typing import TYPE_CHECKING, Any, List
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry, get_all_graph_checks_registries
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
+SAST_CATEGORY = 'Sast'
+LICENSES_CATEGORY = 'Licenses'
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
-        self.platform_policy_parser = NXGraphCheckParser()
-        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
+        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
+        self.platform_policy_parser = GraphCheckParser()
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        self.policy_level_suppression: List[str] = []
+
+    @property
+    def policies_url(self) -> str:
+        return f"{self.bc_integration.api_url}/api/v1/policies/table/data"
 
     def is_valid(self) -> bool:
         return (
@@ -44,9 +52,16 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 return
 
             policies = self.bc_integration.customer_run_config_response.get('customPolicies')
+            sast_policies_dir = tempfile.mkdtemp()
+            self.bc_integration.sast_custom_policies = sast_policies_dir
             for policy in policies:
                 try:
                     logging.debug(f"Loading policy id: {policy.get('id')}")
+                    if policy.get('category') == SAST_CATEGORY:
+                        with open(f"{sast_policies_dir}/{policy.get('id')}.yaml", 'a') as f:
+                            f.write(policy.get('code'))
+                        continue
+
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
@@ -54,6 +69,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
+
+                    if policy.get('category') == LICENSES_CATEGORY:
+                        continue
+
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
                     check.bc_id = check.id
@@ -65,10 +84,11 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                                 get_graph_checks_registry("terraform").checks.append(check)
                             elif f.lower() == "kubernetes":
                                 get_graph_checks_registry("kubernetes").checks.append(check)
-                    elif re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
-                        get_graph_checks_registry("cloudformation").checks.append(check)
+                            elif f.lower() == "bicep":
+                                get_graph_checks_registry("bicep").checks.append(check)
                     else:
-                        get_graph_checks_registry("terraform").checks.append(check)
+                        for registry in get_all_graph_checks_registries():
+                            registry.checks.append(check)
                 except Exception:
                     logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
             logging.debug(f'Found {len(policies)} custom policies from the platform.')
@@ -82,7 +102,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'id': policy['id'],
             'name': policy['title'],
             'category': policy['category'],
-            'frameworks': policy.get('frameworks', [])
+            'frameworks': policy.get('frameworks', []),
+            'scope': {'provider': policy.get('provider', '').lower()}
         }
         check = {
             'metadata': metadata,
@@ -100,15 +121,32 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         bc_check_ids = [record.bc_check_id for record in records]
         for idx, bc_check_id in enumerate(bc_check_ids):
             cloned_policies = self.bc_cloned_checks.get(bc_check_id, [])  # type:ignore[arg-type]  # bc_check_id can be None
+            logging.debug('Cloned policies to be deep copied:')
+            logging.debug(cloned_policies)
+            logging.debug('From origin policy:')
+            logging.debug(records[idx].get_unique_string())
             for cloned_policy in cloned_policies:
-                new_record = deepcopy(records[idx])
+                new_record = pickle_deepcopy(records[idx])
                 new_record.check_id = cloned_policy['id']
                 new_record.bc_check_id = cloned_policy['id']
                 new_record.guideline = cloned_policy['guideline']
                 new_record.severity = cloned_policy['severity']
                 new_record.check_name = cloned_policy['title']
                 records.append(new_record)
+        policy_level_suppression_check_ids = self.convert_suppression_ids_to_bc_check_ids()
+        records = [record for record in records if record.bc_check_id not in policy_level_suppression_check_ids]  # Filter out policy level suppressions after cloned policy is added
         return records
+
+    def convert_suppression_ids_to_bc_check_ids(self) -> List[str]:
+        return ["_".join(policy.split('_')[:-1]) for policy in self.policy_level_suppression]
+
+    def pre_runner(self, runner: _BaseRunner) -> None:
+        # not used
+        pass
+
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
 
 
 integration = CustomPoliciesIntegration(bc_integration)

@@ -1,0 +1,31 @@
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Launch ec2 instances 1
+      #checkov:skip=CKV_AWS_135
+      amazon.aws.ec2_instance:
+        name: "bc-office-hours"
+        vpc_subnet_id: subnet-012d94ee641ab4277
+        instance_type: t3.micro
+        security_group: sg-04acc4e02a5b71244
+        image_id: "{{ ami_latest.image_id }}"
+        state: running
+
+    - name: Launch ec2 instances 2
+      amazon.aws.ec2_instance:
+        #checkov:skip=CKV_AWS_88
+        name: "bc-office-hours"
+        vpc_subnet_id: subnet-012d94ee641ab4277
+        instance_type: t3.micro
+        security_group: sg-04acc4e02a5b71244
+        image_id: "{{ ami_latest.image_id }}"
+        state: running
+
+    - name: http
+      #checkov:skip=CKV2_ANSIBLE_1
+      uri:
+        url: http://www.example.com
+        return_content: yes
+      register: this
+      failed_when: "'AWESOME' not in this.content"
+

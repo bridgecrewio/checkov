@@ -1,0 +1,5 @@
+metadata:
+  name: "Ensure Lambda function runs with Python 3.9"
+  id: CUSTOM_1
+  category: "GENERAL_SECURITY"
+definition:

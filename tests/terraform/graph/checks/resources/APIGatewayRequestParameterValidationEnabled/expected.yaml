@@ -1,0 +1,4 @@
+pass:
+  - "aws_api_gateway_method.pass"
+fail:
+  - "aws_api_gateway_method.fail"

@@ -1,0 +1,4 @@
+# checkov:skip=CVE-2016-6186: ignore it
+django==1.2
+flask==0.6
+requests==2.26.0

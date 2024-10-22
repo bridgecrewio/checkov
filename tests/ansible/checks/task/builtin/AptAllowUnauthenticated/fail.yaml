@@ -1,0 +1,16 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: long_unsafe
+      ansible.builtin.apt:
+        name: openssl
+        state: latest
+        allow_unauthenticated: yes
+
+    - name: short_unsafe
+      apt:
+        name: openssl
+        state: latest
+        allow_unauthenticated: true

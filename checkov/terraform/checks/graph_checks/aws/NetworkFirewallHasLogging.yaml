@@ -1,0 +1,17 @@
+metadata:
+  name: "Ensure Network firewall has logging configuration defined"
+  id: "CKV2_AWS_63"
+  category: "LOGGING"
+definition:
+    and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_networkfirewall_firewall
+        operator: within
+      - cond_type: connection
+        resource_types:
+           - aws_networkfirewall_firewall
+        connected_resource_types:
+           - aws_networkfirewall_logging_configuration
+        operator: exists

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  Batch:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: container
+      JobDefinitionName: nvidia-smi
+      ContainerProperties:
+        MountPoints:
+          - ReadOnly: false
+            SourceVolume: nvidia
+            ContainerPath: /usr/local/nvidia
+        Volumes:
+          - Host:
+              SourcePath: /var/lib/nvidia-docker/volumes/nvidia_driver/latest
+            Name: nvidia
+        Command:
+          - nvidia-smi
+        Memory: 2000
+        Privileged: true
+        JobRoleArn: String
+        ReadonlyRootFilesystem: true
+        Vcpus: 2
+        Image: nvidia/cuda
+
+  BatchMultiNode:
+    Type: AWS::Batch::JobDefinition
+    Properties:
+      Type: multinode
+      JobDefinitionName: tensorflow_mnist_deep
+      NodeProperties:
+        MainNode: 0
+        NumNodes: 2
+        NodeRangeProperties:
+          - TargetNodes: '0:1'
+            Container:
+              Image: tensorflow/tensorflow:2.10.0-gpu
+              ResourceRequirements:
+                - Type: MEMORY
+                  Value: 32000
+                - Type: VCPU
+                  Value: 8

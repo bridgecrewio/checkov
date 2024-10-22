@@ -3,7 +3,7 @@
 ## Reporting a Vulnerability
 
 If you think you have found a potential security vulnerability in `checkov`,
-please email security@bridgecrew.io directly. Do not file a public issue. If
+please email psirt@paloaltonetworks.com directly. Do not file a public issue. If
 English is not your first language, please try to describe the problem
 and its impact to the best of your ability. For greater detail, please
 use your native language and we will try our best to translate it using
@@ -60,7 +60,7 @@ generated automatically from commit messages. We will then issue a
 PyPI release containing the patch.
 
 At this point, we will publicise the release. This will involve
-announcement on our Slack channel (https://codified-security.herokuapp.com/)
+announcement on our Slack channel (https://codifiedsecurity.slack.com)
 and all other communication mechanisms available to the core team.
 
 We will also explicitly mention which commits contain the fix to make it

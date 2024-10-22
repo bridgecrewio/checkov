@@ -1,45 +1,43 @@
-from typing import List
+from __future__ import annotations
 
-from checkov.common.models.enums import (
-    CheckCategories,
-    CheckResult,
-)
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import Any
+
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class IMDSv1Disabled(BaseResourceCheck):
-    def __init__(self):
+class IMDSv1Disabled(BaseResourceValueCheck):
+    def __init__(self) -> None:
         name = "Ensure Instance Metadata Service Version 1 is not enabled"
         id = "CKV_AWS_79"
-        categories = [CheckCategories.GENERAL_SECURITY]
-        supported_resources = ['aws_instance', 'aws_launch_template', 'aws_launch_configuration']
-        super().__init__(
-            name=name,
-            id=id,
-            categories=categories,
-            supported_resources=supported_resources,
-        )
+        categories = (CheckCategories.GENERAL_SECURITY,)
+        supported_resources = ("aws_instance", "aws_launch_template", "aws_launch_configuration")
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         """
         Looks for if the metadata service is disabled or requires session tokens:
-            https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#metadata-options
-            or
-            https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#metadata-options
+        https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#metadata-options
+        or
+        https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#metadata-options
 
         :param conf: dict of supported resource configuration
         :return: <CheckResult>
         """
-        if 'metadata_options' not in conf.keys() or not isinstance(conf['metadata_options'][0], dict):
+        metadata_options = conf.get("metadata_options")
+        if not metadata_options or not isinstance(metadata_options[0], dict):
             return CheckResult.FAILED
-        metadata_options = conf['metadata_options'][0]
-        if ('http_tokens' in metadata_options and metadata_options["http_tokens"] == ["required"]) or \
-                ('http_endpoint' in metadata_options and metadata_options["http_endpoint"] == ["disabled"]):
-            return CheckResult.PASSED
-        return CheckResult.FAILED
 
-    def get_evaluated_keys(self) -> List[str]:
-        return ['metadata_options/[0]/http_tokens', 'metadata_options/[0]/http_endpoint']
+        if metadata_options[0].get("http_endpoint") == ["disabled"]:
+            return CheckResult.PASSED
+
+        return super().scan_resource_conf(conf)
+
+    def get_inspected_key(self) -> str:
+        return "metadata_options/[0]/http_tokens"
+
+    def get_expected_value(self) -> Any:
+        return "required"
 
 
 check = IMDSv1Disabled()

@@ -1,0 +1,137 @@
+[tool.bandit]
+exclude_dirs = [
+    "tests"
+]
+
+[tool.black]
+line-length = 120
+
+[tool.importlinter]
+root_package = "checkov"
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "common forbidden to import other modules"
+type = "forbidden"
+source_modules = [
+    "checkov.common",
+]
+forbidden_modules = [
+    "checkov.ansible",
+    "checkov.argo_workflows",
+    "checkov.arm",
+    "checkov.azure_pipelines",
+    "checkov.bicep",
+    "checkov.bitbucket",
+    "checkov.bitbucket_pipelines",
+    "checkov.cdk",
+    "checkov.circleci_pipelines",
+    "checkov.cloudformation",
+    "checkov.dockerfile",
+    "checkov.example_runner",
+    "checkov.github",
+    "checkov.github_actions",
+    "checkov.gitlab",
+    "checkov.gitlab_ci",
+    "checkov.helm",
+    "checkov.json_doc",
+    "checkov.kubernetes",
+    "checkov.kustomize",
+    "checkov.openapi",
+    "checkov.policies_3d",
+    "checkov.sast",
+    "checkov.sca_image",
+    "checkov.sca_package_2",
+    "checkov.secrets",
+    "checkov.serverless",
+    "checkov.terraform",
+    "checkov.terraform_json",
+    "checkov.yaml_doc",
+]
+ignore_imports = [
+    "checkov.common.util.json_utils -> checkov.terraform.modules.module_objects", # needed for JSON serialization
+
+    "checkov.common.bridgecrew.integration_features.features.policies_3d_integration -> checkov.policies_3d.*", # considering what to do
+    "checkov.common.bridgecrew.integration_features.features.vulnerabilities_integration -> checkov.sast.report", # considering what to do
+    "checkov.common.runners.base_post_runner -> checkov.policies_3d.checks_infra.base_check", # considering what to do
+
+    "checkov.common.runners.runner_registry -> checkov.terraform.context_parsers.registry", # move runner_registry to a different place
+    "checkov.common.runners.runner_registry -> checkov.terraform.tf_parser", # move runner_registry to a different place
+    "checkov.common.runners.runner_registry -> checkov.terraform.modules.module_objects", # Should fix usage of get_enriched_resources
+
+    "checkov.common.output.report -> checkov.policies_3d.output", # move to checkov.common.output
+    "checkov.common.output.report -> checkov.sca_package_2.output", # move to checkov.common.output
+
+    "checkov.common.checks_infra.solvers.connections_solvers.connection_exists_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
+    "checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
+    "checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
+
+    "checkov.common.runners.runner_registry -> checkov.sca_image.runner", # old IR, needs to be removed (argo_workflows, bitbucket_pipelines)
+]
+
+[[tool.importlinter.contracts]]
+name = "kubernetes forbidden to import its children"
+type = "forbidden"
+source_modules = [
+    "checkov.kubernetes",
+]
+forbidden_modules = [
+    "checkov.helm",
+    "checkov.kustomize",
+]
+
+[[tool.importlinter.contracts]]
+name = "sast forbidden to import its children"
+type = "forbidden"
+source_modules = [
+    "checkov.sast",
+]
+forbidden_modules = [
+    "checkov.cdk.runner",
+]
+
+[[tool.importlinter.contracts]]
+name = "terraform forbidden to import its children"
+type = "forbidden"
+source_modules = [
+    "checkov.terraform",
+]
+forbidden_modules = [
+    "checkov.terraform_json",
+]
+
+[[tool.importlinter.contracts]]
+name = "object runners forbidden to import its children"
+type = "forbidden"
+source_modules = [
+    "checkov.json_doc",
+    "checkov.yaml_doc",
+]
+forbidden_modules = [
+    "checkov.ansible",
+    "checkov.argo_workflows",
+    "checkov.azure_pipelines",
+    "checkov.bitbucket",
+    "checkov.bitbucket_pipelines",
+    "checkov.circleci_pipelines",
+    "checkov.example_runner",
+    "checkov.github",
+    "checkov.github_actions",
+    "checkov.gitlab",
+    "checkov.gitlab_ci",
+    "checkov.openapi",
+]
+
+[[tool.importlinter.contracts]]
+# this one is a bit special, because 'bicep' is not a real child of 'arm' but it leverages the checks written for 'arm'
+name = "bicep forbidden to import arm"
+type = "forbidden"
+source_modules = [
+    "checkov.bicep",
+]
+forbidden_modules = [
+    "checkov.arm",
+]
+
+[tool.pytest.ini_options]
+addopts = "-n 2 --dist loadfile"

@@ -1,15 +1,20 @@
+from __future__ import annotations
+
 import tempfile
 from typing import Optional, Union
 
 
-class ModuleContent(object):
+class ModuleContent:
     def __init__(
         self,
-        dir: Optional[Union[tempfile.TemporaryDirectory, str]],
+        dir: Optional[Union[tempfile.TemporaryDirectory[str], str]],
         next_url: Optional[str] = None,
         failed_url: Optional[str] = None,
     ) -> None:
-        self.dir = dir.replace("//", "/") if dir else None
+        if isinstance(dir, tempfile.TemporaryDirectory):
+            self.dir: tempfile.TemporaryDirectory[str] | str | None = dir
+        else:
+            self.dir = dir.replace("//", "/") if dir else None
         self.next_url = next_url
         self.failed_url = failed_url
 

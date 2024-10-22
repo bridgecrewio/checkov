@@ -2,103 +2,147 @@ name: PR Test
 
 on: pull_request
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
-        with:
-          python-version: 3.9
-      - name: pre-commit
-        uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507  # v3
+    uses: bridgecrewio/gha-reusable-workflows/.github/workflows/pre-commit.yaml@main
+    with:
+      python-version: "3.9"
 
-  cfn-lint:
-    runs-on: [self-hosted, public, linux, x64]
+  danger-check:
+    runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - name: Install Node.js
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
         with:
-          python-version: 3.7
-      - name: Install cfn-lint
+          node-version: "16"
+      - name: Install and run DangerJS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install -g danger
+          danger ci --verbose --failOnErrors
+  cfn-lint:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.8"
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Get changed CFN test files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        with:
+          files: tests/cloudformation/checks/resource/aws/**/*
+      - name: Filter YAML and JSON files
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        id: filter-files
+        run: |
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          if [ -n "$YAML_JSON_FILES" ]; then
+            echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
+          fi
+      - name: Install cfn-lint & Lint Cloudformation templates
+        if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-      - name: Lint Cloudformation templates
-        run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+          for file in $YAML_JSON_FILES; do
+            cfn-lint "$file" -i W
+          done
 
   mypy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-    - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
-      with:
-        python-version: 3.7
-    - name: Install pipenv
-      run: |
-        python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
-    - name: Install dependencies
-      run: |
-        pipenv --python 3.7
-        pipenv install --dev
-        pipenv run pip install typed-ast  # for some reason this has an old version
-    - name: Run Mypy
-      run: |
-        pipenv run mypy
+    uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
+    with:
+      python-version: "3.8"
 
   unit-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv install --dev
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+
+          if [ '${{ matrix.python }}' == '3.12' ]; then
+            # needed for numpy
+            pipenv install --skip-lock --dev -v
+          else
+            pipenv install --dev -v
+          fi
+
+          # list all dependencies to get a better view about installed package versions
+          pipenv run pip list
+
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pipenv run python -m pytest tests
+        run: pipenv run python -m pytest tests
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
-      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
+        shell: bash
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -112,7 +156,8 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
@@ -120,32 +165,270 @@ jobs:
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
 
-  performance-tests:
+  integration-tests-old-python:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
-        os: [ubuntu-latest]
-    env:
-      working-directory: ./performance_tests
+        python: ["3.8", "3.9"]
+        os: [ubuntu-latest, macos-12, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
-      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        shell: bash
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist setuptools wheel
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone Terragoat - vulnerable terraform
+        run: git clone https://github.com/bridgecrewio/terragoat
+      - name: Clone Cfngoat - vulnerable cloudformation
+        run: git clone https://github.com/bridgecrewio/cfngoat
+      - name: Clone Kubernetes-goat - vulnerable kubernetes
+        run: git clone https://github.com/madhuakula/kubernetes-goat
+      - name: Clone kustomize-goat - vulnerable kustomize
+        run: git clone https://github.com/bridgecrewio/kustomizegoat
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        run: |
+          # Just making sure the API key tests don't run on PRs
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
+      - name: Run integration tests
+        run: |
+          pipenv run pytest integration_tests -k 'not api_key'
+
+  sast-integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.12"]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
-          pipenv run pip install pytest pytest-benchmark
+          pipenv run pip install pytest pytest-xdist setuptools wheel
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone flask - Python repo for SAST
+        run: git clone https://github.com/pallets/flask
+      - name: Clone WebGoat - Java repo for SAST
+        run: git clone https://github.com/WebGoat/WebGoat
+      - name: Clone axios - JavaScript repo for SAST
+        run: git clone https://github.com/axios/axios
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: bash -c './sast_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest sast_integration_tests
+
+  sast-integration-tests-old-python:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.8"]
+        os: [ubuntu-latest, macos-12]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist setuptools wheel
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone flask - Python repo for SAST
+        run: git clone https://github.com/pallets/flask
+      - name: Clone WebGoat - Java repo for SAST
+        run: git clone https://github.com/WebGoat/WebGoat
+      - name: Clone axios - JavaScript repo for SAST
+        run: git clone https://github.com/axios/axios
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: bash -c './sast_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest sast_integration_tests
+
+  cdk-integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.12"]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist setuptools wheel
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: bash -c './cdk_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest cdk_integration_tests
+
+  cdk-integration-tests-old-python:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.8"]
+        os: [ubuntu-latest, macos-12]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist setuptools wheel
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: bash -c './cdk_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest cdk_integration_tests
+
+  performance-tests:
+    env:
+      PYTHON_VERSION: "3.8"
+      working-directory: ./performance_tests
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ env.PYTHON_VERSION }}
+          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
+          pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
@@ -157,7 +440,52 @@ jobs:
       - name: Clone kubernetes-yaml-templates
         run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
         working-directory: ${{ env.working-directory }}
+# TODO: migrate to separate performance tests
+#      - name: Clone Python-Mini-Projects
+#        run: git clone https://github.com/alimoustafa2000/Python-Mini-Projects.git
+#        working-directory: ${{ env.working-directory }}
+#      - name: Clone NodeJs
+#        run: git clone https://github.com/harshitbansal373/NodeJs.git
+#        working-directory: ${{ env.working-directory }}
+#      - name: Clone Mini-Project-using-Java
+#        run: git clone https://github.com/ikanurfitriani/Mini-Project-using-Java.git
+#        working-directory: ${{ env.working-directory }}
       - name: Run performance tests
         run: |
           pipenv run pytest
         working-directory: ${{ env.working-directory }}
+
+  dogfood-tests:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.8"
+      WORKING_DIRECTORY: ./dogfood_tests
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ env.PYTHON_VERSION }}
+          pipenv run pip install pytest pytest-xdist
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Run dogfood tests
+        run: |
+          pipenv run pytest
+        working-directory: ${{ env.WORKING_DIRECTORY }}

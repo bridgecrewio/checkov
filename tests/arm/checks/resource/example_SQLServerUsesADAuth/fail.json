@@ -1,0 +1,181 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "administratorLogin": {
+            "type": "string",
+            "defaultValue": "anythingisbad"
+        },
+        "administratorLoginPassword": {
+            "type": "securestring",
+            "defaultValue": ""
+        },
+        "administrators": {
+            "type": "object",
+            "defaultValue": {}
+        },
+        "location": {
+            "type": "string"
+        },
+        "serverName": {
+            "type": "string"
+        },
+        "enableADS": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "useVAManagedIdentity": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "To enable vulnerability assessments, the user deploying this template must have an administrator or owner permissions."
+            }
+        },
+        "vaStoragelessEnabled": {
+            "type": "bool",
+            "defaultValue": false,
+            "metadata": {
+                "description": "Flag for enabling vulnerability assessments with express configuration (storage less), the user deploying this template must have administrator or owner permissions."
+            }
+        },
+        "publicNetworkAccess": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "minimalTlsVersion": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "allowAzureIps": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "enableVA": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "serverTags": {
+            "type": "object",
+            "defaultValue": {}
+        }
+    },
+    "variables": {
+        "subscriptionId": "[subscription().subscriptionId]",
+        "resourceGroupName": "[resourceGroup().name]",
+        "uniqueStorage": "[uniqueString(variables('subscriptionId'), variables('resourceGroupName'), parameters('location'))]",
+        "storageName": "[tolower(concat('sqlva', variables('uniqueStorage')))]",
+        "uniqueRoleGuid": "[guid(resourceId('Microsoft.Storage/storageAccounts', variables('storageName')), variables('storageBlobContributor'), resourceId('Microsoft.Sql/servers', parameters('serverName')))]",
+        "StorageBlobContributor": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
+    },
+    "resources": [
+        {
+            "condition": "[parameters('enableVA')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "name": "[variables('storageName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "supportsHttpsTrafficOnly": "true",
+                "allowBlobPublicAccess": "false"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('useVAManagedIdentity')]",
+                    "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+                    "apiVersion": "2018-09-01-preview",
+                    "name": "[concat(variables('storageName'), '/Microsoft.Authorization/', variables('uniqueRoleGuid') )]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]",
+                        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]"
+                    ],
+                    "properties": {
+                        "roleDefinitionId": "[variables('StorageBlobContributor')]",
+                        "principalId": "[reference(resourceId('Microsoft.Sql/servers', parameters('serverName')), '2018-06-01-preview', 'Full').identity.principalId]",
+                        "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))]",
+                        "principalType": "ServicePrincipal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2020-11-01-preview",
+            "name": "fail",
+            "location": "[parameters('location')]",
+            "properties": {
+                "version": "12.0",
+                "minimalTlsVersion": "[parameters('minimalTlsVersion')]",
+                "publicNetworkAccess": "[parameters('publicNetworkAccess')]",
+                "administratorLogin": "[parameters('administratorLogin')]",
+                "administratorLoginPassword": "[parameters('administratorLoginPassword')]",
+                "administrators": "[parameters('administrators')]"
+            },
+            "identity": "[if(and(parameters('enableVA'),parameters('useVAManagedIdentity')), json('{\"type\":\"SystemAssigned\"}'), json('null'))]",
+            "tags": "[parameters('serverTags')]",
+            "resources": [
+                {
+                    "condition": "[parameters('allowAzureIPs')]",
+                    "type": "firewallRules",
+                    "apiVersion": "2021-11-01",
+                    "name": "AllowAllWindowsAzureIps",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+                    ],
+                    "properties": {
+                        "endIpAddress": "0.0.0.0",
+                        "startIpAddress": "0.0.0.0"
+                    }
+                },
+                {
+                    "condition": "[parameters('enableADS')]",
+                    "type": "advancedThreatProtectionSettings",
+                    "apiVersion": "2021-11-01-preview",
+                    "name": "Default",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+                    ],
+                    "properties": {
+                        "state": "Enabled"
+                    }
+                },
+                {
+                    "condition": "[parameters('enableVA')]",
+                    "type": "vulnerabilityAssessments",
+                    "apiVersion": "2018-06-01-preview",
+                    "name": "Default",
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'))]",
+                        "[concat('Microsoft.Storage/storageAccounts/', variables('storageName'))]",
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/advancedThreatProtectionSettings/Default')]"
+                    ],
+                    "properties": {
+                        "storageContainerPath": "[if(parameters('enableVA'), concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageName'))).primaryEndpoints.blob, 'vulnerability-assessment'), '')]",
+                        "storageAccountAccessKey": "[if(and(parameters('enableVA'),not(parameters('useVAManagedIdentity'))), listKeys(variables('storageName'), '2018-02-01').keys[0].value, '')]",
+                        "recurringScans": {
+                            "isEnabled": true,
+                            "emailSubscriptionAdmins": false
+                        }
+                    }
+                },
+                {
+                    "condition": "[parameters('vaStoragelessEnabled')]",
+                    "type": "sqlVulnerabilityAssessments",
+                    "apiVersion": "2022-02-01-preview",
+                    "name": "Default",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
+                    ],
+                    "properties": {
+                        "state": "Enabled"
+                    }
+                }
+            ]
+        }
+    ]
+}

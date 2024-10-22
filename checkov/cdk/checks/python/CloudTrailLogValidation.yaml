@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_36
+  name: Ensure CloudTrail log file validation is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_cloudtrail.CfnTrail(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_cloudtrail.CfnTrail(<ANY>, enable_log_file_validation=True , <ANY>)

@@ -9,7 +9,7 @@ from checkov.common.util.type_forcers import force_int
 
 class RequireTwoApprovalsToMerge(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure at least two approving reviews to merge"
+        name = "Ensure at least two approving reviews are required to merge a GitLab MR"
         id = "CKV_GLB_1"
         supported_resources = ["gitlab_project"]
         categories = [CheckCategories.GENERAL_SECURITY]
