@@ -17,6 +17,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
         super().__init__(local_graph)
 
     def _render_variables_from_vertices(self) -> None:
+        # need to add rendering to function like format, reference etc
         pass
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: list[Edge]) -> None:
@@ -58,7 +59,3 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             new_value = adjust_value(element_name=origin_value, value=vertex.attributes["value"])
             return "value", new_value
         return None, None
-
-    def evaluate_non_rendered_values(self) -> None:
-        # not used
-        pass

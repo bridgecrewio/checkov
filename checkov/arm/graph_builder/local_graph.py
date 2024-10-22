@@ -55,7 +55,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             return
 
         for name, conf in variables.items():
-            if name in ['__startline__', '__endline__']:
+            if name in [START_LINE, END_LINE]:
                 continue
             if not isinstance(conf, dict):
                 full_conf = {"value": pickle_deepcopy(conf)}
@@ -132,7 +132,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         vertex_name = element_name
         if "." in vertex_name:
-            # special case for`bicep elements, when properties are accessed
+            # special case for bicep and arm elements, when properties are accessed
             vertex_name = vertex_name.split(".")[0]
 
         dest_vertex_index = self.vertices_by_name.get(vertex_name)
