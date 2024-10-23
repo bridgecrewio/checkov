@@ -44,3 +44,26 @@ def filter_sub_keys(key_list: list[str]) -> list[str]:
 
 def is_include_dup_dynamic(key: str, list_keys: list[str]) -> bool:
     return f"dynamic.{key.split('.')[0]}" not in list_keys
+
+
+def adjust_value(element_name: str, value: Any) -> Any:
+    """Adjusts the value, if the 'element_name' references a nested key
+
+    Ex:
+    element_name = publicKey.keyData
+    value = {"keyData": "key-data", "path": "path"}
+
+    returns new_value = "key-data"
+    """
+
+    if "." in element_name and isinstance(value, dict):
+        key_parts = element_name.split(".")
+        new_value = value.get(key_parts[1])
+
+        if new_value is None:
+            # couldn't find key in in value object
+            return None
+
+        return adjust_value(".".join(key_parts[1:]), new_value)
+
+    return value
