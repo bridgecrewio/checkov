@@ -32,8 +32,8 @@ def test_build_graph_from_definitions(graph_connector):
     local_graph = graph_manager.build_graph_from_definitions(definitions=definitions)
 
     # then
-    assert len(local_graph.vertices) == 15
-    assert len(local_graph.edges) == 0
+    assert len(local_graph.vertices) == 18
+    assert len(local_graph.edges) == 20
 
     # resource name will change, when variable rendering is supported
     container_idx = local_graph.vertices_by_path_and_id[(test_file, "Microsoft.ContainerInstance/containerGroups.[parameters('containerGroupName')]")]
