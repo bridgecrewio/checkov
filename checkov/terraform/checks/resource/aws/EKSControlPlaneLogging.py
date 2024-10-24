@@ -20,9 +20,13 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         """
         log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
         if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"] and \
-                conf["enabled_cluster_log_types"][0] is not None \
-                and all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
-            return CheckResult.PASSED
+                conf["enabled_cluster_log_types"][0] is not None:
+                    if type(conf["enabled_cluster_log_types"][0][0]) == str:
+                        if all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
+                            return CheckResult.PASSED
+                    elif type(conf["enabled_cluster_log_types"][0][0]) == list:
+                        if all([elem] in conf["enabled_cluster_log_types"][0] for elem in log_types):
+                            return CheckResult.PASSED
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
