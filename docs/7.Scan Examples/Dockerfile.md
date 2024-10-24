@@ -48,22 +48,22 @@ Passed checks: 3, Failed checks: 2, Skipped checks: 0
 Check: CKV_DOCKER_5: "Ensure update instructions are not use alone in the Dockerfile"
 	PASSED for resource: /Dockerfile.
 	File: /Dockerfile:1-8
-	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/ensure-update-instructions-are-not-used-alone-in-the-dockerfile
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/docker-policy-index/ensure-update-instructions-are-not-used-alone-in-the-dockerfile
 
 Check: CKV_DOCKER_7: "Ensure the base image uses a non latest version tag"
 	PASSED for resource: /Dockerfile.
 	File: /Dockerfile:1-8
-	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/ensure-the-base-image-uses-a-non-latest-version-tag
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/ensure-the-base-image-uses-a-non-latest-version-tag
 
 Check: CKV_DOCKER_2: "Ensure that HEALTHCHECK instructions have been added to container images"
 	PASSED for resource: /Dockerfile.HEALTHCHECK
 	File: /Dockerfile:7-7
-	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/ensure-that-healthcheck-instructions-have-been-added-to-container-images
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/ensure-that-healthcheck-instructions-have-been-added-to-container-images
 
 Check: CKV_DOCKER_1: "Ensure port 22 is not exposed"
 	FAILED for resource: /Dockerfile.EXPOSE
 	File: /Dockerfile:6-6
-	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/ensure-port-22-is-not-exposed
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/ensure-port-22-is-not-exposed
 
 		6 | EXPOSE 3000 22
 
@@ -71,7 +71,7 @@ Check: CKV_DOCKER_1: "Ensure port 22 is not exposed"
 Check: CKV_DOCKER_3: "Ensure that a user for the container has been created"
 	FAILED for resource: /Dockerfile.
 	File: /Dockerfile:1-8
-	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/ensure-that-a-user-for-the-container-has-been-created
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/docker-policies/docker-policy-index/ensure-that-a-user-for-the-container-has-been-created
 
 		1 | FROM node:alpine
 		2 | WORKDIR /usr/src/app
