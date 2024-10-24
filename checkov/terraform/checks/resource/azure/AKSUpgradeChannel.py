@@ -21,7 +21,7 @@ class AKSUpgradeChannel(BaseResourceNegativeValueCheck):
         )
 
     def get_inspected_key(self) -> str:
-        return "automatic_channel_upgrade"
+        return "automatic_upgrade_channel"
 
     def get_forbidden_values(self) -> list[Any]:
         return ["none"]

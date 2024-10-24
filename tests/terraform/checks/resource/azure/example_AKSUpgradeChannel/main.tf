@@ -3,7 +3,7 @@ resource "azurerm_kubernetes_cluster" "pass" {
   location                  = azurerm_resource_group.example.location
   resource_group_name       = azurerm_resource_group.example.name
   dns_prefix                = "exampleaks1"
-  automatic_channel_upgrade = "stable"
+  automatic_upgrade_channel = "stable"
   default_node_pool {
     name       = var.default_node_pool.name
     node_count = var.default_node_pool.node_count
@@ -27,7 +27,7 @@ resource "azurerm_kubernetes_cluster" "fail" {
   location                  = azurerm_resource_group.example.location
   resource_group_name       = azurerm_resource_group.example.name
   dns_prefix                = "exampleaks1"
-  automatic_channel_upgrade = "none"
+  automatic_upgrade_channel = "none"
 
   default_node_pool {
     name       = var.default_node_pool.name
