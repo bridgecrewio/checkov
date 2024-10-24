@@ -158,6 +158,25 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(len(skipped_check_ids), 1)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
 
+    def test_skip_check_on_looped_module(self):
+        allowed_checks = ["CKV2_AWS_6"]
+        runner_registry = RunnerRegistry(
+            banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
+        )
+
+        repo_root = Path(__file__).parent / "plan_with_looped_module"
+        valid_plan_path = repo_root / "tf" / "tfplan.json"
+
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
+
+        failed_check_ids = {c.check_id for c in report.failed_checks}
+        skipped_check_ids = {c.check_id for c in report.skipped_checks}
+        expected_skipped_check_ids = { "CKV2_AWS_6"}
+
+        self.assertEqual(len(failed_check_ids), 0)
+        self.assertEqual(len(skipped_check_ids), 1)
+        self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
+
 
 def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
     # given
