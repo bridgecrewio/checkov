@@ -1797,6 +1797,30 @@ class TestRunnerValid(unittest.TestCase):
                 self.assertEqual(len(runner.definitions), 1)
                 self.assertEqual(len(parsing_errors), 1)
 
+    def test__parse_files_with_timout(self):
+        for parallel_type in [ParallelizationType.FORK, ParallelizationType.SPAWN, ParallelizationType.NONE]:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/hcl_timeout"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 0)
+                self.assertEqual(len(parsing_errors), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

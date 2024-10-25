@@ -1,6 +1,70 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.254...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.269...HEAD)
+
+## [3.2.269](https://github.com/bridgecrewio/checkov/compare/3.2.268...3.2.269) - 2024-10-23
+
+### Bug Fix
+
+- **terraform:** Fix crash when version isn't a float - [#6783](https://github.com/bridgecrewio/checkov/pull/6783)
+
+## [3.2.268](https://github.com/bridgecrewio/checkov/compare/3.2.267...3.2.268) - 2024-10-20
+
+### Feature
+
+- **terraform_plan:** Support after_unknown evaluation of complex attributes - [#6784](https://github.com/bridgecrewio/checkov/pull/6784)
+
+## [3.2.267](https://github.com/bridgecrewio/checkov/compare/3.2.266...3.2.267) - 2024-10-16
+
+- no noteworthy changes
+
+## [3.2.266](https://github.com/bridgecrewio/checkov/compare/3.2.262...3.2.266) - 2024-10-15
+
+### Feature
+
+- **arm:** unsupported module soft fail - [#6775](https://github.com/bridgecrewio/checkov/pull/6775)
+
+## [3.2.262](https://github.com/bridgecrewio/checkov/compare/3.2.258...3.2.262) - 2024-10-14
+
+### Feature
+
+- **terraform:** 2 new checks - [#6764](https://github.com/bridgecrewio/checkov/pull/6764)
+- **terraform:** Add s3 data transport check - [#6763](https://github.com/bridgecrewio/checkov/pull/6763)
+
+### Bug Fix
+
+- **helm:** Remove helm target dir after scanning - [#6767](https://github.com/bridgecrewio/checkov/pull/6767)
+- **kubernetes:** Handle non-sting params in command - [#6768](https://github.com/bridgecrewio/checkov/pull/6768)
+
+## [3.2.258](https://github.com/bridgecrewio/checkov/compare/3.2.257...3.2.258) - 2024-10-13
+
+### Bug Fix
+
+- **terraform:** Set timeout for parsing Terraform files with hcl2. - [#6759](https://github.com/bridgecrewio/checkov/pull/6759)
+
+## [3.2.257](https://github.com/bridgecrewio/checkov/compare/3.2.256...3.2.257) - 2024-10-06
+
+### Bug Fix
+
+- **ansible:** handle empty tasks - [#6751](https://github.com/bridgecrewio/checkov/pull/6751)
+
+## [3.2.256](https://github.com/bridgecrewio/checkov/compare/3.2.254...3.2.256) - 2024-10-01
+
+### Feature
+
+- **terraform:** New checks - [#6720](https://github.com/bridgecrewio/checkov/pull/6720)
+
+### Bug Fix
+
+- **general:** Fix operator docs - [#6735](https://github.com/bridgecrewio/checkov/pull/6735)
+- **sca:** add Pipfile and Pipfile.lock to supported package files list - [#6746](https://github.com/bridgecrewio/checkov/pull/6746)
+- **terraform:** extend CKV2_AWS_5 to include DMS Serverless (#6628) - [#6630](https://github.com/bridgecrewio/checkov/pull/6630)
+- **terraform:** Remove dataproc.admin from multiple checks - [#6725](https://github.com/bridgecrewio/checkov/pull/6725)
+- **terraform:** Security group attached to an Elastic DocumentDB cluster is not recognized by check CKV2_AWS_5 - [#6687](https://github.com/bridgecrewio/checkov/pull/6687)
+
+### Documentation
+
+- **general:** update README.md - [#6719](https://github.com/bridgecrewio/checkov/pull/6719)
 
 ## [3.2.254](https://github.com/bridgecrewio/checkov/compare/3.2.253...3.2.254) - 2024-09-15
 

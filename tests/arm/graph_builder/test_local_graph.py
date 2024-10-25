@@ -18,8 +18,9 @@ def test_build_graph():
     local_graph.build_graph(render_variables=False)
 
     # then
-    assert len(local_graph.vertices) == 15
-    assert len(local_graph.edges) == 0
+    assert len(local_graph.vertices) == 18
+    assert len(local_graph.edges) == 20
 
     assert len(local_graph.vertices_by_block_type[BlockType.PARAMETER]) == 11
     assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4
+    assert len(local_graph.vertices_by_block_type[BlockType.VARIABLE]) == 3
