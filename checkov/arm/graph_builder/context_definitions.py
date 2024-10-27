@@ -8,4 +8,3 @@ def build_definitions_context(definitions: Dict[Path, Any], definitions_raw: Dic
                               ) -> Dict[str, Dict[str, Any]]:
     # TODO
     return {}
-
