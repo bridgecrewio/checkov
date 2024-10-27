@@ -29,11 +29,13 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self._create_vertices()
         logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
-        self._create_edges()
-        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
+        self._create_vars_and_parameters_edges()
         if render_variables:
             renderer = ArmVariableRenderer(self)
             renderer.render_variables_from_local_graph()
+
+        self._create_edges()
+        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
@@ -126,8 +128,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             )
 
     def _create_edges(self) -> None:
-        # TODO: Create variable vertices edges
-        # TODO: Render variables into vertices
         for origin_vertex_index, vertex in enumerate(self.vertices):
             if 'dependsOn' in vertex.attributes:
                 self._create_explicit_edge(origin_vertex_index, vertex.name, vertex.attributes['dependsOn'])

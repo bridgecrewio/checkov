@@ -36,4 +36,19 @@ def test_graph_implicit_deps():
 
     assert len(test_graph.vertices_by_block_type[BlockType.RESOURCE]) == 6
 
-# TODO: add tests with parameters and variables vertices and rendering
+
+def test_graph_params_vars():
+    # given
+    test_file = EXAMPLES_DIR / "container_instance.json"
+    definitions, _, _ = get_files_definitions([str(test_file)])
+    local_graph = ArmLocalGraph(definitions=definitions)
+    # when
+    local_graph.build_graph(render_variables=False)
+
+    # then
+    assert len(local_graph.vertices) == 18
+    assert len(local_graph.edges) == 20
+
+    assert len(local_graph.vertices_by_block_type[BlockType.PARAMETER]) == 11
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4
+    assert len(local_graph.vertices_by_block_type[BlockType.VARIABLE]) == 3
