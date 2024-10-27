@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_pass"
+fail:
+  - "azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_fail_A"
+  - "azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_fail_B"

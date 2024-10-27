@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2020-04-01",
+      "name": "pass",
+      "location": "[resourceGroup().location]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "enableMultipleWriteLocations": false,
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "BoundedStaleness",
+          "maxIntervalInSeconds": 10,
+          "maxStalenessPrefix": 200
+        },
+        "locations": [
+          {
+            "locationName": "[parameters('failoverLocation')]",
+            "failoverPriority": 1
+          },
+          {
+            "locationName": "[resourceGroup().location]",
+            "failoverPriority": 0
+          }
+        ],
+        "enableAutomaticFailover": true,
+        "capabilities": [
+          {
+            "name": "EnableAggregationPipeline"
+          },
+          {
+            "name": "mongoEnableDocLevelTTL"
+          },
+          {
+            "name": "MongoDBv3.4"
+          }
+        ],
+        "publicNetworkAccess": "Disabled"
+      }
+    }
+  ],
+  "parameters": {
+    "randomInteger": {
+      "type": "int"
+    },
+    "failoverLocation": {
+      "type": "string"
+    }
+  }
+}
