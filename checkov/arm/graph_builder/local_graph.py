@@ -172,7 +172,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
     def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, d: dict[str, Any]) -> None:
         for _, value in d.items():
             if isinstance(value, str):
-                if 'reference' in value:
+                if 'reference(' in value:
                     self._create_implicit_edge(origin_vertex_index, resource_name, value)
 
     def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
