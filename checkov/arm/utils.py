@@ -63,11 +63,22 @@ def get_files_definitions(
 
 
 def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
-    # Extract name from resourceId function
+    '''
+        Examples:
+            resourceId('Microsoft.Network/virtualNetworks/', virtualNetworkName) -> virtualNetworkName
+    '''
     return clean_string(resource_id.split(',')[-1].split(')')[0])
 
 
 def extract_resource_name_from_reference_func(reference: str) -> str:
+    '''
+        Examples:
+                reference('storageAccountName') -> storageAccountName
+                reference('myStorage').primaryEndpoints -> myStorage
+                reference('myStorage', '2022-09-01', 'Full').location -> myStorage
+                reference(resourceId('storageResourceGroup', 'Microsoft.Storage/storageAccounts', 'storageAccountName')), '2022-09-01') -> storageAccountName
+                reference(resourceId('Microsoft.Network/publicIPAddresses', 'ipAddressName')) -> ipAddressName
+    '''
     resource_name = ''.join(reference.split('reference(', 1)[1].split(')')[:-1])
     if 'resourceId' in resource_name:
         return clean_string(
