@@ -6,7 +6,8 @@ from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
-from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, extract_resource_name_from_reference_func
+from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
+    extract_resource_name_from_reference_func
 from checkov.arm.graph_builder.variable_rendering.renderer import ArmVariableRenderer
 from checkov.common.graph.graph_builder import CustomAttributes, Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 DEPENDS_ON_FIELD = 'dependsOn'
 RESOURCE_ID_FUNC = 'resourceId('
 REFERENCE_FUNC = 'reference('
+
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
     def __init__(self, definitions: dict[str, dict[str, Any]]) -> None:
@@ -148,7 +150,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             else:
                 # Dependency not found
                 logging.warning(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
-                              f" {resource_name} not found")
+                                f" {resource_name} not found")
                 continue
 
     def _create_vars_and_parameters_edges(self) -> None:
@@ -188,7 +190,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     @staticmethod
     def update_vertex_config(
-        vertex: _Block, changed_attributes: list[str] | dict[str, Any], has_dynamic_blocks: bool = False
+            vertex: _Block, changed_attributes: list[str] | dict[str, Any], has_dynamic_blocks: bool = False
     ) -> None:
         # not used
         pass
