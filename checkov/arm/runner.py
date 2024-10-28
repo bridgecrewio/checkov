@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
+from checkov.arm.graph_builder.definitions_context import build_definitions_context
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
@@ -93,7 +94,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
         self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
-
+        self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
         report.add_parsing_errors(parsing_errors)
 
         if self.graph_registry and self.graph_manager:
