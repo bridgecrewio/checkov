@@ -76,8 +76,8 @@ schema = "<=0.7.5"
 jsonschema = ">=4.17.0,<5.0.0"
 prettytable = ">=3.6.0,<4.0.0"
 charset-normalizer = ">=3.1.0,<4.0.0"
-"pyston-autoload" = {version = "==2.3.5", markers = "python_version < '3.11' and sys_platform == 'linux' and platform_machine == 'x86_64' and implementation_name == 'cpython'", index = "pypi"}
-"pyston" = {version = "==2.3.5", markers = "python_version < '3.11' and sys_platform == 'linux' and platform_machine == 'x86_64' and implementation_name == 'cpython'", index = "pypi"}
+pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
+pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 requests = ">=2.28.0,<3.0.0"
 yarl = ">=1.9.1,<2.0.0"
 openai = "<1.0.0"  # it comes with a couple of changes a different dependencies, needs separate testing
