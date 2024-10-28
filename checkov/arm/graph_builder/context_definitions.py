@@ -33,7 +33,9 @@ def build_definitions_context(definitions: dict[str, dict[str, Any]], definition
     return definitions_context
 
 
-def add_resource_to_definitions_context(definitions_context, resource_key, resource_attributes, definition_attribute, definitions_raw, file_path):
+def add_resource_to_definitions_context(definitions_context: dict[str, dict[str, Any]], resource_key: str,
+                                        resource_attributes: dict[str, Any], definition_attribute: str,
+                                        definitions_raw:dict[str, Any], file_path:str) -> None:
     start_line = resource_attributes[START_LINE]
     end_line = resource_attributes[END_LINE]
     definition_resource = {"start_line": start_line, "end_line": end_line}
