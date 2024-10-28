@@ -34,6 +34,11 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self._create_vertices()
         logging.warning(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
+        '''
+            In order to resolve the resources names for the dependencies we need to render the variables first
+            Examples: https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/resource-dependency
+        '''
+
         self._create_vars_and_parameters_edges()
         if render_variables:
             renderer = ArmVariableRenderer(self)
