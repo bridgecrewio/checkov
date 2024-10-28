@@ -17,6 +17,7 @@ BLOCK_TYPE_TO_ARM_ELEMENTS_MAP = {
     BlockType.VARIABLE: ArmElements.VARIABLES,
 }
 
+
 def convert_graph_vertices_to_definitions(
     vertices: list[ArmBlock], root_folder: str | Path | None
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
