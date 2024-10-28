@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.269...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.270...HEAD)
+
+## [3.2.270](https://github.com/bridgecrewio/checkov/compare/3.2.269...3.2.270) - 2024-10-28
+
+### Feature
+
+- **arm:** add variable and parameters edges and rendering - [#6787](https://github.com/bridgecrewio/checkov/pull/6787)
+- **arm:** arm custom policy support - [#6769](https://github.com/bridgecrewio/checkov/pull/6769)
 
 ## [3.2.269](https://github.com/bridgecrewio/checkov/compare/3.2.268...3.2.269) - 2024-10-23
 
