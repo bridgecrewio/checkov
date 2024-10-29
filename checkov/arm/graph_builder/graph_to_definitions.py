@@ -10,14 +10,6 @@ from checkov.arm.utils import ArmElements
 if TYPE_CHECKING:
     from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 
-BLOCK_TYPE_TO_ARM_ELEMENTS_MAP = {
-    BlockType.OUTPUT: ArmElements.OUTPUTS,
-    BlockType.PARAMETER: ArmElements.PARAMETERS,
-    BlockType.RESOURCE: ArmElements.RESOURCES,
-    BlockType.VARIABLE: ArmElements.VARIABLES,
-}
-
-
 def convert_graph_vertices_to_definitions(
     vertices: list[ArmBlock], root_folder: str | Path | None
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
