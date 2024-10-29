@@ -54,3 +54,25 @@ def test_build_graph_from_definitions(graph_connector):
 
     assert container.config["properties"]["osType"] == "Linux"
     assert container.config["properties"]["restartPolicy"] == "Always"
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_build_graph_from_definitions2(graph_connector):
+    # given
+    test_file = str(EXAMPLES_DIR / "container_instance.json")
+    definitions, _, _ = get_files_definitions([test_file])
+
+    graph_manager = ArmGraphManager(db_connector=graph_connector())
+
+    # when
+    local_graph = graph_manager.build_graph_from_definitions(definitions=definitions)
+
+    # then
+    assert len(local_graph.vertices) == 18
+    assert len(local_graph.edges) == 20

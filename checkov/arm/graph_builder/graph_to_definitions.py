@@ -27,8 +27,10 @@ def convert_graph_vertices_to_definitions(
         block_path = vertex.path
         arm_element = vertex.block_type
         element_name = vertex.name
-
-        arm_definitions.setdefault(block_path, {}).setdefault(arm_element, {})[element_name] = vertex.config
+        if arm_element == ArmElements.RESOURCES:
+            arm_definitions.setdefault(block_path, {}).setdefault(arm_element, []).append(vertex.config)
+        else:
+            arm_definitions.setdefault(block_path, {}).setdefault(arm_element, {})[element_name] = vertex.config
 
         if vertex.breadcrumbs:
             relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"

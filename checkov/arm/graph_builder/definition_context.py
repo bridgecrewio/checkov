@@ -41,14 +41,14 @@ def add_resource_to_definitions_context(definitions_context: dict[str, dict[str,
     definition_resource = {"start_line": start_line, "end_line": end_line}
 
     if definition_attribute == "resources":
-        resource_key = f"{resource_attributes['type']}.{resource_attributes['name']}"
+        resource_key = f"{resource_attributes.get('type')}.{resource_attributes.get('name')}"
         int_start_line = cast(int, definition_resource["start_line"])
         int_end_line = cast(int, definition_resource["end_line"])
         code_lines_for_suppressions_check = definitions_raw[file_path][int_start_line: int_end_line]
         definition_resource['skipped_checks'] = collect_suppressions_for_report(
             code_lines=code_lines_for_suppressions_check)
     else:
-        definition_resource["type"] = resource_attributes['type']
+        definition_resource["type"] = resource_attributes.get('type')
 
     definition_resource["code_lines"] = definitions_raw[file_path][start_line - 1: end_line]
     definitions_context[file_path][definition_attribute][resource_key] = definition_resource
