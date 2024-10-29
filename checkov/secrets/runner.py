@@ -308,12 +308,12 @@ class Runner(BaseRunner[None, None, None]):
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
-                
+
                 secret_key_by_line = f'{key}_{secret.line_number}'
                 line_text_censored = line_text
                 for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
                     line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
-                
+
                 secret_records[secret_key] = SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
