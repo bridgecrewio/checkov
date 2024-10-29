@@ -9,6 +9,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 
 ARM_POSSIBLE_ENDINGS = [".json"]
 
+
 class ArmElements(str, Enum):
     OUTPUTS = "outputs"
     PARAMETERS = "parameters"
@@ -18,6 +19,7 @@ class ArmElements(str, Enum):
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
         return self.value
+
 
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> set[str]:
     """Finds ARM files"""

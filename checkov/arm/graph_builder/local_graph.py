@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Any, TYPE_CHECKING
 
-from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
     extract_resource_name_from_reference_func

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
@@ -56,6 +57,9 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             if new_value:
                 new_value = adjust_value(element_name=origin_value, value=new_value)
                 return "defaultValue", new_value
+            else:
+                logging.warning(f'No defaultValue for parameter id = {vertex.id}')
+                return "defaultValue", origin_value
         elif vertex.block_type == BlockType.VARIABLE:
             new_value = adjust_value(element_name=origin_value, value=vertex.attributes.get("value"))
             return "value", new_value

@@ -4,15 +4,14 @@ import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
-from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.utils import ArmElements
 
 if TYPE_CHECKING:
     from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 
-def convert_graph_vertices_to_definitions(
-    vertices: list[ArmBlock], root_folder: str | Path | None
-) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+
+def convert_graph_vertices_to_definitions(vertices: list[ArmBlock], root_folder: str | Path | None)\
+        -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     arm_definitions: dict[str, dict[str, Any]] = {}
     breadcrumbs: dict[str, dict[str, Any]] = {}
     for vertex in vertices:
