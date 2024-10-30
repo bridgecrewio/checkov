@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.268...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.271...HEAD)
+
+## [3.2.271](https://github.com/bridgecrewio/checkov/compare/3.2.270...3.2.271) - 2024-10-29
+
+### Feature
+
+- **sca:** add enableDotnetCpm env var to sca scan request  - [#6786](https://github.com/bridgecrewio/checkov/pull/6786)
+
+## [3.2.270](https://github.com/bridgecrewio/checkov/compare/3.2.269...3.2.270) - 2024-10-28
+
+### Feature
+
+- **arm:** add variable and parameters edges and rendering - [#6787](https://github.com/bridgecrewio/checkov/pull/6787)
+- **arm:** arm custom policy support - [#6769](https://github.com/bridgecrewio/checkov/pull/6769)
+
+## [3.2.269](https://github.com/bridgecrewio/checkov/compare/3.2.268...3.2.269) - 2024-10-23
+
+### Bug Fix
+
+- **terraform:** Fix crash when version isn't a float - [#6783](https://github.com/bridgecrewio/checkov/pull/6783)
 
 ## [3.2.268](https://github.com/bridgecrewio/checkov/compare/3.2.267...3.2.268) - 2024-10-20
 
