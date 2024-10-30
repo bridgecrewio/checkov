@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
@@ -29,7 +30,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
                                                                                origin_value=val_to_eval)
             '''if the arg start with '[parameters'/ '[variables' its mean we need to eval the all attribute
             like here - "addressPrefix": "[parameters('subnetAddressPrefix')]" '''
-            if len(edge_list) == 1 and val_to_eval.startswith(("[parameters", "[variables")):
+            if len(edge_list) == 1 and isinstance(val_to_eval, str) and val_to_eval.startswith(("[parameters", "[variables")):
                 val_to_eval = attr_value
                 continue
             '''
@@ -38,7 +39,8 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             vertices[edge.dest].id = variables.networkProfileName -> variables('networkProfileName')
             '''
             val_to_replace = self.local_graph.vertices[edge.dest].id.replace(".", "('") + "')"
-            val_to_eval = val_to_eval.replace(val_to_replace, attr_value)
+            if attr_value and isinstance(val_to_eval, str):
+                val_to_eval = val_to_eval.replace(val_to_replace, str(attr_value))
 
         self.local_graph.update_vertex_attribute(
             vertex_index=edge_list[0].origin,
@@ -55,8 +57,11 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             if new_value:
                 new_value = adjust_value(element_name=origin_value, value=new_value)
                 return "defaultValue", new_value
+            else:
+                logging.warning(f'No defaultValue for parameter id = {vertex.id}')
+                return "defaultValue", origin_value
         elif vertex.block_type == BlockType.VARIABLE:
-            new_value = adjust_value(element_name=origin_value, value=vertex.attributes["value"])
+            new_value = adjust_value(element_name=origin_value, value=vertex.attributes.get("value"))
             return "value", new_value
         return None, None
 

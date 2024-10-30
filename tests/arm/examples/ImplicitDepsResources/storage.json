@@ -21,7 +21,7 @@
           "name": "MySecret",
           "apiVersion": "2019-09-01",
           "properties": {
-            "value": "MySecretValue123"
+            "value": "1234"
           }
         }
       ]
