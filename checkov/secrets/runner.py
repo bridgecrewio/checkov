@@ -231,7 +231,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_48', 'CKV_SECRET_30']
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
