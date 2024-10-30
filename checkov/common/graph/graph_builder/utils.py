@@ -64,7 +64,4 @@ def adjust_value(element_name: str, value: Any) -> Any:
             return None
 
         return adjust_value(".".join(key_parts[1:]), new_value)
-
-    if isinstance(value, list) and len(value) == 1:
-        return value[0]
     return value
