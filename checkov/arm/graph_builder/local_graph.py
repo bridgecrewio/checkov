@@ -1,18 +1,25 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
-from checkov.arm.utils import ArmElements
-from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
+    extract_resource_name_from_reference_func
+from checkov.arm.graph_builder.variable_rendering.renderer import ArmVariableRenderer
+from checkov.common.graph.graph_builder import CustomAttributes, Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block
+
+DEPENDS_ON_FIELD = 'dependsOn'
+RESOURCE_ID_FUNC = 'resourceId('
+REFERENCE_FUNC = 'reference('
 
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
@@ -21,23 +28,64 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.vertices: list[ArmBlock] = []
         self.definitions = definitions
         self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
+        self.vertices_by_name: dict[str, int] = {}
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
-        logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
+        logging.warning(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
+
+        '''
+            In order to resolve the resources names for the dependencies we need to render the variables first
+            Examples: https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/resource-dependency
+        '''
+
+        self._create_vars_and_parameters_edges()
+        if render_variables:
+            renderer = ArmVariableRenderer(self)
+            renderer.render_variables_from_local_graph()
 
         self._create_edges()
-        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
+        logging.warning(f"[ArmLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             self._create_parameter_vertices(file_path=file_path, parameters=definition.get(ArmElements.PARAMETERS))
             self._create_resource_vertices(file_path=file_path, resources=definition.get(ArmElements.RESOURCES))
+            self._create_variables_vertices(file_path=file_path, variables=definition.get(ArmElements.VARIABLES))
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
             self.vertices_by_path_and_id[(vertex.path, vertex.id)] = i
+            self.vertices_by_name[vertex.name] = i
+
+            self.in_edges[i] = []
+            self.out_edges[i] = []
+
+    def _create_variables_vertices(self, file_path: str, variables: dict[str, dict[str, Any]] | None) -> None:
+        if not variables:
+            return
+
+        for name, conf in variables.items():
+            if name in [START_LINE, END_LINE]:
+                continue
+            if not isinstance(conf, dict):
+                full_conf = {"value": pickle_deepcopy(conf)}
+            else:
+                full_conf = conf
+            config = pickle_deepcopy(full_conf)
+            attributes = pickle_deepcopy(full_conf)
+
+            self.vertices.append(
+                ArmBlock(
+                    name=name,
+                    config=config,
+                    path=file_path,
+                    block_type=BlockType.VARIABLE,
+                    attributes=attributes,
+                    id=f"{BlockType.VARIABLE}.{name}",
+                )
+            )
 
     def _create_parameter_vertices(self, file_path: str, parameters: dict[str, dict[str, Any]] | None) -> None:
         if not parameters:
@@ -47,7 +95,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             if name in (START_LINE, END_LINE):
                 continue
             if not isinstance(config, dict):
-                logging.debug(f"[ArmLocalGraph] parameter {name} has wrong type {type(config)}")
+                logging.warning(f"[ArmLocalGraph] parameter {name} has wrong type {type(config)}")
                 continue
 
             attributes = pickle_deepcopy(config)
@@ -85,13 +133,61 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=f"{resource_type}.{resource_name}",
+                    id=f"{resource_type}.{resource_name}"
                 )
             )
 
     def _create_edges(self) -> None:
-        # no edges yet
-        pass
+        for origin_vertex_index, vertex in enumerate(self.vertices):
+            if DEPENDS_ON_FIELD in vertex.attributes:
+                self._create_explicit_edge(origin_vertex_index, vertex.name, vertex.attributes['dependsOn'])
+            self._create_implicit_edges(origin_vertex_index, vertex.name, vertex.attributes)
+
+    def _create_explicit_edge(self, origin_vertex_index: int, resource_name: str, deps: list[str]) -> None:
+        for dep in deps:
+            if RESOURCE_ID_FUNC in dep:
+                processed_dep = extract_resource_name_from_resource_id_func(dep)
+            else:
+                processed_dep = dep.split('/')[-1]
+            # Check if the processed dependency exists in the map
+            if processed_dep in self.vertices_by_name:
+                self._create_edge(processed_dep, origin_vertex_index, f'{resource_name}->{processed_dep}')
+            else:
+                # Dependency not found
+                logging.warning(f"[ArmLocalGraph] resource dependency {processed_dep} defined in {dep} for resource"
+                                f" {resource_name} not found")
+                continue
+
+    def _create_vars_and_parameters_edges(self) -> None:
+        pattern = r"(variables|parameters)\('(\w+)'\)"
+        for origin_vertex_index, vertex in enumerate(self.vertices):
+            for attr_key, attr_value in vertex.attributes.items():
+                if not isinstance(attr_value, str):
+                    continue
+                if ArmElements.VARIABLES in attr_value or ArmElements.PARAMETERS in attr_value:
+                    matches = re.findall(pattern, attr_value)
+                    for match in matches:
+                        var_name = match[1]
+                        self._create_edge(var_name, origin_vertex_index, attr_key)
+
+    def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
+        dest_vertex_index = self.vertices_by_name.get(element_name)
+        if origin_vertex_index == dest_vertex_index or dest_vertex_index is None:
+            return
+        edge = Edge(origin_vertex_index, dest_vertex_index, label)
+        self.edges.append(edge)
+        self.out_edges[origin_vertex_index].append(edge)
+        self.in_edges[dest_vertex_index].append(edge)
+
+    def _create_implicit_edges(self, origin_vertex_index: int, resource_name: str, resource: dict[str, Any]) -> None:
+        for value in resource.values():
+            if isinstance(value, str):
+                if REFERENCE_FUNC in value:
+                    self._create_implicit_edge(origin_vertex_index, resource_name, value)
+
+    def _create_implicit_edge(self, origin_vertex_index: int, resource_name: str, reference_string: str) -> None:
+        dep_name = extract_resource_name_from_reference_func(reference_string)
+        self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
 
     def update_vertices_configs(self) -> None:
         # not used
@@ -99,7 +195,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     @staticmethod
     def update_vertex_config(
-        vertex: _Block, changed_attributes: list[str] | dict[str, Any], has_dynamic_blocks: bool = False
+            vertex: _Block, changed_attributes: list[str] | dict[str, Any], has_dynamic_blocks: bool = False
     ) -> None:
         # not used
         pass
