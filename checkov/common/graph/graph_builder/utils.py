@@ -55,6 +55,7 @@ def adjust_value(element_name: str, value: Any) -> Any:
 
     returns new_value = "key-data"
     """
+
     if "." in element_name and isinstance(value, dict):
         key_parts = element_name.split(".")
         new_value = value.get(key_parts[1])
@@ -64,4 +65,5 @@ def adjust_value(element_name: str, value: Any) -> Any:
             return None
 
         return adjust_value(".".join(key_parts[1:]), new_value)
+
     return value
