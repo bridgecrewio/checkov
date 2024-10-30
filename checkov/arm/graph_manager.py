@@ -34,7 +34,7 @@ class ArmGraphManager(GraphManager[ArmLocalGraph, "dict[str, dict[str, Any]]"]):
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, dict[str, Any]], render_variables: bool = False
+        self, definitions: dict[str, dict[str, Any]], render_variables: bool = True
     ) -> ArmLocalGraph:
         local_graph = ArmLocalGraph(definitions=definitions)
         local_graph.build_graph(render_variables=render_variables)
