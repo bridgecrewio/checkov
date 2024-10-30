@@ -36,6 +36,7 @@ def run_function_multithreaded(
 
 def filter_sub_keys(key_list: list[str]) -> list[str]:
     filtered_key_list = []
+
     for key in key_list:
         if not any(other_key != key and other_key.startswith(key) for other_key in key_list) and is_include_dup_dynamic(key, key_list):
             filtered_key_list.append(key)

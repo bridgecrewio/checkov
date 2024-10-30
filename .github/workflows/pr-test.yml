@@ -88,12 +88,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          if [ '${{ matrix.python }}' == '3.12' ]; then
-            # needed for numpy
-            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
-          else
-            python -m pip install --no-cache-dir --upgrade pipenv
-          fi
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           # remove venv, if exists
