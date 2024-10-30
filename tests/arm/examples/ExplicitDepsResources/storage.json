@@ -39,9 +39,7 @@
             "dataDisks": []
           },
           "osProfile": {
-            "computerName": "vm1",
-            "adminUsername": "adminuser",
-            "adminPassword": "Password123!"
+            "computerName": "vm1"
           },
           "networkProfile": {
             "networkInterfaces": [
