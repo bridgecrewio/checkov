@@ -4,7 +4,6 @@ import logging
 import re
 from typing import Any, TYPE_CHECKING
 
-from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
     extract_resource_name_from_reference_func
@@ -69,7 +68,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         for name, conf in variables.items():
             if name in [START_LINE, END_LINE]:
                 continue
-            if not isinstance(conf, dict):
+            if not isinstance(conf, dict) or "value" not in conf:
                 full_conf = {"value": pickle_deepcopy(conf)}
             else:
                 full_conf = conf
@@ -81,9 +80,9 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=name,
                     config=config,
                     path=file_path,
-                    block_type=BlockType.VARIABLE,
+                    block_type=ArmElements.VARIABLES,
                     attributes=attributes,
-                    id=f"{BlockType.VARIABLE}.{name}",
+                    id=f"{ArmElements.VARIABLES}.{name}",
                 )
             )
 
@@ -105,9 +104,9 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=name,
                     config=config,
                     path=file_path,
-                    block_type=BlockType.PARAMETER,
+                    block_type=ArmElements.PARAMETERS,
                     attributes=attributes,
-                    id=f"{BlockType.PARAMETER}.{name}",
+                    id=f"{ArmElements.PARAMETERS}.{name}",
                 )
             )
 
@@ -131,7 +130,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=resource_name,
                     config=config,
                     path=file_path,
-                    block_type=BlockType.RESOURCE,
+                    block_type=ArmElements.RESOURCES,
                     attributes=attributes,
                     id=f"{resource_type}.{resource_name}"
                 )

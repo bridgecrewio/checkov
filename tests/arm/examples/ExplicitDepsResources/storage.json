@@ -41,7 +41,7 @@
           "osProfile": {
             "computerName": "vm1",
             "adminUsername": "adminuser",
-            "adminPassword": "Password123!"
+            "adminPassword": "123!"
           },
           "networkProfile": {
             "networkInterfaces": [
