@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.271...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.275...HEAD)
+
+## [3.2.275](https://github.com/bridgecrewio/checkov/compare/3.2.271...3.2.275) - 2024-10-30
+
+### Feature
+
+- **arm:** Add arm definition context - [#6801](https://github.com/bridgecrewio/checkov/pull/6801)
+
+### Bug Fix
+
+- **cloudformation:** change parse log level - [#6794](https://github.com/bridgecrewio/checkov/pull/6794)
+- **general:** pipenv==2024.0.3 - [#6803](https://github.com/bridgecrewio/checkov/pull/6803)
+- **secrets:** omit all secrets value in line - [#6802](https://github.com/bridgecrewio/checkov/pull/6802)
+- **terraform:** Security group attached to aws_mskconnect_connector is not recognized - [#6780](https://github.com/bridgecrewio/checkov/pull/6780)
 
 ## [3.2.271](https://github.com/bridgecrewio/checkov/compare/3.2.270...3.2.271) - 2024-10-29
 
