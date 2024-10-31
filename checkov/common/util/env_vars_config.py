@@ -75,6 +75,9 @@ class EnvVarsConfig:
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
+        self.CKV_SUPPORT_ALL_RESOURCE_TYPE = os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False)
+        self.HCL_PARSE_TIMEOUT_SEC = force_int(os.getenv("HCL_PARSE_TIMEOUT_SEC", 10))
+        self.ENABLE_DOTNET_CPM = os.getenv('ENABLE_DOTNET_CPM', False)
 
 
 env_vars_config = EnvVarsConfig()

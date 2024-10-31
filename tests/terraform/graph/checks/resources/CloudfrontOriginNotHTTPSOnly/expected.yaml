@@ -1,0 +1,9 @@
+pass:
+    - "aws_cloudfront_distribution.example_pass_domain"
+    - "aws_cloudfront_distribution.example_pass_httpsonly"
+    - "aws_cloudfront_distribution.example_pass_nocustomorigin"
+    - "aws_cloudfront_distribution.example_pass_disabled"
+fail:
+    - "aws_cloudfront_distribution.example_fail_one_missing_one_bad"
+    - "aws_cloudfront_distribution.example_fail_one_good_one_bad"
+    - "aws_cloudfront_distribution.example_fail"

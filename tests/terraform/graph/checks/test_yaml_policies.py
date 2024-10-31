@@ -529,11 +529,20 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
         self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
 
-    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
-        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
-
     def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
         self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
+
+    def test_RDSEncryptionInTransit(self):
+        self.go("RDSEncryptionInTransit")
+
+    def test_ACMWildcardDomainName(self):
+        self.go("ACMWildcardDomainName")
+
+    def test_CloudfrontOriginNotHTTPSOnly(self):
+        self.go("CloudfrontOriginNotHTTPSOnly")
+
+    def test_SQSEncryptionCMK(self):
+        self.go("SQSEncryptionCMK")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

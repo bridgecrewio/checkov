@@ -8,6 +8,7 @@ import re
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
+from collections import defaultdict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -73,12 +74,16 @@ SECRET_TYPE_TO_ID = {
 }
 
 ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
+
+
+def should_filter_vault_secret(secret_value: str, check_id: str) -> bool:
+    return 'vault:' in secret_value.lower() and check_id in ENTROPY_CHECK_IDS
 
 
 class Runner(BaseRunner[None, None, None]):
@@ -134,7 +139,7 @@ class Runner(BaseRunner[None, None, None]):
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         work_dir_obj = None
-        secret_suppressions_id: list[str] = []
+        secret_suppressions_ids: list[str] = []
         work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
         if work_path is None:
             work_dir_obj = tempfile.TemporaryDirectory()
@@ -144,11 +149,14 @@ class Runner(BaseRunner[None, None, None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_id = [suppression['policyId']
-                                          for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+                secret_suppressions_ids = [
+                    suppression['policyId'] for suppression in suppressions
+                    if suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy'
+                ]
+                logging.info(f'The secret_suppressions_ids are: {secret_suppressions_ids}')
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
-                logging.info(f"Found {len(runnable_plugins)} runnable plugins")
+                logging.debug(f"Found {len(runnable_plugins)} runnable plugins")
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
@@ -160,7 +168,7 @@ class Runner(BaseRunner[None, None, None]):
                         'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
                     })
                     plugins_index += 1
-                    logging.info(f"Loaded runnable plugin {name}")
+                    logging.debug(f"Loaded runnable plugin {name}")
         # load internal regex detectors
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
         logging.info(f"Custom detector found at {detector_path}. Loading...")
@@ -223,11 +231,20 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRETS_116']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
+
+            secret_key_by_line_to_secrets = defaultdict(list)
+            for key, secret in secrets:
+                secret_key_by_line = f'{key}_{secret.line_number}'
+                secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
+                    logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 # secret history
@@ -241,21 +258,17 @@ class Runner(BaseRunner[None, None, None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                    # run over secret key
-                    if isinstance(secret.secret_value, str) and secret.secret_value:
-                        stripped = secret.secret_value.strip(',"')
-                        if stripped != secret.secret_value:
-                            secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id in secrets_in_uuid_form:
+                # run over secret key
+                if isinstance(secret.secret_value, str) and secret.secret_value:
+                    stripped = secret.secret_value.strip(',";\'')
+                    if stripped != secret.secret_value:
+                        secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
+                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
-                if secret_key in secret_records.keys():
-                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
-                    if not is_prioritise:
-                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
-                if bc_check_id in secret_suppressions_id:
+                if bc_check_id in secret_suppressions_ids:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 severity = metadata_integration.get_severity(check_id)
@@ -264,6 +277,10 @@ class Runner(BaseRunner[None, None, None]):
                     logging.debug(
                         f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
+                if secret_key in secret_records.keys():
+                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                    if not is_prioritise:
+                        continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
                     if runner_filter.enable_git_history_secret_scan and code_line is not None:
@@ -291,7 +308,12 @@ class Runner(BaseRunner[None, None, None]):
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
-                line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
+
+                secret_key_by_line = f'{key}_{secret.line_number}'
+                line_text_censored = line_text
+                for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
+                    line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
+
                 secret_records[secret_key] = SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
@@ -383,7 +405,7 @@ class Runner(BaseRunner[None, None, None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results len {len(file_results)}')
+            logging.debug(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):

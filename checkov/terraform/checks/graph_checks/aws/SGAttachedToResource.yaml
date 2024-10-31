@@ -22,7 +22,9 @@ definition:
         - aws_dax_cluster
         - aws_db_instance
         - aws_dms_replication_instance
+        - aws_dms_replication_config
         - aws_docdb_cluster
+        - aws_docdbelastic_cluster
         - aws_ec2_client_vpn_endpoint
         - aws_ec2_client_vpn_network_association
         - aws_ec2_spot_fleet_request
@@ -45,6 +47,7 @@ definition:
         - aws_memorydb_cluster
         - aws_mq_broker
         - aws_msk_cluster
+        - aws_mskconnect_connector
         - aws_mwaa_environment
         - aws_neptune_cluster
         - aws_network_interface

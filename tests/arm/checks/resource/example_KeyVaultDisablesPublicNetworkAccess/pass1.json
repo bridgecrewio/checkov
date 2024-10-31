@@ -16,7 +16,7 @@
           "family": "A",
           "name": "standard"
         },
-        "publicNetworkAccess": "disabled",
+        "publicNetworkAccess": "Disabled",
         "accessPolicies": [
           {
             "tenantId": "[subscription().tenantId]",

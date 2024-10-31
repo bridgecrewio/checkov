@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -64,6 +65,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_list
 
 if TYPE_CHECKING:
@@ -200,9 +202,13 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        severity = get_severity(raw_check.get("metadata", {}).get("severity", ""))
+        if severity:
+            check.severity = severity
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
+        solver.providers = providers
         check.set_solver(solver)
 
         return check
@@ -246,7 +252,11 @@ class GraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types or []
+                if env_vars_config.CKV_SUPPORT_ALL_RESOURCE_TYPE:
+                    check.resource_types = ['all']
+                else:
+                    check.resource_types = resources_types or []
+
             elif "provider" in resource_type and providers:
                 for provider in providers:
                     check.resource_types.append(f"provider.{provider.lower()}")

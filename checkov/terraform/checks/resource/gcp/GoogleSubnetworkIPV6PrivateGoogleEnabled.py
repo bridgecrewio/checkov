@@ -18,7 +18,7 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
             return CheckResult.UNKNOWN
 
         stack = conf.get("stack_type")
-        if stack and isinstance(stack, list) and stack[0] != "IPV4_IPV6":
+        if not stack or (stack and isinstance(stack, list) and stack[0] != "IPV4_IPV6"):
             return CheckResult.UNKNOWN
 
         return super().scan_resource_conf(conf)

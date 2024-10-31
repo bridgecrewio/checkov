@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import sys
 from collections import defaultdict
 from typing import List, Dict, Any
 
@@ -15,7 +16,7 @@ from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.output.common import compare_table_items_severity
 from checkov.policies_3d.record import Policy3dRecord
 
-TABLE_WIDTH = 136
+TABLE_WIDTH = 138
 
 
 def merge_line_with_previous_table(line: str, table: PrettyTable) -> str:
@@ -224,10 +225,15 @@ def render_iac_violations_table(record: Policy3dRecord) -> str | None:
 
 def create_iac_violations_table(file_path: str, resource_violation_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 5  # it really has only 4 columns, but the title would get a width of two columns
-    column_width = int(TABLE_WIDTH / columns)
+    table_width = TABLE_WIDTH
+    column_width = int(table_width / columns)
+
+    # on python 3.12 and above, the columns are a bit bigger, need to make them smaller to have consistency.
+    if sys.version_info >= (3, 12):
+        table_width = 136
 
     iac_table_lines = create_iac_violations_overview_table_part(
-        table_width=TABLE_WIDTH, column_width=column_width, resource_violation_details_map=resource_violation_details_map
+        table_width=table_width, column_width=column_width, resource_violation_details_map=resource_violation_details_map
     )
 
     return (
@@ -242,6 +248,11 @@ def create_iac_violations_overview_table_part(
         table_width: int, column_width: int, resource_violation_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     iac_table_lines: List[str] = []
+
+    # on python 3.12 and above, the columns are smaller, need to make them wider in order to have consistency.
+    if sys.version_info >= (3, 12):
+        table_width += 3
+
     iac_table = PrettyTable(
         min_table_width=table_width,
         max_table_width=table_width

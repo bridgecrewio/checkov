@@ -11,7 +11,7 @@ class SynapseSQLPoolDataEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'data_encrypted' in conf and conf['data_encrypted'][0] == True:
+        if 'data_encrypted' in conf and conf['data_encrypted'][0] is True:
             return CheckResult.PASSED
         return CheckResult.FAILED
 
