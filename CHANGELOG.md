@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.275...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.276...HEAD)
+
+## [3.2.276](https://github.com/bridgecrewio/checkov/compare/3.2.275...3.2.276) - 2024-10-31
+
+### Bug Fix
+
+- **terraform:** Fix possible exception when for_each data has boolean values - [#6733](https://github.com/bridgecrewio/checkov/pull/6733)
 
 ## [3.2.275](https://github.com/bridgecrewio/checkov/compare/3.2.271...3.2.275) - 2024-10-30
 
