@@ -123,6 +123,7 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'IbmCosHmacDetector'},
             {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
             {'name': 'PrivateKeyDetector'},
@@ -231,7 +232,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
             secret_key_by_line_to_secrets = defaultdict(list)
             for key, secret in secrets:
