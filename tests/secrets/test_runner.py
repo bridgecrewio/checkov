@@ -376,6 +376,16 @@ class TestRunnerValid(unittest.TestCase):
             else:
                 self.fail(f'Got a bad result: {failed}')
 
+    def test_runner_omit_multiple_secrets_in_line(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/omit_multiple_secrets/test"
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True)
+        report = runner.run(root_folder=valid_dir_path, runner_filter=runner_filter)
+        self.assertEqual(len(report.failed_checks), 2)
+        assert report.failed_checks[0].code_block[0][1] == "export AWS_ACCESS_KEY_ID=AKIAI**********\\nexport CIRCLE='rk_liv**********'\n"
+        assert report.failed_checks[1].code_block[0][1] == "export AWS_ACCESS_KEY_ID=AKIAI**********\\nexport CIRCLE='rk_liv**********'\n"
+            
 
 if __name__ == '__main__':
     unittest.main()
