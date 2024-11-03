@@ -33,6 +33,7 @@
   ],
   "parameters": {
     "workspaceName": {
+      "defaultValue": "fail1",
       "type": "string"
     },
     "sqlPoolName": {

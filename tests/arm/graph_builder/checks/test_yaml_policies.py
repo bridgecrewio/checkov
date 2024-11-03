@@ -51,7 +51,7 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
         self.go("SynapseSQLPoolHasVulnerabilityAssessment")
-    
+
     def test_SynapseWorkspaceHasExtendedAuditLogs(self):
         self.go("SynapseWorkspaceHasExtendedAuditLogs")
 

@@ -21,7 +21,7 @@
       "apiVersion": "2021-06-01",
       "name": "[concat(parameters('workspaceName'), '/', parameters('sqlPoolName'), '/default')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', parameters('workspaceName'), parameters('sqlPoolName'))]"
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', pass, parameters('sqlPoolName'))]"
       ],
       "properties": {
         "state": "Enabled",

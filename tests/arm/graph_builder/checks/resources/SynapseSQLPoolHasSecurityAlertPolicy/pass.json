@@ -35,6 +35,7 @@
   ],
   "parameters": {
     "workspaceName": {
+      "defaultValue": "pass",
       "type": "string"
     },
     "sqlPoolName": {

@@ -19,6 +19,6 @@ definition:
     - cond_type: attribute
       resource_types:
         - Microsoft.Synapse/workspaces/extendedAuditingPolicies
-      attribute: 'state'
+      attribute: 'properties.state'
       operator: equals
       value: 'Enabled'
