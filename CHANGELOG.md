@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.276...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.277...HEAD)
+
+## [3.2.277](https://github.com/bridgecrewio/checkov/compare/3.2.276...3.2.277) - 2024-11-03
+
+### Bug Fix
+
+- **secrets:** add detector for IbmCosHmac - [#6790](https://github.com/bridgecrewio/checkov/pull/6790)
 
 ## [3.2.276](https://github.com/bridgecrewio/checkov/compare/3.2.275...3.2.276) - 2024-10-31
 
