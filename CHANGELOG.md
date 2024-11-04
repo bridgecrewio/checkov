@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.277...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.278...HEAD)
+
+## [3.2.278](https://github.com/bridgecrewio/checkov/compare/3.2.277...3.2.278) - 2024-11-04
+
+### Bug Fix
+
+- **arm:** Align arm definitions function arguments - [#6808](https://github.com/bridgecrewio/checkov/pull/6808)
 
 ## [3.2.277](https://github.com/bridgecrewio/checkov/compare/3.2.276...3.2.277) - 2024-11-03
 
