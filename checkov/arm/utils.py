@@ -4,6 +4,8 @@ import logging
 import os
 from enum import Enum
 from typing import Iterable, Callable, Any
+from collections.abc import Collection
+from pathlib import Path
 
 from checkov.arm.parser.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -43,7 +45,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 def create_definitions(
     root_folder: str,
-    _: "Collection[Path] | None" = None,
+    _: Collection[Path] | None = None,
     runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     definitions: dict[str, dict[str, Any]]= {}
