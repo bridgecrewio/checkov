@@ -6,6 +6,7 @@ from typing import Iterable, Callable, Any
 
 from checkov.arm.parser.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.runner_filter import RunnerFilter
 
 ARM_POSSIBLE_ENDINGS = [".json"]
 
@@ -39,8 +40,11 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
     return file_paths
 
 
+# RunnerFilter argument added to support the platform integration
 def get_files_definitions(
-        files: Iterable[str], filepath_fn: Callable[[str], str] | None = None
+        files: Iterable[str],
+        filepath_fn: Callable[[str], str] | None = None,
+        _: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]], list[str]]:
     """Parses ARM files into its definitions and raw data"""
 
