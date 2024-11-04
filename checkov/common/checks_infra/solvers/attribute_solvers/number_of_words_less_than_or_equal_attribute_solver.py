@@ -1,8 +1,7 @@
 from typing import Optional, Any, Dict
 
 from checkov.common.checks_infra.solvers.attribute_solvers.base_number_of_words_attribute_solver import \
-    BaseNumberOfWordsAttributeSolver  # checkov:skip=CKV_SECRET_256
-
+    BaseNumberOfWordsAttributeSolver
 from checkov.common.graph.checks_infra.enums import Operators
 
 
