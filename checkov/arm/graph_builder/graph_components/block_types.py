@@ -10,3 +10,4 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 class BlockType(CommonBlockType):
     PARAMETER: Literal["parameters"] = "parameters"
     VARIABLE: Literal["variables"] = "variables"
+    OUTPUT: Literal["outputs"] = "outputs"
