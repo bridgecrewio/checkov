@@ -48,7 +48,7 @@ def create_definitions(
     _: Collection[Path] | None = None,
     runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
-    definitions: dict[str, dict[str, Any]]= {}
+    definitions: dict[str, dict[str, Any]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
     parsing_errors: list[str] = []
     runner_filter = runner_filter or RunnerFilter()
