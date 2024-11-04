@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 import os
 from enum import Enum
 from typing import Iterable, Callable, Any
+from collections.abc import Collection
+from pathlib import Path
 
 from checkov.arm.parser.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -40,11 +43,30 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
     return file_paths
 
 
-# RunnerFilter argument added to support the platform integration
+def create_definitions(
+    root_folder: str,
+    _: Collection[Path] | None = None,
+    runner_filter: RunnerFilter | None = None,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
+    definitions: dict[str, dict[str, Any]] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
+    parsing_errors: list[str] = []
+    runner_filter = runner_filter or RunnerFilter()
+
+    if root_folder:
+        file_paths = get_scannable_file_paths(root_folder, runner_filter.excluded_paths)
+        filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
+        definitions, definitions_raw, parsing_errors = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
+
+    if parsing_errors:
+        logging.warning(f"[arm] found errors while parsing definitions: {parsing_errors}")
+
+    return definitions, definitions_raw
+
+
 def get_files_definitions(
         files: Iterable[str],
         filepath_fn: Callable[[str], str] | None = None,
-        _: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]], list[str]]:
     """Parses ARM files into its definitions and raw data"""
 
