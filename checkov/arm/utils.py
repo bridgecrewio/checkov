@@ -40,7 +40,9 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 
 def get_files_definitions(
-        files: Iterable[str], filepath_fn: Callable[[str], str] | None = None
+        files: Iterable[str],
+        filepath_fn: Callable[[str], str] | None = None,
+        _: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]], list[str]]:
     """Parses ARM files into its definitions and raw data"""
 
