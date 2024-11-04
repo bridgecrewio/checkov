@@ -6,6 +6,7 @@ from typing import Iterable, Callable, Any
 
 from checkov.arm.parser.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.runner_filter import RunnerFilter
 
 ARM_POSSIBLE_ENDINGS = [".json"]
 
