@@ -35,6 +35,7 @@ pass:
   - "aws_security_group.pass_mq"
   - "aws_security_group.pass_mq_broker"
   - "aws_security_group.pass_msk"
+  - "aws_security_group.pass_msk_connect"
   - "aws_security_group.pass_mwaa"
   - "aws_security_group.pass_neptune"
   - "aws_security_group.pass_quicksight"
