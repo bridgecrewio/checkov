@@ -40,6 +40,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
     return file_paths
 
 
+# RunnerFilter argument added to support the platform integration
 def get_files_definitions(
         files: Iterable[str],
         filepath_fn: Callable[[str], str] | None = None,
