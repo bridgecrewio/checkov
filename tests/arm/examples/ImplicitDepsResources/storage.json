@@ -20,6 +20,9 @@
           "type": "secrets",
           "name": "MySecret",
           "apiVersion": "2019-09-01",
+          "properties": {
+            "value": "1234"
+          }
         }
       ]
     },

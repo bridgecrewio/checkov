@@ -1,6 +1,37 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.270...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.277...HEAD)
+
+## [3.2.277](https://github.com/bridgecrewio/checkov/compare/3.2.276...3.2.277) - 2024-11-03
+
+### Bug Fix
+
+- **secrets:** add detector for IbmCosHmac - [#6790](https://github.com/bridgecrewio/checkov/pull/6790)
+
+## [3.2.276](https://github.com/bridgecrewio/checkov/compare/3.2.275...3.2.276) - 2024-10-31
+
+### Bug Fix
+
+- **terraform:** Fix possible exception when for_each data has boolean values - [#6733](https://github.com/bridgecrewio/checkov/pull/6733)
+
+## [3.2.275](https://github.com/bridgecrewio/checkov/compare/3.2.271...3.2.275) - 2024-10-30
+
+### Feature
+
+- **arm:** Add arm definition context - [#6801](https://github.com/bridgecrewio/checkov/pull/6801)
+
+### Bug Fix
+
+- **cloudformation:** change parse log level - [#6794](https://github.com/bridgecrewio/checkov/pull/6794)
+- **general:** pipenv==2024.0.3 - [#6803](https://github.com/bridgecrewio/checkov/pull/6803)
+- **secrets:** omit all secrets value in line - [#6802](https://github.com/bridgecrewio/checkov/pull/6802)
+- **terraform:** Security group attached to aws_mskconnect_connector is not recognized - [#6780](https://github.com/bridgecrewio/checkov/pull/6780)
+
+## [3.2.271](https://github.com/bridgecrewio/checkov/compare/3.2.270...3.2.271) - 2024-10-29
+
+### Feature
+
+- **sca:** add enableDotnetCpm env var to sca scan request  - [#6786](https://github.com/bridgecrewio/checkov/pull/6786)
 
 ## [3.2.270](https://github.com/bridgecrewio/checkov/compare/3.2.269...3.2.270) - 2024-10-28
 
