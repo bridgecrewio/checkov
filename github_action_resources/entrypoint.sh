@@ -191,13 +191,16 @@ if [ -n "$INPUT_DOCKER_IMAGE" ]; then
   CHECKOV_RESULTS=$(checkov --bc-api-key $API_KEY_VARIABLE --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG $OUTPUT_FLAG $OUTPUT_FILE_PATH_FLAG)
 # Else if File Variable exists then use -f flag to scan specific resources
 else
+  RESOURCE_TO_SCAN=""
   if [ -n "$INPUT_FILE" ]; then
     RESOURCE_TO_SCAN="-f $INPUT_FILE"
     echo "running checkov on file: $INPUT_FILE"
-  else
-  # Otherwise exists then use -d flag for directory scanning
+  elif [ -n "$INPUT_DIRECTORY" ]; then
+    # Use -d flag for directory scanning
     RESOURCE_TO_SCAN="-d $INPUT_DIRECTORY"
     echo "running checkov on directory: $INPUT_DIRECTORY"
+  elif [ -n "$INPUT_CONFIG_FILE" ]; then
+    echo "running checkov on files defined in configuration file: $INPUT_CONFIG_FILE"
   fi
   # Build command
   if [ -n "$API_KEY_VARIABLE" ]; then
@@ -221,10 +224,10 @@ EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
 { echo "CHECKOV_RESULTS<<$EOF"; echo "${CHECKOV_RESULTS:0:65536}"; echo "$EOF"; } >> $GITHUB_ENV
 { echo "results<<$EOF"; echo "$CHECKOV_RESULTS"; echo "$EOF"; } >> $GITHUB_OUTPUT
 
-if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ]; then
+if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ] && [ -n "$INPUT_DIRECTORY" ]; then
   echo "Cleaning up $INPUT_DIRECTORY/.external_modules directory"
   #This directory must be removed here for the self hosted github runners run as non-root user.
-  rm -fr $INPUT_DIRECTORY/.external_modules
+  rm -fr "$INPUT_DIRECTORY/.external_modules"
   exit $CHECKOV_EXIT_CODE
 fi
 exit $CHECKOV_EXIT_CODE
