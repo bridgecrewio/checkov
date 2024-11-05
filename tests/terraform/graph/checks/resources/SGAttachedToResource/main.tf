@@ -766,6 +766,46 @@ resource "aws_neptune_cluster" "pass_neptune" {
   vpc_security_group_ids = [aws_security_group.pass_neptune.id]
 }
 
+# OpenSearch Domain
+
+resource "aws_security_group" "pass_opensearch" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_opensearch_domain" "pass_opensearch" {
+  domain_name = "opensearch"
+  vpc_options {
+    security_group_ids = [aws_security_group.pass_opensearch.id]
+    subnet_ids         = ["aws_subnet.public_a.id"]
+  }
+}
+
+# OpenSearch VPC Endpoint
+
+resource "aws_security_group" "pass_opensearch_vpc_endpoint" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_opensearch_vpc_endpoint" "pass_opensearch_vpc_endpoint" {
+  domain_arn = aws_elasticsearch_domain.domain_1.arn
+  vpc_options {
+    security_group_ids = [aws_security_group.pass_opensearch_vpc_endpoint.id]
+    subnet_ids         = [aws_subnet.test.id, aws_subnet.test2.id]
+  }
+}
+
 # Quicksight
 
 resource "aws_security_group" "pass_quicksight" {
