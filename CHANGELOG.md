@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.278...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.280...HEAD)
+
+## [3.2.280](https://github.com/bridgecrewio/checkov/compare/3.2.278...3.2.280) - 2024-11-05
+
+### Bug Fix
+
+- **arm:** add middleware function for platform integration for Arm definitions - [#6811](https://github.com/bridgecrewio/checkov/pull/6811)
+- **secrets:** Update CKV_SECRET_4 to duplication list GENERIC_PRIVATE_KEY - [#6810](https://github.com/bridgecrewio/checkov/pull/6810)
+- **terraform:** Add opensearch to CKV2_AWS_5 - [#6807](https://github.com/bridgecrewio/checkov/pull/6807)
 
 ## [3.2.278](https://github.com/bridgecrewio/checkov/compare/3.2.277...3.2.278) - 2024-11-04
 
