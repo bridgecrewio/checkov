@@ -4,6 +4,7 @@ import logging
 import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
+from pathlib import Path
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 

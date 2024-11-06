@@ -191,7 +191,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         dep_name = extract_resource_name_from_reference_func(reference_string)
         self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
 
-    def _update_vertices_names(self):
+    def _update_vertices_names(self) -> None:
         for i, vertex in enumerate(self.vertices):
             if 'name' not in vertex.config or vertex.name == vertex.config['name']:
                 continue
@@ -259,7 +259,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             return
 
         config[key] = new_value  # type:ignore[index]
-
 
     @staticmethod
     def adjust_key(config: dict[str, Any], key: str, key_parts: list[str]) -> tuple[str, list[str]]:
