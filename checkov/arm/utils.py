@@ -45,7 +45,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 def create_definitions(
     root_folder: str,
-    _: Collection[Path] | None = None,
+    files: Collection[Path] | None = None,
     runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     definitions: dict[str, dict[str, Any]] = {}
