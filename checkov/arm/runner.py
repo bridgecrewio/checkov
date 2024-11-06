@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Any, cast
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
+from checkov.arm.graph_builder.definition_context import build_definitions_context
+from checkov.arm.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
@@ -93,7 +95,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
         self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
-
+        self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
         report.add_parsing_errors(parsing_errors)
 
         if self.graph_registry and self.graph_manager:
@@ -102,6 +104,10 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             logging.info("Successfully created ARM graph")
 
             self.graph_manager.save_graph(local_graph)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                vertices=local_graph.vertices,
+                root_folder=root_folder,
+            )
 
         self.pbar.initiate(len(self.definitions))
 

@@ -5,7 +5,8 @@ from checkov.arm.utils import get_files_definitions
 
 EXAMPLES_DIR = Path(__file__).parent
 
-def test_rander_vars():
+
+def test_render_vars():
     # given
     test_file = EXAMPLES_DIR / "test_rendering.json"
     definitions, _, _ = get_files_definitions([str(test_file)])
