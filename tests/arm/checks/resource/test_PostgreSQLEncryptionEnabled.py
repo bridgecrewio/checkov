@@ -19,9 +19,10 @@ class TestPostgreSQLEncryptionEnabled(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.DBforPostgreSQL/servers.pass",
+        }
+        failing_resources = {
             "Microsoft.DBforPostgreSQL/servers.fail",
         }
-        failing_resources = set()
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
