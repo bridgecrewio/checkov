@@ -4,7 +4,6 @@ import logging
 import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
-from pathlib import Path
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
@@ -122,7 +121,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
 
         return report
 
-    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
+    def set_definitions_raw(self, definitions_raw: dict[str, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | None) -> None:
