@@ -63,13 +63,13 @@ def test_graph_from_file_def_and_graph_def():
     definitions_from_file, _, _ = get_files_definitions([str(test_file)])
     graph_manager = ArmGraphManager(db_connector=RustworkxConnector())
 
-    local_graph = graph_manager.build_graph_from_definitions(definitions=definitions_from_file)
+    local_graph = graph_manager.build_graph_from_definitions(definitions=definitions_from_file, render_variables=False)
 
     definition_from_graph, _= convert_graph_vertices_to_definitions(
                 vertices=local_graph.vertices,
                 root_folder=test_file,
             )
-    local_graph_from_new_def = graph_manager.build_graph_from_definitions(definitions=definition_from_graph)
+    local_graph_from_new_def = graph_manager.build_graph_from_definitions(definitions=definition_from_graph, render_variables=False)
 
     # then
     assert len(local_graph.vertices) == len(local_graph_from_new_def.vertices)
