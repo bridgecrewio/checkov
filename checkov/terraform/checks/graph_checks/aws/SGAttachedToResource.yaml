@@ -51,6 +51,8 @@ definition:
         - aws_mwaa_environment
         - aws_neptune_cluster
         - aws_network_interface
+        - aws_opensearch_domain
+        - aws_opensearch_vpc_endpoint
         - aws_quicksight_vpc_connection
         - aws_rds_cluster
         - aws_redshift_cluster
