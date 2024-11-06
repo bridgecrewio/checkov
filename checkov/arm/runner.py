@@ -76,38 +76,39 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-        files_list: "Iterable[str]" = []
-        filepath_fn = None
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                arm_resource_registry.load_external_checks(directory)
+        if not self.context or not self.definitions:
+            files_list: "Iterable[str]" = []
+            filepath_fn = None
+            if external_checks_dir:
+                for directory in external_checks_dir:
+                    arm_resource_registry.load_external_checks(directory)
 
-                if self.graph_registry:
-                    self.graph_registry.load_external_checks(directory)
+                    if self.graph_registry:
+                        self.graph_registry.load_external_checks(directory)
 
-        if files:
-            files_list = files.copy()
+            if files:
+                files_list = files.copy()
 
-        if root_folder:
-            filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
-            self.root_folder = root_folder
+            if root_folder:
+                filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
+                self.root_folder = root_folder
 
-            files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
+                files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-        self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
-        self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
-        report.add_parsing_errors(parsing_errors)
+            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
+            self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
+            report.add_parsing_errors(parsing_errors)
 
-        if self.graph_registry and self.graph_manager:
-            logging.info("Creating ARM graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info("Successfully created ARM graph")
+            if self.graph_registry and self.graph_manager:
+                logging.info("Creating ARM graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
+                logging.info("Successfully created ARM graph")
 
-            self.graph_manager.save_graph(local_graph)
-            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
-                vertices=local_graph.vertices,
-                root_folder=root_folder,
-            )
+                self.graph_manager.save_graph(local_graph)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                    vertices=local_graph.vertices,
+                    root_folder=root_folder,
+                )
 
         self.pbar.initiate(len(self.definitions))
 
@@ -119,6 +120,9 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
+
+    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
+        self.definitions_raw = definitions_raw
 
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | None) -> None:
         """Adds Python check results to given report"""
