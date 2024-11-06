@@ -28,7 +28,7 @@ def test_build_graph_from_definitions(graph_connector):
     graph_manager = ArmGraphManager(db_connector=graph_connector())
 
     # when
-    local_graph = graph_manager.build_graph_from_definitions(definitions=definitions)
+    local_graph = graph_manager.build_graph_from_definitions(definitions=definitions, render_variables=False)
 
     # then
     assert len(local_graph.vertices) == 18

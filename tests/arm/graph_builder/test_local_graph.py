@@ -17,7 +17,7 @@ def test_graph_explicit_deps():
                   str(EXPLICIT_DEPS_DIR / "interface.json")]
     definitions, _, _ = get_files_definitions(test_files)
     test_graph = ArmLocalGraph(definitions)
-    test_graph.build_graph()
+    test_graph.build_graph(render_variables=False)
 
     assert len(test_graph.vertices) == 6
     assert len(test_graph.edges) == 5

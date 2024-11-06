@@ -4,7 +4,6 @@ import logging
 import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
-
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.arm.graph_builder.definition_context import build_definitions_context
