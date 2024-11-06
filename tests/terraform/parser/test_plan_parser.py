@@ -1,9 +1,11 @@
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from pytest_mock import MockerFixture
 
+from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
 from checkov.terraform.plan_parser import parse_tf_plan
 from checkov.common.parsers.node import StrNode
 
@@ -79,6 +81,16 @@ class TestPlanFileParser(unittest.TestCase):
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
         self.assertTrue(resource_attributes['references_'])
+
+    @mock.patch.dict(os.environ, {"EVAL_TF_PLAN_AFTER_UNKNOWN": "True"})
+    def test_after_unknown_handling(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_after_unknown/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertEqual(resource_attributes['logging_config'][0]["bucket"], [TRUE_AFTER_UNKNOWN])
 
 def test_large_file(mocker: MockerFixture):
     # given
