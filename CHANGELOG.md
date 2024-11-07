@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.280...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.281...HEAD)
+
+## [3.2.281](https://github.com/bridgecrewio/checkov/compare/3.2.280...3.2.281) - 2024-11-06
+
+### Documentation
+
+- **general:** Update Python versions and add env vars to the docs - [#6812](https://github.com/bridgecrewio/checkov/pull/6812)
 
 ## [3.2.280](https://github.com/bridgecrewio/checkov/compare/3.2.278...3.2.280) - 2024-11-05
 
