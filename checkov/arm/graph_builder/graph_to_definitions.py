@@ -17,10 +17,10 @@ def convert_graph_vertices_to_definitions(vertices: list[ArmBlock], root_folder:
     for vertex in vertices:
         block_path = vertex.path
         arm_element = vertex.block_type
-        element_name = vertex.name
         if arm_element == ArmElements.RESOURCES:
             arm_definitions.setdefault(block_path, {}).setdefault(arm_element, []).append(vertex.config)
         else:
+            element_name = vertex.name.split('/')[-1]
             arm_definitions.setdefault(block_path, {}).setdefault(arm_element, {})[element_name] = vertex.config
 
         if vertex.breadcrumbs:
