@@ -18,7 +18,7 @@ def test_graph_explicit_deps():
                   str(EXPLICIT_DEPS_DIR / "interface.json")]
     definitions, _, _ = get_files_definitions(test_files)
     test_graph = ArmLocalGraph(definitions)
-    test_graph.build_graph(render_variables=False)
+    test_graph.build_graph()
 
     assert len(test_graph.vertices) == 6
     assert len(test_graph.edges) == 5
@@ -85,13 +85,13 @@ def test_update_vertices_names():
     graph = ArmLocalGraph(definitions={})
 
     graph.vertices = [
-        ArmBlock(name="name1", config={"name": "updatedName1"}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='1'),
+        ArmBlock(name="variables(name1)", config={"name": "updatedName1"}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='1'),
         ArmBlock(name="name2", config={"name": "name2"}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='2'),
         ArmBlock(name="name3", config={}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='3')
     ]
-    graph.vertices_by_name = {"name1": 0, "name2": 1, "name3": 2}
+    graph.vertices_by_name = {"variables(name1)": 0, "name2": 1, "name3": 2}
 
-    graph._update_vertices_names()
+    graph._update_resource_vertices_names()
 
     assert graph.vertices[0].name == "updatedName1"
     assert "name1" not in graph.vertices_by_name

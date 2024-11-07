@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 DEPENDS_ON_FIELD = 'dependsOn'
 RESOURCE_ID_FUNC = 'resourceId('
 REFERENCE_FUNC = 'reference('
+PARAMETER_FUNC = 'parameters('
+VARIABLE_FUNC = 'variables('
 
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
@@ -31,7 +33,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
         self.vertices_by_name: dict[str, int] = {}
 
-    def build_graph(self, render_variables: bool = False) -> None:
+    def build_graph(self, render_variables: bool = True) -> None:
         self._create_vertices()
         logging.warning(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
@@ -44,7 +46,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         if render_variables:
             renderer = ArmVariableRenderer(self)
             renderer.render_variables_from_local_graph()
-            self._update_vertices_names()
+            self._update_resource_vertices_names()
 
         self._create_edges()
         logging.warning(f"[ArmLocalGraph] created {len(self.edges)} edges")
@@ -80,7 +82,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
             self.vertices.append(
                 ArmBlock(
-                    name=name,
+                    name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
                     block_type=ArmElements.VARIABLES,
@@ -104,7 +106,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
             self.vertices.append(
                 ArmBlock(
-                    name=name,
+                    name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
                     block_type=ArmElements.PARAMETERS,
@@ -170,7 +172,8 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     matches = re.findall(pattern, attr_value)
                     for match in matches:
                         var_name = match[1]
-                        self._create_edge(var_name, origin_vertex_index, attr_key)
+                        self._create_edge(f"{vertex.path}/{var_name}", origin_vertex_index, attr_key)
+
 
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         dest_vertex_index = self.vertices_by_name.get(element_name)
@@ -191,16 +194,18 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         dep_name = extract_resource_name_from_reference_func(reference_string)
         self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
 
-    def _update_vertices_names(self) -> None:
+    def _update_resource_vertices_names(self) -> None:
         for i, vertex in enumerate(self.vertices):
-            if 'name' not in vertex.config or vertex.name == vertex.config['name']:
+            if (vertex.block_type != ArmElements.RESOURCES or 'name' not in vertex.config or
+                    vertex.name == vertex.config['name']) or not isinstance(vertex.config['name'], str):
                 continue
 
-            if vertex.name in self.vertices_by_name:
-                del self.vertices_by_name[vertex.name]
+            if PARAMETER_FUNC in vertex.name or VARIABLE_FUNC in vertex.name:
+                if vertex.name in self.vertices_by_name:
+                    del self.vertices_by_name[vertex.name]
 
-            vertex.name = vertex.config['name']
-            self.vertices_by_name[vertex.name] = i
+                vertex.name = vertex.config['name']
+                self.vertices_by_name[vertex.name] = i
 
     def update_vertices_configs(self) -> None:
         for vertex in self.vertices:
