@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.281...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.282...HEAD)
+
+## [3.2.282](https://github.com/bridgecrewio/checkov/compare/3.2.281...3.2.282) - 2024-11-07
+
+### Bug Fix
+
+- **arm:** finish variable rendering and use definitions context - [#6814](https://github.com/bridgecrewio/checkov/pull/6814)
 
 ## [3.2.281](https://github.com/bridgecrewio/checkov/compare/3.2.280...3.2.281) - 2024-11-06
 
