@@ -174,7 +174,6 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                         var_name = match[1]
                         self._create_edge(f"{vertex.path}/{var_name}", origin_vertex_index, attr_key)
 
-
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         dest_vertex_index = self.vertices_by_name.get(element_name)
         if origin_vertex_index == dest_vertex_index or dest_vertex_index is None:
