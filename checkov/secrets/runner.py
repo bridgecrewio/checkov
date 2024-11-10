@@ -126,6 +126,7 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'IbmCosHmacDetector'},
             {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
+            {'name': 'NpmDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
             {'name': 'SoftlayerDetector'},
