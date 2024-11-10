@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.282...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.286...HEAD)
+
+## [3.2.286](https://github.com/bridgecrewio/checkov/compare/3.2.282...3.2.286) - 2024-11-10
+
+### Feature
+
+- **secrets:** Add npm detector - [#6821](https://github.com/bridgecrewio/checkov/pull/6821)
+
+### Bug Fix
+
+- **secrets:** fix empty diff scan - [#6822](https://github.com/bridgecrewio/checkov/pull/6822)
 
 ## [3.2.282](https://github.com/bridgecrewio/checkov/compare/3.2.281...3.2.282) - 2024-11-07
 
