@@ -74,7 +74,7 @@ SECRET_TYPE_TO_ID = {
 }
 
 ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -123,8 +123,10 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'IbmCosHmacDetector'},
             {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
+            {'name': 'NpmDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
             {'name': 'SoftlayerDetector'},
@@ -231,7 +233,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
             secret_key_by_line_to_secrets = defaultdict(list)
             for key, secret in secrets:
