@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.286...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.287...HEAD)
+
+## [3.2.287](https://github.com/bridgecrewio/checkov/compare/3.2.286...3.2.287) - 2024-11-11
+
+### Bug Fix
+
+- **graph:** fix internal checks loading when adding custom policies in cli - [#6819](https://github.com/bridgecrewio/checkov/pull/6819)
 
 ## [3.2.286](https://github.com/bridgecrewio/checkov/compare/3.2.282...3.2.286) - 2024-11-10
 
