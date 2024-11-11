@@ -47,9 +47,10 @@ class ParallelRunner:
         func: Callable[..., _T],
         items: List[Any],
         group_size: Optional[int] = None,
+        timeout: Optional[int] = None
     ) -> Iterable[_T]:
         if self.type == ParallelizationType.THREAD:
-            return self._run_function_multithreaded(func, items)
+            return self._run_function_multithreaded(func, items, timeout)
         elif self.type == ParallelizationType.FORK:
             return self._run_function_multiprocess_fork(func, items, group_size)
         elif self.type == ParallelizationType.SPAWN:
@@ -121,7 +122,8 @@ class ParallelRunner:
 
             return p.map(func, items, chunksize=group_size)
 
-    def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
+    def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any], timeout: Optional[int]) \
+            -> Iterator[_T]:
         logging.debug(
             f"Running function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with parallelization type 'thread'"
         )
@@ -129,7 +131,7 @@ class ParallelRunner:
             if items and isinstance(items[0], tuple):
                 # split a list of tuple into tuples of the positioned values of the tuple
                 return executor.map(func, *list(
-                    zip(*items)))  # noqa[B905]  # no need to set 'strict' otherwise 'mypy' complains
+                    zip(*items)), timeout=timeout)  # noqa[B905]  # no need to set 'strict' otherwise 'mypy' complains
 
             return executor.map(func, items)
 

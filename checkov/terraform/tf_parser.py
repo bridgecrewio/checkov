@@ -375,9 +375,11 @@ class TFParser:
 
         definitions_dir_and_source_iterable = [(definitions, source_path, source) for source_path, definitions in
                                                dirs_to_definitions.items()]
+
+        parsing_timeout = env_vars_config.HCL_PARSE_TIMEOUT_SEC or 0
         modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = \
             list(parallel_runner.run_function(self.parse_hcl_module_from_multi_tf_definitions,
-                                              definitions_dir_and_source_iterable))
+                                              definitions_dir_and_source_iterable, timeout=parsing_timeout))
 
         return modules_and_definitions_tuple
 
