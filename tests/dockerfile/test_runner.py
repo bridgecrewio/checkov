@@ -339,6 +339,30 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(extra_resource.file_abs_path, str(test_file))
         self.assertTrue(extra_resource.file_path.endswith("Dockerfile.prod"))
 
+    def test_runner_multi_line(self):
+        # given
+        test_file = RESOURCES_DIR / "multiline_command/"
+
+        # when
+        report = Runner(db_connector=self.db_connector()).run(
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(framework=['dockerfile'], checks=["CKV_DOCKER_9"])  # chose a check, which will find nothing
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 1)
+
+        self.assertEqual(len(report.extra_resources), 1)
+        extra_resource = next(iter(report.extra_resources))
+        self.assertEqual(extra_resource.file_abs_path, str(test_file))
+        self.assertTrue(extra_resource.file_path.endswith("Dockerfile"))
+
 
     def tearDown(self) -> None:
         registry.checks = self.orig_checks

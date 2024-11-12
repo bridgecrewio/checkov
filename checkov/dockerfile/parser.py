@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from pathlib import Path
 from typing import TYPE_CHECKING
+import io
 
 from dockerfile_parse import DockerfileParser
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
@@ -16,7 +17,9 @@ if TYPE_CHECKING:
 
 def parse(filename: str | Path) -> tuple[dict[str, list[_Instruction]], list[str]]:
     with open(filename) as dockerfile:
-        dfp = DockerfileParser(fileobj=dockerfile)
+        content = dockerfile.read()
+        converted_content = convert_multiline_commands(content)
+        dfp = DockerfileParser(fileobj=io.StringIO(converted_content))
         return dfp_group_by_instructions(dfp)
 
 
@@ -39,3 +42,25 @@ def collect_skipped_checks(parse_result: dict[str, list[_Instruction]]) -> list[
         skipped_checks = collect_suppressions_for_context(code_lines=comment_lines)
 
     return skipped_checks
+
+
+def convert_multiline_commands(dockerfile_content):
+    lines = dockerfile_content.splitlines()
+    converted_lines = []
+    in_multiline = False
+    multiline_command = []
+
+    for line in lines:
+        if line.strip().startswith('RUN <<EOF'):
+            in_multiline = True
+            continue
+        elif in_multiline and line.strip() == 'EOF':
+            in_multiline = False
+            converted_lines.append(f"RUN {' && '.join(multiline_command)}")
+            multiline_command = []
+        elif in_multiline:
+            multiline_command.append(line.strip())
+        else:
+            converted_lines.append(line)
+
+    return '\n'.join(converted_lines)
