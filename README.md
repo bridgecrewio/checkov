@@ -389,7 +389,7 @@ The console output is in colour by default, to switch to a monochrome output, se
 
 #### VS Code Extension
 
-If you want to use Checkov within VS Code, give a try to the vscode extension available at [VS Code](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use Checkov within VS Code, give the [Prisma Cloud extension](https://marketplace.visualstudio.com/items?itemName=PrismaCloud.prisma-cloud) a try.
 
 ### Configuration using a config file
 
