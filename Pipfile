@@ -37,7 +37,7 @@ parameterized = "*"
 time-machine = "*"
 boto3-stubs-lite = {extras = ["s3"], version = "*"}
 types-colorama = "<0.5.0,>=0.4.3"
-exceptiongroup = "1.2.2"
+exceptiongroup = {version = "==1.2.2", markers="python_version < '3.11'"}
 
 [packages]
 #
