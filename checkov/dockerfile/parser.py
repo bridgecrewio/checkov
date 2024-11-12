@@ -44,11 +44,11 @@ def collect_skipped_checks(parse_result: dict[str, list[_Instruction]]) -> list[
     return skipped_checks
 
 
-def convert_multiline_commands(dockerfile_content):
+def convert_multiline_commands(dockerfile_content: str) -> str:
     lines = dockerfile_content.splitlines()
     converted_lines = []
     in_multiline = False
-    multiline_command = []
+    multiline_command: list[str] = []
 
     for line in lines:
         if line.strip().startswith('RUN <<EOF'):
