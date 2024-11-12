@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 from checkov.arm.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph, ArmBlock
 from checkov.arm.graph_manager import ArmGraphManager
-from checkov.arm.utils import get_files_definitions, ArmElements
+from checkov.arm.graph_builder.graph_components.block_types import BlockType
+from checkov.arm.utils import get_files_definitions
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
@@ -23,7 +24,7 @@ def test_graph_explicit_deps():
     assert len(test_graph.vertices) == 6
     assert len(test_graph.edges) == 5
 
-    assert len(test_graph.vertices_by_block_type[ArmElements.RESOURCES]) == 6
+    assert len(test_graph.vertices_by_block_type[BlockType.RESOURCE]) == 6
 
 
 def test_graph_implicit_deps():
@@ -37,7 +38,7 @@ def test_graph_implicit_deps():
     assert len(test_graph.vertices) == 6
     assert len(test_graph.edges) == 4
 
-    assert len(test_graph.vertices_by_block_type[ArmElements.RESOURCES]) == 6
+    assert len(test_graph.vertices_by_block_type[BlockType.RESOURCE]) == 6
 
 
 def test_graph_params_vars():
@@ -52,9 +53,9 @@ def test_graph_params_vars():
     assert len(local_graph.vertices) == 18
     assert len(local_graph.edges) == 20
 
-    assert len(local_graph.vertices_by_block_type[ArmElements.PARAMETERS]) == 11
-    assert len(local_graph.vertices_by_block_type[ArmElements.RESOURCES]) == 4
-    assert len(local_graph.vertices_by_block_type[ArmElements.VARIABLES]) == 3
+    assert len(local_graph.vertices_by_block_type[BlockType.PARAMETER]) == 11
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4
+    assert len(local_graph.vertices_by_block_type[BlockType.VARIABLE]) == 3
 
 
 def test_graph_from_file_def_and_graph_def():
@@ -77,17 +78,17 @@ def test_graph_from_file_def_and_graph_def():
     assert len(local_graph.edges) == len(local_graph_from_new_def.edges)
 
 
-    assert len(local_graph.vertices_by_block_type[ArmElements.PARAMETERS]) == len(local_graph_from_new_def.vertices_by_block_type[ArmElements.PARAMETERS])
-    assert len(local_graph.vertices_by_block_type[ArmElements.RESOURCES]) == len(local_graph_from_new_def.vertices_by_block_type[ArmElements.RESOURCES])
-    assert len(local_graph.vertices_by_block_type[ArmElements.VARIABLES]) == len(local_graph_from_new_def.vertices_by_block_type[ArmElements.VARIABLES])
+    assert len(local_graph.vertices_by_block_type[BlockType.PARAMETER]) == len(local_graph_from_new_def.vertices_by_block_type[BlockType.PARAMETER])
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == len(local_graph_from_new_def.vertices_by_block_type[BlockType.RESOURCE])
+    assert len(local_graph.vertices_by_block_type[BlockType.VARIABLE]) == len(local_graph_from_new_def.vertices_by_block_type[BlockType.VARIABLE])
 
 def test_update_vertices_names():
     graph = ArmLocalGraph(definitions={})
 
     graph.vertices = [
-        ArmBlock(name="variables(name1)", config={"name": "updatedName1"}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='1'),
-        ArmBlock(name="name2", config={"name": "name2"}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='2'),
-        ArmBlock(name="name3", config={}, block_type=ArmElements.RESOURCES, path='', attributes={}, id='3')
+        ArmBlock(name="variables(name1)", config={"name": "updatedName1"}, block_type=BlockType.RESOURCE, path='', attributes={}, id='1'),
+        ArmBlock(name="name2", config={"name": "name2"}, block_type=BlockType.RESOURCE, path='', attributes={}, id='2'),
+        ArmBlock(name="name3", config={}, block_type=BlockType.RESOURCE, path='', attributes={}, id='3')
     ]
     graph.vertices_by_name = {"variables(name1)": 0, "name2": 1, "name3": 2}
 
