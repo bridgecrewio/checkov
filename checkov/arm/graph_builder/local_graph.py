@@ -8,6 +8,7 @@ from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
     extract_resource_name_from_reference_func
 from checkov.arm.graph_builder.variable_rendering.renderer import ArmVariableRenderer
+from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder import CustomAttributes, Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import filter_sub_keys, adjust_value
@@ -85,7 +86,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.VARIABLES,
+                    block_type=BlockType.VARIABLE,
                     attributes=attributes,
                     id=f"{ArmElements.VARIABLES}.{name}",
                 )
@@ -109,7 +110,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.PARAMETERS,
+                    block_type=BlockType.PARAMETER,
                     attributes=attributes,
                     id=f"{ArmElements.PARAMETERS}.{name}",
                 )
@@ -135,7 +136,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=resource_name,
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.RESOURCES,
+                    block_type=BlockType.RESOURCE,
                     attributes=attributes,
                     id=f"{resource_type}.{resource_name}"
                 )
@@ -195,8 +196,8 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def _update_resource_vertices_names(self) -> None:
         for i, vertex in enumerate(self.vertices):
-            if (vertex.block_type != ArmElements.RESOURCES or 'name' not in vertex.config or
-                    vertex.name == vertex.config['name']) or not isinstance(vertex.config['name'], str):
+            if ((vertex.block_type != BlockType.RESOURCE or 'name' not in vertex.config or vertex.name == vertex.config['name'])
+                    or not isinstance(vertex.config['name'], str)):
                 continue
 
             if PARAMETER_FUNC in vertex.name or VARIABLE_FUNC in vertex.name:
@@ -221,7 +222,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
         for attr in changed_attributes:
             new_value = vertex.attributes.get(attr, None)
-            if vertex.block_type == ArmElements.RESOURCES:
+            if vertex.block_type == BlockType.RESOURCE:
                 ArmLocalGraph.update_config_attribute(
                     config=vertex.config, key_to_update=attr, new_value=new_value
                 )
