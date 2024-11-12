@@ -86,7 +86,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.VARIABLES,
+                    block_type=BlockType.VARIABLE,
                     attributes=attributes,
                     id=f"{ArmElements.VARIABLES}.{name}",
                 )
@@ -110,7 +110,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.PARAMETERS,
+                    block_type=BlockType.PARAMETER,
                     attributes=attributes,
                     id=f"{ArmElements.PARAMETERS}.{name}",
                 )
