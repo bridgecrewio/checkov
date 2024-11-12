@@ -462,9 +462,6 @@ Defaults:
 
 Contribution is welcomed!
 
-
-Dummy
-
 Start by reviewing the [contribution guidelines](https://github.com/bridgecrewio/checkov/blob/main/CONTRIBUTING.md). After that, take a look at a [good first issue](https://github.com/bridgecrewio/checkov/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 You can even start this with one-click dev in your browser through Gitpod at the following link:
