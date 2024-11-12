@@ -8,6 +8,7 @@ import re
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
+from collections import defaultdict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -73,7 +74,7 @@ SECRET_TYPE_TO_ID = {
 }
 
 ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -122,8 +123,10 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'IbmCosHmacDetector'},
             {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
+            {'name': 'NpmDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
             {'name': 'SoftlayerDetector'},
@@ -230,7 +233,13 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
+
+            secret_key_by_line_to_secrets = defaultdict(list)
+            for key, secret in secrets:
+                secret_key_by_line = f'{key}_{secret.line_number}'
+                secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
@@ -301,7 +310,12 @@ class Runner(BaseRunner[None, None, None]):
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
-                line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
+
+                secret_key_by_line = f'{key}_{secret.line_number}'
+                line_text_censored = line_text
+                for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
+                    line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
+
                 secret_records[secret_key] = SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
