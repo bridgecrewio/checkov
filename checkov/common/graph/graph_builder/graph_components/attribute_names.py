@@ -33,11 +33,13 @@ def props(cls: Any) -> List[str]:
     return [i for i in cls.__dict__.keys() if i[:1] != "_"]
 
 
-reserved_attribute_names = props(CustomAttributes)
-
-reserved_attributes_to_scan = [CustomAttributes.RESOURCE_TYPE]
 def wrap_reserved_attributes(attribute: str, prefix: str = '_'):
     return f"{prefix}{attribute}"
+
+
+reserved_attribute_names = props(CustomAttributes)
+reserved_attributes_to_scan = [CustomAttributes.RESOURCE_TYPE]
+
 
 class EncryptionValues(str, Enum):
     ENCRYPTED = "ENCRYPTED"

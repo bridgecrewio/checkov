@@ -10,7 +10,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.common.graph.graph_builder import CustomAttributes, wrap_reserved_attributes, reserved_attributes_to_scan
+from checkov.common.graph.graph_builder import wrap_reserved_attributes, reserved_attributes_to_scan
 from checkov.terraform.parser_functions import handle_dynamic_values
 from hcl2 import START_LINE, END_LINE
 
