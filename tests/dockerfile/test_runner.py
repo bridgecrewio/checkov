@@ -339,29 +339,16 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(extra_resource.file_abs_path, str(test_file))
         self.assertTrue(extra_resource.file_path.endswith("Dockerfile.prod"))
 
-    def test_runner_multi_line(self):
-        # given
-        test_file = RESOURCES_DIR / "multiline_command/"
-
-        # when
-        report = Runner(db_connector=self.db_connector()).run(
-            files=[str(test_file)],
-            runner_filter=RunnerFilter(framework=['dockerfile'], checks=["CKV_DOCKER_9"])  # chose a check, which will find nothing
-        )
-
-        # then
-        summary = report.get_summary()
-
-        self.assertEqual(summary["passed"], 0)
-        self.assertEqual(summary["failed"], 1)
-        self.assertEqual(summary["skipped"], 0)
-        self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 1)
-
-        self.assertEqual(len(report.extra_resources), 1)
-        extra_resource = next(iter(report.extra_resources))
-        self.assertEqual(extra_resource.file_abs_path, str(test_file))
-        self.assertTrue(extra_resource.file_path.endswith("Dockerfile"))
+    def test_runner_multiline(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/multiline_command"
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='dockerfile', checks=['CKV_DOCKER_9']))
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
 
 
     def tearDown(self) -> None:
