@@ -86,7 +86,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=BlockType.VARIABLE,
+                    block_type=ArmElements.VARIABLES,
                     attributes=attributes,
                     id=f"{ArmElements.VARIABLES}.{name}",
                 )
@@ -110,7 +110,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=BlockType.PARAMETER,
+                    block_type=ArmElements.PARAMETERS,
                     attributes=attributes,
                     id=f"{ArmElements.PARAMETERS}.{name}",
                 )
@@ -196,8 +196,8 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def _update_resource_vertices_names(self) -> None:
         for i, vertex in enumerate(self.vertices):
-            if ((vertex.block_type != BlockType.RESOURCE or 'name' not in vertex.config or vertex.name == vertex.config['name'])
-                    or not isinstance(vertex.config['name'], str)):
+            if (vertex.block_type != BlockType.RESOURCE or 'name' not in vertex.config or
+                vertex.name == vertex.config['name']) or not isinstance(vertex.config['name'], str):
                 continue
 
             if PARAMETER_FUNC in vertex.name or VARIABLE_FUNC in vertex.name:
