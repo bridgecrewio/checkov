@@ -35,6 +35,9 @@ def props(cls: Any) -> List[str]:
 
 reserved_attribute_names = props(CustomAttributes)
 
+reserved_attributes_to_scan = [CustomAttributes.RESOURCE_TYPE]
+def wrap_reserved_attributes(attribute: str, prefix: str = '_'):
+    return f"{prefix}{attribute}"
 
 class EncryptionValues(str, Enum):
     ENCRYPTED = "ENCRYPTED"

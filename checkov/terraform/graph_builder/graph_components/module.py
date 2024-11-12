@@ -10,6 +10,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+from checkov.common.graph.graph_builder import CustomAttributes, wrap_reserved_attributes, reserved_attributes_to_scan
 from checkov.terraform.parser_functions import handle_dynamic_values
 from hcl2 import START_LINE, END_LINE
 
@@ -200,6 +201,9 @@ class Module:
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
+                    for reserved_attribute in reserved_attributes_to_scan:
+                        if reserved_attribute in attributes:
+                            attributes[wrap_reserved_attributes(reserved_attribute)] = attributes[reserved_attribute]
                     attributes["resource_type"] = [resource_type]
                     block_name = f"{resource_type}.{name}"
                     resource_block = TerraformBlock(
