@@ -33,7 +33,7 @@ def props(cls: Any) -> List[str]:
     return [i for i in cls.__dict__.keys() if i[:1] != "_"]
 
 
-def wrap_reserved_attributes(attribute: str, prefix: str = '_'):
+def wrap_reserved_attributes(attribute: str, prefix: str = '_') -> str:
     return f"{prefix}{attribute}"
 
 
