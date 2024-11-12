@@ -184,7 +184,7 @@ class Module:
                     self._add_to_blocks(module_block)
 
     def _alter_reserved_attributes(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
-        """ 
+        """
         Reserved attributes (like `resource_type`) needs to be altered in order to be considered in scanning
         """
         updated_attributes = pickle_deepcopy(attributes)
