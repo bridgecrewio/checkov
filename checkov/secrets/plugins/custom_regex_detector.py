@@ -52,10 +52,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 self.denylist.add(re.compile('{}'.format(detector["Regex"])))
                 self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
-                logging.error(
-                    f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}",
-                    exc_info=True,
-                )
+                logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
 
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:

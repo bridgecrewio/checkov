@@ -141,8 +141,12 @@ def build_definitions_context(
 
         for code_block in definition:
             if ResourceType.TASKS in code_block:
-                for task in code_block[ResourceType.TASKS]:
-                    _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=task)
+                tasks = code_block[ResourceType.TASKS]
+                if tasks:  # Check if tasks is not empty
+                    for task in tasks:
+                        _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=task)
+                else:
+                    _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=code_block)
             else:
                 _process_blocks(definition_raw=definition_raw, file_path_context=file_path_context, task=code_block)
 
