@@ -311,7 +311,7 @@ class PrismaEngine(SastEngine):
         remove_list = []
         for lang, match in data.get('rule_match', dict()).items():
             for check in match.keys():
-                if check not in bc_integration.customer_run_config_response['policyMetadata']:
+                if check not in bc_integration.customer_run_config_response.get('policyMetadata', []):
                     remove_list.append((lang, check))
 
         for lang, check in remove_list:

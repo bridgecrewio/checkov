@@ -231,8 +231,8 @@ class TerraformBlock(Block):
             attribute_value: Union[str, List[str], Dict[str, Any]],
             strip_list: bool = True
     ) -> Dict[str, Any]:
-        if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
-            attribute_value = attribute_value[0]
+        # if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
+        #     attribute_value = attribute_value[0]
 
         return super().get_inner_attributes(
             attribute_key=attribute_key,
