@@ -207,6 +207,8 @@ class GitHistoryScanner:
         scanned_file_count = 0
         commit_hash = commit.metadata.commit_hash
         for file_name, file_diff in commit.files.items():
+            if len(file_diff) == 0:
+                continue
             file_results = [*scan.scan_diff(file_diff)]
             if file_results:
                 logging.debug(

@@ -88,7 +88,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          if [ '${{ matrix.python }}' == '3.12' ]; then
+            # needed for numpy
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
+          else
+            python -m pip install --no-cache-dir --upgrade pipenv
+          fi
       - name: Install dependencies
         run: |
           # remove venv, if exists
@@ -104,21 +109,6 @@ jobs:
 
           # list all dependencies to get a better view about installed package versions
           pipenv run pip list
-
-      - name: Get venv path
-        id: get-venv
-        run: |
-          echo "venv=$(pipenv --venv)" >> "$GITHUB_OUTPUT"
-
-      - name: Run Redefine.dev
-        uses: redefinedev/redefine-action@main
-        with:
-          auth: ${{ secrets.REDEFINE_AUTH }}
-          python-venv-path: ${{ steps.get-venv.outputs.venv }}
-          testing-framework: pytest
-          mode: fail-fast
-          time-limit: 30  # approx 15% of the run time
-          config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
         env:

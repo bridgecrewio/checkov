@@ -1,0 +1,48 @@
+Resources:
+  ExamplePassCertificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "www.example.com"
+      ValidationMethod: "DNS"
+      DomainValidationOptions:
+        - DomainName: "www.example.com"
+          ValidationDomain: "example.com"
+
+  ExamplePass2Certificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "example.com"
+      ValidationMethod: "DNS"
+      SubjectAlternativeNames:
+        - "www.example.com"
+        - "blog.example.com"
+        - "shop.example.com"
+
+  ExampleFailCertificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "*.example.com"
+      ValidationMethod: "DNS"
+      DomainValidationOptions:
+        - DomainName: "*.example.com"
+          ValidationDomain: "example.com"
+
+  ExampleFailBadSubjectCertificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "example.com"
+      ValidationMethod: "DNS"
+      SubjectAlternativeNames:
+        - "*.sub.example.com"
+        - "www.example.com"
+        - "api.example.com"
+
+  ExampleFailBadDomainCertificate:
+    Type: "AWS::CertificateManager::Certificate"
+    Properties:
+      DomainName: "*example.com"
+      ValidationMethod: "DNS"
+      SubjectAlternativeNames:
+        - "sub.example.com"
+        - "www.example.com"
+        - "api.example.com"
