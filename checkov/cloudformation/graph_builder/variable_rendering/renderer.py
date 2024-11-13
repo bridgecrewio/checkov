@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable, TypedDict
 
@@ -10,6 +11,7 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.parsers.node import StrNode
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
@@ -510,5 +512,19 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         return evaluated_value, changed_origin_id, attribute_at_dest
 
     def evaluate_non_rendered_values(self) -> None:
-        # not used
-        pass
+        for vertex in self.local_graph.vertices:
+            vertex_attributes = pickle_deepcopy(vertex.attributes)
+            for attr_key, attr_value in vertex_attributes.items():
+                if isinstance(attr_value, dict) and IntrinsicFunctions.SUB in attr_value:
+                    inner_value = attr_value[IntrinsicFunctions.SUB]
+                    if isinstance(inner_value, (str, StrNode)):
+                        try:
+                            inner_value = json.loads(inner_value)
+                        except Exception as e:
+                            logging.warning(f"[Cloudformation_evaluate_non_rendered_values]- "
+                                            f"Inner_value - {inner_value} is not a valid json. "
+                                            f"Full exception - {str(e)}")
+                    vertex.update_attribute(
+                        attribute_key=attr_key, attribute_value=inner_value, change_origin_id=None,
+                        previous_breadcrumbs=[], attribute_at_dest=None
+                    )
