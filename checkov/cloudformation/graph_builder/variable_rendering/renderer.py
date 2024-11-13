@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable, Ty
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
+from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, PseudoParameters
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
@@ -512,19 +512,32 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         return evaluated_value, changed_origin_id, attribute_at_dest
 
     def evaluate_non_rendered_values(self) -> None:
+
         for vertex in self.local_graph.vertices:
             vertex_attributes = pickle_deepcopy(vertex.attributes)
             for attr_key, attr_value in vertex_attributes.items():
-                if isinstance(attr_value, dict) and IntrinsicFunctions.SUB in attr_value:
-                    inner_value = attr_value[IntrinsicFunctions.SUB]
-                    if isinstance(inner_value, (str, StrNode)):
-                        try:
-                            inner_value = json.loads(inner_value)
-                        except Exception as e:
-                            logging.warning(f"[Cloudformation_evaluate_non_rendered_values]- "
-                                            f"Inner_value - {inner_value} is not a valid json. "
-                                            f"Full exception - {str(e)}")
-                    vertex.update_attribute(
-                        attribute_key=attr_key, attribute_value=inner_value, change_origin_id=None,
-                        previous_breadcrumbs=[], attribute_at_dest=None
-                    )
+                self._handle_sub_with_pseudo_param(attr_key, attr_value, vertex)
+
+    @staticmethod
+    def _handle_sub_with_pseudo_param(attr_key: str, attr_value: Any, vertex: CloudformationBlock) -> None:
+        """
+        Pseudo Parameter in CFN is a parameter which is dynamically available (see reference).
+        As we do not render it on buildtime, we want to handle this case by keeping the reference itself without the
+        value, so we can at least build a semi-full resource.
+        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
+        """
+        if isinstance(attr_value, dict) and IntrinsicFunctions.SUB in attr_value:
+            inner_value = attr_value[IntrinsicFunctions.SUB]
+            is_pseudo_param_in_value = any([p.value for p in PseudoParameters if p.value in inner_value])
+            if isinstance(inner_value, (str, StrNode)):
+                try:
+                    inner_value = json.loads(inner_value)
+                except Exception as e:
+                    logging.warning(f"[Cloudformation_evaluate_non_rendered_values]- "
+                                    f"Inner_value - {inner_value} is not a valid json. "
+                                    f"Full exception - {str(e)}")
+            if is_pseudo_param_in_value:
+                vertex.update_attribute(
+                    attribute_key=attr_key, attribute_value=inner_value, change_origin_id=None,
+                    previous_breadcrumbs=[], attribute_at_dest=None
+                )
