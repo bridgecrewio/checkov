@@ -301,7 +301,21 @@ class PrismaEngine(SastEngine):
             data["imports"] = {}
         if not data.get("reachability_report"):
             data["reachability_report"] = {}
+
+        self.remove_none_conf_incidents_policies(data)
+
         return PrismaReport(**data)
+
+    @staticmethod
+    def remove_none_conf_incidents_policies(data: Dict[str, Any]) -> None:
+        remove_list = []
+        for lang, match in data.get('rule_match', dict()).items():
+            for check in match.keys():
+                if check not in bc_integration.customer_run_config_response['policyMetadata']:
+                    remove_list.append((lang, check))
+
+        for lang, check in remove_list:
+            del data['rule_match'][lang][check]
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
         try:

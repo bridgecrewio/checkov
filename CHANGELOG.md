@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.286...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.291...HEAD)
+
+## [3.2.291](https://github.com/bridgecrewio/checkov/compare/3.2.287...3.2.291) - 2024-11-12
+
+### Feature
+
+- **general:** remove specific botocore version - [#6796](https://github.com/bridgecrewio/checkov/pull/6796)
+
+### Bug Fix
+
+- **arm:** fix ARM graph block types - [#6824](https://github.com/bridgecrewio/checkov/pull/6824)
+- **dockerfile:** Handle heredoc - [#6828](https://github.com/bridgecrewio/checkov/pull/6828)
+- **sast:** filter unsupported policies - [#6833](https://github.com/bridgecrewio/checkov/pull/6833)
+
+## [3.2.287](https://github.com/bridgecrewio/checkov/compare/3.2.286...3.2.287) - 2024-11-11
+
+### Bug Fix
+
+- **graph:** fix internal checks loading when adding custom policies in cli - [#6819](https://github.com/bridgecrewio/checkov/pull/6819)
 
 ## [3.2.286](https://github.com/bridgecrewio/checkov/compare/3.2.282...3.2.286) - 2024-11-10
 
