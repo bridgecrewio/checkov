@@ -1,3 +1,4 @@
+from __future__ import annotations
 import ctypes
 import subprocess  # nosec
 import sys
