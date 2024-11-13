@@ -71,8 +71,8 @@ class Block:
         return attributes_to_add
 
     def should_run_get_inner_attributes(self, attribute_value: Any) -> bool:
-        return isinstance(attribute_value, dict) or (
-                    isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict))
+        return isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0
+                                                     and isinstance(attribute_value[0], dict))
 
     def __str__(self) -> str:
         return f"{self.block_type}: {self.name}"
