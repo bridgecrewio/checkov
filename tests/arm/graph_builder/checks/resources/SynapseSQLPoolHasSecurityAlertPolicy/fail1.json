@@ -21,7 +21,7 @@
       "name": "[concat(parameters('sqlServerName'), '/', 'Default')]",
       "properties": {
         "state": "Disabled",
-        "emailAccountAdmins": false,
+        "emailAccountAdmins": true,
         "emailAddresses": [],
         "disabledAlerts": [],
         "retentionDays": 0

@@ -11,14 +11,29 @@ definition:
       connected_resource_types:
         - Microsoft.Sql/servers/securityAlertPolicies
       operator: exists
-    - cond_type: attribute
-      resource_types:
-        - Microsoft.Sql/servers/securityAlertPolicies
-      attribute: 'properties.state'
-      operator: equals
-      value: 'Enabled'
     - cond_type: filter
       attribute: resource_type
+      operator: within
       value:
         - Microsoft.Synapse/workspaces/sqlPools
-      operator: within
+
+    - or:
+      - and:
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Sql/servers/securityAlertPolicies
+          attribute: properties.state
+          operator: exists
+
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Sql/servers/securityAlertPolicies
+          attribute: properties.state
+          operator: equals
+          value: Enabled
+
+      - cond_type: attribute
+        resource_types:
+          - Microsoft.Sql/servers/securityAlertPolicies
+        attribute: properties.state
+        operator: not_exists

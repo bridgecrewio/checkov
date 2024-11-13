@@ -63,8 +63,7 @@ class Block:
             if has_dynamic_block and attribute_key in dynamic_attributes.keys():  # type: ignore
                 continue
             if isinstance(attribute_value, dict) or (
-                isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
-            ):
+                isinstance(attribute_value, list) and len(attribute_value) > 0):
                 inner_attributes = self.get_inner_attributes(
                     attribute_key=attribute_key,
                     attribute_value=attribute_value,

@@ -24,7 +24,7 @@
         "[resourceId('Microsoft.Synapse/workspaces/sqlPools', fail, parameters('sqlPoolName'))]"
       ],
       "properties": {
-        "state": "Enabled",
+        "state": "Disable",
         "auditActionsAndGroups": [
           "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
           "FAILED_DATABASE_AUTHENTICATION_GROUP",

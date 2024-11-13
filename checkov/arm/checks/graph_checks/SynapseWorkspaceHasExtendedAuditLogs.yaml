@@ -16,9 +16,24 @@ definition:
       connected_resource_types:
         - Microsoft.Synapse/workspaces/extendedAuditingPolicies
       operator: exists
-    - cond_type: attribute
-      resource_types:
-        - Microsoft.Synapse/workspaces/extendedAuditingPolicies
-      attribute: 'properties.state'
-      operator: equals
-      value: 'Enabled'
+
+    - or:
+        - and:
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Synapse/workspaces/extendedAuditingPolicies
+              attribute: properties.state
+              operator: exists
+
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Synapse/workspaces/extendedAuditingPolicies
+              attribute: properties.state
+              operator: equals
+              value: Enabled
+
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Synapse/workspaces/extendedAuditingPolicies
+          attribute: properties.state
+          operator: not_exists

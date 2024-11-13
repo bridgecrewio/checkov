@@ -3,4 +3,5 @@ pass:
 fail:
   - "Microsoft.Synapse/workspaces/sqlPools.fail"
 evaluated_keys:
-  - 'properties/publicNetworkAccess'
+  - 'properties/state'
+  - 'resource_type'

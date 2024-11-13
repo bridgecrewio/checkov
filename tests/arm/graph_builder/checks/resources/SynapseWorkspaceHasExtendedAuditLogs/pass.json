@@ -33,22 +33,20 @@
       "apiVersion": "2021-06-01-preview",
       "name": "pass",
       "location": "[resourceGroup().location]",
-      "properties": {},
-      "resources": [
-        {
-          "type": "Microsoft.Synapse/workspaces/extendedAuditingPolicies",
-          "apiVersion": "2021-06-01-preview",
-          "name": "[concat(parameters('workspaceName'), '/Default')]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Synapse/workspaces', parameters('workspaceName'))]"
-          ],
-          "properties": {
-            "state": "Enabled",
-            "retentionDays": "[parameters('retentionDays')]",
-            "auditActionsAndGroups": "[parameters('auditActionsAndGroups')]"
-          }
-        }
-      ]
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/extendedAuditingPolicies",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[concat(parameters('workspaceName'), '/Default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', pass)]"
+      ],
+      "properties": {
+        "state": "Enabled",
+        "retentionDays": "[parameters('retentionDays')]",
+        "auditActionsAndGroups": "[parameters('auditActionsAndGroups')]"
+      }
     }
   ]
 }
