@@ -1,4 +1,3 @@
-from __future__ import annotations
 import ctypes
 import subprocess  # nosec
 import sys
@@ -309,7 +308,7 @@ class PrismaEngine(SastEngine):
 
     @staticmethod
     def remove_none_conf_incidents_policies(data: Dict[str, Any]) -> None:
-        remove_list: list[Any] = []
+        remove_list = []  # type: ignore
         for lang, match in data.get('rule_match', dict()).items():
             for check in match.keys():
                 if bc_integration.customer_run_config_response:
