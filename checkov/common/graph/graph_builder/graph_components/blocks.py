@@ -62,17 +62,17 @@ class Block:
         for attribute_key, attribute_value in self.attributes.items():
             if has_dynamic_block and attribute_key in dynamic_attributes.keys():  # type: ignore
                 continue
-            if isinstance(attribute_value, dict) or (
-                isinstance(attribute_value, list) and len(attribute_value) > 0):
-                if (isinstance(attribute_value, list) and not isinstance(attribute_value[0], dict) and
-                        self.source == 'TERRAFORM'):
-                    continue
+            if self.should_run_get_inner_attributes(attribute_value):
                 inner_attributes = self.get_inner_attributes(
                     attribute_key=attribute_key,
                     attribute_value=attribute_value,
                 )
                 attributes_to_add.update(inner_attributes)
         return attributes_to_add
+
+    def should_run_get_inner_attributes(self, attribute_value: Any) -> bool:
+        return isinstance(attribute_value, dict) or (
+                    isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict))
 
     def __str__(self) -> str:
         return f"{self.block_type}: {self.name}"

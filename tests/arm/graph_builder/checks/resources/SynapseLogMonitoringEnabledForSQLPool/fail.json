@@ -21,7 +21,7 @@
       "apiVersion": "2021-06-01",
       "name": "[concat(parameters('workspaceName'), '/', parameters('sqlPoolName'), '/default')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', fail, parameters('sqlPoolName'))]"
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', parameters('sqlPoolName'), parameters('sqlPoolName'))]"
       ],
       "properties": {
         "state": "Disable",
@@ -48,6 +48,7 @@
     },
     "sqlPoolName": {
       "type": "string",
+      "defaultValue": "fail",
       "metadata": {
         "description": "The name of the SQL pool."
       }
