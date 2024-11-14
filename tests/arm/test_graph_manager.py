@@ -75,4 +75,4 @@ def test_build_graph_from_definitions2(graph_connector):
 
     # then
     assert len(local_graph.vertices) == 18
-    assert len(local_graph.edges) == 24
+    assert len(local_graph.edges) == 27 # more edges because we did render_variables and its add the dependsOn edges
