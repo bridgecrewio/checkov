@@ -18,7 +18,6 @@ class ArmBlock(Block):
     ) -> None:
         super().__init__(name, config, path, block_type, attributes, id, GraphSource.ARM)
 
-
     def should_run_get_inner_attributes(self, attribute_value: Any) -> bool:
         """
         this function is triggered from _extract_inner_attributes to check whether we need to run the get_inner_attributes function.
