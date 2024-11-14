@@ -1,0 +1,21 @@
+metadata:
+  id: "CKV2_CFN_JSONPATH_POLICY"
+  name: "Jsonpath policy for cloudformation"
+  severity: "high"
+  guidelines: "Mediastore container and objects must not be accessible anonymously"
+  category: "general"
+scope:
+  provider: "aws"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::MediaStore::Container"
+      attribute: "Policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+      operator: "jsonpath_not_exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::MediaStore::Container"
+      attribute: "Policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+      operator: "jsonpath_not_equals"
+      value: "*"
