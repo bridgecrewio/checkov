@@ -18,5 +18,6 @@ class ArmBlock(Block):
     ) -> None:
         super().__init__(name, config, path, block_type, attributes, id, GraphSource.ARM)
 
+    # for ARM we want to get the inner_attributes also from list[str]
     def should_run_get_inner_attributes(self, attribute_value: Any) -> bool:
         return isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0)
