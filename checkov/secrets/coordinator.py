@@ -10,7 +10,6 @@ class EnrichedSecret(TypedDict):
     line_number: int
 
 
-
 class SecretsCoordinator:
     __slots__ = ("_secrets", )
 
