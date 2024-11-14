@@ -1,16 +1,6 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.293...HEAD)
-
-## [3.2.293](https://github.com/bridgecrewio/checkov/compare/3.2.291...3.2.293) - 2024-11-13
-
-### Feature
-
-- **terraform:** support resource_type attribute - [#6830](https://github.com/bridgecrewio/checkov/pull/6830)
-
-### Bug Fix
-
-- **general:** fixed mypy issue - [#6838](https://github.com/bridgecrewio/checkov/pull/6838)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.291...HEAD)
 
 ## [3.2.291](https://github.com/bridgecrewio/checkov/compare/3.2.287...3.2.291) - 2024-11-12
 
