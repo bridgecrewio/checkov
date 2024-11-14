@@ -308,11 +308,12 @@ class PrismaEngine(SastEngine):
 
     @staticmethod
     def remove_none_conf_incidents_policies(data: Dict[str, Any]) -> None:
-        remove_list = []
+        remove_list = []  # type: ignore
         for lang, match in data.get('rule_match', dict()).items():
             for check in match.keys():
-                if check not in bc_integration.customer_run_config_response['policyMetadata']:
-                    remove_list.append((lang, check))
+                if bc_integration.customer_run_config_response:
+                    if check not in bc_integration.customer_run_config_response.get('policyMetadata', []):
+                        remove_list.append((lang, check))
 
         for lang, check in remove_list:
             del data['rule_match'][lang][check]
