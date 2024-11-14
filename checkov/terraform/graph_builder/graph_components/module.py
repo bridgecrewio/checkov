@@ -10,7 +10,6 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.common.graph.graph_builder import CustomAttributes, wrap_reserved_attributes, reserved_attributes_to_scan
 from checkov.terraform.parser_functions import handle_dynamic_values
 from hcl2 import START_LINE, END_LINE
 
@@ -183,16 +182,6 @@ class Module:
                     )
                     self._add_to_blocks(module_block)
 
-    def _alter_reserved_attributes(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Reserved attributes (like `resource_type`) needs to be altered in order to be considered in scanning
-        """
-        updated_attributes = pickle_deepcopy(attributes)
-        for reserved_attribute in reserved_attributes_to_scan:
-            if reserved_attribute in updated_attributes:
-                updated_attributes[wrap_reserved_attributes(reserved_attribute)] = updated_attributes[reserved_attribute]
-        return updated_attributes
-
     def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for resource_dict in blocks:
             for resource_type, resources in resource_dict.items():
@@ -211,8 +200,7 @@ class Module:
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
-                    attributes = self._alter_reserved_attributes(attributes)
-                    attributes[CustomAttributes.RESOURCE_TYPE] = [resource_type]
+                    attributes["resource_type"] = [resource_type]
                     block_name = f"{resource_type}.{name}"
                     resource_block = TerraformBlock(
                         block_type=BlockType.RESOURCE,
