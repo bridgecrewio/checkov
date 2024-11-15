@@ -18,10 +18,12 @@ class TestACREnableRetentionPolicy(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_container_registry.pass',
+            'azurerm_container_registry.pass_old',
+            'azurerm_container_registry.pass_new',
         }
         failing_resources = {
             'azurerm_container_registry.fail',
+            'azurerm_container_registry.fail_old',
         }
         skipped_resources = {}
 
