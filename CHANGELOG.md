@@ -1,6 +1,27 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.291...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.296...HEAD)
+
+## [3.2.296](https://github.com/bridgecrewio/checkov/compare/3.2.293...3.2.296) - 2024-11-14
+
+### Feature
+
+- **cloudformation:** Support Fn::Sub in cases of using a pseudo parameter - [#6835](https://github.com/bridgecrewio/checkov/pull/6835)
+- **terraform:** support resource_type attribute - revert - [#6843](https://github.com/bridgecrewio/checkov/pull/6843)
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_32 (GoogleComputeBlockProjectSSH) Add other common enabling values - [#6663](https://github.com/bridgecrewio/checkov/pull/6663)
+
+## [3.2.293](https://github.com/bridgecrewio/checkov/compare/3.2.291...3.2.293) - 2024-11-13
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6830](https://github.com/bridgecrewio/checkov/pull/6830)
+
+### Bug Fix
+
+- **general:** fixed mypy issue - [#6838](https://github.com/bridgecrewio/checkov/pull/6838)
 
 ## [3.2.291](https://github.com/bridgecrewio/checkov/compare/3.2.287...3.2.291) - 2024-11-12
 
