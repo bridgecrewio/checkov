@@ -73,7 +73,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         self.graph_manager = \
             graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
 
-        self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.graph_registry = get_graph_checks_registry(Runner.check_type)
         self.definitions: _KubernetesDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
         self.context: _KubernetesContext | None = None
