@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class K8sHelmRunner(k8_runner):
-    check_type = CheckType.HELM
+    check_type = CheckType.HELM  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,

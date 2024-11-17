@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 
 
 class K8sKustomizeRunner(K8sRunner):
-    check_type = CheckType.KUSTOMIZE
+    check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
