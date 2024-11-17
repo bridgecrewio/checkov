@@ -169,10 +169,12 @@ class Runner(BaseRunner[None, None, None]):
 
     def _get_plugins_used(self) -> Tuple[List[Dict[str, Any]], Callable[[], None]]:
         work_dir_obj = None
-        work_path = os.getenv('WORKDIR')
-        if work_path is not None:
+        work_path_optional = os.getenv('WORKDIR')
+        if work_path_optional is None:
             work_dir_obj = tempfile.TemporaryDirectory()
             work_path = work_dir_obj.name
+        else:
+            work_path = work_path_optional
 
         # load runnable plugins
         current_dir = Path(__file__).parent
@@ -348,8 +350,8 @@ class Runner(BaseRunner[None, None, None]):
             # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
             # via 'load_secret_from_dict'
             self.save_secret_to_coordinator(
-                    secret.secret_value, bc_check_id, check_id, resource, secret.line_number, result
-                )
+                secret.secret_value, bc_check_id, check_id, resource, secret.line_number, result
+            )
 
             secret_key_by_line = f'{key}_{secret.line_number}'
             line_text_censored = line_text
@@ -476,13 +478,13 @@ class Runner(BaseRunner[None, None, None]):
         return None
 
     def save_secret_to_coordinator(
-        self,
-        secret_value: Optional[str],
-        bc_check_id: str,
-        check_id: str,
-        resource: str,
-        line_number: int,
-        result: _CheckResult
+            self,
+            secret_value: Optional[str],
+            bc_check_id: str,
+            check_id: str,
+            resource: str,
+            line_number: int,
+            result: _CheckResult
     ) -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
             enriched_secret = EnrichedSecret(
@@ -616,6 +618,10 @@ class Runner(BaseRunner[None, None, None]):
     def mask_files(self, root_folder: str | None,
                    files: list[str] | None = None,
                    runner_filter: RunnerFilter | None = None) -> None:
+        """
+        get files or/and root_folder and masking and replace automatically all the secrets found there
+        note: the changes are inplace
+        """
         runner_filter = runner_filter or RunnerFilter()
 
         plugins_used, cleanupFn = self._get_plugins_used()
@@ -640,7 +646,7 @@ class Runner(BaseRunner[None, None, None]):
             with open(file, "r+") as f:
                 content = f.read()
                 f.seek(0)
-                for key, secret in secrets:
+                for _key, secret in secrets:
                     if not secret.secret_value:
                         continue
                     check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
@@ -655,9 +661,9 @@ class Runner(BaseRunner[None, None, None]):
                 f.write(content)
                 f.truncate()
 
+        logging.info(f"finish replacing {len(files_to_scan)} files")
+
 
 def masking_value(secret: str) -> str:
-    secret_length = len(secret)
-    secret_len_to_expose = min(secret_length // 4, 6)
-
+    secret_len_to_expose = min(len(secret) // 4, 6)
     return f'{secret[:secret_len_to_expose]}{"*" * GENERIC_OBFUSCATION_LENGTH}'
