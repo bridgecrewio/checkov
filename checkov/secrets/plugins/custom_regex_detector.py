@@ -30,7 +30,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
         self.multiline_deny_list = set()
-        self.multiline_pattern_by_prerun_compiled: dict[str, Pattern[str]] = dict()
+        self.pattern_by_prerun_compiled: dict[str, Pattern[str]] = dict()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
@@ -40,17 +40,15 @@ class CustomRegexDetector(RegexBasedDetector):
         for detector in detectors:
             try:
                 if detector.get("isMultiline"):
-                    # If prerun exists, we will add it as 'regular detector' (special treat in analyze_line)
-                    if detector.get("prerun"):
-                        self.denylist.add(re.compile('{}'.format(detector["prerun"])))
-                        self.regex_to_metadata[detector["prerun"]] = detector
-                        self.multiline_pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
-                    else:
-                        self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                        self.multiline_regex_to_metadata[detector["Regex"]] = detector
-                    continue
-                self.denylist.add(re.compile('{}'.format(detector["Regex"])))
-                self.regex_to_metadata[detector["Regex"]] = detector
+                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                if detector.get("prerun"):
+                    self.denylist.add(re.compile('{}'.format(detector["prerun"])))
+                    self.regex_to_metadata[detector["prerun"]] = detector
+                    self.pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
+                else:
+                    self.denylist.add(re.compile('{}'.format(detector["Regex"])))
+                    self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
                 logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
 
@@ -161,7 +159,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 file_content = read_file_safe(filename)
                 if not file_content:
                     continue
-                multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
+                multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
