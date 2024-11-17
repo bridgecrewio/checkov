@@ -42,6 +42,8 @@ class CustomRegexDetector(RegexBasedDetector):
                 if detector.get("prerun"):
                     self.denylist.add(re.compile('{}'.format(detector["prerun"])))
                     self.regex_to_metadata[detector["prerun"]] = detector
+                    # currently supports only cases that have distinct preruns, if two policies
+                    # have the same prerunner then only one of them is gonna work
                     self.pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
                     continue
                 if detector.get("isMultiline"):
