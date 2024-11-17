@@ -39,16 +39,17 @@ class CustomRegexDetector(RegexBasedDetector):
 
         for detector in detectors:
             try:
-                if detector.get("isMultiline"):
-                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
                 if detector.get("prerun"):
                     self.denylist.add(re.compile('{}'.format(detector["prerun"])))
                     self.regex_to_metadata[detector["prerun"]] = detector
                     self.pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
                 else:
-                    self.denylist.add(re.compile('{}'.format(detector["Regex"])))
-                    self.regex_to_metadata[detector["Regex"]] = detector
+                    if detector.get("isMultiline"):
+                        self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                        self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                    else:
+                        self.denylist.add(re.compile('{}'.format(detector["Regex"])))
+                        self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
                 logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
 
