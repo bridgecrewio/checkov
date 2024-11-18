@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 spec = util.spec_from_file_location(
     "checkov.version", os.path.join("checkov", "version.py")
 )
-# noinspection PyUnresolvedReferences
+# noinspection PyUnresolvedReferences 
 mod = util.module_from_spec(spec)
 spec.loader.exec_module(mod)  # type: ignore
 version = mod.version  # type: ignore
