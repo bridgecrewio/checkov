@@ -15,7 +15,7 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 from concurrent.futures import ThreadPoolExecutor
 
-from checkov.common.graph.graph_builder import CustomAttributes, reserved_attributes_to_scan, wrap_reserved_attributes
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
@@ -38,7 +38,7 @@ class BaseAttributeSolver(BaseSolver):
     ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
-        self.attribute = attribute if attribute not in reserved_attributes_to_scan else wrap_reserved_attributes(attribute)
+        self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
 
