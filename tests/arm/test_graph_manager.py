@@ -33,7 +33,7 @@ def test_build_graph_from_definitions(graph_connector):
 
     # then
     assert len(local_graph.vertices) == 18
-    assert len(local_graph.edges) == 20
+    assert len(local_graph.edges) == 24
 
     # resource name will change, when variable rendering is supported
     container_idx = local_graph.vertices_by_path_and_id[(test_file, "Microsoft.ContainerInstance/containerGroups.[parameters('containerGroupName')]")]
@@ -75,4 +75,4 @@ def test_build_graph_from_definitions2(graph_connector):
 
     # then
     assert len(local_graph.vertices) == 18
-    assert len(local_graph.edges) == 20
+    assert len(local_graph.edges) == 27 # more edges because we did render_variables and its add the dependsOn edges

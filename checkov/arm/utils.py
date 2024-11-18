@@ -93,7 +93,7 @@ def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
         Examples:
             resourceId('Microsoft.Network/virtualNetworks/', virtualNetworkName) -> virtualNetworkName
     '''
-    return clean_string(resource_id.split(',')[-1].split(')')[0])
+    return clean_string(resource_id.split(',')[1].split(')')[0])
 
 
 def extract_resource_name_from_reference_func(reference: str) -> str:
