@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Collection
 from typing import Union, Dict, Any, List, cast
@@ -162,7 +163,13 @@ class Block:
             if key.find(".") > -1:
                 additional_changed_attributes = self.extract_additional_changed_attributes(key)
                 if key in self.attributes and isinstance(self.attributes[key], dict) and key != attribute_key:
-                    self._update_attribute_based_on_jsonpath_key(attribute_value, key)
+                    try:
+                        self._update_attribute_based_on_jsonpath_key(attribute_value, key)
+                    except Exception as e:
+                        logging.warning(f"Failed updating attribute for key: {key} and value {attribute_value} for"
+                                        f"vertex attributes {self.attributes}. Falling back to explicitly setting it."
+                                        f"Exception - {e}")
+                        self.attributes[key] = attribute_value
                 else:
                     self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
