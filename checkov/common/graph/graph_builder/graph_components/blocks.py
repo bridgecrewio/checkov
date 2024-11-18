@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Collection
 from typing import Union, Dict, Any, List, cast
 
@@ -7,6 +8,8 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+
+from bc_jsonpath_ng.ext import parse
 
 
 class Block:
@@ -156,7 +159,15 @@ class Block:
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 additional_changed_attributes = self.extract_additional_changed_attributes(key)
-                self.attributes[key] = attribute_value
+                if isinstance(self.attributes[key], dict) and key != attribute_key:
+                    key = re.sub(r'(Fn::\w+)', r'"\1"', key)
+                    jsonpath_key = "$." + re.sub(r'\.(\d+)', r'[\1]', key)
+                    expr = parse(jsonpath_key)
+                    match = expr.find(self.attributes)
+                    if match:
+                        match[0].value = attribute_value
+                else:
+                    self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
                 if transform_step and end_key_part in ("1", "2"):
                     # if condition logic during the transform step breaks the values

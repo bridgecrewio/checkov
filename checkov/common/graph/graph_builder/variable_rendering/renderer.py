@@ -39,7 +39,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
     def _render_variables_from_edges(self) -> None:
         # find vertices with out-degree = 0 and in-degree > 0
         end_vertices_indexes = self.local_graph.get_vertices_with_degrees_conditions(
-            out_degree_cond=lambda degree: degree == 0, in_degree_cond=lambda degree: degree > 0
+            out_degree_cond=lambda degree: True, in_degree_cond=lambda degree: True
         )
 
         # all the edges entering `end_vertices`
@@ -47,6 +47,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         if self.vertices_index_to_render:
             edges_to_render = self._remove_unrelated_edges(edges_to_render)
 
+        # edges_to_render = self.local_graph.get_in_edges(set(i for i in range(13)))
         end_vertices_indexes = set()
         loops = 0
         evaluated_edges_cache: list[list[Edge]] = [[], []]
