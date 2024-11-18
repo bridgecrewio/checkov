@@ -395,7 +395,6 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                 elif not any([op for op in self.CONDITIONS_EVALUATED_FUNCTIONS if op in operand_to_eval]):
                     # The operand is a dict without any further actions to perform
                     evaluated_value = operand_to_eval
-                    evaluated_value_hierarchy = f'{operand_index}'
 
         return evaluated_value, evaluated_value_hierarchy
 
@@ -433,7 +432,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         return vertices_block_name_map
 
     def _handle_dependson_condition_connections(self, edge: Edge, origin_vertex: CloudformationBlock) -> None:
-        if edge.label == IntrinsicFunctions.CONDITION or True:
+        if edge.label == IntrinsicFunctions.CONDITION:
             dest_vertex_attributes = self.local_graph.get_vertex_attributes_by_index(edge.dest)
             evaluated_condition = self._evaluate_condition_by_vertex_attributes(dest_vertex_attributes)
             if isinstance(evaluated_condition, bool):
