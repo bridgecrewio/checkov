@@ -46,6 +46,7 @@ class Scanner:
                 "id": bc_integration.timestamp,
                 "repositoryId": "",
                 "enableDotnetCpm": env_vars_config.ENABLE_DOTNET_CPM,
+                "enableJavaDynamicScanCli": env_vars_config.JAVA_FULL_DT,
             }
 
             response = request_wrapper(
