@@ -161,7 +161,7 @@ class Block:
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 additional_changed_attributes = self.extract_additional_changed_attributes(key)
-                if isinstance(self.attributes[key], dict) and key != attribute_key:
+                if key in self.attributes and isinstance(self.attributes[key], dict) and key != attribute_key:
                     self._update_attribute_based_on_jsonpath_key(attribute_value, key)
                 else:
                     self.attributes[key] = attribute_value
