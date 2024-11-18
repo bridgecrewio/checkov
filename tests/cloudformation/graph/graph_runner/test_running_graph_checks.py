@@ -6,6 +6,8 @@ from pathlib import Path
 import pytest
 
 from checkov.cloudformation.runner import Runner
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
+from checkov.common.checks_infra.registry import Registry
 from checkov.runner_filter import RunnerFilter
 
 
@@ -46,6 +48,43 @@ class TestRunningGraphChecks(unittest.TestCase):
         self.assertEqual(summary["parsing_errors"], 0)
 
         self.assertEqual(passing_resources, passed_check_resources)
+
+    def test_jsonpath_policy(self):
+        test_dir_path = Path(__file__).parent / "resources" / "jsonpath_policy"
+        check_dir = Path(__file__).parent / "external_graph_checks"
+
+        test_check_registry = Registry(
+            checks_dir=f'{check_dir}',
+            parser=GraphCheckParser()
+        )
+
+        # when
+        report = Runner(external_registries=[test_check_registry]).run(root_folder=str(test_dir_path),
+                              runner_filter=RunnerFilter(checks=["CKV2_CFN_JSONPATH_POLICY"]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "AWS::MediaStore::Container.pass-str",
+        }
+
+        failing_resources = {
+            "AWS::MediaStore::Container.fail-str",
+            "AWS::MediaStore::Container.fail-dict",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':

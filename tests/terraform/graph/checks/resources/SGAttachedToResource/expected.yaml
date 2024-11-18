@@ -38,6 +38,8 @@ pass:
   - "aws_security_group.pass_msk_connect"
   - "aws_security_group.pass_mwaa"
   - "aws_security_group.pass_neptune"
+  - "aws_security_group.pass_opensearch"
+  - "aws_security_group.pass_opensearch_vpc_endpoint"
   - "aws_security_group.pass_quicksight"
   - "aws_security_group.pass_rds"
   - "aws_security_group.pass_rds_cluster"
