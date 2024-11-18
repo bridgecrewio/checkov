@@ -162,7 +162,7 @@ class Block:
             if key.find(".") > -1:
                 additional_changed_attributes = self.extract_additional_changed_attributes(key)
                 if isinstance(self.attributes[key], dict) and key != attribute_key:
-                    key = self._update_attribute_based_on_jsonpath_key(attribute_value, key)
+                    self._update_attribute_based_on_jsonpath_key(attribute_value, key)
                 else:
                     self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
@@ -176,7 +176,7 @@ class Block:
                         for changed_attribute in additional_changed_attributes:
                             self.changed_attributes[changed_attribute] = previous_breadcrumbs
 
-    def _update_attribute_based_on_jsonpath_key(self, attribute_value: Any, key: str) -> str:
+    def _update_attribute_based_on_jsonpath_key(self, attribute_value: Any, key: str) -> None:
         """
         When updating all the attributes we might try to update a specific attribute inside a complex object,
         so we use jsonpath to refer to the specific location only.
@@ -188,7 +188,7 @@ class Block:
         match = expr.find(self.attributes)
         if match:
             match[0].value = attribute_value
-        return key
+        return None
 
     def _handle_unique_key_characters(self, key: str) -> str:
         return key
