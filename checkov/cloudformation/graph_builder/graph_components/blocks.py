@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from typing import List, Dict, Any, Optional
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -97,5 +96,11 @@ class CloudformationBlock(Block):
     def _handle_unique_key_characters(self, key: str) -> str:
         # `::` is not a valid jsonpath character, but cloudformation have multiple functions like `Fn::If` which use it,
         # so we solve it with escaping using parenthesis
-        key = re.sub(r'(Fn::\w+)', r'"\1"', key)
-        return key
+        key_parts = key.split(".")
+        updated_key = ""
+        for part in key_parts:
+            if part.startswith("Fn::"):
+                updated_key += f'"{part}"'
+            else:
+                updated_key += part
+        return updated_key

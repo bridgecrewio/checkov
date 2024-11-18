@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from collections.abc import Collection
 from typing import Union, Dict, Any, List, cast
 
@@ -190,7 +189,13 @@ class Block:
         """
         key = self._handle_unique_key_characters(key)
         # Replace .0 with [0] to match jsonpath style
-        jsonpath_key = "$." + re.sub(r'\.(\d+)', r'[\1]', key)
+        jsonpath_key = "$."
+        key_parts = key.split(".")
+        for part in key_parts:
+            if part.isnumeric():
+                jsonpath_key += f"[{part}]"
+            else:
+                jsonpath_key += part
         expr = parse(jsonpath_key)
         match = expr.find(self.attributes)
         if match:
