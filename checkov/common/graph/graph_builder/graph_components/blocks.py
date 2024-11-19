@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import typing
 from collections.abc import Collection
 from typing import Union, Dict, Any, List, cast
 
@@ -10,6 +11,9 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 from bc_jsonpath_ng.ext import parse
+
+if typing.TYPE_CHECKING:
+    from bc_jsonpath_ng import JSONPath
 
 
 class Block:
@@ -27,6 +31,8 @@ class Block:
         "dynamic_attributes",
         "foreach_attrs"
     )
+
+    jsonpath_parsed_statement_cache: "dict[str, JSONPath]" = {}  # noqa: CCE003  # global cache
 
     def __init__(
             self,
@@ -187,6 +193,18 @@ class Block:
         When updating all the attributes we might try to update a specific attribute inside a complex object,
         so we use jsonpath to refer to the specific location only.
         """
+        if key not in Block.jsonpath_parsed_statement_cache:
+            jsonpath_key = self._get_jsonpath_key(key)
+            expr = parse(jsonpath_key)
+            Block.jsonpath_parsed_statement_cache[key] = expr
+        else:
+            expr = Block.jsonpath_parsed_statement_cache[key]
+        match = expr.find(self.attributes)
+        if match:
+            match[0].value = attribute_value
+        return None
+
+    def _get_jsonpath_key(self, key: str) -> str:
         key = self._handle_unique_key_characters(key)
         # Replace .0 with [0] to match jsonpath style
         jsonpath_key = "$."
@@ -196,11 +214,7 @@ class Block:
                 jsonpath_key += f"[{part}]"
             else:
                 jsonpath_key += part
-        expr = parse(jsonpath_key)
-        match = expr.find(self.attributes)
-        if match:
-            match[0].value = attribute_value
-        return None
+        return jsonpath_key
 
     def _handle_unique_key_characters(self, key: str) -> str:
         return key
