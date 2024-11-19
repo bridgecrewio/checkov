@@ -47,7 +47,6 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         if self.vertices_index_to_render:
             edges_to_render = self._remove_unrelated_edges(edges_to_render)
 
-        # edges_to_render = self.local_graph.get_in_edges(set(i for i in range(13)))
         end_vertices_indexes = set()
         loops = 0
         evaluated_edges_cache: list[list[Edge]] = [[], []]
