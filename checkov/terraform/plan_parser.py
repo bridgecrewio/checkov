@@ -234,6 +234,31 @@ def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) 
                 # In these cases, policies checking the existence of a value will succeed,
                 # but policies checking for concrete values will fail
                 resource_conf[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                _handle_complex_after_unknown(k, resource_conf, v)
+
+
+def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any) -> None:
+    """
+    Handles a case of an inner key generated with "after_unknown" value.
+    Example:
+        `
+        after_unknown: {
+            "logging_config": [
+            {
+              "bucket": true
+            }
+          ],
+        }
+        `
+    """
+    inner_keys = list(v[0].keys())
+    for inner_key in inner_keys:
+        if inner_key in (START_LINE, END_LINE):
+            # skip inner checkov keys
+            continue
+        if inner_key not in resource_conf[k]:
+            resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(

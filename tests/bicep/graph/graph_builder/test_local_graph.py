@@ -19,7 +19,7 @@ def test_build_graph():
 
     # then
     assert len(local_graph.vertices) == 24
-    assert len(local_graph.edges) == 29
+    assert len(local_graph.edges) == 33
 
     assert len(local_graph.vertices_by_block_type[BlockType.TARGET_SCOPE]) == 1
     assert len(local_graph.vertices_by_block_type[BlockType.PARAM]) == 5
@@ -35,10 +35,10 @@ def test_build_graph():
         {
             16: 9,
             19: 5,
-            20: 4,
+            20: 6,
             17: 3,
             18: 2,
-            21: 2,
+            21: 4,
             22: 2,
             23: 2,
         }
@@ -57,8 +57,8 @@ def test_build_graph():
             4: 1,
             15: 1,
             9: 1,
-            10: 1,
-            11: 1,
+            10: 2,
+            11: 2,
             18: 1,
             7: 1,
             22: 1,
@@ -66,5 +66,6 @@ def test_build_graph():
             8: 1,
             12: 1,
             14: 1,
+            19: 2,
         }
     )
