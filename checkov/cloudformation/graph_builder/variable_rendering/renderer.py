@@ -449,7 +449,6 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         ), None)
 
         if cfn_evaluation_function:
-            original_value = val_to_eval.get(cfn_evaluation_function, None)
 
             evaluated_edges: "list[_EvaluatedEdge]" = []
             for edge in edge_list:
