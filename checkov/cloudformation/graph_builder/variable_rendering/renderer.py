@@ -384,13 +384,17 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                 # The operand is a simple string
                 evaluated_value = operand_to_eval
                 evaluated_value_hierarchy = str(operand_index)
-            elif isinstance(operand_to_eval, dict) and ConditionFunctions.IF in operand_to_eval:
-                # The operand is {'Fn::If': new value to evaluate}
-                condition_to_eval = operand_to_eval[ConditionFunctions.IF]
-                if isinstance(condition_to_eval, list) and isinstance(condition_to_eval[0], str):
-                    condition_vertex_attributes = self._fetch_vertex_attributes(condition_to_eval[0], BlockType.CONDITIONS)
-                    evaluated_value, evaluated_value_operand_index = self._evaluate_if_connection(condition_to_eval, condition_vertex_attributes)
-                    evaluated_value_hierarchy = f'{operand_index}.{ConditionFunctions.IF}.{evaluated_value_operand_index}'
+            elif isinstance(operand_to_eval, dict):
+                if ConditionFunctions.IF in operand_to_eval:
+                    # The operand is {'Fn::If': new value to evaluate}
+                    condition_to_eval = operand_to_eval[ConditionFunctions.IF]
+                    if isinstance(condition_to_eval, list) and isinstance(condition_to_eval[0], str):
+                        condition_vertex_attributes = self._fetch_vertex_attributes(condition_to_eval[0], BlockType.CONDITIONS)
+                        evaluated_value, evaluated_value_operand_index = self._evaluate_if_connection(condition_to_eval, condition_vertex_attributes)
+                        evaluated_value_hierarchy = f'{operand_index}.{ConditionFunctions.IF}.{evaluated_value_operand_index}'
+                elif not any([op for op in self.CONDITIONS_EVALUATED_FUNCTIONS if op in operand_to_eval]):
+                    # The operand is a dict without any further actions to perform
+                    evaluated_value = operand_to_eval
 
         return evaluated_value, evaluated_value_hierarchy
 

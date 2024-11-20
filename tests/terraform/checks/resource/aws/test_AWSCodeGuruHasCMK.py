@@ -3,29 +3,27 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AKSUpgradeChannel import check
+from checkov.terraform.checks.resource.aws.AWSCodeGuruHasCMK import check
 
 
-class TestAKSUpgradeChannel(unittest.TestCase):
+class TestAWSCodeGuruHasCMK(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_AKSUpgradeChannel")
+        test_files_dir = os.path.join(current_dir, "example_AWSCodeGuruHasCMK")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_kubernetes_cluster.pass_new',
-            'azurerm_kubernetes_cluster.pass_old',
+            'aws_codegurureviewer_repository_association.pass'
         }
         failing_resources = {
-            'azurerm_kubernetes_cluster.fail_new',
-            'azurerm_kubernetes_cluster.fail2_new',
-            'azurerm_kubernetes_cluster.fail_old',
-            'azurerm_kubernetes_cluster.fail2_old',
+            'aws_codegurureviewer_repository_association.ckv_unittest_fail_no_encryption_option',
+            'aws_codegurureviewer_repository_association.ckv_unittest_fail_no_kms_key_details',
+            'aws_codegurureviewer_repository_association.ckv_unittest_fail_encryption_option_OWNED',
         }
         skipped_resources = {}
 
