@@ -461,7 +461,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                     logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
                     continue
 
-                if evaluated_value and evaluated_value != original_value:
+                if evaluated_value:
                     # succeeded to evaluate an edge
                     val_to_eval[cfn_evaluation_function] = evaluated_value
                     evaluated_edges.append({
