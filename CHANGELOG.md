@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.300...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.305...HEAD)
+
+## [3.2.305](https://github.com/bridgecrewio/checkov/compare/3.2.301...3.2.305) - 2024-11-19
+
+### Feature
+
+- **sca:** support java full dependency tree scan - [#6834](https://github.com/bridgecrewio/checkov/pull/6834)
+- **terraform:** Add check - ensure AWS CodeGuru resource contains CMK - [#6851](https://github.com/bridgecrewio/checkov/pull/6851)
+
+### Bug Fix
+
+- **general:** Used jsonpath to update vertex attributes - [#6852](https://github.com/bridgecrewio/checkov/pull/6852)
+- **terraform:**  Update EKS supported versions - [#6826](https://github.com/bridgecrewio/checkov/pull/6826)
+- **terraform:** Update CKV_AZURE_171 to check automatic_upgrade_channel - [#6756](https://github.com/bridgecrewio/checkov/pull/6756)
+
+## [3.2.301](https://github.com/bridgecrewio/checkov/compare/3.2.300...3.2.301) - 2024-11-18
+
+### Bug Fix
+
+- **secrets:** skip empty match - [#6849](https://github.com/bridgecrewio/checkov/pull/6849)
 
 ## [3.2.300](https://github.com/bridgecrewio/checkov/compare/3.2.296...3.2.300) - 2024-11-17
 
