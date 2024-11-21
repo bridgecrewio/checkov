@@ -209,7 +209,7 @@ class GitHistoryScanner:
         for file_name, file_diff in commit.files.items():
             if len(file_diff) == 0:
                 continue
-            file_results = [*scan.scan_diff(file_diff)]
+            file_results = [*scan.scan_diff(file_diff, commit_hash)]
             if file_results:
                 logging.debug(
                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
