@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
-SECRET_TYPE_TO_ID = {k
+SECRET_TYPE_TO_ID = {
     'AWS Access Key': 'CKV_SECRET_2',
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
