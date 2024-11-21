@@ -170,12 +170,12 @@ class CustomRegexDetector(RegexBasedDetector):
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
-                    mm = f"'{mm}'"
+                    quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
                         filename=filename,
-                        secret=mm,
-                        line_number=line_number,
+                        secret=quoted_mm,
+                        line_number=find_line_number(file_content, mm, line_number),
                         is_verified=is_verified,
                         is_added=is_added,
                         is_removed=is_removed,
@@ -216,3 +216,12 @@ class CustomRegexDetector(RegexBasedDetector):
                         yield submatch, regex
                 else:
                     yield match, regex
+
+
+def find_line_number(file_string: str, substring: str, default_line_number: int) -> int:
+    lines = file_string.splitlines()
+
+    for line_number, line in enumerate(lines, start=1):
+        if substring in line:
+            return line_number
+    return default_line_number
