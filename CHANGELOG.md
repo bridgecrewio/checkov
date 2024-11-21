@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.305...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.307...HEAD)
+
+## [3.2.307](https://github.com/bridgecrewio/checkov/compare/3.2.305...3.2.307) - 2024-11-20
+
+### Bug Fix
+
+- **arm:** Change ARM graph creation log lvl to debug - [#6857](https://github.com/bridgecrewio/checkov/pull/6857)
 
 ## [3.2.305](https://github.com/bridgecrewio/checkov/compare/3.2.301...3.2.305) - 2024-11-19
 
