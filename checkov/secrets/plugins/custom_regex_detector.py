@@ -227,5 +227,5 @@ def find_line_number(file_string: str, substring: str, default_line_number: int)
             if substring in line:
                 return line_number
         return default_line_number
-    except:
+    except Exception:
         return default_line_number
