@@ -14,7 +14,7 @@ class AzureContainerInstancePublicIPAddressType(BaseResourceValueCheck):
         return 'ip_address_type'
 
     def get_expected_values(self):
-        return ['Private','None']
+        return ['Private', 'None']
 
 
 check = AzureContainerInstancePublicIPAddressType()
