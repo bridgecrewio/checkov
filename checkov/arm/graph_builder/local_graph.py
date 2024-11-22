@@ -36,7 +36,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def build_graph(self, render_variables: bool = True) -> None:
         self._create_vertices()
-        logging.warning(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
+        logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
         '''
             In order to resolve the resources names for the dependencies we need to render the variables first
@@ -50,7 +50,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             self._update_resource_vertices_names()
 
         self._create_edges()
-        logging.warning(f"[ArmLocalGraph] created {len(self.edges)} edges")
+        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
