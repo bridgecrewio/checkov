@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, List, Union
+from typing import Optional, Any, Dict, List, Union, cast
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.util.type_forcers import force_int
@@ -15,12 +15,15 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         value = value if isinstance(value, list) else [value]
 
         # Process each item in the value list
-        processed_value = []
+        processed_value: List[Any] = []
         for v in value:
             if isinstance(v, str) and '-' in v:
                 # Handle range strings
-                start, end = map(force_int, v.split('-'))
-                processed_value.extend(range(start, end + 1))
+                start_str, end_str = v.split('-')
+                start = force_int(start_str)
+                end = force_int(end_str)
+                if start is not None and end is not None:
+                    processed_value.extend(range(start, end + 1))
             else:
                 # Handle single values
                 processed_value.append(force_int(v) if isinstance(v, (str, int)) else v)
