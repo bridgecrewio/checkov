@@ -76,7 +76,7 @@ class TestRangeNotIncludesSolver(TestBaseSolver):
 
     def test_range_not_includes_list_w_list_solver(self):
         root_folder = 'resources'
-        check_id = "RangeIncludesListWRange"
+        check_id = "RangeNotIncludesListWRange"
         should_fail = ['test.pass1', 'test.pass2', 'test.pass3', 'test.pass4', 'test.pass5', 'test.pass6', 'test.pass7',
                        'test.fail4']
         should_pass = ['test.fail1', 'test.fail2', 'test.fail3', 'test.fail5', 'test.fail6', 'test.fail7', 'test.fail8',
@@ -87,7 +87,7 @@ class TestRangeNotIncludesSolver(TestBaseSolver):
 
     def test_range_not_includes_list_w_list_jsonpath_solver(self):
         root_folder = 'resources'
-        check_id = "JsonPathRangeIncludesListWRange"
+        check_id = "JsonPathRangeNotIncludesListWRange"
         should_fail = ['test.pass1', 'test.pass2', 'test.pass3', 'test.pass4', 'test.pass5', 'test.pass6', 'test.pass7',
                        'test.fail4']
         should_pass = ['test.fail1', 'test.fail2', 'test.fail3', 'test.fail5', 'test.fail6', 'test.fail7', 'test.fail8',

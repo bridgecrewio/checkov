@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, List, Union, cast
+from typing import Optional, Any, Dict, List, Union
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.util.type_forcers import force_int
