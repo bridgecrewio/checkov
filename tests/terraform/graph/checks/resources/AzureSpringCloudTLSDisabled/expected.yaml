@@ -1,0 +1,7 @@
+pass:
+  - "azurerm_spring_cloud_service.pass"
+  - "azurerm_spring_cloud_service.pass_basic"
+  - "azurerm_spring_cloud_service.pass_notset"
+fail:
+  - "azurerm_spring_cloud_service.fail_notset"
+  - "azurerm_spring_cloud_service.fail"
