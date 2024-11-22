@@ -12,9 +12,20 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
             is_jsonpath_check: bool = False
     ) -> None:
         # Convert value to a list if it's not already one to unify handling
-        value = [force_int(v) if isinstance(v, (str, int)) else v for v in
-                 (value if isinstance(value, list) else [value])]
-        super().__init__(resource_types, attribute, value, is_jsonpath_check)
+        value = value if isinstance(value, list) else [value]
+
+        # Process each item in the value list
+        processed_value = []
+        for v in value:
+            if isinstance(v, str) and '-' in v:
+                # Handle range strings
+                start, end = map(force_int, v.split('-'))
+                processed_value.extend(range(start, end + 1))
+            else:
+                # Handle single values
+                processed_value.append(force_int(v) if isinstance(v, (str, int)) else v)
+
+        super().__init__(resource_types, attribute, processed_value, is_jsonpath_check)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
