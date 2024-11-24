@@ -79,7 +79,6 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         report = Report(self.check_type)
         if not self.context or not self.definitions:
             files_list: "Iterable[str]" = []
-            filepath_fn = None
             if external_checks_dir:
                 for directory in external_checks_dir:
                     arm_resource_registry.load_external_checks(directory)
@@ -91,12 +90,11 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 files_list = files.copy()
 
             if root_folder:
-                filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
                 self.root_folder = root_folder
 
                 files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
+            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list)
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
             report.add_parsing_errors(parsing_errors)
 

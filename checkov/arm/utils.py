@@ -55,7 +55,7 @@ def create_definitions(
 
     if root_folder:
         file_paths = get_scannable_file_paths(root_folder, runner_filter.excluded_paths)
-        definitions, definitions_raw, parsing_errors = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
+        definitions, definitions_raw, parsing_errors = get_files_definitions(files=file_paths)
 
     if parsing_errors:
         logging.warning(f"[arm] found errors while parsing definitions: {parsing_errors}")
