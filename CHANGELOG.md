@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.307...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.311...HEAD)
+
+## [3.2.311](https://github.com/bridgecrewio/checkov/compare/3.2.307...3.2.311) - 2024-11-21
+
+### Bug Fix
+
+- **cloudformation:** Fixed issue where Ref was not rendered correctly if the parameter name was identical to the default value - [#6856](https://github.com/bridgecrewio/checkov/pull/6856)
+- **secrets:** fix find line - [#6864](https://github.com/bridgecrewio/checkov/pull/6864)
+- **secrets:** masking test format - [#6859](https://github.com/bridgecrewio/checkov/pull/6859)
+- **secrets:** multiline matches show the secret and not the first line - [#6854](https://github.com/bridgecrewio/checkov/pull/6854)
 
 ## [3.2.307](https://github.com/bridgecrewio/checkov/compare/3.2.305...3.2.307) - 2024-11-20
 
