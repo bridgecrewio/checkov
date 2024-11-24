@@ -274,7 +274,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                     check=check,
                     check_result=check_result,
                     code_block=self.definitions_raw[entity_file_path][start_line:end_line],
-                    file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
+                    file_path=self.extract_file_path_from_abs_path(clean_file_path(Path(entity_file_path))),
                     file_abs_path=os.path.abspath(entity_file_path),
                     file_line_range=[start_line - 1, end_line - 1],
                     resource_id=entity[CustomAttributes.ID],
