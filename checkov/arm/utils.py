@@ -115,3 +115,8 @@ def extract_resource_name_from_reference_func(reference: str) -> str:
 
 def clean_string(input: str) -> str:
     return input.replace("'", '').replace(" ", "")
+
+def clean_file_path(file_path: Path) -> Path:
+    path_parts = [part for part in file_path.parts if part not in (".", "..")]
+
+    return Path(*path_parts)
