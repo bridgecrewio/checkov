@@ -247,7 +247,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                     check=check,
                                     check_result=check_result,
                                     code_block=censored_code_lines,
-                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                    file_path=arm_file,
                                     file_abs_path=file_abs_path,
                                     file_line_range=entity_lines_range,
                                     resource_id=resource_id,
