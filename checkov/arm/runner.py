@@ -140,7 +140,6 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 path_to_convert = (os.path.join(root_folder, arm_file)) if root_folder else arm_file
 
             file_abs_path = os.path.abspath(path_to_convert)
-            cleaned_path = clean_file_path(Path(arm_file))
 
             if isinstance(self.definitions[arm_file], dict):
                 arm_context_parser = ContextParser(arm_file, self.definitions[arm_file], self.definitions_raw[arm_file])
@@ -198,7 +197,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                         check_name=check.name,
                                         check_result=check_result,
                                         code_block=entity_code_lines,
-                                        file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                        file_path=arm_file,
                                         file_line_range=entity_lines_range,
                                         resource=resource_id,
                                         evaluations=variable_evaluations,
@@ -213,7 +212,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                 report.extra_resources.add(
                                     ExtraResource(
                                         file_abs_path=file_abs_path,
-                                        file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                        file_path=arm_file,
                                         resource=resource_id,
                                     )
                                 )
@@ -315,4 +314,4 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         report.add_record(record=record)
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
-        return f"${os.path.sep}{os.path.relpath(path, self.root_folder)}"
+        return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
