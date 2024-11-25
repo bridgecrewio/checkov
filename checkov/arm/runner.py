@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import Iterable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 from typing_extensions import TypeAlias  # noqa[TC002]
 
@@ -11,11 +12,12 @@ from checkov.arm.graph_builder.graph_to_definitions import convert_graph_vertice
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
-from checkov.arm.utils import get_scannable_file_paths, get_files_definitions, ARM_POSSIBLE_ENDINGS, ArmElements
+from checkov.arm.utils import get_scannable_file_paths, get_files_definitions, ARM_POSSIBLE_ENDINGS, ArmElements, clean_file_path
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
+from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -77,7 +79,6 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         report = Report(self.check_type)
         if not self.context or not self.definitions:
             files_list: "Iterable[str]" = []
-            filepath_fn = None
             if external_checks_dir:
                 for directory in external_checks_dir:
                     arm_resource_registry.load_external_checks(directory)
@@ -89,12 +90,11 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 files_list = files.copy()
 
             if root_folder:
-                filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
                 self.root_folder = root_folder
 
                 files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
+            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list)
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
             report.add_parsing_errors(parsing_errors)
 
@@ -128,16 +128,8 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
 
         for arm_file in self.definitions.keys():
             self.pbar.set_additional_data({"Current File Scanned": os.path.relpath(arm_file, root_folder)})
-            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
-            # or there will be no leading slash; root_folder will always be none.
-            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-            # The goal here is simply to get a valid path to the file (which arm_file does not always give).
-            if arm_file[0] == "/":
-                path_to_convert = (root_folder + arm_file) if root_folder else arm_file
-            else:
-                path_to_convert = (os.path.join(root_folder, arm_file)) if root_folder else arm_file
 
-            file_abs_path = os.path.abspath(path_to_convert)
+            file_abs_path = os.path.abspath(arm_file)
 
             if isinstance(self.definitions[arm_file], dict):
                 arm_context_parser = ContextParser(arm_file, self.definitions[arm_file], self.definitions_raw[arm_file])
@@ -263,7 +255,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         for check, check_results in graph_checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path: str = entity[CustomAttributes.FILE_PATH]
+                entity_file_path = entity[CustomAttributes.FILE_PATH]
                 start_line = entity[START_LINE] - 1
                 end_line = entity[END_LINE] - 1
 
@@ -272,7 +264,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                     check=check,
                     check_result=check_result,
                     code_block=self.definitions_raw[entity_file_path][start_line:end_line],
-                    file_path=entity_file_path,
+                    file_path=self.extract_file_path_from_abs_path(clean_file_path(Path(entity_file_path))),
                     file_abs_path=os.path.abspath(entity_file_path),
                     file_line_range=[start_line - 1, end_line - 1],
                     resource_id=entity[CustomAttributes.ID],
@@ -304,5 +296,12 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             file_abs_path=file_abs_path,
             severity=check.severity,
         )
+        if self.breadcrumbs:
+            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+            if breadcrumb:
+                record = GraphRecord(record, breadcrumb)
         record.set_guideline(check.guideline)
         report.add_record(record=record)
+
+    def extract_file_path_from_abs_path(self, path: Path) -> str:
+        return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
