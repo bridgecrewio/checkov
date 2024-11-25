@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.311...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.312...HEAD)
+
+## [3.2.312](https://github.com/bridgecrewio/checkov/compare/3.2.311...3.2.312) - 2024-11-24
+
+### Bug Fix
+
+- **arm:** Fix arm graph breadcrumbs - [#6869](https://github.com/bridgecrewio/checkov/pull/6869)
 
 ## [3.2.311](https://github.com/bridgecrewio/checkov/compare/3.2.307...3.2.311) - 2024-11-21
 
