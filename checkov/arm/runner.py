@@ -79,7 +79,6 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         report = Report(self.check_type)
         if not self.context or not self.definitions:
             files_list: "Iterable[str]" = []
-            filepath_fn = None
             if external_checks_dir:
                 for directory in external_checks_dir:
                     arm_resource_registry.load_external_checks(directory)
@@ -91,12 +90,11 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 files_list = files.copy()
 
             if root_folder:
-                filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
                 self.root_folder = root_folder
 
                 files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
+            self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list)
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
             report.add_parsing_errors(parsing_errors)
 
@@ -130,16 +128,8 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
 
         for arm_file in self.definitions.keys():
             self.pbar.set_additional_data({"Current File Scanned": os.path.relpath(arm_file, root_folder)})
-            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
-            # or there will be no leading slash; root_folder will always be none.
-            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-            # The goal here is simply to get a valid path to the file (which arm_file does not always give).
-            if arm_file[0] == "/":
-                path_to_convert = (root_folder + arm_file) if root_folder else arm_file
-            else:
-                path_to_convert = (os.path.join(root_folder, arm_file)) if root_folder else arm_file
 
-            file_abs_path = os.path.abspath(path_to_convert)
+            file_abs_path = os.path.abspath(arm_file)
 
             if isinstance(self.definitions[arm_file], dict):
                 arm_context_parser = ContextParser(arm_file, self.definitions[arm_file], self.definitions_raw[arm_file])
