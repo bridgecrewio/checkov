@@ -188,8 +188,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # But checking here adds some resiliency against bugs if that changes.
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
-            logging.debug(f'check_suppression type Resources {suppression}.'
-                          f' resource_id = {record.repo_file_path}:{record.resource} repo_id = {self.bc_integration.repo_id}')
+            logging.debug(f'check_suppression type Resources {suppression}. resource_id = {record.repo_file_path}:{record.resource} repo_id = {self.bc_integration.repo_id}')
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
