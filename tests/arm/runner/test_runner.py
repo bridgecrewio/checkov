@@ -92,7 +92,6 @@ class TestRunnerValid(unittest.TestCase):
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}/{file_name}')
 
     def test_record_relative_path_with_relative_file(self):
-
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
