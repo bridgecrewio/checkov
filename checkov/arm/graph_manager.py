@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, Any
 
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
