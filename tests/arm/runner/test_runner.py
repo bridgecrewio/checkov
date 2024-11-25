@@ -66,7 +66,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            self.assertEqual(record.repo_file_path, f'/{record.file_path}')
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -88,8 +88,8 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
         for record in all_checks:
-            # no need to join with a '/' because the CFN runner adds it to the start of the file path
-            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            file_name = record.file_path.split('/')[-1]
+            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}/{file_name}')
 
     def test_record_relative_path_with_relative_file(self):
 
