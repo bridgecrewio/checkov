@@ -16,7 +16,6 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.file_utils import convert_to_unix_path
 from checkov.common.util.str_utils import removeprefix, align_path
-from checkov.common.output.record import Record
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
