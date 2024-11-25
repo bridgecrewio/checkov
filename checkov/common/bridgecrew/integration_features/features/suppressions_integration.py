@@ -124,7 +124,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             relevant_suppressions_v2 = self.suppressions_v2.get(check.check_id)
 
             has_suppression = relevant_suppressions or relevant_suppressions_v2
-            logging.debug(f'(apply_suppressions_to_report) - number of suppression {len(has_suppression)}')
+            if isinstance(has_suppression, list):
+                logging.debug(f'(_apply_suppressions_to_report) - number of suppression {len(has_suppression)}')
             applied_suppression = self._check_suppressions(check, relevant_suppressions, relevant_suppressions_v2) if has_suppression else None
             if applied_suppression:
                 suppress_comment = applied_suppression['comment'] if applied_suppression['isV1'] else applied_suppression['justificationComment']
