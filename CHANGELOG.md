@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.312...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.314...HEAD)
+
+## [3.2.314](https://github.com/bridgecrewio/checkov/compare/3.2.312...3.2.314) - 2024-11-25
+
+### Feature
+
+- **general:** add logs for suppression - [#6873](https://github.com/bridgecrewio/checkov/pull/6873)
+
+### Bug Fix
+
+- **arm:** Fix arm resource naming on integration with Prisma - [#6870](https://github.com/bridgecrewio/checkov/pull/6870)
 
 ## [3.2.312](https://github.com/bridgecrewio/checkov/compare/3.2.311...3.2.312) - 2024-11-24
 
