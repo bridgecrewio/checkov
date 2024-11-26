@@ -161,7 +161,9 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                             logging.debug(f"Could not determine 'resource_id' of Resource {resource}")
                             continue
 
-                        report.add_resource(f"{arm_file}:{resource_id}")
+                        cleaned_path = clean_file_path(Path(arm_file))
+
+                        report.add_resource(f"{cleaned_path}:{resource_id}")
                         entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(
                             resource
                         )
@@ -187,7 +189,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                         check_name=check.name,
                                         check_result=check_result,
                                         code_block=entity_code_lines,
-                                        file_path=arm_file,
+                                        file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                         file_line_range=entity_lines_range,
                                         resource=resource_id,
                                         evaluations=variable_evaluations,
@@ -202,7 +204,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                 report.extra_resources.add(
                                     ExtraResource(
                                         file_abs_path=file_abs_path,
-                                        file_path=arm_file,
+                                        file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                         resource=resource_id,
                                     )
                                 )
@@ -232,12 +234,13 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                                     entity_config=parameter_details,
                                     resource_attributes_to_omit=runner_filter.resource_attr_to_omit,
                                 )
+                                cleaned_path = clean_file_path(Path(arm_file))
                                 self.build_record(
                                     report=report,
                                     check=check,
                                     check_result=check_result,
                                     code_block=censored_code_lines,
-                                    file_path=arm_file,
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                     file_abs_path=file_abs_path,
                                     file_line_range=entity_lines_range,
                                     resource_id=resource_id,
