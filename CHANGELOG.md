@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.314...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.317...HEAD)
+
+## [3.2.317](https://github.com/bridgecrewio/checkov/compare/3.2.314...3.2.317) - 2024-11-26
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6872](https://github.com/bridgecrewio/checkov/pull/6872)
+
+### Bug Fix
+
+- **arm:** Fix arm report resource naming - [#6876](https://github.com/bridgecrewio/checkov/pull/6876)
+- **terraform:** Fix two checks and logs - [#6874](https://github.com/bridgecrewio/checkov/pull/6874)
 
 ## [3.2.314](https://github.com/bridgecrewio/checkov/compare/3.2.312...3.2.314) - 2024-11-25
 
