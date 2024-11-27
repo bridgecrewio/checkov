@@ -29,7 +29,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             attr_path, attr_value = self.extract_dest_attribute_path_and_value(dest_index=edge.dest,
                                                                                origin_value=value_to_eval)
             if not attr_value:
-                return
+                continue
 
             '''if the arg start with '[parameters'/ '[variables' its mean we need to eval the all attribute
             like here - "addressPrefix": "[parameters('subnetAddressPrefix')]" '''
