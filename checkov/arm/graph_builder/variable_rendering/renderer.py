@@ -46,7 +46,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
         self.local_graph.update_vertex_attribute(
             vertex_index=edge_list[0].origin,
             attribute_key=edge_list[0].label,
-            attribute_value=new_value_to_eval if new_val_to_eval else val_to_eval,
+            attribute_value=new_value_to_eval if new_value_to_eval else val_to_eval,
             change_origin_id=edge_list[0].dest,
             attribute_at_dest=attr_path,
         )
