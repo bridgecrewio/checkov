@@ -24,6 +24,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
     def evaluate_vertex_attribute_from_edge(self, edge_list: list[Edge]) -> None:
         origin_vertex_attributes = self.local_graph.vertices[edge_list[0].origin].attributes
         val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge_list[0].label, ""))
+        new_value_to_eval = None
         attr_path = None
         for edge in edge_list:
             attr_path, attr_value = self.extract_dest_attribute_path_and_value(dest_index=edge.dest,
@@ -40,12 +41,12 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             '''
             val_to_replace = self.local_graph.vertices[edge.dest].id.replace(".", "('") + "')"
             if attr_value and isinstance(val_to_eval, str):
-                val_to_eval = val_to_eval.replace(val_to_replace, str(attr_value))
+                new_value_to_eval = val_to_eval.replace(val_to_replace, str(attr_value))
 
         self.local_graph.update_vertex_attribute(
             vertex_index=edge_list[0].origin,
             attribute_key=edge_list[0].label,
-            attribute_value=val_to_eval,
+            attribute_value=new_value_to_eval if new_val_to_eval else val_to_eval,
             change_origin_id=edge_list[0].dest,
             attribute_at_dest=attr_path,
         )
