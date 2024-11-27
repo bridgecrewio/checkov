@@ -3,28 +3,26 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.ACRUseSignedImages import check
+from checkov.terraform.checks.resource.azure.AzureContainerInstancePublicIPAddressType import check
 
 
-class TestACRUseSignedImages(unittest.TestCase):
+class TestAzureContainerInstancePublicIPAddressType(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_ACRUseSignedImages")
+        test_files_dir = os.path.join(current_dir, "example_AzureContainerInstancePublicIPAddressType")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_container_registry.pass_new',
-            'azurerm_container_registry.pass_old',
+            'azurerm_container_group.pass',
         }
         failing_resources = {
-            'azurerm_container_registry.fail',
-            'azurerm_container_registry.fail2_new',
-            'azurerm_container_registry.fail2_old'
+            'azurerm_container_group.fail_notset',
+            'azurerm_container_group.fail_public',
         }
         skipped_resources = {}
 
