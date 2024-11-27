@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.317...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.320...HEAD)
+
+## [3.2.320](https://github.com/bridgecrewio/checkov/compare/3.2.317...3.2.320) - 2024-11-27
+
+### Feature
+
+- **terraform:** Add new checks to match run checks - [#6868](https://github.com/bridgecrewio/checkov/pull/6868)
+
+### Bug Fix
+
+- **arm:** Fix arm root folder - [#6880](https://github.com/bridgecrewio/checkov/pull/6880)
+- **terraform:** Update CKV_AZURE_164 to correct check on trust policy - [#6757](https://github.com/bridgecrewio/checkov/pull/6757)
 
 ## [3.2.317](https://github.com/bridgecrewio/checkov/compare/3.2.314...3.2.317) - 2024-11-26
 
