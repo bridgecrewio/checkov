@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, Set, Union, List
+from typing import Optional, Any, Dict, Set
 import ipaddress
 
 from checkov.common.graph.checks_infra.enums import Operators
@@ -6,9 +6,12 @@ from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver
 
 
 class CIDRRangeSubsetAttributeSolver(BaseAttributeSolver):
-    operator = Operators.CIDR_RANGE_SUBSET
+    operator = Operators.CIDR_RANGE_SUBSET  # noqa: CCE003  # a static attribute
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+        if attribute is None:
+            return False  # Explicitly handle None attribute
+
         attr_val = vertex.get(attribute)
         if not attr_val:
             return False
@@ -26,10 +29,18 @@ class CIDRRangeSubsetAttributeSolver(BaseAttributeSolver):
     def _to_cidr_set(value: Any) -> Set[ipaddress.IPv4Network]:
         """
         Converts a value (string, list, set, etc.) into a set of IPv4Network objects.
+        Filters out any IPv6 networks.
         """
+        cidr_set = set()
         if isinstance(value, str):
-            return {ipaddress.ip_network(value, strict=False)}
+            network = ipaddress.ip_network(value, strict=False)
+            if isinstance(network, ipaddress.IPv4Network):
+                cidr_set.add(network)
         elif isinstance(value, (list, set)):
-            return {ipaddress.ip_network(v, strict=False) for v in value}
+            for v in value:
+                network = ipaddress.ip_network(v, strict=False)
+                if isinstance(network, ipaddress.IPv4Network):
+                    cidr_set.add(network)
         else:
             raise ValueError(f"Unsupported type for CIDR conversion: {type(value)}")
+        return cidr_set
