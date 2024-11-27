@@ -25,3 +25,23 @@ resource "test" "fail2" {
 resource "test" "fail3" {
   cidr_value = "10.0.0.0/6"
 }
+
+resource "test" "ipv6_pass1" {
+  ipv6_cidr_value = "fd12:3456:789a::/48"
+}
+
+resource "test" "ipv6_pass2" {
+  ipv6_cidr_value = "fcab::/64"
+}
+
+resource "test" "ipv6_fail1" {
+  ipv6_cidr_value = "2001:db8::/32"
+}
+
+resource "test" "ipv6_fail2" {
+  ipv6_cidr_value = "2001:0db8:1234::/48"
+}
+
+resource "test" "ipv6_unknown1" {
+  ipv6_cidr_value = "foo"
+}

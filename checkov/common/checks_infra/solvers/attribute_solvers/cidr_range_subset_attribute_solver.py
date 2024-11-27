@@ -16,31 +16,43 @@ class CIDRRangeSubsetAttributeSolver(BaseAttributeSolver):
         if not attr_val:
             return False
 
-        # Convert the solver value into a set of CIDR networks
-        allowed_ranges = self._to_cidr_set(self.value)
-        # Convert the vertex attribute to a set of CIDR networks
-        vertex_ranges = self._to_cidr_set(attr_val)
+        # Convert the solver value into sets of IPv4 and IPv6 CIDR networks
+        allowed_ranges_v4, allowed_ranges_v6 = self._to_cidr_sets(self.value)
+        # Convert the vertex attribute to sets of IPv4 and IPv6 CIDR networks
+        vertex_ranges_v4, vertex_ranges_v6 = self._to_cidr_sets(attr_val)
 
         # Check if all vertex ranges are subsets of at least one of the allowed ranges
-        return all(any(vertex_cidr.subnet_of(allowed_cidr) for allowed_cidr in allowed_ranges) for vertex_cidr in
-                   vertex_ranges)
+        v4_subset_check = all(
+            any(vertex_cidr.subnet_of(allowed_cidr) for allowed_cidr in allowed_ranges_v4)
+            for vertex_cidr in vertex_ranges_v4
+        )
+        v6_subset_check = all(
+            any(vertex_cidr.subnet_of(allowed_cidr) for allowed_cidr in allowed_ranges_v6)
+            for vertex_cidr in vertex_ranges_v6
+        )
+
+        return v4_subset_check and v6_subset_check
 
     @staticmethod
-    def _to_cidr_set(value: Any) -> Set[ipaddress.IPv4Network]:
+    def _to_cidr_sets(value: Any) -> tuple[Set[ipaddress.IPv4Network], Set[ipaddress.IPv6Network]]:
         """
-        Converts a value (string, list, set, etc.) into a set of IPv4Network objects.
-        Filters out any IPv6 networks.
+        Converts a value (string, list, set, etc.) into separate sets of IPv4Network and IPv6Network objects.
         """
-        cidr_set = set()
+        cidr_set_v4 = set()
+        cidr_set_v6 = set()
         if isinstance(value, str):
             network = ipaddress.ip_network(value, strict=False)
             if isinstance(network, ipaddress.IPv4Network):
-                cidr_set.add(network)
+                cidr_set_v4.add(network)
+            elif isinstance(network, ipaddress.IPv6Network):
+                cidr_set_v6.add(network)
         elif isinstance(value, (list, set)):
             for v in value:
                 network = ipaddress.ip_network(v, strict=False)
                 if isinstance(network, ipaddress.IPv4Network):
-                    cidr_set.add(network)
+                    cidr_set_v4.add(network)
+                elif isinstance(network, ipaddress.IPv6Network):
+                    cidr_set_v6.add(network)
         else:
             raise ValueError(f"Unsupported type for CIDR conversion: {type(value)}")
-        return cidr_set
+        return cidr_set_v4, cidr_set_v6
