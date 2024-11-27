@@ -11,12 +11,28 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
             self, resource_types: List[str], attribute: Optional[str], value: Union[Any, List[Any]],
             is_jsonpath_check: bool = False
     ) -> None:
+        super().__init__(resource_types, attribute, value, is_jsonpath_check)
+
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
+
+        if attr is None:
+            return False
+
+        processed_value = self._handle_range_values(self.value)
+
+        if isinstance(attr, list):
+            return any(self._check_value(value, attr_val) for attr_val in attr for value in processed_value)
+
+        return any(self._check_value(value, attr) for value in processed_value)
+
+    def _handle_range_values(self, value: Union[Any, List[Any]]) -> List[Any]:
         # Convert value to a list if it's not already one to unify handling
-        value = value if isinstance(value, list) else [value]
+        value_list = value if isinstance(value, list) else [value]
 
         # Process each item in the value list
         processed_value: List[Any] = []
-        for v in value:
+        for v in value_list:
             if isinstance(v, str) and '-' in v:
                 # Handle range strings
                 start_str, end_str = v.split('-')
@@ -28,18 +44,7 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
                 # Handle single values
                 processed_value.append(force_int(v) if isinstance(v, (str, int)) else v)
 
-        super().__init__(resource_types, attribute, processed_value, is_jsonpath_check)
-
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
-
-        if attr is None:
-            return False
-
-        if isinstance(attr, list):
-            return any(self._check_value(value, attr_val) for attr_val in attr for value in self.value)
-
-        return any(self._check_value(value, attr) for value in self.value)
+        return processed_value
 
     def _check_value(self, value: Any, attr: Any) -> bool:
         # expects one of the following values:
