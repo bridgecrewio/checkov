@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.320...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.322...HEAD)
+
+## [3.2.322](https://github.com/bridgecrewio/checkov/compare/3.2.320...3.2.322) - 2024-11-28
+
+### Feature
+
+- **general:** Update range includes to handle range values - [#6867](https://github.com/bridgecrewio/checkov/pull/6867)
+
+### Bug Fix
+
+- **general:** fix_memory error with adding new env - [#6879](https://github.com/bridgecrewio/checkov/pull/6879)
+- **general:** revert comment out ARM test - [#6882](https://github.com/bridgecrewio/checkov/pull/6882)
 
 ## [3.2.320](https://github.com/bridgecrewio/checkov/compare/3.2.317...3.2.320) - 2024-11-27
 
