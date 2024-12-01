@@ -282,7 +282,6 @@ class RunnerRegistry:
         integration_feature_registry.run_post_runner(scan_report)
         self.scan_reports.append(scan_report)
 
-
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
         try:
             file_path = Path(file_name)
