@@ -270,7 +270,6 @@ class RunnerRegistry:
         return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
-        integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
@@ -281,6 +280,7 @@ class RunnerRegistry:
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
+        integration_feature_registry.run_post_runner(scan_report)
 
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
         try:
