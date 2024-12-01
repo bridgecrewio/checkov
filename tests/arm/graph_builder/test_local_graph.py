@@ -51,7 +51,7 @@ def test_graph_params_vars():
 
     # then
     assert len(local_graph.vertices) == 18
-    assert len(local_graph.edges) == 20
+    assert len(local_graph.edges) == 24
 
     assert len(local_graph.vertices_by_block_type[BlockType.PARAMETER]) == 11
     assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4

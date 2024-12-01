@@ -1,6 +1,124 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.291...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.322...HEAD)
+
+## [3.2.322](https://github.com/bridgecrewio/checkov/compare/3.2.320...3.2.322) - 2024-11-28
+
+### Feature
+
+- **general:** Update range includes to handle range values - [#6867](https://github.com/bridgecrewio/checkov/pull/6867)
+
+### Bug Fix
+
+- **general:** fix_memory error with adding new env - [#6879](https://github.com/bridgecrewio/checkov/pull/6879)
+- **general:** revert comment out ARM test - [#6882](https://github.com/bridgecrewio/checkov/pull/6882)
+
+## [3.2.320](https://github.com/bridgecrewio/checkov/compare/3.2.317...3.2.320) - 2024-11-27
+
+### Feature
+
+- **terraform:** Add new checks to match run checks - [#6868](https://github.com/bridgecrewio/checkov/pull/6868)
+
+### Bug Fix
+
+- **arm:** Fix arm root folder - [#6880](https://github.com/bridgecrewio/checkov/pull/6880)
+- **terraform:** Update CKV_AZURE_164 to correct check on trust policy - [#6757](https://github.com/bridgecrewio/checkov/pull/6757)
+
+## [3.2.317](https://github.com/bridgecrewio/checkov/compare/3.2.314...3.2.317) - 2024-11-26
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6872](https://github.com/bridgecrewio/checkov/pull/6872)
+
+### Bug Fix
+
+- **arm:** Fix arm report resource naming - [#6876](https://github.com/bridgecrewio/checkov/pull/6876)
+- **terraform:** Fix two checks and logs - [#6874](https://github.com/bridgecrewio/checkov/pull/6874)
+
+## [3.2.314](https://github.com/bridgecrewio/checkov/compare/3.2.312...3.2.314) - 2024-11-25
+
+### Feature
+
+- **general:** add logs for suppression - [#6873](https://github.com/bridgecrewio/checkov/pull/6873)
+
+### Bug Fix
+
+- **arm:** Fix arm resource naming on integration with Prisma - [#6870](https://github.com/bridgecrewio/checkov/pull/6870)
+
+## [3.2.312](https://github.com/bridgecrewio/checkov/compare/3.2.311...3.2.312) - 2024-11-24
+
+### Bug Fix
+
+- **arm:** Fix arm graph breadcrumbs - [#6869](https://github.com/bridgecrewio/checkov/pull/6869)
+
+## [3.2.311](https://github.com/bridgecrewio/checkov/compare/3.2.307...3.2.311) - 2024-11-21
+
+### Bug Fix
+
+- **cloudformation:** Fixed issue where Ref was not rendered correctly if the parameter name was identical to the default value - [#6856](https://github.com/bridgecrewio/checkov/pull/6856)
+- **secrets:** fix find line - [#6864](https://github.com/bridgecrewio/checkov/pull/6864)
+- **secrets:** masking test format - [#6859](https://github.com/bridgecrewio/checkov/pull/6859)
+- **secrets:** multiline matches show the secret and not the first line - [#6854](https://github.com/bridgecrewio/checkov/pull/6854)
+
+## [3.2.307](https://github.com/bridgecrewio/checkov/compare/3.2.305...3.2.307) - 2024-11-20
+
+### Bug Fix
+
+- **arm:** Change ARM graph creation log lvl to debug - [#6857](https://github.com/bridgecrewio/checkov/pull/6857)
+
+## [3.2.305](https://github.com/bridgecrewio/checkov/compare/3.2.301...3.2.305) - 2024-11-19
+
+### Feature
+
+- **sca:** support java full dependency tree scan - [#6834](https://github.com/bridgecrewio/checkov/pull/6834)
+- **terraform:** Add check - ensure AWS CodeGuru resource contains CMK - [#6851](https://github.com/bridgecrewio/checkov/pull/6851)
+
+### Bug Fix
+
+- **general:** Used jsonpath to update vertex attributes - [#6852](https://github.com/bridgecrewio/checkov/pull/6852)
+- **terraform:**  Update EKS supported versions - [#6826](https://github.com/bridgecrewio/checkov/pull/6826)
+- **terraform:** Update CKV_AZURE_171 to check automatic_upgrade_channel - [#6756](https://github.com/bridgecrewio/checkov/pull/6756)
+
+## [3.2.301](https://github.com/bridgecrewio/checkov/compare/3.2.300...3.2.301) - 2024-11-18
+
+### Bug Fix
+
+- **secrets:** skip empty match - [#6849](https://github.com/bridgecrewio/checkov/pull/6849)
+
+## [3.2.300](https://github.com/bridgecrewio/checkov/compare/3.2.296...3.2.300) - 2024-11-17
+
+### Feature
+
+- **azure:** add new policies for Azure Synapse arm - [#6553](https://github.com/bridgecrewio/checkov/pull/6553)
+- **helm:** Made helm + kustomize use the Kubernetes graph registry - [#6847](https://github.com/bridgecrewio/checkov/pull/6847)
+- **secrets:** Adding check_id to EnrichedSecret class - [#6842](https://github.com/bridgecrewio/checkov/pull/6842)
+- **secrets:** Masking secrets files - [#6848](https://github.com/bridgecrewio/checkov/pull/6848)
+
+### Bug Fix
+
+- **secrets:** add prerun support for singleline - [#6846](https://github.com/bridgecrewio/checkov/pull/6846)
+- **terraform:** Update CKV_AZURE_167 to correct check on retention policy - [#6758](https://github.com/bridgecrewio/checkov/pull/6758)
+
+## [3.2.296](https://github.com/bridgecrewio/checkov/compare/3.2.293...3.2.296) - 2024-11-14
+
+### Feature
+
+- **cloudformation:** Support Fn::Sub in cases of using a pseudo parameter - [#6835](https://github.com/bridgecrewio/checkov/pull/6835)
+- **terraform:** support resource_type attribute - revert - [#6843](https://github.com/bridgecrewio/checkov/pull/6843)
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_32 (GoogleComputeBlockProjectSSH) Add other common enabling values - [#6663](https://github.com/bridgecrewio/checkov/pull/6663)
+
+## [3.2.293](https://github.com/bridgecrewio/checkov/compare/3.2.291...3.2.293) - 2024-11-13
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6830](https://github.com/bridgecrewio/checkov/pull/6830)
+
+### Bug Fix
+
+- **general:** fixed mypy issue - [#6838](https://github.com/bridgecrewio/checkov/pull/6838)
 
 ## [3.2.291](https://github.com/bridgecrewio/checkov/compare/3.2.287...3.2.291) - 2024-11-12
 
