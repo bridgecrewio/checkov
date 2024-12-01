@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.322...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.324...HEAD)
+
+## [3.2.324](https://github.com/bridgecrewio/checkov/compare/3.2.322...3.2.324) - 2024-12-01
+
+### Bug Fix
+
+- **terraform_plan:** run post_runner after get_enriched_resources for terraform_plan - [#6883](https://github.com/bridgecrewio/checkov/pull/6883)
 
 ## [3.2.322](https://github.com/bridgecrewio/checkov/compare/3.2.320...3.2.322) - 2024-11-28
 
