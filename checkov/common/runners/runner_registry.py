@@ -279,8 +279,9 @@ class RunnerRegistry:
             )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
-        self.scan_reports.append(scan_report)
         integration_feature_registry.run_post_runner(scan_report)
+        self.scan_reports.append(scan_report)
+
 
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
         try:
