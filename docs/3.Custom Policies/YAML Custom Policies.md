@@ -140,6 +140,8 @@ definition:
 | `range_not_includes`           | The range of the value or range of the <br>attribute does not include this value or range                         | String, Int | operator: "range_not_includes"<br>value: 3000 |
 | `number_of_words_equals`       | The number of words in the value of the <br>attribute is equal to this number                                     | String, Int | operator: number_of_words_equals<br>value: 6 |
 | `number_of_words_not_equals`   | The number of words in the value of the <br>attribute is not equal to this number                                 | String, Int | operator: number_of_words_not_equals<br>value: 6 |
+| `cidr_range_subset_attribute_solver`     | The value must be inside the CIDR range or ranges                                                                 | (List) String     | operator: cidr_range_subset_attribute_solver<br>value: "10.0.0.0/8"                                                                                       |
+| `cidr_range_not_subset_attribute_solver` | The value must not be inside the CIDR range or ranges                                                             | (List) String     | operator: cidr_range_not_subset_attribute_solver<br>value: "10.0.0.0/8"                                                                                   |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
