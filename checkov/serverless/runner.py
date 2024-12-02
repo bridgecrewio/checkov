@@ -187,7 +187,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
 
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations: Dict[str, Any]  = {}
+            variable_evaluations: Dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
@@ -243,7 +243,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
                 if entity_lines_range and entity_code_lines:
                     skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                    variable_evaluations: Dict[str, Any]  = {}
+                    variable_evaluations: Dict[str, Any] = {}
                     if token == "functions":  # nosec
                         # "Enriching" copies things like "environment" and "stackTags" down into the
                         # function data from the provider block since logically that's what serverless
