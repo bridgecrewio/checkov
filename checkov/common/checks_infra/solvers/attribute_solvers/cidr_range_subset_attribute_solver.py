@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, Set, Tuple
+from typing import Optional, Any, Dict, Set, Tuple, Union, List
 import ipaddress
 
 from checkov.common.graph.checks_infra.enums import Operators
@@ -34,8 +34,7 @@ class CIDRRangeSubsetAttributeSolver(BaseAttributeSolver):
         return v4_subset_check and v6_subset_check
 
     @staticmethod
-    @staticmethod
-    def _to_cidr_sets(value: Any) -> Tuple[Set[ipaddress.IPv4Network], Set[ipaddress.IPv6Network]]:
+    def _to_cidr_sets(value: Union[str, List, Set]) -> Tuple[Set[ipaddress.IPv4Network], Set[ipaddress.IPv6Network]]:
         """
         Converts a value (string, list, set, etc.) into separate sets of IPv4Network and IPv6Network objects.
         """
