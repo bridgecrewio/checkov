@@ -265,6 +265,10 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 start_line = entity[START_LINE] - 1
                 end_line = entity[END_LINE] - 1
 
+                if CustomAttributes.RESOURCE_TYPE not in entity or CustomAttributes.BLOCK_NAME not in entity:
+                    logging.debug(f"Could not determine 'resource_id' of Entity {entity_file_path}")
+                    continue
+
                 self.build_record(
                     report=report,
                     check=check,
