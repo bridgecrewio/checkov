@@ -273,7 +273,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                     file_path=self.extract_file_path_from_abs_path(clean_file_path(Path(entity_file_path))),
                     file_abs_path=str(file_abs_path),
                     file_line_range=[start_line - 1, end_line - 1],
-                    resource_id=entity[CustomAttributes.ID],
+                    resource_id=f'{entity[CustomAttributes.RESOURCE_TYPE]}.{entity[CustomAttributes.BLOCK_NAME]}',
                 )
 
     def build_record(
