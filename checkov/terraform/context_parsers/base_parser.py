@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -10,10 +11,12 @@ from typing import List, Dict, Any, Tuple
 
 import dpath
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
+from checkov.common.comment.enum import get_comment_regex
 from checkov.common.models.enums import ContextCategories
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.runners.base_runner import strtobool
 from checkov.terraform import TFDefinitionKey, get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -91,8 +94,10 @@ class BaseContextParser(ABC):
         """
         Collects checkov skip comments to all definition blocks
         :param definition_blocks: parsed definition blocks
-        :return: context enriched with with skipped checks per skipped entity
+        :return: context enriched with skipped checks per skipped entity
         """
+        should_allow_multi_checks_skip = bool(strtobool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False')))
+        comment_regex = get_comment_regex(should_allow_multi_checks_skip)
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         comments = [
             (
@@ -104,7 +109,7 @@ class BaseContextParser(ABC):
             )
             for (line_num, x) in self.file_lines
             if self.is_optional_comment_line(x)
-            for match in [re.search(COMMENT_REGEX, x)]
+            for match in [re.search(comment_regex, x)]
             if match
         ]
         for entity_block in definition_blocks:
@@ -124,13 +129,25 @@ class BaseContextParser(ABC):
             for (skip_check_line_num, skip_check) in comments:
                 if "start_line" in entity_context and "end_line" in entity_context \
                         and entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
-                    # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                    if bc_id_mapping and skip_check["id"] in bc_id_mapping:
-                        skip_check["bc_id"] = skip_check["id"]
-                        skip_check["id"] = bc_id_mapping[skip_check["id"]]
-                    elif metadata_integration.check_metadata:
-                        skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
-                    skipped_checks.append(skip_check)
+                    if should_allow_multi_checks_skip:
+                        skip_check_ids = skip_check["id"].split(',')
+                        for skip_check_id in skip_check_ids:
+                            single_skip_check = {"id": skip_check_id.strip(),
+                                                 "suppress_comment": skip_check["suppress_comment"]}
+                            if bc_id_mapping and single_skip_check["id"] in bc_id_mapping:
+                                single_skip_check["bc_id"] = single_skip_check["id"]
+                                single_skip_check["id"] = bc_id_mapping[single_skip_check["id"]]
+                            elif metadata_integration.check_metadata:
+                                single_skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
+                            skipped_checks.append(single_skip_check)
+                    else:
+                        if bc_id_mapping and skip_check["id"] in bc_id_mapping:
+                            skip_check["bc_id"] = skip_check["id"]
+                            skip_check["id"] = bc_id_mapping[skip_check["id"]]
+                        elif metadata_integration.check_metadata:
+                            skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
+                        skipped_checks.append(skip_check)
+
             dpath.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
         return self.context
 
