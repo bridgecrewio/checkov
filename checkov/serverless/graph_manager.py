@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING, Any
 from checkov.serverless.graph_builder.local_graph import ServerlessLocalGraph
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
+from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions
 
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
+
 
 class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.ARM) -> None:
@@ -23,7 +25,7 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         excluded_paths: list[str] | None = None,
     ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
-        definitions, _, _ = get_files_definitions(files=file_paths)
+        definitions, _ = get_files_definitions(files=file_paths)
 
         local_graph = self.build_graph_from_definitions(definitions=definitions)
 

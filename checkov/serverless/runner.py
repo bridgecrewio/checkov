@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Dict
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.cloudformation import cfn_utils
@@ -38,7 +38,6 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import LibraryGraphConnector
 
-
 MULTI_ITEM_SECTIONS = [
     ("functions", function_registry),
     ("layers", layer_registry)
@@ -54,16 +53,17 @@ SINGLE_ITEM_SECTIONS = [
 _ServerlessContext: TypeAlias = "dict[str, dict[str, Any]]"
 _ServerlessDefinitions: TypeAlias = "dict[str, DictNode]"
 
+
 class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLocalGraph]):
     check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
 
     def __init__(self,
-        db_connector: LibraryGraphConnector | None = None,
-        source: str = GraphSource.SERVERLESS,
-        graph_class: type[ServerlessLocalGraph] = ServerlessLocalGraph,
-        graph_manager: ServerlessGraphManager | None = None,
-        external_registries: list[BaseRegistry] | None = None,
-        ) -> None:
+                 db_connector: LibraryGraphConnector | None = None,
+                 source: str = GraphSource.SERVERLESS,
+                 graph_class: type[ServerlessLocalGraph] = ServerlessLocalGraph,
+                 graph_manager: ServerlessGraphManager | None = None,
+                 external_registries: list[BaseRegistry] | None = None,
+                 ) -> None:
         super().__init__(file_names=SLS_FILE_MASK)
 
         db_connector = db_connector or self.db_connector
@@ -80,12 +80,12 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
         self.root_folder: "str | None" = None
 
     def run(
-        self,
-        root_folder: str | None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter | None = None,
-        collect_skip_comments: bool = True,
+            self,
+            root_folder: str | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True,
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
@@ -119,7 +119,6 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
         return report
 
-
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         for sls_file, sls_file_data in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(sls_file, self.root_folder)})
@@ -133,7 +132,6 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
             self.single_item_sections_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
             self.complete_python_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
 
-
     def complete_python_checks(self,
                                sls_file: str,
                                sls_file_data: DictNode,
@@ -146,7 +144,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
         entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
         if entity_lines_range:
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations = {}
+            variable_evaluations: Dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
             results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = cfn_utils.get_resource_tags(entity, complete_registry)  # type:ignore[arg-type]
@@ -173,11 +171,11 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 )
 
     def single_item_sections_checks(self,
-                               sls_file: str,
-                               sls_file_data: DictNode,
-                               report: Report,
-                               runner_filter: RunnerFilter,
-                               sls_context_parser: ContextParser) -> None:
+                                    sls_file: str,
+                                    sls_file_data: DictNode,
+                                    report: Report,
+                                    runner_filter: RunnerFilter,
+                                    sls_context_parser: ContextParser) -> None:
         # Sub-sections that are a single item
         file_abs_path = Path(sls_file).absolute()
         for token, registry in SINGLE_ITEM_SECTIONS:
@@ -189,7 +187,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
 
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations = {}
+            variable_evaluations: Dict[str, Any]  = {}
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
@@ -228,11 +226,11 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 )
 
     def multi_item_sections_checks(self,
-                               sls_file: str,
-                               sls_file_data: DictNode,
-                               report: Report,
-                               runner_filter: RunnerFilter,
-                               sls_context_parser: ContextParser) -> None:
+                                   sls_file: str,
+                                   sls_file_data: DictNode,
+                                   report: Report,
+                                   runner_filter: RunnerFilter,
+                                   sls_context_parser: ContextParser) -> None:
         # Sub-sections that have multiple items under them
         file_abs_path = Path(sls_file).absolute()
         for token, registry in MULTI_ITEM_SECTIONS:
@@ -245,7 +243,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
                 if entity_lines_range and entity_code_lines:
                     skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                    variable_evaluations = {}
+                    variable_evaluations: Dict[str, Any]  = {}
                     if token == "functions":  # nosec
                         # "Enriching" copies things like "environment" and "stackTags" down into the
                         # function data from the provider block since logically that's what serverless
@@ -283,10 +281,10 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                         )
 
     def cfn_resources_checks(self,
-                               sls_file: str,
-                               sls_file_data: DictNode,
-                               report: Report,
-                               runner_filter: RunnerFilter) -> None:
+                             sls_file: str,
+                             sls_file_data: DictNode,
+                             report: Report,
+                             runner_filter: RunnerFilter) -> None:
         file_abs_path = Path(sls_file).absolute()
         if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
             cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
@@ -308,7 +306,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         # TODO - Variable Eval Message!
-                        variable_evaluations: dict[str, Any] = {}
+                        variable_evaluations: Dict[str, Any] = {}
 
                         entity_dict = {resource_name: resource}
                         results = cfn_registry.scan(sls_file, entity_dict, skipped_checks, runner_filter)

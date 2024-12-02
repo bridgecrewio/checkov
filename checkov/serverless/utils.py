@@ -10,6 +10,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
 
+
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> List[str]:
     files_list: List[str] = []
 
@@ -30,8 +31,9 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
     return files_list
 
+
 def get_files_definitions(
-    files: List[str], filepath_fn: Callable[[str], str] | None = None
+        files: List[str], filepath_fn: Callable[[str], str] | None = None
 ) -> Tuple[Dict[str, dict[str, Any]], Dict[str, List[Tuple[int, str]]]]:
     results = parallel_runner.run_function(_parallel_parse, files)
     definitions = {}
