@@ -25,6 +25,3 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
 
     def build_graph(self, render_variables: bool) -> None:
         pass
-
-
-

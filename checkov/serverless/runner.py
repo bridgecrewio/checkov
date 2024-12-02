@@ -133,7 +133,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def complete_python_checks(self,
                                sls_file: str,
-                               sls_file_data: Dict,
+                               sls_file_data: Dict[str, Any],
                                report: Report,
                                runner_filter: RunnerFilter,
                                sls_context_parser: ContextParser) -> None:
@@ -171,7 +171,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def single_item_sections_checks(self,
                                     sls_file: str,
-                                    sls_file_data: Dict,
+                                    sls_file_data: Dict[str, Any],
                                     report: Report,
                                     runner_filter: RunnerFilter,
                                     sls_context_parser: ContextParser) -> None:
@@ -226,7 +226,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def multi_item_sections_checks(self,
                                    sls_file: str,
-                                   sls_file_data: Dict,
+                                   sls_file_data: Dict[str, Any],
                                    report: Report,
                                    runner_filter: RunnerFilter,
                                    sls_context_parser: ContextParser) -> None:
@@ -281,7 +281,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def cfn_resources_checks(self,
                              sls_file: str,
-                             sls_file_data: Dict,
+                             sls_file_data: Dict[str, Any],
                              report: Report,
                              runner_filter: RunnerFilter) -> None:
         file_abs_path = Path(sls_file).absolute()
