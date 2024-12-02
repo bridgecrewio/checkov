@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Dict
+from typing import TYPE_CHECKING, Any, List, Dict, Tuple
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.cloudformation import cfn_utils
@@ -30,7 +30,6 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
-from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
 from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK
 
@@ -50,8 +49,8 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
-_ServerlessContext: TypeAlias = "dict[str, dict[str, Any]]"
-_ServerlessDefinitions: TypeAlias = "dict[str, DictNode]"
+_ServerlessContext: TypeAlias = Dict[str, Dict[str, Any]]
+_ServerlessDefinitions: TypeAlias = Dict[str, Dict[str, Any]]
 
 
 class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLocalGraph]):
@@ -75,7 +74,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
         self.definitions: _ServerlessDefinitions = {}
-        self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.definitions_raw: Dict[str, List[Tuple[int, str]]] = {}
         self.context: _ServerlessContext | None = None
         self.root_folder: "str | None" = None
 
@@ -122,7 +121,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         for sls_file, sls_file_data in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(sls_file, self.root_folder)})
-            if not isinstance(sls_file_data, DictNode):
+            if not isinstance(sls_file_data, Dict):
                 continue
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, self.definitions_raw[sls_file])
@@ -134,7 +133,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def complete_python_checks(self,
                                sls_file: str,
-                               sls_file_data: DictNode,
+                               sls_file_data: Dict,
                                report: Report,
                                runner_filter: RunnerFilter,
                                sls_context_parser: ContextParser) -> None:
@@ -172,7 +171,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def single_item_sections_checks(self,
                                     sls_file: str,
-                                    sls_file_data: DictNode,
+                                    sls_file_data: Dict,
                                     report: Report,
                                     runner_filter: RunnerFilter,
                                     sls_context_parser: ContextParser) -> None:
@@ -227,7 +226,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def multi_item_sections_checks(self,
                                    sls_file: str,
-                                   sls_file_data: DictNode,
+                                   sls_file_data: Dict,
                                    report: Report,
                                    runner_filter: RunnerFilter,
                                    sls_context_parser: ContextParser) -> None:
@@ -235,10 +234,10 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
         file_abs_path = Path(sls_file).absolute()
         for token, registry in MULTI_ITEM_SECTIONS:
             template_items = sls_file_data.get(token)
-            if not template_items or not isinstance(template_items, dict):
+            if not template_items or not isinstance(template_items, Dict):
                 continue
             for item_name, item_content in template_items.items():
-                if not isinstance(item_content, DictNode):
+                if not isinstance(item_content, Dict):
                     continue
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
                 if entity_lines_range and entity_code_lines:
@@ -282,19 +281,19 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def cfn_resources_checks(self,
                              sls_file: str,
-                             sls_file_data: DictNode,
+                             sls_file_data: Dict,
                              report: Report,
                              runner_filter: RunnerFilter) -> None:
         file_abs_path = Path(sls_file).absolute()
-        if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
+        if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], Dict):
             cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
             cf_sub_resources = cf_sub_template.get("Resources")
-            if cf_sub_resources and isinstance(cf_sub_resources, dict):
+            if cf_sub_resources and isinstance(cf_sub_resources, Dict):
                 cf_context_parser = CfnContextParser(sls_file, cf_sub_template, self.definitions_raw[sls_file])
                 logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                 cf_context_parser.evaluate_default_refs()
                 for resource_name, resource in cf_sub_resources.items():
-                    if not isinstance(resource, dict):
+                    if not isinstance(resource, Dict):
                         continue
                     cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                     if not cf_resource_id:
