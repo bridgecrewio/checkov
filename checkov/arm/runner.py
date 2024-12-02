@@ -265,6 +265,10 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                 start_line = entity[START_LINE] - 1
                 end_line = entity[END_LINE] - 1
 
+                if CustomAttributes.RESOURCE_TYPE not in entity or CustomAttributes.BLOCK_NAME not in entity:
+                    logging.debug(f"Could not determine 'resource_id' of Entity {entity_file_path}")
+                    continue
+
                 self.build_record(
                     report=report,
                     check=check,
@@ -273,7 +277,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
                     file_path=self.extract_file_path_from_abs_path(clean_file_path(Path(entity_file_path))),
                     file_abs_path=str(file_abs_path),
                     file_line_range=[start_line - 1, end_line - 1],
-                    resource_id=entity[CustomAttributes.ID],
+                    resource_id=f'{entity[CustomAttributes.RESOURCE_TYPE]}.{entity[CustomAttributes.BLOCK_NAME]}',
                 )
 
     def build_record(
