@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from typing import Any
+
 from checkov.common.graph.graph_builder.local_graph import LocalGraph, _Block
 from checkov.serverless.graph_builder.graph_components.blocks import ServerlessBlock
 
 
 class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
-    def __init__(self, definitions: dict[str, dict[str, any]]) -> None:
+    def __init__(self, definitions: dict[str, dict[str, Any]]) -> None:
         super().__init__()
         self.vertices: list[ServerlessBlock] = []
         self.definitions = definitions
@@ -16,7 +18,7 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
         pass
 
     @staticmethod
-    def update_vertex_config(vertex: _Block, changed_attributes: list[str] | dict[str, any],
+    def update_vertex_config(vertex: _Block, changed_attributes: list[str] | dict[str, Any],
                              has_dynamic_blocks: bool = False) -> None:
         pass
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Callable
+from typing import Callable, Any
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.serverless.parsers.parser import parse
@@ -34,7 +34,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 def get_files_definitions(
         files: list[str], filepath_fn: Callable[[str], str] | None = None
-) -> tuple[dict[str, dict[str, any]], dict[str, list[tuple[int, str]]]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     results = parallel_runner.run_function(_parallel_parse, files)
     definitions = {}
     definitions_raw = {}
@@ -46,6 +46,6 @@ def get_files_definitions(
     return definitions, definitions_raw
 
 
-def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, any], list[tuple[int, str]]] | None]:
+def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
     """Thin wrapper to return filename with parsed content"""
     return f, parse(f)

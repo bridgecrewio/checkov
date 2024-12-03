@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.cloudformation import cfn_utils
@@ -49,8 +49,8 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
-_ServerlessContext: TypeAlias = dict[str, dict[str, any]]
-_ServerlessDefinitions: TypeAlias = dict[str, dict[str, any]]
+_ServerlessContext: TypeAlias = dict[str, dict[str, Any]]
+_ServerlessDefinitions: TypeAlias = dict[str, dict[str, Any]]
 
 
 class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLocalGraph]):
@@ -133,7 +133,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def complete_python_checks(self,
                                sls_file: str,
-                               sls_file_data: dict[str, any],
+                               sls_file_data: dict[str, Any],
                                report: Report,
                                runner_filter: RunnerFilter,
                                sls_context_parser: ContextParser) -> None:
@@ -143,7 +143,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
         entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
         if entity_lines_range:
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations: dict[str, any] = {}
+            variable_evaluations: dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
             results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = cfn_utils.get_resource_tags(entity, complete_registry)  # type:ignore[arg-type]
@@ -171,7 +171,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def single_item_sections_checks(self,
                                     sls_file: str,
-                                    sls_file_data: dict[str, any],
+                                    sls_file_data: dict[str, Any],
                                     report: Report,
                                     runner_filter: RunnerFilter,
                                     sls_context_parser: ContextParser) -> None:
@@ -186,7 +186,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
 
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations: dict[str, any] = {}
+            variable_evaluations: dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
@@ -226,7 +226,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def multi_item_sections_checks(self,
                                    sls_file: str,
-                                   sls_file_data: dict[str, any],
+                                   sls_file_data: dict[str, Any],
                                    report: Report,
                                    runner_filter: RunnerFilter,
                                    sls_context_parser: ContextParser) -> None:
@@ -242,7 +242,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                 entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
                 if entity_lines_range and entity_code_lines:
                     skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
-                    variable_evaluations: dict[str, any] = {}
+                    variable_evaluations: dict[str, Any] = {}
                     if token == "functions":  # nosec
                         # "Enriching" copies things like "environment" and "stackTags" down into the
                         # function data from the provider block since logically that's what serverless
@@ -281,7 +281,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
 
     def cfn_resources_checks(self,
                              sls_file: str,
-                             sls_file_data: dict[str, any],
+                             sls_file_data: dict[str, Any],
                              report: Report,
                              runner_filter: RunnerFilter) -> None:
         file_abs_path = Path(sls_file).absolute()
@@ -305,7 +305,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLo
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         # TODO - Variable Eval Message!
-                        variable_evaluations: dict[str, any] = {}
+                        variable_evaluations: dict[str, Any] = {}
 
                         entity_dict = {resource_name: resource}
                         results = cfn_registry.scan(sls_file, entity_dict, skipped_checks, runner_filter)
