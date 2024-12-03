@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from checkov.serverless.graph_builder.local_graph import ServerlessLocalGraph
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -23,7 +23,7 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-    ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, Any]]]:
+    ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         definitions, _ = get_files_definitions(files=file_paths)
 
@@ -32,7 +32,7 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, dict[str, Any]], render_variables: bool = True
+        self, definitions: dict[str, dict[str, any]], render_variables: bool = True
     ) -> ServerlessLocalGraph:
         local_graph = ServerlessLocalGraph(definitions=definitions)
         local_graph.build_graph(render_variables=render_variables)
