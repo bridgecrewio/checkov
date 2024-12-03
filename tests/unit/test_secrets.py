@@ -13,6 +13,7 @@ class TestSecrets(unittest.TestCase):
             '-----BEGIN RSA PRIVATE KEY-----\n',  # checkov:skip=CKV_SECRET_13 test secret
             'Hello from Bridgecrew',
             'cert-manager.io/secret: org/repo',
+            'S3ApiKeyParamKey: s3-cache-api-key-dev',
         ]
 
         # check that no category checks all
