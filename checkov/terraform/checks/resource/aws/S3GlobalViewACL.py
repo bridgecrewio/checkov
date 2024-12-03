@@ -19,7 +19,8 @@ class S3GlobalViewACL(BaseResourceCheck):
             for policy in conf.get('access_control_policy'):
                 if 'grant' in policy:
                     for grant in policy.get('grant'):
-                        if 'permission' in grant and ('FULL_CONTROL' in grant.get('permission') or 'READ_ACP' in grant.get('permission')):
+                        if (isinstance(grant, dict) and 'permission' in grant and
+                                ('FULL_CONTROL' in grant.get('permission') or 'READ_ACP' in grant.get('permission'))):
                             if 'grantee' in grant:
                                 for grantee in grant.get('grantee'):
                                     if 'uri' in grantee and 'http://acs.amazonaws.com/groups/global/AllUsers' in grantee.get('uri'):

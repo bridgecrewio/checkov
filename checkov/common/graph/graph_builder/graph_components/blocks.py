@@ -171,9 +171,9 @@ class Block:
                     try:
                         self._update_attribute_based_on_jsonpath_key(attribute_value, key)
                     except Exception as e:
-                        logging.warning(f"Failed updating attribute for key: {key} and value {attribute_value} for"
-                                        f"vertex attributes {self.attributes}. Falling back to explicitly setting it."
-                                        f"Exception - {e}")
+                        logging.debug(f"Failed updating attribute for key: {key} and value {attribute_value} for"
+                                      f"vertex attributes {self.attributes}. Falling back to explicitly setting it."
+                                      f"Exception - {e}")
                         self.attributes[key] = attribute_value
                 else:
                     self.attributes[key] = attribute_value
