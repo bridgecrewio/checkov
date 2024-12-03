@@ -49,8 +49,8 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
-_ServerlessContext: TypeAlias = dict[str, dict[str, Any]]
-_ServerlessDefinitions: TypeAlias = dict[str, dict[str, Any]]
+_ServerlessContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ServerlessDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
 
 class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLocalGraph]):
