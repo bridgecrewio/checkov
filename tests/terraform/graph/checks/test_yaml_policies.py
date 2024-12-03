@@ -544,8 +544,12 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SQSEncryptionCMK(self):
         self.go("SQSEncryptionCMK")
 
+    def test_LBTargetGroup(self):
+        self.go("LBTargetGroup")
+
     def test_AzureSpringCloudTLSDisabled(self):
         self.go("AzureSpringCloudTLSDisabled")
+
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
