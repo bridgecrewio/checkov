@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.327...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.328...HEAD)
+
+## [3.2.328](https://github.com/bridgecrewio/checkov/compare/3.2.327...3.2.328) - 2024-12-04
+
+### Feature
+
+- **serverless:** Serverless refactor for graph implementation - [#6885](https://github.com/bridgecrewio/checkov/pull/6885)
+
+### Documentation
+
+- **general:** docs flags update - [#6888](https://github.com/bridgecrewio/checkov/pull/6888)
 
 ## [3.2.327](https://github.com/bridgecrewio/checkov/compare/3.2.326...3.2.327) - 2024-12-03
 
