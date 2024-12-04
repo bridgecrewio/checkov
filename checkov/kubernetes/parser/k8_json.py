@@ -22,7 +22,7 @@ def loads(content: str) -> list[dict[str, Any]]:
     content = content.replace('}{', '},{')
     content = content.replace('}\n{', '},\n{')
 
-    template: list[dict[str, Any]] = json.loads(content, cls=SimpleDecoder)
+    template: list[dict[str, Any]] = json.loads(content, cls=CustomDecoder)
 
     # Convert an empty file to an empty list
     if template is None:
@@ -46,3 +46,9 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     template = loads(content)
 
     return template, file_lines
+
+class CustomDecoder(SimpleDecoder):
+     def object_hook(self, obj: dict[str, Any]) -> Any:
+        obj["__startline__"] = 0
+        obj["__endline__"] = 0
+        return obj
