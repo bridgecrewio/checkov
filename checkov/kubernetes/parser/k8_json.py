@@ -7,6 +7,7 @@ from typing import Tuple, Dict, Any, List
 import json
 from checkov.common.parsers.json.decoder import SimpleDecoder
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.consts import END_LINE, START_LINE
 from checkov.common.util.file_utils import read_file_with_any_encoding
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,6 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
 class CustomDecoder(SimpleDecoder):
     def object_hook(self, obj: dict[str, Any]) -> Any:
-        obj["__startline__"] = 0
-        obj["__endline__"] = 0
+        obj[START_LINE] = 0
+        obj[END_LINE] = 0
         return obj
