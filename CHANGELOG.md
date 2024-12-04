@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.326...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.327...HEAD)
+
+## [3.2.327](https://github.com/bridgecrewio/checkov/compare/3.2.326...3.2.327) - 2024-12-03
+
+### Bug Fix
+
+- **terraform:** Convert to graph check - [#6875](https://github.com/bridgecrewio/checkov/pull/6875)
 
 ## [3.2.326](https://github.com/bridgecrewio/checkov/compare/3.2.324...3.2.326) - 2024-12-02
 
