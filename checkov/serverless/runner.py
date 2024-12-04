@@ -53,7 +53,7 @@ _ServerlessContext: TypeAlias = "dict[str, dict[str, Any]]"
 _ServerlessDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
 
-class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessLocalGraph]):
+class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGraphManager]):
     check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
 
     def __init__(self,
