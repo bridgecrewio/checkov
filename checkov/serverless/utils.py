@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
+from enum import Enum
 from typing import Callable, Any
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -10,6 +12,20 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
 
+class ServerlessElements(str, Enum):
+    PARAMS = "params"
+    FUNCTIONS = "functions"
+    PROVIDER = "provider"
+    LAYERS = "layers"
+    CUSTOM = "custom"
+    PACKAGE = "package"
+    PLUGINS = "plugins"
+    SERVICE = "service"
+    RESOURCES = "resources"
+
+    def __str__(self) -> str:
+        # needed, because of a Python 3.11 change
+        return self.value
 
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> list[str]:
     files_list: list[str] = []
@@ -49,3 +65,7 @@ def get_files_definitions(
 def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
     """Thin wrapper to return filename with parsed content"""
     return f, parse(f)
+
+
+def extract_file_path_from_abs_path(root_folder, path: Path) -> str:
+    return f"{os.path.sep}{os.path.relpath(path, root_folder)}"

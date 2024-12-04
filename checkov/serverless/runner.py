@@ -11,6 +11,8 @@ from checkov.cloudformation.context_parser import ContextParser as CfnContextPar
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.serverless.base_registry import EntityDetails
+from checkov.serverless.graph_builder.definition_context import build_definitions_context
+from checkov.serverless.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.serverless.graph_builder.local_graph import ServerlessLocalGraph
 from checkov.serverless.graph_manager import ServerlessGraphManager
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser, ContextParser
@@ -31,7 +33,8 @@ from checkov.common.output.report import Report
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
-from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK
+from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK, \
+    extract_file_path_from_abs_path
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -111,6 +114,18 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             # Filter out empty files that have not been parsed successfully
             self.definitions = {k: v for k, v in definitions.items() if v}
             self.definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
+            self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
+
+            # if self.graph_registry and self.graph_manager:
+            #     logging.info("Creating Serverless graph")
+            #     local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
+            #     logging.info("Successfully created Serverless graph")
+
+                # self.graph_manager.save_graph(local_graph)
+                # self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                #     vertices=local_graph.vertices,
+                #     root_folder=root_folder,
+                # )
 
         self.pbar.initiate(len(self.definitions))
 
@@ -151,7 +166,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                     code_block=[],  # Don't show, could be large
-                                    file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                                     file_line_range=entity_lines_range,
                                     resource="complete",  # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
@@ -164,7 +179,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=str(file_abs_path),
-                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                         resource="complete",
                     )
                 )
@@ -204,7 +219,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         check_name=check.name,
                         check_result=check_result,
                         code_block=censored_code_lines,
-                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                         file_line_range=entity_lines_range or [0, 0],
                         resource=token,
                         evaluations=variable_evaluations,
@@ -219,7 +234,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=str(file_abs_path),
-                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                         resource=token,
                     )
                 )
@@ -262,7 +277,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                             )
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=censored_code_lines,
-                                            file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                            file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__,
@@ -274,7 +289,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         report.extra_resources.add(
                             ExtraResource(
                                 file_abs_path=str(file_abs_path),
-                                file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                                 resource=item_name,
                             )
                         )
@@ -322,7 +337,8 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                                 check_result=check_result,
                                                 code_block=censored_code_lines,
-                                                file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                                file_path=extract_file_path_from_abs_path(self.root_folder,
+                                                                                          Path(sls_file)),
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__,
@@ -334,10 +350,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                             report.extra_resources.add(
                                 ExtraResource(
                                     file_abs_path=str(file_abs_path),
-                                    file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
                                     resource=cf_resource_id,
                                 )
                             )
-
-    def extract_file_path_from_abs_path(self, path: Path) -> str:
-        return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
