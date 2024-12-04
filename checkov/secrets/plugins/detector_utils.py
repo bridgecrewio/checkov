@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 MAX_KEYWORD_LIMIT = 500
 
-B64_FP_REGEX = re.compile(r'\b[A-Za-z]+_+[A-Za-z_]*[A-Za-z]\b|\b([a-z0-9]+-)+[a-z0-9]+\b')
+B64_FP_REGEX = re.compile(r'\b[A-Za-z]+_+[A-Za-z_]*[A-Za-z]\b|(?:\s|=|:)([a-z]+[0-9]?[a-z]*-)+[a-z]+\b')
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
