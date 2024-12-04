@@ -47,8 +47,9 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
     return template, file_lines
 
+
 class CustomDecoder(SimpleDecoder):
-     def object_hook(self, obj: dict[str, Any]) -> Any:
+    def object_hook(self, obj: dict[str, Any]) -> Any:
         obj["__startline__"] = 0
         obj["__endline__"] = 0
         return obj
