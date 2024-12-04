@@ -60,7 +60,7 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
             "This limit can be adjusted via the environment variable 'CHECKOV_MAX_IAC_FILE_SIZE'."
         )
         return json.loads(content, cls=CustomDecoder), file_lines
-    
+
     template = loads(content)
 
     return template, file_lines
