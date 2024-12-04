@@ -15,7 +15,8 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
         self.vertices_by_name: dict[str, int] = {}
 
     def get_resources_types_in_graph(self) -> list[str]:
-        pass
+        # not used
+        return []
 
     @staticmethod
     def update_vertex_config(vertex: _Block, changed_attributes: list[str] | dict[str, Any],
