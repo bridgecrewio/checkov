@@ -4,6 +4,9 @@ import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
+from checkov.common.checks.enums import BlockType
+from checkov.serverless.utils import ServerlessElements
+
 if TYPE_CHECKING:
     from checkov.serverless.graph_builder.graph_components.blocks import ServerlessBlock
 
@@ -15,7 +18,15 @@ def convert_graph_vertices_to_definitions(vertices: list[ServerlessBlock], root_
     for vertex in vertices:
         block_path = vertex.path
         element_name = vertex.name.split('.')[-1]
-        serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, {})[element_name] = vertex.config
+        if vertex.block_type == ServerlessElements.PLUGINS:
+            serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, []).append(element_name)
+
+        elif 'value' in vertex.config:
+            serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, {})[
+                element_name] = vertex.config['value']
+
+        else:
+            serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, {})[element_name] = vertex.config
 
         if vertex.breadcrumbs:
             relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
