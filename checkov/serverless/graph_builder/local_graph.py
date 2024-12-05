@@ -4,7 +4,7 @@ from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph, _Block
-from checkov.common.util.consts import LINE_FIELD_NAMES, START_LINE, END_LINE
+from checkov.common.util.consts import LINE_FIELD_NAMES
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.serverless.graph_builder.graph_components.blocks import ServerlessBlock
 from checkov.serverless.utils import ServerlessElements
@@ -31,7 +31,6 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
             self._create_vertex(file_path=file_path, definition=definition, element_type=ServerlessElements.PLUGINS)
             self._create_vertex(file_path=file_path, definition=definition, element_type=ServerlessElements.SERVICE)
             self._create_vertex(file_path=file_path, definition=definition, element_type=ServerlessElements.RESOURCES)
-
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -105,8 +104,3 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
 
     def update_vertices_configs(self) -> None:
         pass
-
-
-
-
-

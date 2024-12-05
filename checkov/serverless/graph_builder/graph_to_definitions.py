@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
-from checkov.common.checks.enums import BlockType
 from checkov.serverless.utils import ServerlessElements
 
 if TYPE_CHECKING:
@@ -39,7 +38,7 @@ def convert_graph_vertices_to_definitions(vertices: list[ServerlessBlock], root_
             #   myCustomVar: value
             else:
                 serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, {})[element_name] = \
-                vertex.config['value']
+                    vertex.config['value']
 
         # Otherwise, the vertex config is a dict
         else:

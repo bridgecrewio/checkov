@@ -12,6 +12,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
 
+
 class ServerlessElements(str, Enum):
     PARAMS = "params"
     FUNCTIONS = "functions"
@@ -26,6 +27,7 @@ class ServerlessElements(str, Enum):
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
         return self.value
+
 
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> list[str]:
     files_list: list[str] = []
