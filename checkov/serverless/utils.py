@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from enum import Enum
 from typing import Callable, Any
 
@@ -67,7 +66,3 @@ def get_files_definitions(
 def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
     """Thin wrapper to return filename with parsed content"""
     return f, parse(f)
-
-
-def extract_file_path_from_abs_path(root_folder: str, path: Path) -> str:
-    return f"{os.path.sep}{os.path.relpath(path, root_folder)}"

@@ -33,8 +33,7 @@ from checkov.common.output.report import Report
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
-from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK, \
-    extract_file_path_from_abs_path
+from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -166,7 +165,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             for check, check_result in results.items():
                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                 code_block=[],  # Don't show, could be large
-                                file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                                file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                                 file_line_range=entity_lines_range,
                                 resource="complete",  # Weird, not sure what to put where
                                 evaluations=variable_evaluations,
@@ -179,7 +178,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             report.extra_resources.add(
                 ExtraResource(
                     file_abs_path=str(file_abs_path),
-                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                    file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                     resource="complete",
                 )
             )
@@ -220,7 +219,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         check_name=check.name,
                         check_result=check_result,
                         code_block=censored_code_lines,
-                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                         file_line_range=entity_lines_range or [0, 0],
                         resource=token,
                         evaluations=variable_evaluations,
@@ -235,7 +234,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=str(file_abs_path),
-                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                         resource=token,
                     )
                 )
@@ -278,7 +277,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                             )
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=censored_code_lines,
-                                            file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                                            file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__,
@@ -290,7 +289,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         report.extra_resources.add(
                             ExtraResource(
                                 file_abs_path=str(file_abs_path),
-                                file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                                file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                                 resource=item_name,
                             )
                         )
@@ -338,8 +337,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                                 check_result=check_result,
                                                 code_block=censored_code_lines,
-                                                file_path=extract_file_path_from_abs_path(self.root_folder,
-                                                                                          Path(sls_file)),
+                                                file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__,
@@ -351,7 +349,11 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                             report.extra_resources.add(
                                 ExtraResource(
                                     file_abs_path=str(file_abs_path),
-                                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                                    file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
                                     resource=cf_resource_id,
                                 )
                             )
+
+
+    def extract_file_path_from_abs_path(self, path: Path) -> str:
+        return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
