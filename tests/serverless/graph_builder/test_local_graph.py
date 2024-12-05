@@ -28,6 +28,25 @@ def test_graph_from_file_def_and_graph_def():
     assert len(local_graph.vertices) == len(local_graph_from_new_def.vertices)
     assert len(local_graph.edges) == len(local_graph_from_new_def.edges)
 
+    assert len(local_graph.vertices) == len(local_graph_from_new_def.vertices)
+    assert len(local_graph.edges) == len(local_graph_from_new_def.edges)
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.PARAMS]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.PARAMS])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.FUNCTIONS]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.FUNCTIONS])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.PROVIDER]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.PROVIDER])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.LAYERS]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.LAYERS])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.CUSTOM]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.CUSTOM])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.PACKAGE]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.PACKAGE])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.PLUGINS]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.PLUGINS])
+    assert len(local_graph.vertices_by_block_type[ServerlessElements.SERVICE]) == len(
+        local_graph_from_new_def.vertices_by_block_type[ServerlessElements.SERVICE])
+
     for vertex in local_graph.vertices:
         vertex_file = vertex.path
         vertex_name = vertex.name

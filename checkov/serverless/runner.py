@@ -155,34 +155,34 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
         # "Complete" checks
         # NOTE: Ignore code content, no point in showing (could be long)
         file_abs_path = Path(sls_file).absolute()
-        entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
-        if entity_lines_range:
-            skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
-            variable_evaluations: dict[str, Any] = {}
-            entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
-            results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-            tags = cfn_utils.get_resource_tags(entity, complete_registry)  # type:ignore[arg-type]
-            if results:
-                for check, check_result in results.items():
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=[],  # Don't show, could be large
-                                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
-                                    file_line_range=entity_lines_range,
-                                    resource="complete",  # Weird, not sure what to put where
-                                    evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__,
-                                    file_abs_path=str(file_abs_path),
-                                    entity_tags=tags, severity=check.severity)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
-            else:
-                report.extra_resources.add(
-                    ExtraResource(
-                        file_abs_path=str(file_abs_path),
-                        file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
-                        resource="complete",
-                    )
+        entity_code_lines = self.definitions_raw[sls_file]
+        entity_lines_range = [1, len(entity_code_lines) - 1]
+        skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
+        variable_evaluations: dict[str, Any] = {}
+        entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
+        results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+        tags = cfn_utils.get_resource_tags(entity, complete_registry)  # type:ignore[arg-type]
+        if results:
+            for check, check_result in results.items():
+                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                code_block=[],  # Don't show, could be large
+                                file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                                file_line_range=entity_lines_range,
+                                resource="complete",  # Weird, not sure what to put where
+                                evaluations=variable_evaluations,
+                                check_class=check.__class__.__module__,
+                                file_abs_path=str(file_abs_path),
+                                entity_tags=tags, severity=check.severity)
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
+        else:
+            report.extra_resources.add(
+                ExtraResource(
+                    file_abs_path=str(file_abs_path),
+                    file_path=extract_file_path_from_abs_path(self.root_folder, Path(sls_file)),
+                    resource="complete",
                 )
+            )
 
     def single_item_sections_checks(self,
                                     sls_file: str,
@@ -198,7 +198,8 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                 continue
             entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(item_content)
             if not entity_lines_range:
-                entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
+                entity_code_lines = self.definitions_raw[sls_file]
+                entity_lines_range = [1, len(entity_code_lines) - 1]
 
             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
             variable_evaluations: dict[str, Any] = {}
