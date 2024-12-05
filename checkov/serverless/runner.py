@@ -354,6 +354,5 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                                 )
                             )
 
-
     def extract_file_path_from_abs_path(self, path: Path) -> str:
         return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
