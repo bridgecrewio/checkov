@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.328...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.332...HEAD)
+
+## [3.2.332](https://github.com/bridgecrewio/checkov/compare/3.2.328...3.2.332) - 2024-12-05
+
+### Feature
+
+- **terraform:** Add multi skip inline suppression - [#6860](https://github.com/bridgecrewio/checkov/pull/6860)
+- **terraform:** New bedrock check - [#6892](https://github.com/bridgecrewio/checkov/pull/6892)
+
+### Bug Fix
+
+- **kubernetes:** fix json file parsing - [#6891](https://github.com/bridgecrewio/checkov/pull/6891)
+- **terraform:** Fix CKV2_AZURE_31 - [#6893](https://github.com/bridgecrewio/checkov/pull/6893)
 
 ## [3.2.328](https://github.com/bridgecrewio/checkov/compare/3.2.327...3.2.328) - 2024-12-04
 
