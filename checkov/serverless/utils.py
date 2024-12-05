@@ -69,5 +69,5 @@ def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, 
     return f, parse(f)
 
 
-def extract_file_path_from_abs_path(root_folder, path: Path) -> str:
+def extract_file_path_from_abs_path(root_folder: str, path: Path) -> str:
     return f"{os.path.sep}{os.path.relpath(path, root_folder)}"

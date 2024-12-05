@@ -39,7 +39,10 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
             self.in_edges[i] = []
             self.out_edges[i] = []
 
-    def _create_vertex(self, file_path: str, definition: dict[str, Any] | None, element_type: ServerlessElements):
+    def _create_vertex(self, file_path: str, definition: dict[str, Any] | None,
+                       element_type: ServerlessElements) -> None:
+        if not definition:
+            return
         resources = definition.get(element_type)
         if not resources:
             return
