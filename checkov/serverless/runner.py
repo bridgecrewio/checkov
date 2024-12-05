@@ -115,16 +115,15 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             self.definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if self.graph_registry and self.graph_manager:
-                logging.info("Creating Serverless graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-                logging.info("Successfully created Serverless graph")
+            logging.info("Creating Serverless graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
+            logging.info("Successfully created Serverless graph")
 
-                self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
-                    vertices=local_graph.vertices,
-                    root_folder=root_folder,
-                )
+            self.graph_manager.save_graph(local_graph)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                vertices=local_graph.vertices,
+                root_folder=root_folder,
+            )
 
         self.pbar.initiate(len(self.definitions))
 
