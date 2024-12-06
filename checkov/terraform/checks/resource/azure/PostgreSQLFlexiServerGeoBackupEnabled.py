@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
@@ -12,7 +12,7 @@ class PostgreSQLFlexiServerGeoBackupEnabled(BaseResourceValueCheck):
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         # Replicas can't have geo-redundant backups, so we return UNKNOWN
         if conf.get('create_mode') and conf.get('create_mode')[0] == 'Replica':
             return CheckResult.UNKNOWN
