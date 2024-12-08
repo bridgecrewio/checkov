@@ -19,11 +19,11 @@ class TestAzureSparkPoolIsolatedComputeEnabled(unittest.TestCase):
         logging.warning(f"summary: {summary}")
 
         passing_resources = {
-            'synapse_spark_pool.pass'
+            'azurerm_synapse_spark_pool.pass'
         }
         failing_resources = {
-            'synapse_spark_pool.fail',
-            'synapse_spark_pool.fail2'
+            'azurerm_synapse_spark_pool.fail',
+            'azurerm_synapse_spark_pool.fail2'
         }
         skipped_resources = {}
 

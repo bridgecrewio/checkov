@@ -151,15 +151,23 @@ class TestBCApiUrl(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
         instance.customer_run_config_response = mock_customer_run_config()
-        self.assertTrue(instance.is_valid_policy_filter(policy_filter={'policy.label': 'CODE'},
+        self.assertTrue(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'CODE')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.labels': 'CODE'},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.labels', 'CODE')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': 'CODE', 'not': 'allowed'},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'CODE'), ('not', 'allowed')],
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={},
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[],
                                                          valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))
+        self.assertFalse(instance.is_valid_policy_filter(policy_filter=[('policy.label', 'A'), ('policy.label', 'B')], valid_filters={}))
+
+    def test_add_static_policy_filters(self):
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true')]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true'), ('policy.subtype', 'build')]), [('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.label', 'xyz')]), [('policy.label', 'xyz'), ('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.label', 'xyz'), ('policy.enabled', 'true')]), [('policy.label', 'xyz'), ('policy.enabled', 'true'), ('policy.subtype', 'build')])
+        self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')]), [('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')])
 
     def test_setup_on_prem(self):
         instance = BcPlatformIntegration()

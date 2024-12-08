@@ -26,7 +26,10 @@ class GKEPodSecurityPolicyEnabled(BaseResourceCheck):
             splitter = raw.split(".")
             if len(splitter) >= 2:
                 str_version = splitter[0] + "." + splitter[1]
-                version = float(str_version)
+                try:
+                    version = float(str_version)
+                except (ValueError, IndexError):
+                    return CheckResult.UNKNOWN
                 if version < 1.25:
                     if conf.get('pod_security_policy_config') and isinstance(conf.get('pod_security_policy_config'), list):
                         policy = conf.get('pod_security_policy_config')[0]

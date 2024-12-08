@@ -20,3 +20,14 @@ resource "aws_ssm_parameter" "pass" {
     environment = "production"
   }
 }
+
+resource "aws_ssm_parameter" "pass2" {
+  name        = "/production/database/password/master"
+  description = "The parameter description"
+  type        = "String"
+  value       = var.database_master_password
+
+  tags = {
+    environment = "production"
+  }
+}

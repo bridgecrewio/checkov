@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os.path
 import re
+import sys
 import uuid
 from collections import namedtuple
 from concurrent import futures
@@ -58,7 +60,7 @@ from checkov.common.util.http_utils import (
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
 )
-from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_params, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -110,6 +112,7 @@ REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.clean()
+        self.set_config()
 
     def clean(self) -> None:
         self.bc_api_key = read_key()
@@ -360,6 +363,12 @@ class BcPlatformIntegration:
                     retries=self.http_retry,
                 )
         logging.debug('Successfully set up HTTP manager')
+
+    @staticmethod
+    def set_config() -> None:
+        # asyncio - on windows aiodns needs SelectorEventLoop
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     def setup_bridgecrew_credentials(
         self,
@@ -1165,16 +1174,17 @@ class BcPlatformIntegration:
                 return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
-            query_params = convert_prisma_policy_filter_to_dict(policy_filter)
+            query_params = convert_prisma_policy_filter_to_params(policy_filter)
             if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
-                query_params['policy.enabled'] = True
-                query_params['policy.subtype'] = 'build'
+                self.add_static_policy_filters(query_params)
+                logging.debug(f'Filter query params: {query_params}')
+
                 request = self.http.request(  # type:ignore[no-untyped-call]
                     "GET",
                     self.prisma_policies_url,
                     headers=headers,
-                    fields=query_params,
+                    fields=tuple(query_params),
                 )
                 logging.debug("Got Prisma build policy metadata")
                 filtered_policies = json.loads(request.data.decode("utf8"))
@@ -1183,6 +1193,17 @@ class BcPlatformIntegration:
             logging.warning(
                 f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
         return filtered_policies
+
+    @staticmethod
+    def add_static_policy_filters(query_params: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """
+        Adds policy.enabled = true, policy.subtype = build to the query params, if these are not already present. Modifies the list in place and also returns it.
+        """
+        if not any(p[0] == 'policy.enabled' for p in query_params):
+            query_params.append(('policy.enabled', 'true'))
+        if not any(p[0] == 'policy.subtype' for p in query_params):
+            query_params.append(('policy.subtype', 'build'))
+        return query_params
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
@@ -1211,7 +1232,7 @@ class BcPlatformIntegration:
             return {}
 
     @staticmethod
-    def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+    def is_valid_policy_filter(policy_filter: list[tuple[str, str]], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
         """
         Validates only the filter names
         """
@@ -1221,7 +1242,7 @@ class BcPlatformIntegration:
             return False
         if not valid_filters:
             return False
-        for filter_name, filter_value in policy_filter.items():
+        for filter_name, filter_value in policy_filter:
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
                 logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
