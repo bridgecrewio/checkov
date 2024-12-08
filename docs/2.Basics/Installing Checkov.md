@@ -86,7 +86,7 @@ check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 ```
 
-If you have installed jq, you can convert a JSON file into multiple lines with the command `terraform show -json tf.plan | jq '.' > tf.json`, making it easier to read the scan result.
+If you have installed jq, you can convert a JSON file into multiple lines with the command `terraform show -json tf.plan | jq '.' > tf.json`, making it easier to read the scan result. NOTE: `jq` is required to show the code block as seen below. 
 
 ```json
 checkov -f tf.json
