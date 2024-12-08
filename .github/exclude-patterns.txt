@@ -28,6 +28,7 @@ tests/terraform/checks/resource/azure/example_AzureInstanceExtensions/main.tf
 tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
+tests/terraform/image_referencer/resources/aws/batch_tfplan.json
 tests/helm/runner/resources/schema-registry
 tests/common/utils/conftest.py
 tests/terraform/runner/resources/get_graph_resource_entity_config/main.tf

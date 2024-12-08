@@ -1,3 +1,6 @@
+from typing import List
+
+
 class PlatformConnectionError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
@@ -16,8 +19,9 @@ class BridgecrewAuthError(PlatformConnectionError):
 
 
 class ModuleNotEnabledError(Exception):
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, unsupported_frameworks: List[str]) -> None:
         self.message = message
+        self.unsupported_frameworks = unsupported_frameworks
 
     def __str__(self) -> str:
         return f"ModuleNotEnabledError: {self.message}"

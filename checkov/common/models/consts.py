@@ -14,7 +14,9 @@ SUPPORTED_PACKAGE_FILES = {
     "package.json",
     "package-lock.json",
     "pom.xml",
-    "requirements.txt"
+    "requirements.txt",
+    "Pipfile",
+    "Pipfile.lock",
 }
 SUPPORTED_FILES = SUPPORTED_PACKAGE_FILES.union({"Dockerfile"})
 

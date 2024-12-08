@@ -7,7 +7,8 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.checks_infra.registry import Registry, get_all_graph_checks_registries, get_graph_checks_registry, \
+    GraphSupportedIACFrameworks
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -19,10 +20,8 @@ from pathlib import Path
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
     def tearDown(self) -> None:
-        get_graph_checks_registry("cloudformation").checks = []
-        get_graph_checks_registry("terraform").checks = []
-        get_graph_checks_registry("kubernetes").checks = []
-        get_graph_checks_registry("bicep").checks = []
+        for framework in GraphSupportedIACFrameworks:
+            get_graph_checks_registry(framework.value.lower()).checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -220,6 +219,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         tf_registry = get_graph_checks_registry("terraform").checks
         k8s_registry = get_graph_checks_registry("kubernetes").checks
         bicep_registry = get_graph_checks_registry("bicep").checks
+        arm_registry = get_graph_checks_registry("arm").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
@@ -227,6 +227,27 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
         self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].id)
         self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].bc_id)
+        self.assertEqual('kpande_arm_1650378013213', arm_registry[0].bc_id)
+        self.assertEqual('kpande_arm_1650378013213', arm_registry[0].bc_id)
+
+    def test_pre_scan_with_multiple_frameworks_graph_check(self):
+        instance = BcPlatformIntegration()
+        instance.skip_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        instance.customer_run_config_response = mock_multiple_frameworks_custom_policy_response()
+
+        custom_policies_integration.pre_scan()
+        bicep_registry_checks = get_graph_checks_registry("bicep").checks
+        all_graph_checks = get_all_graph_checks_registries()
+        for registry in all_graph_checks:
+            multiple_frameworks_custom_policy_exist = False
+            for check in registry.checks:
+                if check.bc_id == 'multiple_frameworks_policy_1625063607541':
+                    multiple_frameworks_custom_policy_exist = True
+            self.assertEqual(True, multiple_frameworks_custom_policy_exist)
+        self.assertEqual(2, len(bicep_registry_checks))
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -551,6 +572,63 @@ def mock_custom_policies_response():
                 "frameworks": [
                     "bicep"
                 ]
+            },
+            {
+                "id": "kpande_arm_1650378013213",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "arm policy",
+                "guideline": "meaningful guideline for arm policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "arm",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "arm"
+                ]
+            }
+        ]
+    }
+
+
+def mock_multiple_frameworks_custom_policy_response():
+    return {
+        "customPolicies": [
+            {
+                "id": "kpande_bicep_1650378013212",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "bicep policy",
+                "guideline": "meaningful guideline for bicep policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "bicep",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "bicep"
+                ]
+            },
+            {
+                "id": "multiple_frameworks_policy_1625063607541",
+                "title": "multiple frameworks policy",
+                "code": "{\"and\":[{\"operator\":\"exists\",\"cond_type\":\"connection\",\"resource_types\":["
+                        "\"azurerm_subnet_network_security_group_association\"],\"connected_resource_types\":["
+                        "\"azurerm_subnet\",\"azurerm_network_security_group\"]},{\"value\":[\"azurerm_subnet\"],"
+                        "\"operator\":\"within\",\"attribute\":\"resource_type\",\"cond_type\":\"filter\"}]}",
+                "severity": "CRITICAL",
+                "category": "General",
+                "frameworks": [],
+                "resourceTypes": ["aws_s3_bucket", "PodSecurityPolicy"],
+                "guideline": "multiple_frameworks_policy_1625063607541",
+                "benchmarks": {},
+                "createdBy": "mike+policies@bridgecrew.io",
+                "sourceIncidentId": None
             }
         ]
     }

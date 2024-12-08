@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import typing
 from collections.abc import Collection
 from typing import Union, Dict, Any, List, cast
 
@@ -7,6 +9,11 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+
+from bc_jsonpath_ng.ext import parse
+
+if typing.TYPE_CHECKING:
+    from bc_jsonpath_ng import JSONPath
 
 
 class Block:
@@ -24,6 +31,8 @@ class Block:
         "dynamic_attributes",
         "foreach_attrs"
     )
+
+    jsonpath_parsed_statement_cache: "dict[str, JSONPath]" = {}  # noqa: CCE003  # global cache
 
     def __init__(
             self,
@@ -62,15 +71,17 @@ class Block:
         for attribute_key, attribute_value in self.attributes.items():
             if has_dynamic_block and attribute_key in dynamic_attributes.keys():  # type: ignore
                 continue
-            if isinstance(attribute_value, dict) or (
-                isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
-            ):
+            if self.should_run_get_inner_attributes(attribute_value):
                 inner_attributes = self.get_inner_attributes(
                     attribute_key=attribute_key,
                     attribute_value=attribute_value,
                 )
                 attributes_to_add.update(inner_attributes)
         return attributes_to_add
+
+    def should_run_get_inner_attributes(self, attribute_value: Any) -> bool:
+        return isinstance(attribute_value, dict) or (isinstance(attribute_value, list) and len(attribute_value) > 0
+                                                     and isinstance(attribute_value[0], dict))
 
     def __str__(self) -> str:
         return f"{self.block_type}: {self.name}"
@@ -156,7 +167,16 @@ class Block:
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
                 additional_changed_attributes = self.extract_additional_changed_attributes(key)
-                self.attributes[key] = attribute_value
+                if key in self.attributes and isinstance(self.attributes[key], dict) and key != attribute_key:
+                    try:
+                        self._update_attribute_based_on_jsonpath_key(attribute_value, key)
+                    except Exception as e:
+                        logging.debug(f"Failed updating attribute for key: {key} and value {attribute_value} for"
+                                      f"vertex attributes {self.attributes}. Falling back to explicitly setting it."
+                                      f"Exception - {e}")
+                        self.attributes[key] = attribute_value
+                else:
+                    self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
                 if transform_step and end_key_part in ("1", "2"):
                     # if condition logic during the transform step breaks the values
@@ -167,6 +187,37 @@ class Block:
                     if additional_changed_attributes:
                         for changed_attribute in additional_changed_attributes:
                             self.changed_attributes[changed_attribute] = previous_breadcrumbs
+
+    def _update_attribute_based_on_jsonpath_key(self, attribute_value: Any, key: str) -> None:
+        """
+        When updating all the attributes we might try to update a specific attribute inside a complex object,
+        so we use jsonpath to refer to the specific location only.
+        """
+        if key not in Block.jsonpath_parsed_statement_cache:
+            jsonpath_key = self._get_jsonpath_key(key)
+            expr = parse(jsonpath_key)
+            Block.jsonpath_parsed_statement_cache[key] = expr
+        else:
+            expr = Block.jsonpath_parsed_statement_cache[key]
+        match = expr.find(self.attributes)
+        if match:
+            match[0].value = attribute_value
+        return None
+
+    def _get_jsonpath_key(self, key: str) -> str:
+        key = self._handle_unique_key_characters(key)
+        # Replace .0 with [0] to match jsonpath style
+        jsonpath_key = "$."
+        key_parts = key.split(".")
+        for part in key_parts:
+            if part.isnumeric():
+                jsonpath_key += f"[{part}]"
+            else:
+                jsonpath_key += part
+        return jsonpath_key
+
+    def _handle_unique_key_characters(self, key: str) -> str:
+        return key
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
