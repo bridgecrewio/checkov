@@ -98,7 +98,7 @@ class BaseContextParser(ABC):
             (
                 line_num,
                 {
-                    "id": match.group(2),
+                    "id": identifier.strip(),
                     "suppress_comment": match.group(3)[1:] if match.group(3) else "No comment provided",
                 },
             )
@@ -106,6 +106,7 @@ class BaseContextParser(ABC):
             if self.is_optional_comment_line(x)
             for match in [re.search(COMMENT_REGEX, x)]
             if match
+            for identifier in match.group(2).split(",")
         ]
         for entity_block in definition_blocks:
             skipped_checks = []

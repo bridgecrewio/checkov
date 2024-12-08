@@ -1,6 +1,99 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.311...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.332...HEAD)
+
+## [3.2.332](https://github.com/bridgecrewio/checkov/compare/3.2.328...3.2.332) - 2024-12-05
+
+### Feature
+
+- **terraform:** Add multi skip inline suppression - [#6860](https://github.com/bridgecrewio/checkov/pull/6860)
+- **terraform:** New bedrock check - [#6892](https://github.com/bridgecrewio/checkov/pull/6892)
+
+### Bug Fix
+
+- **kubernetes:** fix json file parsing - [#6891](https://github.com/bridgecrewio/checkov/pull/6891)
+- **terraform:** Fix CKV2_AZURE_31 - [#6893](https://github.com/bridgecrewio/checkov/pull/6893)
+
+## [3.2.328](https://github.com/bridgecrewio/checkov/compare/3.2.327...3.2.328) - 2024-12-04
+
+### Feature
+
+- **serverless:** Serverless refactor for graph implementation - [#6885](https://github.com/bridgecrewio/checkov/pull/6885)
+
+### Documentation
+
+- **general:** docs flags update - [#6888](https://github.com/bridgecrewio/checkov/pull/6888)
+
+## [3.2.327](https://github.com/bridgecrewio/checkov/compare/3.2.326...3.2.327) - 2024-12-03
+
+### Bug Fix
+
+- **terraform:** Convert to graph check - [#6875](https://github.com/bridgecrewio/checkov/pull/6875)
+
+## [3.2.326](https://github.com/bridgecrewio/checkov/compare/3.2.324...3.2.326) - 2024-12-02
+
+### Feature
+
+- **general:** add new CIDR operator - [#6877](https://github.com/bridgecrewio/checkov/pull/6877)
+
+### Bug Fix
+
+- **arm:** Fix resource ID generation to use variables - [#6884](https://github.com/bridgecrewio/checkov/pull/6884)
+
+## [3.2.324](https://github.com/bridgecrewio/checkov/compare/3.2.322...3.2.324) - 2024-12-01
+
+### Bug Fix
+
+- **terraform_plan:** run post_runner after get_enriched_resources for terraform_plan - [#6883](https://github.com/bridgecrewio/checkov/pull/6883)
+
+## [3.2.322](https://github.com/bridgecrewio/checkov/compare/3.2.320...3.2.322) - 2024-11-28
+
+### Feature
+
+- **general:** Update range includes to handle range values - [#6867](https://github.com/bridgecrewio/checkov/pull/6867)
+
+### Bug Fix
+
+- **general:** fix_memory error with adding new env - [#6879](https://github.com/bridgecrewio/checkov/pull/6879)
+- **general:** revert comment out ARM test - [#6882](https://github.com/bridgecrewio/checkov/pull/6882)
+
+## [3.2.320](https://github.com/bridgecrewio/checkov/compare/3.2.317...3.2.320) - 2024-11-27
+
+### Feature
+
+- **terraform:** Add new checks to match run checks - [#6868](https://github.com/bridgecrewio/checkov/pull/6868)
+
+### Bug Fix
+
+- **arm:** Fix arm root folder - [#6880](https://github.com/bridgecrewio/checkov/pull/6880)
+- **terraform:** Update CKV_AZURE_164 to correct check on trust policy - [#6757](https://github.com/bridgecrewio/checkov/pull/6757)
+
+## [3.2.317](https://github.com/bridgecrewio/checkov/compare/3.2.314...3.2.317) - 2024-11-26
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6872](https://github.com/bridgecrewio/checkov/pull/6872)
+
+### Bug Fix
+
+- **arm:** Fix arm report resource naming - [#6876](https://github.com/bridgecrewio/checkov/pull/6876)
+- **terraform:** Fix two checks and logs - [#6874](https://github.com/bridgecrewio/checkov/pull/6874)
+
+## [3.2.314](https://github.com/bridgecrewio/checkov/compare/3.2.312...3.2.314) - 2024-11-25
+
+### Feature
+
+- **general:** add logs for suppression - [#6873](https://github.com/bridgecrewio/checkov/pull/6873)
+
+### Bug Fix
+
+- **arm:** Fix arm resource naming on integration with Prisma - [#6870](https://github.com/bridgecrewio/checkov/pull/6870)
+
+## [3.2.312](https://github.com/bridgecrewio/checkov/compare/3.2.311...3.2.312) - 2024-11-24
+
+### Bug Fix
+
+- **arm:** Fix arm graph breadcrumbs - [#6869](https://github.com/bridgecrewio/checkov/pull/6869)
 
 ## [3.2.311](https://github.com/bridgecrewio/checkov/compare/3.2.307...3.2.311) - 2024-11-21
 

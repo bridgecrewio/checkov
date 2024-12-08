@@ -17,6 +17,7 @@ class GraphSource(str, Enum):
     KUSTOMIZE = "kustomize"
     GITHUB_ACTION = "github_actions"
     HELM = "helm"
+    SERVERLESS = "serverless"
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change

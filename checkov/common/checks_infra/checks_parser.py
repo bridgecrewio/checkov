@@ -56,6 +56,8 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsLessThanAttributeSolver,
     NumberOfWordsLessThanOrEqualAttributeSolver,
     NotWithinAttributeSolver,
+    CIDRRangeSubsetAttributeSolver,
+    CIDRRangeNotSubsetAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -120,6 +122,8 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "number_of_words_greater_than_or_equal": NumberOfWordsGreaterThanOrEqualAttributeSolver,
     "number_of_words_less_than_or_equal": NumberOfWordsLessThanOrEqualAttributeSolver,
     "number_of_words_less_than": NumberOfWordsLessThanAttributeSolver,
+    "cidr_range_subset": CIDRRangeSubsetAttributeSolver,
+    "cidr_range_not_subset": CIDRRangeNotSubsetAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
