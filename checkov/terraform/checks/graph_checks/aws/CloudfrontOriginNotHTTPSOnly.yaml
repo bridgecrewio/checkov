@@ -1,0 +1,36 @@
+metadata:
+  id: "CKV2_AWS_72"
+  name: "Ensure AWS CloudFront origin protocol policy enforces HTTPS-only"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_cloudfront_distribution"
+      attribute: "enabled"
+      operator: "equals"
+      value: "false"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_cloudfront_distribution"
+      attribute: "origin.*.custom_origin_config"
+      operator: "not_exists"
+    - and:
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_cloudfront_distribution"
+        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+        operator: "jsonpath_not_contains"
+        value: ".mediastore."
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_cloudfront_distribution"
+        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+        operator: "jsonpath_not_contains"
+        value: ".mediapackage."
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_cloudfront_distribution"
+        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+        operator: "jsonpath_not_contains"
+        value: ".elb."

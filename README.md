@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Helm.md), [Kustomize](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Bicep.md), [OpenAPI](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/OpenAPI.md) or [ARM Templates](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Helm.md), [Kustomize](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Bicep.md), [OpenAPI](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/OpenAPI.md), [ARM Templates](https://github.com/bridgecrewio/checkov/blob/main/docs/7.Scan%20Examples/Azure%20ARM%20templates.md), or [OpenTofu](https://opentofu.org/) and detects security and compliance misconfigurations using graph-based scanning.
 
 It performs [Software Composition Analysis (SCA) scanning](docs/7.Scan%20Examples/Sca.md) which is a scan of open source packages and images for Common Vulnerabilities and Exposures (CVEs).
  
@@ -42,7 +42,7 @@ Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacl
  ## Features
 
  * [Over 1000 built-in policies](https://github.com/bridgecrewio/checkov/blob/main/docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, Terraform JSON, CloudFormation, AWS SAM, Kubernetes, Helm, Kustomize, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
+ * Scans Terraform, Terraform Plan, Terraform JSON, CloudFormation, AWS SAM, Kubernetes, Helm, Kustomize, Dockerfile, Serverless framework, Ansible, Bicep, ARM, and OpenTofu template files.
  * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
@@ -66,7 +66,7 @@ Scheduled scan result in Jenkins
 ## Getting started
 
 ### Requirements
- * Python >= 3.8 (Data classes are available for Python 3.8+)
+ * Python >= 3.9, <=3.12
  * Terraform >= 0.12
 
 ### Installation
@@ -251,14 +251,14 @@ checkov -d . --skip-check kube-system
 
 Run a scan of a container image. First pull or build the image then refer to it by the hash, ID, or name:tag:
 ```sh
-checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ...
+checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --repo-id ... --bc-api-key ...
 
-checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --repo-id ... --bc-api-key ...
 ```
 
 You can use --image flag also to scan container image instead of --docker-image for shortener:
 ```sh
-checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --repo-id ... --bc-api-key ...
 ```
 
 Run an SCA scan of packages in a repo:
@@ -278,16 +278,16 @@ checkov -d .
 
 Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that their suffix is DontScan
 ```sh
-checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
+checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
 ```
 
 Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that contains "skip_test" in path
 ```sh
-checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
+checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
 ```
 
 One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
-The masking can apply on resource & value (or multiple values, seperated with a comma).
+The masking can apply on resource & value (or multiple values, separated with a comma).
 Examples:
 ```sh
 mask:
@@ -389,7 +389,7 @@ The console output is in colour by default, to switch to a monochrome output, se
 
 #### VS Code Extension
 
-If you want to use Checkov within VS Code, give a try to the vscode extension available at [VS Code](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use Checkov within VS Code, give the [Prisma Cloud extension](https://marketplace.visualstudio.com/items?itemName=PrismaCloud.prisma-cloud) a try.
 
 ### Configuration using a config file
 
@@ -483,4 +483,4 @@ To skip this API call use the flag `--skip-download`.
 Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
 ## Python Version Support
-We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.8 - 3.11, inclusive. Note that Python 3.7 reached EOL on June 2023 and Python 3.8 will reach EOL in October 2024. If you run into any issues with any non-EOL Python version, please open an Issue.
+We follow the official support cycle of Python, and we use automated tests for supported versions of Python. This means we currently support Python 3.9 - 3.12, inclusive. Note that Python 3.8 reached EOL on October 2024 and Python 3.9 will reach EOL in October 2025. We are investigating support for 3.13. If you run into any issues with any non-EOL Python version, please open an Issue.

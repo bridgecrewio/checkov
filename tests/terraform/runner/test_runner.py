@@ -434,6 +434,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # duplicate of CKV_AZURE_3
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_243":
+                continue  # ARM only check, not a Terraform check
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
@@ -469,7 +471,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 4):
+        for i in range(1, len(aws_checks) + 3):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -485,12 +487,18 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
                 # Was a test policy
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_67':
+                # Too many edge cases for ways to get a KMS key connected to S3
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_70':
+                # Added as a Python check
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
             self.assertIn(f'CKV2_GCP_{i}', gcp_checks,
                           msg=f'The new GCP violation should have the ID "CKV2_GCP_{i}"')
-        for i in range(1, len(azure_checks) + 2):
+        for i in range(1, len(azure_checks) + 1):
             if f'CKV2_AZURE_{i}' == 'CKV2_AZURE_18':
                 # duplicate of CKV2_AZURE_1
                 continue
@@ -1300,6 +1308,18 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(resources_ids), 3)
         self.assertEqual(expected_resources_ids, resources_ids)
 
+    def test_list_of_routes(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "list_of_routes")
+        checks_allow_list = ['CKV2_AWS_44']
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
@@ -1777,6 +1797,30 @@ class TestRunnerValid(unittest.TestCase):
 
                 # then
                 self.assertEqual(len(runner.definitions), 1)
+                self.assertEqual(len(parsing_errors), 1)
+
+    def test__parse_files_with_timout(self):
+        for parallel_type in [ParallelizationType.FORK, ParallelizationType.SPAWN, ParallelizationType.NONE]:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/hcl_timeout"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 0)
                 self.assertEqual(len(parsing_errors), 1)
 
 
