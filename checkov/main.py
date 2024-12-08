@@ -53,7 +53,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
-from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
+from checkov.common.util.banner import banner as checkov_banner, default_tool as default_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
@@ -238,7 +238,7 @@ class Checkov:
             logging.debug('No framework specified; setting to none')
             return []
 
-    def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = default_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -251,6 +251,9 @@ class Checkov:
         }
 
         logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
+
+        if self.config.custom_tool_name:  # if the user specifies a tool name, use that
+            tool = self.config.custom_tool_name
         try:
             if self.config.add_check:
                 resp = prompt.Prompt()
@@ -468,10 +471,11 @@ class Checkov:
             integration_feature_registry.config = self.config
             integration_feature_registry.run_pre_scan()
 
+            # assign policies suppression to runner_filter
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
-            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
-            runner_filter.bc_cloned_checks = bc_cloned_checks
+            runner_filter.bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
+            runner_filter.set_suppressed_policies(list(policy_level_suppression.values()))
 
             if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
                 # only run image referencer, when sca_image framework is enabled
@@ -483,11 +487,6 @@ class Checkov:
             logger.debug(f"Filtered excluded list of policies: {runner_filter.filtered_exception_policy_ids}")
 
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
-            policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
-            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
-            runner_filter.bc_cloned_checks = bc_cloned_checks
-            custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.set_suppressed_policies(list(policy_level_suppression.values()))
 
             if self.config.use_enforcement_rules:
                 runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -694,8 +693,8 @@ class Checkov:
                 print(f"{banner}")
             return None
         except ModuleNotEnabledError as m:
-            logging.error(m)
-            self.exit_run()
+            if all(framework in self.config.framework for framework in m.unsupported_frameworks):
+                logging.warning(m)
             return None
         except PlatformConnectionError:
             # we don't want to print all of these stack traces in normal output, as these could be user error

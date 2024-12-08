@@ -108,7 +108,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self._apply_suppressions_to_report(scan_report)
 
     def _apply_suppressions_to_report(self, scan_report: Report) -> None:
-
+        logging.debug('Start apply_suppressions_to_report')
         # holds the checks that are still not suppressed
         still_failed_checks = []
         still_passed_checks = []
@@ -124,16 +124,20 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             relevant_suppressions_v2 = self.suppressions_v2.get(check.check_id)
 
             has_suppression = relevant_suppressions or relevant_suppressions_v2
-
+            if isinstance(has_suppression, list):
+                logging.debug(f'(_apply_suppressions_to_report) - number of suppression {len(has_suppression)}')
             applied_suppression = self._check_suppressions(check, relevant_suppressions, relevant_suppressions_v2) if has_suppression else None
             if applied_suppression:
                 suppress_comment = applied_suppression['comment'] if applied_suppression['isV1'] else applied_suppression['justificationComment']
-                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
-                check.check_result = {
-                    'result': CheckResult.SKIPPED,
-                    'suppress_comment': suppress_comment
-                }
-                scan_report.skipped_checks.append(check)
+                if self._should_omit_check(applied_suppression):
+                    logging.debug(f'Removing check {check.check_id} from the report, comment: {suppress_comment}')
+                else:
+                    logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
+                    check.check_result = {
+                        'result': CheckResult.SKIPPED,
+                        'suppress_comment': suppress_comment
+                    }
+                    scan_report.skipped_checks.append(check)
             elif check.check_result['result'] == CheckResult.FAILED:
                 still_failed_checks.append(check)
             else:
@@ -141,6 +145,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         scan_report.failed_checks = still_failed_checks
         scan_report.passed_checks = still_passed_checks
+
+    @staticmethod
+    def _should_omit_check(applied_suppression: dict[str, Any]) -> bool:
+        if applied_suppression['isV1']:
+            return False
+        if applied_suppression['ruleType'] == 'policy':
+            return True
+        return False
 
     def _check_suppressions(self, record: Record, suppressions: Optional[list[dict[str, Any]]], suppressions_v2: Optional[list[dict[str, Any]]]) -> dict[str, Any] | None:
         """
@@ -177,6 +189,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # But checking here adds some resiliency against bugs if that changes.
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
+            logging.debug(f'check_suppression type Resources {suppression}. resource_id = {record.repo_file_path}:{record.resource} repo_id = {self.bc_integration.repo_id}')
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
@@ -306,7 +319,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             for suppression in check_suppressions:
                 if (suppression['isV1'] and suppression.get("suppressionType") == "Policy") or (not suppression['isV1'] and suppression.get("ruleType") == "policy"):
                     policy_level_suppressions[suppression['id']] = [suppression['policyId']] if suppression['isV1'] else suppression['policyIds']
-                    break
         return policy_level_suppressions
 
     def post_scan(self, merged_reports: list[Report]) -> None:

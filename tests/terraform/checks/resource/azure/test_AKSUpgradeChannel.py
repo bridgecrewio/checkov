@@ -18,11 +18,14 @@ class TestAKSUpgradeChannel(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_kubernetes_cluster.pass',
+            'azurerm_kubernetes_cluster.pass_new',
+            'azurerm_kubernetes_cluster.pass_old',
         }
         failing_resources = {
-            'azurerm_kubernetes_cluster.fail',
-            'azurerm_kubernetes_cluster.fail2',
+            'azurerm_kubernetes_cluster.fail_new',
+            'azurerm_kubernetes_cluster.fail2_new',
+            'azurerm_kubernetes_cluster.fail_old',
+            'azurerm_kubernetes_cluster.fail2_old',
         }
         skipped_resources = {}
 

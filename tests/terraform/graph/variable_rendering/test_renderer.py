@@ -486,3 +486,11 @@ class TestRenderer(TestCase):
                 "role": ["roles/run.developer"],
             },
         )
+
+    def test_foreach_with_tfvars_tag_merge(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_tfvars_merge")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        self.assertDictEqual(resources_vertex[0].config['aws_instance']['this["vm1"]'].get('tags')[0],
+                             {'Environment': 'prod', 'Department': 'Testing', 'Name': 'vm1'})

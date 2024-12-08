@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_synapse_workspace.azurerm_synapse_workspace_pass"
+fail:
+  - "azurerm_synapse_workspace.azurerm_synapse_workspace_fail"
