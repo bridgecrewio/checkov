@@ -1,0 +1,7 @@
+pass:
+  - "Microsoft.Synapse/workspaces/sqlPools.pass"
+fail:
+  - "Microsoft.Synapse/workspaces/sqlPools.fail"
+evaluated_keys:
+  - 'properties/state'
+  - 'resource_type'

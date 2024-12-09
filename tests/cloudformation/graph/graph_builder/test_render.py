@@ -140,12 +140,12 @@ class TestRenderer(TestCase):
         environment_expected_attributes = {'Default': None}
         # Resources
         web_vpc_expected_attributes = {'CidrBlock': web_vpc_expected_cidr_block}
-        default_db_expected_attributes = {'DBName': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
+        default_db_expected_attributes = {'DBName': {'Fn::Sub': 'rds-${CompanyName}-${Environment}'}}
         # Outputs
         db_endpoint_sg_expected_attributes = {'Value.Fn::Sub': "${DefaultDB.Endpoint.Address}:${DefaultDB.Endpoint.Port}"}
         web_vpc_cidr_block_expected_attributes = {'Value': web_vpc_expected_cidr_block}
         cidr_block_associations_expected_attributes = {'Value.Fn::Sub': "${WebVPC.CidrBlockAssociations}"}
-        default_db_name_expected_attributes = {'Value': {'Fn::Sub': 'rds-${AWS::AccountId}-${CompanyName}-${Environment}'}}
+        default_db_name_expected_attributes = {'Value': {'Fn::Sub': 'rds-${CompanyName}-${Environment}'}}
 
         self.compare_vertex_attributes(local_graph, company_name_expected_attributes, BlockType.PARAMETERS, 'CompanyName')
         self.compare_vertex_attributes(local_graph, environment_expected_attributes, BlockType.PARAMETERS, 'Environment')

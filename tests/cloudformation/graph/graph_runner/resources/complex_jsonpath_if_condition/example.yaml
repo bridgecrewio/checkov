@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This template deploys microservice to a ECS cluster with Fargate.
+Parameters:
+  AppName:
+    Description: Tech stack name to use when constructing resource names
+    Type: String
+
+  ApplicationIAMRole:
+    Description: "IAM Role for the application"
+    Type: String
+
+  CloudformationBucket:
+    Type: String
+
+  DockerImage:
+    Description: Placeholder image for the primeval task definition
+    Type: String
+    Default: moodysanalytics.jfrog.io/
+
+  env:
+    Type: String
+    Default: dev
+
+  version:
+    Type: String
+
+  AWSSSMAgentDockerImage:
+    Description: Image for AWS Amazon SSM Agent
+    Type: String
+    Default: "amazon-ssm-agent"
+
+  ApplicationPort:
+    Type: String
+    Default: "80"
+
+  TaskDefMemory:
+    Type: String
+    Default: 2048
+
+  TaskDefCPU:
+    Type: String
+    Default: 1024
+
+Conditions:
+  IsTrueCondition: !And
+    - !Equals [ !Ref AWSSSMAgentDockerImage, "amazon-ssm-agent" ]
+    - !Equals [ !Ref ApplicationPort, "80" ]
+  IsFalseCondition: !And
+    - !Equals [ !Ref AWSSSMAgentDockerImage, "amazon-ssm-agent" ]
+    - !Equals [ !Ref ApplicationPort, "81" ]
+
+Resources:
+  PassingExample:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref AppName
+      ContainerDefinitions:
+        - !If
+          - IsTrueCondition
+          - Name: amazon-ssm-agent
+            Image: !Ref AWSSSMAgentDockerImage
+            Essential: true
+            Cpu: 0
+            EntryPoint: [ ]
+            Command: [
+              "/bin/bash",
+              "-c",
+              "echo hello"
+            ]
+            Environment:
+              - Name: MANAGED_INSTANCE_ROLE_NAME
+                Value: lobadmin-managed-fis-ssm-instance
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: !Ref SSMLogGroup
+                awslogs-region: !Ref AWS::Region
+                awslogs-stream-prefix: !Ref AppName
+          - !Ref "AWS::NoValue"
+      Cpu: !Ref TaskDefCPU
+      Memory: !Ref TaskDefMemory
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${ApplicationIAMRole}
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/lobadmin-managed-ecs-instance-default
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Tags:
+        - Key: application_name
+          Value: !Ref AppName
+
+  FailingExample:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Ref AppName
+      ContainerDefinitions:
+        - !If
+          - IsFalseCondition
+          - Name: amazon-ssm-agent
+            Image: !Ref AWSSSMAgentDockerImage
+            Essential: true
+            Cpu: 0
+            EntryPoint: [ ]
+            Command: [
+              "/bin/bash",
+              "-c",
+              "echo hello"
+            ]
+            Environment:
+              - Name: MANAGED_INSTANCE_ROLE_NAME
+                Value: lobadmin-managed-fis-ssm-instance
+            LogConfiguration:
+              LogDriver: awslogs
+              Options:
+                awslogs-group: !Ref SSMLogGroup
+                awslogs-region: !Ref AWS::Region
+                awslogs-stream-prefix: !Ref AppName
+          - !Ref "AWS::NoValue"
+      Cpu: !Ref TaskDefCPU
+      Memory: !Ref TaskDefMemory
+      ExecutionRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${ApplicationIAMRole}
+      TaskRoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/lobadmin-managed-ecs-instance-default
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Tags:
+        - Key: application_name
+          Value: !Ref AppName

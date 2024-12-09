@@ -1,2 +1,2 @@
-pass:
+fail:
   - "aws_sqs_queue.sqs"

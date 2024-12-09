@@ -43,6 +43,8 @@ if TYPE_CHECKING:
 
 
 class K8sKustomizeRunner(K8sRunner):
+    check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
+
     def __init__(
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
@@ -53,7 +55,6 @@ class K8sKustomizeRunner(K8sRunner):
     ) -> None:
 
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
-        self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()

@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  Foo:
+    Type: String
+    Default: "Foo"
+  Bar:
+    Type: String
+    Default: "Bar"
+
+Conditions:
+  Check: !And
+    - !Equals [!Ref Foo, "Foo"]
+    - !Equals [!Ref Bar, "Bar"]
+  FalseCheck: !And
+    - !Equals [!Ref Foo, "NotFoo"]
+    - !Equals [!Ref Bar, "Bar"]
+
+Resources:
+  Pass:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: my-ecs-task
+      NetworkMode: bridge
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: "256"
+      Memory: "512"
+      ContainerDefinitions:
+        - Name: my-container
+          Image: amazon/amazon-ecs-sample
+          Cpu: 256
+          Memory: 512
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: tcp
+          LogConfiguration: 
+            !If 
+              - Check
+              - 
+                LogDriver: awslogs
+                Options:
+                  awslogs-group: !Sub "/ecs/${AWS::StackName}/my-container-logs"
+                  awslogs-region: !Ref "AWS::Region"
+                  awslogs-stream-prefix: my-container
+              - !Ref AWS::NoValue
+      ExecutionRoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"
+  Fail:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: my-ecs-task
+      NetworkMode: bridge
+      RequiresCompatibilities:
+        - FARGATE
+      Cpu: "256"
+      Memory: "512"
+      ContainerDefinitions:
+        - Name: my-container
+          Image: amazon/amazon-ecs-sample
+          Cpu: 256
+          Memory: 512
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: tcp
+          LogConfiguration:
+            !If
+            - FalseCheck
+            - LogDriver: awslogs
+              Options:
+                awslogs-group: !Sub "/ecs/${AWS::StackName}/my-container-logs"
+                awslogs-region: !Ref "AWS::Region"
+                awslogs-stream-prefix: my-container
+            - !Ref AWS::NoValue
+      ExecutionRoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/ecsTaskExecutionRole"

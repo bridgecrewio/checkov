@@ -177,36 +177,16 @@ class TestLocalGraph(TestCase):
         function_1_vertex = local_graph.vertices[function_1_index]
         function_2_vertex = local_graph.vertices[function_2_index]
 
-        expected_function_1_changed_attributes = [
-            "CodeUri",
-            "Timeout",
-            "Tracing",
+        # SAM Globals are now compiled into the resources
+        expected_changes = [
             "Environment.Variables",
-            "Environment.Variables.STAGE",
             "Environment.Variables.QUEUE_URL",
             "Environment.Variables.QUEUE_URL.Fn::If",
-            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
             "VpcConfig.SecurityGroupIds",
             "VpcConfig.SubnetIds",
         ]
-        self.assertCountEqual(expected_function_1_changed_attributes, function_1_vertex.changed_attributes.keys())
-        expected_function_2_changed_attributes = [
-            "CodeUri",
-            "Runtime",
-            "Timeout",
-            "Tracing",
-            "Environment",
-            "Environment.Variables",
-            "Environment.Variables.STAGE",
-            "Environment.Variables.TABLE_NAME",
-            "Environment.Variables.QUEUE_URL",
-            "Environment.Variables.QUEUE_URL.Fn::If",
-            "Environment.Variables.QUEUE_URL.Fn::If.1.Ref",
-            "VpcConfig",
-            "VpcConfig.SecurityGroupIds",
-            "VpcConfig.SubnetIds",
-        ]
-        self.assertCountEqual(expected_function_2_changed_attributes, function_2_vertex.changed_attributes.keys())
+        self.assertCountEqual(expected_changes, function_1_vertex.changed_attributes.keys())
+        self.assertCountEqual(expected_changes, function_2_vertex.changed_attributes.keys())
 
         self.assertEqual("src/", function_1_vertex.attributes["CodeUri"])
         self.assertEqual("python3.9", function_1_vertex.attributes["Runtime"])
@@ -215,7 +195,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual("hello", function_1_vertex.attributes["Environment"]["Variables"]["NEW_VAR"])
         self.assertEqual("Production", function_1_vertex.attributes["Environment"]["Variables"]["STAGE"])
         self.assertEqual("resource-table", function_1_vertex.attributes["Environment"]["Variables"]["TABLE_NAME"])
-        self.assertEqual(['sg-first', 'sg-123', 'sg-456'], function_1_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
+        self.assertEqual(['sg-123', 'sg-456', 'sg-first'], function_1_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
         self.assertEqual(['subnet-123', 'subnet-456'], function_1_vertex.attributes["VpcConfig"]["SubnetIds"])
 
         self.assertEqual("src/", function_2_vertex.attributes["CodeUri"])

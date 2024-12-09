@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_AWS_71"
+  name: "Ensure AWS ACM Certificate domain name does not include wildcards"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::CertificateManager::Certificate"
+      attribute: "DomainName"
+      operator: "not_contains"
+      value: "*"
+    - or:
+      - cond_type: "attribute"
+        resource_types:
+          - "AWS::CertificateManager::Certificate"
+        attribute: "SubjectAlternativeNames"
+        operator: "not_exists"
+      - cond_type: "attribute"
+        resource_types:
+          - "AWS::CertificateManager::Certificate"
+        attribute: "SubjectAlternativeNames.*"
+        operator: "not_contains"
+        value: "*"

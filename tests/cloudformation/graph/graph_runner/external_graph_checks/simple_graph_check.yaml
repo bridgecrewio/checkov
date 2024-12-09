@@ -1,0 +1,10 @@
+metadata:
+ name: "simple_graph_check"
+ id: "CKV2_TEST_SIMPLE"
+ category: "GENERAL"
+definition:
+  attribute: "ContainerDefinitions.LogConfiguration.LogDriver"
+  cond_type: "attribute"
+  operator: "exists"
+  resource_types:
+    - "AWS::ECS::TaskDefinition"

@@ -1,0 +1,15 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "CIDRRangeNotSubsetString"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "cidr_value"
+  operator: "cidr_range_not_subset"
+  value:
+    - "10.0.0.0/8"
+

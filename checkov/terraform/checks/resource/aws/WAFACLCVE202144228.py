@@ -21,7 +21,7 @@ class WAFACLCVE202144228(BaseResourceCheck):
             statement = rule.get("statement")
             if statement:
                 self.evaluated_keys = [f"rule/[{idx_rule}]/statement/[0]/managed_rule_group_statement"]
-                if not isinstance(statement, list):
+                if not isinstance(statement, list) or not isinstance(statement[0], dict):
                     return CheckResult.UNKNOWN
                 managed_group = statement[0].get("managed_rule_group_statement")
                 if managed_group:

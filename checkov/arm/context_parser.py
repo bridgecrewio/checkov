@@ -44,7 +44,7 @@ class ContextParser:
             for var, config in self.arm_template[ArmElements.VARIABLES].items():
                 if var in LINE_FIELD_NAMES:
                     continue
-                variable_values[var] = config
+                variable_values[var] = config.get('value') if config.get('value') else config
 
         # Find paths to substitute parameters and variables
         keys_w_params = self.search_deep_values('[parameters(', self.arm_template, [])

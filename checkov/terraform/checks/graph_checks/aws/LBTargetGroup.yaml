@@ -1,0 +1,35 @@
+metadata:
+  id: "CKV_AWS_378"
+  name: "Ensure AWS Load Balancer doesn't use HTTP protocol"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - aws_lb_target_group
+        - aws_alb_target_group
+      attribute: "protocol"
+      operator: "not_equals"
+      value: "HTTP"
+    - and:
+      - cond_type: filter
+        value:
+          - aws_lb_target_group
+          - aws_alb_target_group
+        operator: within
+        attribute: resource_type
+      - cond_type: connection
+        operator: exists
+        resource_types:
+          - aws_lb_target_group
+          - aws_alb_target_group
+        connected_resource_types:
+          - aws_lb_listener
+          - aws_alb_listener
+      - cond_type: "attribute"
+        resource_types:
+          - aws_lb_listener
+          - aws_alb_listener
+        attribute: "protocol"
+        operator: "not_equals"
+        value: "HTTP"

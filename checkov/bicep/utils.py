@@ -5,7 +5,7 @@ import os
 import re
 from collections.abc import Collection
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -88,26 +88,3 @@ def create_definitions(
         logging.warning(f"[bicep] found errors while parsing definitions: {parsing_errors}")
 
     return definitions, definitions_raw
-
-
-def adjust_value(element_name: str, value: Any) -> Any:
-    """Adjusts the value, if the 'element_name' references a nested key
-
-    Ex:
-    element_name = publicKey.keyData
-    value = {"keyData": "key-data", "path": "path"}
-
-    returns new_value = "key-data"
-    """
-
-    if "." in element_name and isinstance(value, dict):
-        key_parts = element_name.split(".")
-        new_value = value.get(key_parts[1])
-
-        if new_value is None:
-            # couldn't find key in in value object
-            return None
-
-        return adjust_value(".".join(key_parts[1:]), new_value)
-
-    return value

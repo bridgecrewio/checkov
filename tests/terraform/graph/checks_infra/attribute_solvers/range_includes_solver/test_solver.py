@@ -73,3 +73,25 @@ class TestRangeIncludesSolver(TestBaseSolver):
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_range_includes_list_w_list_solver(self):
+        root_folder = 'resources'
+        check_id = "RangeIncludesListWRange"
+        should_pass = ['test.pass1', 'test.pass2', 'test.pass3', 'test.pass4', 'test.pass5', 'test.pass6', 'test.pass7',
+                       'test.fail4']
+        should_fail = ['test.fail1', 'test.fail2', 'test.fail3', 'test.fail5', 'test.fail6', 'test.fail7', 'test.fail8',
+                       'test.fail9']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_range_includes_list_w_list_jsonpath_solver(self):
+        root_folder = 'resources'
+        check_id = "JsonPathRangeIncludesListWRange"
+        should_pass = ['test.pass1', 'test.pass2', 'test.pass3', 'test.pass4', 'test.pass5', 'test.pass6', 'test.pass7',
+                       'test.fail4']
+        should_fail = ['test.fail1', 'test.fail2', 'test.fail3', 'test.fail5', 'test.fail6', 'test.fail7', 'test.fail8',
+                       'test.fail9']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

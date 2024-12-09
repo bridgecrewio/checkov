@@ -8,9 +8,11 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
-from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN
+from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN, START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
+
+from hcl2 import START_LINE as start_line, END_LINE as end_line
 
 SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
@@ -232,6 +234,31 @@ def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) 
                 # In these cases, policies checking the existence of a value will succeed,
                 # but policies checking for concrete values will fail
                 resource_conf[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                _handle_complex_after_unknown(k, resource_conf, v)
+
+
+def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any) -> None:
+    """
+    Handles a case of an inner key generated with "after_unknown" value.
+    Example:
+        `
+        after_unknown: {
+            "logging_config": [
+            {
+              "bucket": true
+            }
+          ],
+        }
+        `
+    """
+    inner_keys = list(v[0].keys())
+    for inner_key in inner_keys:
+        if inner_key in (START_LINE, END_LINE):
+            # skip inner checkov keys
+            continue
+        if inner_key not in resource_conf[k]:
+            resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(
@@ -318,12 +345,22 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
                 # Not a provider, skip
                 continue
             provider_map[provider_key] = {}
+            provider_alias = provider_data.get("alias", "default")
+            provider_map_entry = provider_map[provider_key]
             for field, value in provider_data.get('expressions', {}).items():
                 if field in LINE_FIELD_NAMES or not isinstance(value, dict):
                     continue  # don't care about line #s or non dicts
                 expression_value = value.get('constant_value', None)
                 if expression_value:
-                    provider_map[provider_key][field] = expression_value
+                    if isinstance(expression_value, str):
+                        expression_value = [expression_value]
+                    provider_map_entry[field] = expression_value
+            provider_map_entry['start_line'] = [provider_data.get(START_LINE, 1) - 1]
+            provider_map_entry['end_line'] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry[start_line] = [provider_data.get(START_LINE, 1) - 1]
+            provider_map_entry[end_line] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry['alias'] = [provider_alias]
+            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
 
     return provider_map
 
@@ -439,13 +476,27 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
     return value_list
 
 
-def _get_provisioner(input_data: List[Any]) -> List[Any]:
+def _get_provisioner(input_data: List[Dict[str, Any]]) -> List[Dict[str, Dict[str, Any]]]:
     result = []
     for item in input_data:
-        key = item['type']
-        command_value = item['expressions']['command']
-        if not isinstance(command_value, list):
-            command_value = [command_value]
-        transformed_item = {key: {'command': command_value}}
-        result.append(transformed_item)
+        if 'type' in item and 'expressions' in item:
+            key = item['type']
+            expressions = item['expressions']
+            transformed_expressions = {}
+
+            if key == 'local-exec':
+                if 'command' in expressions:
+                    command_value = expressions['command']
+                    if not isinstance(command_value, list):
+                        command_value = [command_value]
+                    transformed_expressions['command'] = command_value
+
+                for field, value in expressions.items():
+                    if field != 'command':
+                        transformed_expressions[field] = value
+            else:
+                transformed_expressions = expressions
+
+            transformed_item = {key: transformed_expressions}
+            result.append(transformed_item)
     return result

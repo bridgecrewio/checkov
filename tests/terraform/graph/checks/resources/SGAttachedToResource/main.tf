@@ -141,6 +141,36 @@ resource "aws_dms_replication_instance" "pass_dms" {
   vpc_security_group_ids     = [aws_security_group.pass_dms.id]
 }
 
+#DMS Serverless
+
+resource "aws_security_group" "pass_dms_serverless" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_dms_replication_config" "pass_dms_serverless" {
+  replication_config_identifier = "dms"
+  resource_identifier           = "dms"
+  replication_type              = "cdc"
+  source_endpoint_arn           = "aws_dms_endpoint.source.endpoint_arn"
+  target_endpoint_arn           = "aws_dms_endpoint.target.endpoint_arn"
+  table_mappings                = <<EOF
+  {
+    "rules":[{"rule-type":"selection","rule-id":"1","rule-name":"1","rule-action":"include","object-locator":{"schema-name":"%%","table-name":"%%"}}]
+  }
+EOF
+
+  compute_config {
+    max_capacity_units           = "1"
+    vpc_security_group_ids       = [aws_security_group.pass_dms_serverless.id]
+  }
+}
+
 # DocDB
 
 resource "aws_security_group" "pass_docdb" {
@@ -155,6 +185,31 @@ resource "aws_security_group" "pass_docdb" {
 
 resource "aws_docdb_cluster" "pass_docdb" {
   vpc_security_group_ids = [aws_security_group.pass_docdb.id]
+}
+
+# DocDB Elastic
+
+resource "aws_security_group" "pass_docdbelastic" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_docdbelastic_cluster" "pass_docdbelastic" {
+  name = "docdbelastic_cluster"
+
+  admin_user_name     = "admin"
+  admin_user_password = "4dm1np4ssw0rd"
+
+  auth_type      = "PLAIN_TEXT"
+  shard_capacity = 2
+  shard_count    = 1
+
+  vpc_security_group_ids = [aws_security_group.pass_docdbelastic.id]
 }
 
 # EC2
@@ -639,6 +694,37 @@ resource "aws_msk_cluster" "pass_msk" {
   }
 }
 
+
+# MSK Connect
+
+resource "aws_security_group" "pass_msk_connect" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_mskconnect_connector" "pass_msk_connect" {
+  connector_configuration    = {}
+  kafkaconnect_version       = "example-version"
+  name                       = "msk-connect"
+  service_execution_role_arn = "aws_iam_role.msk_connect.arn"
+
+  kafka_cluster {
+    apache_kafka_cluster {
+      bootstrap_servers = "bootstrap-servers"
+
+      vpc {
+        security_groups = [aws_security_group.pass_msk_connect.id]
+        subnets         = []
+      }
+    }
+  }
+}
+
 # MWAA
 
 resource "aws_security_group" "pass_mwaa" {
@@ -678,6 +764,46 @@ resource "aws_security_group" "pass_neptune" {
 
 resource "aws_neptune_cluster" "pass_neptune" {
   vpc_security_group_ids = [aws_security_group.pass_neptune.id]
+}
+
+# OpenSearch Domain
+
+resource "aws_security_group" "pass_opensearch" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_opensearch_domain" "pass_opensearch" {
+  domain_name = "opensearch"
+  vpc_options {
+    security_group_ids = [aws_security_group.pass_opensearch.id]
+    subnet_ids         = ["aws_subnet.public_a.id"]
+  }
+}
+
+# OpenSearch VPC Endpoint
+
+resource "aws_security_group" "pass_opensearch_vpc_endpoint" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_opensearch_vpc_endpoint" "pass_opensearch_vpc_endpoint" {
+  domain_arn = aws_elasticsearch_domain.domain_1.arn
+  vpc_options {
+    security_group_ids = [aws_security_group.pass_opensearch_vpc_endpoint.id]
+    subnet_ids         = [aws_subnet.test.id, aws_subnet.test2.id]
+  }
 }
 
 # Quicksight
