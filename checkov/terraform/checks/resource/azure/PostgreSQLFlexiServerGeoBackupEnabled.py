@@ -13,9 +13,9 @@ class PostgreSQLFlexiServerGeoBackupEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        # Replicas can't have geo-redundant backups, so we return UNKNOWN
+        # Replicas can't have geo-redundant backups
         if conf.get('create_mode') and conf.get('create_mode')[0] == 'Replica':
-            return CheckResult.UNKNOWN
+            return CheckResult.PASSED
         return super().scan_resource_conf(conf)
 
     def get_inspected_key(self) -> str:
