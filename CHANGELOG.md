@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.332...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.334...HEAD)
+
+## [3.2.334](https://github.com/bridgecrewio/checkov/compare/3.2.332...3.2.334) - 2024-12-08
+
+### Feature
+
+- **serverless:** Serverless graph vertices - [#6894](https://github.com/bridgecrewio/checkov/pull/6894)
+
+### Bug Fix
+
+- **secrets:** fix indentation to remove duplications - [#6626](https://github.com/bridgecrewio/checkov/pull/6626)
 
 ## [3.2.332](https://github.com/bridgecrewio/checkov/compare/3.2.328...3.2.332) - 2024-12-05
 
