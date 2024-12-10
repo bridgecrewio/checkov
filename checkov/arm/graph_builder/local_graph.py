@@ -8,17 +8,22 @@ from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements, extract_resource_name_from_resource_id_func, \
     extract_resource_name_from_reference_func
 from checkov.arm.graph_builder.variable_rendering.renderer import ArmVariableRenderer
+from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder import CustomAttributes, Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.graph.graph_builder.utils import filter_sub_keys, adjust_value
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.type_forcers import force_int
 
 if TYPE_CHECKING:
-    from checkov.common.graph.graph_builder.local_graph import _Block
+    from checkov.common.graph.graph_builder.local_graph import Block
 
 DEPENDS_ON_FIELD = 'dependsOn'
 RESOURCE_ID_FUNC = 'resourceId('
 REFERENCE_FUNC = 'reference('
+PARAMETER_FUNC = 'parameters('
+VARIABLE_FUNC = 'variables('
 
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
@@ -29,9 +34,9 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
         self.vertices_by_name: dict[str, int] = {}
 
-    def build_graph(self, render_variables: bool = False) -> None:
+    def build_graph(self, render_variables: bool = True) -> None:
         self._create_vertices()
-        logging.warning(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
+        logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
         '''
             In order to resolve the resources names for the dependencies we need to render the variables first
@@ -42,9 +47,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         if render_variables:
             renderer = ArmVariableRenderer(self)
             renderer.render_variables_from_local_graph()
+            self._update_resource_vertices_names()
 
         self._create_edges()
-        logging.warning(f"[ArmLocalGraph] created {len(self.edges)} edges")
+        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
@@ -77,10 +83,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
             self.vertices.append(
                 ArmBlock(
-                    name=name,
+                    name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.VARIABLES,
+                    block_type=BlockType.VARIABLE,
                     attributes=attributes,
                     id=f"{ArmElements.VARIABLES}.{name}",
                 )
@@ -101,10 +107,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
             self.vertices.append(
                 ArmBlock(
-                    name=name,
+                    name=f"{file_path}/{name}",
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.PARAMETERS,
+                    block_type=BlockType.PARAMETER,
                     attributes=attributes,
                     id=f"{ArmElements.PARAMETERS}.{name}",
                 )
@@ -130,7 +136,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     name=resource_name,
                     config=config,
                     path=file_path,
-                    block_type=ArmElements.RESOURCES,
+                    block_type=BlockType.RESOURCE,
                     attributes=attributes,
                     id=f"{resource_type}.{resource_name}"
                 )
@@ -167,7 +173,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                     matches = re.findall(pattern, attr_value)
                     for match in matches:
                         var_name = match[1]
-                        self._create_edge(var_name, origin_vertex_index, attr_key)
+                        self._create_edge(f"{vertex.path}/{var_name}", origin_vertex_index, attr_key)
 
     def _create_edge(self, element_name: str, origin_vertex_index: int, label: str) -> None:
         dest_vertex_index = self.vertices_by_name.get(element_name)
@@ -188,16 +194,98 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
         dep_name = extract_resource_name_from_reference_func(reference_string)
         self._create_edge(dep_name, origin_vertex_index, f'{resource_name}->{dep_name}')
 
+    def _update_resource_vertices_names(self) -> None:
+        for i, vertex in enumerate(self.vertices):
+            if ((vertex.block_type != BlockType.RESOURCE or 'name' not in vertex.config or vertex.name == vertex.config['name'])
+                    or not isinstance(vertex.config['name'], str)):
+                continue
+
+            if PARAMETER_FUNC in vertex.name or VARIABLE_FUNC in vertex.name:
+                if vertex.name in self.vertices_by_name:
+                    del self.vertices_by_name[vertex.name]
+
+                vertex.name = vertex.config['name']
+                self.vertices_by_name[vertex.name] = i
+
     def update_vertices_configs(self) -> None:
-        # not used
-        pass
+        for vertex in self.vertices:
+            changed_attributes = list(vertex.changed_attributes.keys())
+            changed_attributes = filter_sub_keys(changed_attributes)
+            self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(
-            vertex: _Block, changed_attributes: list[str] | dict[str, Any], has_dynamic_blocks: bool = False
-    ) -> None:
-        # not used
-        pass
+    def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any],
+                             dynamic_blocks: bool = False) -> None:
+        if not changed_attributes:
+            # skip, if there is no change
+            return
+
+        for attr in changed_attributes:
+            new_value = vertex.attributes.get(attr, None)
+            if vertex.block_type == BlockType.RESOURCE:
+                ArmLocalGraph.update_config_attribute(
+                    config=vertex.config, key_to_update=attr, new_value=new_value
+                )
+
+    @staticmethod
+    def update_config_attribute(config: list[Any] | dict[str, Any], key_to_update: str, new_value: Any) -> None:
+        key_parts = key_to_update.split(".")
+
+        if isinstance(config, dict):
+            key = key_parts[0]
+            if len(key_parts) == 1:
+                ArmLocalGraph.update_config_value(config=config, key=key, new_value=new_value)
+                return
+            else:
+                key, key_parts = ArmLocalGraph.adjust_key(config, key, key_parts)
+                if len(key_parts) == 1:
+                    ArmLocalGraph.update_config_value(config=config, key=key, new_value=new_value)
+                    return
+
+                ArmLocalGraph.update_config_attribute(config[key], ".".join(key_parts[1:]), new_value)
+        elif isinstance(config, list):
+            key_idx = force_int(key_parts[0])
+            if key_idx is None:
+                return
+
+            if len(key_parts) == 1:
+                ArmLocalGraph.update_config_value(config=config, key=key_idx, new_value=new_value)
+                return
+            else:
+                ArmLocalGraph.update_config_attribute(config[key_idx], ".".join(key_parts[1:]), new_value)
+
+        return
+
+    @staticmethod
+    def update_config_value(config: list[Any] | dict[str, Any], key: int | str, new_value: Any) -> None:
+        new_value = adjust_value(config[key], new_value)  # type:ignore[index]
+        if new_value is None:
+            # couldn't find key in in value object
+            return
+
+        config[key] = new_value  # type:ignore[index]
+
+    @staticmethod
+    def adjust_key(config: dict[str, Any], key: str, key_parts: list[str]) -> tuple[str, list[str]]:
+        """Adjusts the key, if it consists of multiple dots
+
+        Ex:
+        config = {"'container.registry'": "acrName"}
+        key = "'container"
+        key_parts = ["'container", "registry'"]
+
+        returns new_key = "'container.registry'"
+                new_key_parts = ["'container.registry'"]
+        """
+
+        if key not in config:
+            if len(key_parts) >= 2:
+                new_key = ".".join(key_parts[:2])
+                new_key_parts = [new_key] + key_parts[2:]
+
+                return ArmLocalGraph.adjust_key(config, new_key, new_key_parts)
+
+        return key, key_parts
 
     def get_resources_types_in_graph(self) -> list[str]:
         # not used

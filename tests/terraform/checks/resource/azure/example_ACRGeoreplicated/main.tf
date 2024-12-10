@@ -1,12 +1,10 @@
 resource "azurerm_container_registry" "fail" {
-  name                   = var.acr.name
-  resource_group_name    = var.acr.resource_group_name
-  location               = var.acr.location
-  sku                    = "Basic"
-  anonymous_pull_enabled = var.anonymous_pull_enabled
-  trust_policy {
-    enabled = var.trust_policy_enabled
-  }
+  name                          = var.acr.name
+  resource_group_name           = var.acr.resource_group_name
+  location                      = var.acr.location
+  sku                           = "Basic"
+  anonymous_pull_enabled        = var.anonymous_pull_enabled
+  trust_policy_enabled          = var.trust_policy_enabled
   public_network_access_enabled = var.public_network_access
 
 
@@ -22,13 +20,11 @@ resource "azurerm_container_registry" "fail" {
 }
 
 resource "azurerm_container_registry" "fail2" {
-  name                   = var.acr.name
-  resource_group_name    = var.acr.resource_group_name
-  location               = var.acr.location
-  anonymous_pull_enabled = var.anonymous_pull_enabled
-  trust_policy {
-    enabled = var.trust_policy_enabled
-  }
+  name                          = var.acr.name
+  resource_group_name           = var.acr.resource_group_name
+  location                      = var.acr.location
+  anonymous_pull_enabled        = var.anonymous_pull_enabled
+  trust_policy_enabled          = var.trust_policy_enabled
   public_network_access_enabled = var.public_network_access
 
 
@@ -44,25 +40,21 @@ resource "azurerm_container_registry" "fail2" {
 }
 
 resource "azurerm_container_registry" "fail3" {
-  name                   = var.acr.name
-  resource_group_name    = var.acr.resource_group_name
-  location               = var.acr.location
-  anonymous_pull_enabled = var.anonymous_pull_enabled
-  trust_policy {
-    enabled = var.trust_policy_enabled
-  }
+  name                          = var.acr.name
+  resource_group_name           = var.acr.resource_group_name
+  location                      = var.acr.location
+  anonymous_pull_enabled        = var.anonymous_pull_enabled
+  trust_policy_enabled          = var.trust_policy_enabled
   sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
 }
 
 resource "azurerm_container_registry" "pass" {
-  name                   = var.acr.name
-  resource_group_name    = var.acr.resource_group_name
-  location               = var.acr.location
-  anonymous_pull_enabled = var.anonymous_pull_enabled
-  trust_policy {
-    enabled = var.trust_policy_enabled
-  }
+  name                          = var.acr.name
+  resource_group_name           = var.acr.resource_group_name
+  location                      = var.acr.location
+  anonymous_pull_enabled        = var.anonymous_pull_enabled
+  trust_policy_enabled          = var.trust_policy_enabled
   sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
   georeplications {

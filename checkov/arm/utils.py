@@ -45,7 +45,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 def create_definitions(
     root_folder: str,
-    _: Collection[Path] | None = None,
+    files: Collection[Path] | None = None,
     runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     definitions: dict[str, dict[str, Any]] = {}
@@ -55,8 +55,7 @@ def create_definitions(
 
     if root_folder:
         file_paths = get_scannable_file_paths(root_folder, runner_filter.excluded_paths)
-        filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
-        definitions, definitions_raw, parsing_errors = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
+        definitions, definitions_raw, parsing_errors = get_files_definitions(files=file_paths)
 
     if parsing_errors:
         logging.warning(f"[arm] found errors while parsing definitions: {parsing_errors}")
@@ -93,7 +92,7 @@ def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
         Examples:
             resourceId('Microsoft.Network/virtualNetworks/', virtualNetworkName) -> virtualNetworkName
     '''
-    return clean_string(resource_id.split(',')[-1].split(')')[0])
+    return clean_string(resource_id.split(',')[1].split(')')[0])
 
 
 def extract_resource_name_from_reference_func(reference: str) -> str:
@@ -115,3 +114,9 @@ def extract_resource_name_from_reference_func(reference: str) -> str:
 
 def clean_string(input: str) -> str:
     return input.replace("'", '').replace(" ", "")
+
+
+def clean_file_path(file_path: Path) -> Path:
+    path_parts = [part for part in file_path.parts if part not in (".", "..")]
+
+    return Path(*path_parts)
