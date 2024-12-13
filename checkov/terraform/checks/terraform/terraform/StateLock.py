@@ -14,10 +14,15 @@ class StateLock(BaseTerraformBlockCheck):
 
     def scan_terraform_block_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         # see: https://developer.hashicorp.com/terraform/language/terraform
-        if "backend" not in conf or "s3" not in conf["backend"][0]:
+        if "backend" not in conf:
             return CheckResult.UNKNOWN
 
-        s3_config = conf["backend"][0]["s3"]
+        backend = conf["backend"][0] if isinstance(conf["backend"], list) else conf["backend"]
+
+        if "s3" not in backend:
+            return CheckResult.UNKNOWN
+
+        s3_config = backend["s3"]
         if ("use_lockfile" not in s3_config or not s3_config["use_lockfile"]) and "dynamodb_table" not in s3_config:
             return CheckResult.FAILED
         return CheckResult.PASSED
