@@ -24,4 +24,5 @@ class TerraformBlockContextParser(BaseContextParser):
 
         return self.context
 
+
 parser = TerraformBlockContextParser()

@@ -1,9 +1,7 @@
-import re
 from typing import Dict, List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.terraform.base_check import BaseTerraformBlockCheck
-from checkov.common.models.consts import access_key_pattern, secret_key_pattern
 
 
 class StateLock(BaseTerraformBlockCheck):
@@ -14,11 +12,8 @@ class StateLock(BaseTerraformBlockCheck):
         categories = (CheckCategories.SUPPLY_CHAIN,)
         super().__init__(name=name, id=id, categories=categories, supported_blocks=supported_blocks)
 
-
     def scan_terraform_block_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        """
-        see: https://developer.hashicorp.com/terraform/language/terraform
-        """
+        # see: https://developer.hashicorp.com/terraform/language/terraform
         if "backend" not in conf or "s3" not in conf["backend"][0]:
             return CheckResult.UNKNOWN
 
