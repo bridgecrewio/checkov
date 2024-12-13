@@ -12,8 +12,8 @@ class BaseTerraformBlockCheck(BaseCheck):
         self,
         name: str,
         id: str,
-        categories: Iterable[CheckCategories],
-        supported_blocks: Iterable[str],
+        categories: "Iterable[CheckCategories]",
+        supported_blocks: "Iterable[str]",
         guideline: Optional[str] = None
     ) -> None:
         super().__init__(
