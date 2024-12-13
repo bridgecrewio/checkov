@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 _TerraformContext: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 _TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 
-CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
+CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module", "terraform"])
 
 
 class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDefinitionKey]):

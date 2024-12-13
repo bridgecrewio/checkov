@@ -21,6 +21,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.secrets import omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.terraform.registry import terraform_registry
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -87,6 +88,7 @@ class BaseTerraformRunner(
         "data": data_registry,
         "provider": provider_registry,
         "module": module_registry,
+        "terraform": terraform_registry,
     }
 
     @abstractmethod
