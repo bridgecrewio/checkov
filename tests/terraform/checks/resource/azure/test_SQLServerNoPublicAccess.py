@@ -19,11 +19,13 @@ class TestSQLServerNoPublicAccess(unittest.TestCase):
         passing_resources = {
             'azurerm_mysql_firewall_rule.pass',
             'azurerm_mysql_firewall_rule.pass2',
-            'azurerm_mysql_flexible_server_firewall_rule.pass'
+            'azurerm_mysql_flexible_server_firewall_rule.pass',
+            'azurerm_mssql_firewall_rule.pass'
         }
         failing_resources = {
             'azurerm_mysql_firewall_rule.fail',
             'azurerm_mysql_flexible_server_firewall_rule.fail',
+            'azurerm_mssql_firewall_rule.fail'
         }
         skipped_resources = {}
 
