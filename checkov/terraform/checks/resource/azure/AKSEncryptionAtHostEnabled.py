@@ -28,8 +28,8 @@ class AKSEncryptionAtHostEnabled(BaseResourceCheck):
         if self.entity_type == "azurerm_kubernetes_cluster":
             if conf.get('default_node_pool'):
                 node_pool = conf['default_node_pool'][0]
-                if node_pool.get('enable_host_encryption') == [True] or node_pool.get('host_encryption_enabled') == [
-                    True]:
+                if (node_pool.get('enable_host_encryption') == [True] or
+                        node_pool.get('host_encryption_enabled') == [True]):
                     return CheckResult.PASSED
             self.evaluated_keys = ['default_node_pool/[0]/enable_host_encryption',
                                    'default_node_pool/[0]/host_encryption_enabled']
@@ -39,5 +39,6 @@ class AKSEncryptionAtHostEnabled(BaseResourceCheck):
             self.evaluated_keys = ['enable_host_encryption', 'host_encryption_enabled']
 
         return CheckResult.FAILED
+
 
 check = AKSEncryptionAtHostEnabled()
