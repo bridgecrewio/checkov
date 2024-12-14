@@ -18,6 +18,7 @@ class SQLServerNoPublicAccess(BaseResourceCheck):
             'azurerm_sql_firewall_rule',
             'azurerm_postgresql_firewall_rule',
             'azurerm_mysql_firewall_rule',
+            'azurerm_mysql_flexible_server_firewall_rule',
         )
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
