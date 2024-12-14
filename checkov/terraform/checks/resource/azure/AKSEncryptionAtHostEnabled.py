@@ -1,8 +1,8 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class AKSEncryptionAtHostEnabled(BaseResourceValueCheck):
+class AKSEncryptionAtHostEnabled(BaseResourceCheck):
     def __init__(self) -> None:
         """
         With host-based encryption, the data stored on the VM host of
@@ -22,14 +22,22 @@ class AKSEncryptionAtHostEnabled(BaseResourceValueCheck):
             id=id,
             categories=categories,
             supported_resources=supported_resources,
-            missing_block_result=CheckResult.FAILED,
         )
 
-    def get_inspected_key(self) -> str:
+    def scan_resource_conf(self, conf):
         if self.entity_type == "azurerm_kubernetes_cluster":
-            return "default_node_pool/[0]/enable_host_encryption"
+            if conf.get('default_node_pool'):
+                node_pool = conf['default_node_pool'][0]
+                if node_pool.get('enable_host_encryption') == [True] or node_pool.get('host_encryption_enabled') == [
+                    True]:
+                    return CheckResult.PASSED
+            self.evaluated_keys = ['default_node_pool/[0]/enable_host_encryption',
+                                   'default_node_pool/[0]/host_encryption_enabled']
         else:
-            return "enable_host_encryption"
+            if conf.get('enable_host_encryption') == [True] or conf.get('host_encryption_enabled') == [True]:
+                return CheckResult.PASSED
+            self.evaluated_keys = ['enable_host_encryption', 'host_encryption_enabled']
 
+        return CheckResult.FAILED
 
 check = AKSEncryptionAtHostEnabled()
