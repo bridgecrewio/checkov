@@ -25,7 +25,7 @@ class RunnerDependencyHandler():
 
     def validate_runner_deps(self) -> None:
         """
-        Checks if each runner declares any system dependancies by calling each runner's system_deps() function.
+        Checks if each runner declares any system dependencies by calling each runner's system_deps() function.
         This function can safley not exist, but if returns true, call check_system_deps() on the same function.
         The function would impliment it's own dependancy checks (see helm/runner.py for example).
         Sucessful check_system_deps() should return None, otherwise self.check_type to indicate a runner has failed deps.
