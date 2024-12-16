@@ -24,7 +24,7 @@ class AKSEncryptionAtHostEnabled(BaseResourceCheck):
             supported_resources=supported_resources,
         )
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> CheckResult:
         if self.entity_type == "azurerm_kubernetes_cluster":
             if conf.get('default_node_pool'):
                 node_pool = conf['default_node_pool'][0]

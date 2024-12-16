@@ -28,7 +28,7 @@ class FunctionAppMinTLSVersion(BaseResourceValueCheck):
         else:
             return "site_config/[0]/minimum_tls_version"
 
-    def get_expected_value(self) -> Any:
+    def get_expected_value(self) -> float:
         return 1.2
 
     def get_expected_values(self) -> List[Any]:
