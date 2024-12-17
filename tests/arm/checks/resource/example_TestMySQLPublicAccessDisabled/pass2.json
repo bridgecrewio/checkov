@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers",
+      "apiVersion": "2024-10-01-preview",
+      "name": "pass2",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/myIdentity": {}
+        }
+      },
+      "location": "eastus",
+      "properties": {
+        "administratorLogin": "adminuser",
+        "administratorLoginPassword": "YourSecurePassword123!",
+        "availabilityZone": "1",
+        "backup": {
+          "backupIntervalHours": 24,
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Disabled"
+        },
+        "createMode": "Default",
+        "databasePort": 3306,
+        "dataEncryption": {
+          "type": "SystemManaged"
+        },
+        "highAvailability": {
+          "mode": "ZoneRedundant",
+          "standbyAvailabilityZone": "2"
+        },
+        "maintenancePolicy": {
+          "patchStrategy": "Automatic"
+        },
+        "maintenanceWindow": {
+          "customWindow": "Sun:02:00-Sun:04:00",
+          "dayOfWeek": 0,
+          "startHour": 2,
+          "startMinute": 0
+        },
+        "network": {
+          "delegatedSubnetResourceId": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/myVNet/subnets/mySubnet",
+          "privateDnsZoneResourceId": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/privateDnsZones/myPrivateDnsZone",
+          "publicNetworkAccess": "Disabled"
+        },
+        "storage": {
+          "autoGrow": "Enabled",
+          "iops": 600,
+          "storageSizeGB": 128,
+          "storageRedundancy": "Zone"
+        },
+        "version": "8.0"
+      },
+      "sku": {
+        "name": "Standard_D2ds_v4",
+        "tier": "GeneralPurpose"
+      },
+      "tags": {
+        "Environment": "Production",
+        "Project": "MySQLMigration"
+      }
+    }
+  ]
+}
