@@ -59,7 +59,7 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
 
         else:
             for attribute in resources:
-                if attribute in LINE_FIELD_NAMES:
+                if isinstance(attribute, str) and attribute in LINE_FIELD_NAMES:
                     continue
 
                 if isinstance(resources, list):
