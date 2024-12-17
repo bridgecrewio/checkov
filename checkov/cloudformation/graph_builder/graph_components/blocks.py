@@ -93,8 +93,8 @@ class CloudformationBlock(Block):
     def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]) -> bool:
         return change_origin_id is not None and attribute_at_dest is not None
 
-    def _handle_unique_key_characters(self, key: str) -> str:
-        key = super()._handle_unique_key_characters(key)
+    def _get_jsonpath_key(self, key: str) -> str:
+        key = super()._get_jsonpath_key(key)
         
         # `::` is not a valid jsonpath character, but cloudformation have multiple functions like `Fn::If` which use it,
         # so we solve it with escaping using parenthesis

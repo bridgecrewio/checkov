@@ -205,13 +205,12 @@ class Block:
         return None
 
     def _get_jsonpath_key(self, key: str) -> str:
-        key = self._handle_unique_key_characters(key)
-        # Replace .0 with [0] to match jsonpath style
         jsonpath_key = "$."
         key_parts = key.split(".")
         updated_parts = []
         for part in key_parts:
             if part.isnumeric():
+                # Replace .0 with [0] to match jsonpath style
                 updated_parts.append(f"[{part}]")
             elif part.startswith("/"):
                 updated_parts.append(f'"{part}"')
@@ -219,9 +218,6 @@ class Block:
                 updated_parts.append(part)
         jsonpath_key += ".".join(updated_parts)
         return jsonpath_key
-
-    def _handle_unique_key_characters(self, key: str) -> str:
-        return key
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
