@@ -15,7 +15,7 @@
       "location": "eastus",
       "properties": {
         "administratorLogin": "adminuser",
-        "administratorLoginPassword": "YourSecurePassword123!",
+        "administratorLoginPassword": "1234",
         "availabilityZone": "1",
         "backup": {
           "backupIntervalHours": 24,
