@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import cast, Any
 
-from checkov.common.util.consts import LINE_FIELD_NAMES
 from checkov.common.parsers.node import StrNode
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.suppression import collect_suppressions_for_report
@@ -40,19 +39,27 @@ def add_resource_to_definitions_context(definitions_context: dict[str, dict[str,
     if not isinstance(resource_attributes, dict) and not isinstance(resource_attributes, StrNode):
         return
 
-    start_line = resource_attributes[
-        START_LINE] if START_LINE in resource_attributes else resource_attributes.start_mark.line
-    end_line = resource_attributes[END_LINE] if END_LINE in resource_attributes else resource_attributes.end_mark.line
+    start_line = None
+    end_line = None
+
+    if isinstance(resource_attributes, dict):
+        start_line = resource_attributes[START_LINE]
+        end_line = resource_attributes[END_LINE]
+
+    elif isinstance(resource_attributes, StrNode):
+        start_line = resource_attributes.start_mark.line
+        end_line = resource_attributes.end_mark.line
+
     definition_resource = {}
 
-    if resource_key is None:
+    if resource_key is None and isinstance(resource_attributes, dict):
         resource_key = f"{resource_attributes.get('type')}.{resource_attributes.get('name')}"
     int_start_line = cast(int, start_line)
     int_end_line = cast(int, end_line)
     code_lines_for_suppressions_check = definitions_raw[file_path][int_start_line: int_end_line]
     definition_resource['skipped_checks'] = collect_suppressions_for_report(
         code_lines=code_lines_for_suppressions_check)
-    if 'type' in resource_attributes:
+    if isinstance(resource_attributes, dict) and 'type' in resource_attributes:
         definition_resource["type"] = resource_attributes.get('type')
 
     definition_resource["code_lines"] = definitions_raw[file_path][start_line: end_line + 1]
