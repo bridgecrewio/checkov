@@ -14,7 +14,7 @@ def build_definitions_context(definitions: dict[str, dict[str, Any]], definition
     for file_path, file_definitions in definitions.items():
         definitions_context[file_path] = {}
         for definition_attribute, definition_value in file_definitions.items():
-            if definition_attribute not in ServerlessElements._member_map_.values():
+            if definition_attribute not in [str(e) for e in ServerlessElements]:
                 continue
             definitions_context[file_path][definition_attribute] = {}
             if isinstance(definition_value, dict):
