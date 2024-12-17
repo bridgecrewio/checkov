@@ -204,19 +204,21 @@ class Block:
             match[0].value = attribute_value
         return None
 
-    def _get_jsonpath_key(self, key: str) -> str:
+    @staticmethod
+    def _get_jsonpath_key(key: str) -> str:
         jsonpath_key = "$."
         key_parts = key.split(".")
         updated_parts = []
         for part in key_parts:
             if part.isnumeric():
-                # Replace .0 with [0] to match jsonpath style
                 updated_parts.append(f"[{part}]")
-            elif part.startswith("/"):
+            elif "/" in part or "::" in part:
                 updated_parts.append(f'"{part}"')
             else:
                 updated_parts.append(part)
         jsonpath_key += ".".join(updated_parts)
+        # Replace .0 with [0] to match jsonpath style
+        jsonpath_key = jsonpath_key.replace(".[", "[")
         return jsonpath_key
 
     def update_inner_attribute(
