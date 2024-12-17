@@ -537,8 +537,8 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                     inner_value = json.loads(inner_value)
                 except Exception as e:
                     logging.debug(f"[Cloudformation_evaluate_non_rendered_values]- "
-                                    f"Inner_value - {inner_value} is not a valid json. "
-                                    f"Full exception - {str(e)}")
+                                  f"Inner_value - {inner_value} is not a valid json. "
+                                  f"Full exception - {str(e)}")
             if is_pseudo_param_in_value:
                 vertex.update_attribute(
                     attribute_key=attr_key, attribute_value=inner_value, change_origin_id=None,
