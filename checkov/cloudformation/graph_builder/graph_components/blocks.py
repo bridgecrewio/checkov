@@ -94,13 +94,16 @@ class CloudformationBlock(Block):
         return change_origin_id is not None and attribute_at_dest is not None
 
     def _handle_unique_key_characters(self, key: str) -> str:
+        key = super()._handle_unique_key_characters(key)
+        
         # `::` is not a valid jsonpath character, but cloudformation have multiple functions like `Fn::If` which use it,
         # so we solve it with escaping using parenthesis
         key_parts = key.split(".")
-        updated_key = ""
+        updated_parts = []
         for part in key_parts:
             if part.startswith("Fn::"):
-                updated_key += f'"{part}"'
+                updated_parts.append(f'"{part}"')
             else:
-                updated_key += part
+                updated_parts.append(part)
+        updated_key = '.'.join(updated_parts)
         return updated_key

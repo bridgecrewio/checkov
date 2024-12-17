@@ -209,11 +209,15 @@ class Block:
         # Replace .0 with [0] to match jsonpath style
         jsonpath_key = "$."
         key_parts = key.split(".")
+        updated_parts = []
         for part in key_parts:
             if part.isnumeric():
-                jsonpath_key += f"[{part}]"
+                updated_parts.append(f"[{part}]")
+            elif part.startswith("/"):
+                updated_parts.append(f'"{part}"')
             else:
-                jsonpath_key += part
+                updated_parts.append(part)
+        jsonpath_key += ".".join(updated_parts)
         return jsonpath_key
 
     def _handle_unique_key_characters(self, key: str) -> str:
