@@ -1,21 +1,22 @@
 from typing import Dict, Any, Tuple
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
+from checkov.common.util.consts import START_LINE, END_LINE
 
 
 class Registry(BaseCheckRegistry):
     def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
         terraform_configuration = dict(entity.items())
 
-        if '__startline__' not in terraform_configuration or '__endline__' not in terraform_configuration:
+        if START_LINE not in terraform_configuration or END_LINE not in terraform_configuration:
             start_lines = []
             end_lines = []
 
             def find_line_numbers(d):
                 for k, v in d.items():
-                    if k == '__startline__':
+                    if k == START_LINE:
                         start_lines.append(v)
-                    elif k == '__endline__':
+                    elif k == END_LINE:
                         end_lines.append(v)
                     elif isinstance(v, dict):
                         find_line_numbers(v)
@@ -27,10 +28,10 @@ class Registry(BaseCheckRegistry):
             find_line_numbers(terraform_configuration)
 
             if start_lines and end_lines:
-                terraform_configuration['__startline__'] = min(start_lines)
-                terraform_configuration['__endline__'] = max(end_lines)
+                terraform_configuration[START_LINE] = min(start_lines)
+                terraform_configuration[END_LINE] = max(end_lines)
             else:
-                terraform_configuration['__startline__'] = 1
-                terraform_configuration['__endline__'] = 1
+                terraform_configuration[START_LINE] = 1
+                terraform_configuration[END_LINE] = 1
 
         return "terraform", "terraform", terraform_configuration
