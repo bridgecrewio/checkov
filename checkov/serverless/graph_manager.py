@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[str, Any]]"]):
-    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.ARM) -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.SERVERLESS) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(

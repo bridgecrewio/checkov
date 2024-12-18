@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Collection
 from enum import Enum
 from typing import Callable, Any
+from pathlib import Path
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.runner_filter import RunnerFilter
 from checkov.serverless.parsers.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
 
@@ -26,6 +29,22 @@ class ServerlessElements(str, Enum):
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
         return self.value
+
+
+def create_definitions(
+    root_folder: str,
+    files: Collection[Path] | None = None,
+    runner_filter: RunnerFilter | None = None,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
+    definitions: dict[str, dict[str, Any]] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
+    runner_filter = runner_filter or RunnerFilter()
+
+    if root_folder:
+        file_paths = get_scannable_file_paths(root_folder, runner_filter.excluded_paths)
+        definitions, definitions_raw = get_files_definitions(files=file_paths)
+
+    return definitions, definitions_raw
 
 
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> list[str]:
