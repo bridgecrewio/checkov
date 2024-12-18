@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.336...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.339...HEAD)
+
+## [3.2.339](https://github.com/bridgecrewio/checkov/compare/3.2.336...3.2.339) - 2024-12-17
+
+### Bug Fix
+
+- **general:** Fix jsonpath-key handling for special characters like "/" and reduce log size - [#6907](https://github.com/bridgecrewio/checkov/pull/6907)
+- **serverless:** Fix serverless check crash - [#6909](https://github.com/bridgecrewio/checkov/pull/6909)
 
 ## [3.2.336](https://github.com/bridgecrewio/checkov/compare/3.2.334...3.2.336) - 2024-12-16
 

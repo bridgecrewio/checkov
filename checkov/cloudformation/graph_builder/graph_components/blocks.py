@@ -92,15 +92,3 @@ class CloudformationBlock(Block):
     @staticmethod
     def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]) -> bool:
         return change_origin_id is not None and attribute_at_dest is not None
-
-    def _handle_unique_key_characters(self, key: str) -> str:
-        # `::` is not a valid jsonpath character, but cloudformation have multiple functions like `Fn::If` which use it,
-        # so we solve it with escaping using parenthesis
-        key_parts = key.split(".")
-        updated_key = ""
-        for part in key_parts:
-            if part.startswith("Fn::"):
-                updated_key += f'"{part}"'
-            else:
-                updated_key += part
-        return updated_key
