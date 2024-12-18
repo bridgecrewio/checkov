@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.339...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.342...HEAD)
+
+## [3.2.342](https://github.com/bridgecrewio/checkov/compare/3.2.339...3.2.342) - 2024-12-18
+
+### Feature
+
+- **serverless:** serverless definitions context - [#6910](https://github.com/bridgecrewio/checkov/pull/6910)
+- **serverless:** Serverless graph integration - [#6911](https://github.com/bridgecrewio/checkov/pull/6911)
+- **terraform:** Add a terraform block check - [#6904](https://github.com/bridgecrewio/checkov/pull/6904)
 
 ## [3.2.339](https://github.com/bridgecrewio/checkov/compare/3.2.336...3.2.339) - 2024-12-17
 
