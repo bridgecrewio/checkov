@@ -355,3 +355,6 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
         return f"{os.path.sep}{os.path.relpath(path, self.root_folder)}"
+
+    def set_definitions_raw(self, definitions_raw: dict[str, list[tuple[int, str]]]) -> None:
+        self.definitions_raw = definitions_raw
