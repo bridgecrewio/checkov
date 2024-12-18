@@ -19,13 +19,17 @@ class AKSEncryptionAtHostEnabled(unittest.TestCase):
 
         passing_resources = {
             'azurerm_kubernetes_cluster.pass',
-            'azurerm_kubernetes_cluster_node_pool.pass'
+            'azurerm_kubernetes_cluster_node_pool.pass',
+            'azurerm_kubernetes_cluster.pass_new',
+            'azurerm_kubernetes_cluster_node_pool.pass_new',
         }
         failing_resources = {
             'azurerm_kubernetes_cluster.fail1',
             'azurerm_kubernetes_cluster.fail2',
+            'azurerm_kubernetes_cluster.fail_new',
             'azurerm_kubernetes_cluster_node_pool.fail1',
             'azurerm_kubernetes_cluster_node_pool.fail2',
+            'azurerm_kubernetes_cluster_node_pool.fail_new',
         }
         skipped_resources = {}
 

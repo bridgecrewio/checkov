@@ -22,6 +22,7 @@ class TestAKSNodePublicIpDisabled(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_kubernetes_cluster.ckv_unittest_fail',
+            'azurerm_kubernetes_cluster.fail'
         }
         skipped_resources = {}
 

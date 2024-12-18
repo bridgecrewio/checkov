@@ -35,6 +35,36 @@ resource "azurerm_kubernetes_cluster_node_pool" "pass" {
   }
 }
 
+resource "azurerm_kubernetes_cluster" "pass_new" {
+  name                  = "internal"
+  default_node_pool {
+    host_encryption_enabled = true
+  }
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "pass_new" {
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  host_encryption_enabled = true
+}
+
+
+resource "azurerm_kubernetes_cluster" "fail_new" {
+  name                  = "internal"
+  default_node_pool {
+    host_encryption_enabled = false
+  }
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "fail_new" {
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  host_encryption_enabled = false
+}
 
 resource "azurerm_kubernetes_cluster" "fail1" {
   name                  = "internal"
