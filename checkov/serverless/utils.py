@@ -46,6 +46,7 @@ def create_definitions(
 
     return definitions, definitions_raw
 
+
 def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: list[str] | None = None) -> list[str]:
     files_list: list[str] = []
 
