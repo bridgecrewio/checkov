@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.334...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.339...HEAD)
+
+## [3.2.339](https://github.com/bridgecrewio/checkov/compare/3.2.336...3.2.339) - 2024-12-17
+
+### Bug Fix
+
+- **general:** Fix jsonpath-key handling for special characters like "/" and reduce log size - [#6907](https://github.com/bridgecrewio/checkov/pull/6907)
+- **serverless:** Fix serverless check crash - [#6909](https://github.com/bridgecrewio/checkov/pull/6909)
+
+## [3.2.336](https://github.com/bridgecrewio/checkov/compare/3.2.334...3.2.336) - 2024-12-16
+
+### Feature
+
+- **general:** add cortex:skip for suppressions - [#6908](https://github.com/bridgecrewio/checkov/pull/6908)
+
+### Bug Fix
+
+- **terraform:** fix CKV_AZURE_136 for replicas - [#6895](https://github.com/bridgecrewio/checkov/pull/6895)
+- **terraform:** Fix CKV_AZURE_227 for Azure V4 - [#6906](https://github.com/bridgecrewio/checkov/pull/6906)
 
 ## [3.2.334](https://github.com/bridgecrewio/checkov/compare/3.2.332...3.2.334) - 2024-12-08
 
