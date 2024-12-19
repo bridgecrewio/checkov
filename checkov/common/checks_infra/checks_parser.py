@@ -263,7 +263,12 @@ class GraphCheckParser(BaseGraphCheckParser):
 
             elif "provider" in resource_type and providers:
                 for provider in providers:
-                    check.resource_types.append(f"provider.{provider.lower()}")
+                    if provider == 'all':
+                        check.resource_types.append(f"provider.aws")
+                        check.resource_types.append(f"provider.google")
+                        check.resource_types.append(f"provider.azure")
+                    else:
+                        check.resource_types.append(f"provider.{provider.lower()}")
             elif isinstance(resource_type, str):
                 #  for the case the "resource_types" value is a string, which can result in a silent exception
                 check.resource_types = [resource_type]
