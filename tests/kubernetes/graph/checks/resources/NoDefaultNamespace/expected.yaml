@@ -1,0 +1,4 @@
+pass:
+  - 'Pod.dev.nginx-deployment.app-nginx'
+  - 'Deployment.dev.nginx-deployment'
+  - 'Service.dev.nginx-service'
