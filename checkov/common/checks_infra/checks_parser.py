@@ -264,9 +264,9 @@ class GraphCheckParser(BaseGraphCheckParser):
             elif "provider" in resource_type and providers:
                 for provider in providers:
                     if provider == 'all':
-                        check.resource_types.append(f"provider.aws")
-                        check.resource_types.append(f"provider.google")
-                        check.resource_types.append(f"provider.azure")
+                        check.resource_types.append("provider.aws")
+                        check.resource_types.append("provider.google")
+                        check.resource_types.append("provider.azure")
                     else:
                         check.resource_types.append(f"provider.{provider.lower()}")
             elif isinstance(resource_type, str):
