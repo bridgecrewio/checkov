@@ -85,7 +85,7 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
-        return "checkov:skip=" in line or "bridgecrew:skip=" in line
+        return "checkov:skip=" in line or "bridgecrew:skip=" in line or "cortex:skip=" in line
 
     def _collect_skip_comments(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
