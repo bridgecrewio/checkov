@@ -23,7 +23,11 @@ class StateLock(BaseTerraformBlockCheck):
             return CheckResult.UNKNOWN
 
         s3_config = backend["s3"]
-        if ("use_lockfile" not in s3_config or not s3_config["use_lockfile"]) and "dynamodb_table" not in s3_config:
+        if isinstance(s3_config, list):
+            # this can happen for CDKTF output files
+            s3_config = s3_config[0]
+
+        if not s3_config.get("use_lockfile") and "dynamodb_table" not in s3_config:
             return CheckResult.FAILED
         return CheckResult.PASSED
 
