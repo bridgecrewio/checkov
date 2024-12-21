@@ -54,6 +54,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RequireAllPodsToHaveNetworkPolicy(self) -> None:
         self.go('RequireAllPodsToHaveNetworkPolicy')
 
+    def test_NoDefaultNamespace(self):
+        self.go('NoDefaultNamespace')
+
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
         first_results_key = list(checks_results.keys())[0]
