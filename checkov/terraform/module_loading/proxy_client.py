@@ -2,7 +2,6 @@ import os
 from typing import Any
 
 import requests
-from requests import Request
 
 
 class ProxyClient:
@@ -29,6 +28,6 @@ class ProxyClient:
         return session.send(prepared_request, verify=self.proxy_ca_path)
 
 
-def call_http_request_with_proxy(request: Request) -> Any:
+def call_http_request_with_proxy(request: requests.Request) -> Any:
     proxy_client = ProxyClient()
     return proxy_client.send_request(request=request)
