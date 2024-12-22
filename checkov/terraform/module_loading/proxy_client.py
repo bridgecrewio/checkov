@@ -4,8 +4,6 @@ from typing import Any
 import requests
 from requests import Request
 
-PROXY_DOME_HEADER = 'X-Proxydome-Identity'
-
 
 class ProxyClient:
     def __init__(self) -> None:
@@ -15,7 +13,7 @@ class ProxyClient:
 
     def get_session(self) -> requests.Session:
         if not os.getenv('PROXY_URL', None):
-            raise Exception("Proxy dome is disabled")
+            raise Exception('Please provide "PROXY_URL" env var')
         proxy_url = os.getenv('PROXY_URL')
         session = requests.Session()
         proxies = {
