@@ -89,7 +89,7 @@ class RegistryLoader(ModuleLoader):
                 url=request_download_url,
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
-            if os.getenv('IDENTITY_PROVIDER', None) and os.getenv('EGRESSPROXY_CA_PATH', None) and os.getenv('EGRESSPROXY_URL'):
+            if os.getenv('PROXY_URL'):
                 logging.info('Send request with proxy')
                 response = call_http_request_with_proxy(request)
             else:
