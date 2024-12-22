@@ -21,7 +21,7 @@ class CognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
         if conf.get("kind", [""])[0].lower() != 'openai':
             return CheckResult.PASSED
 
-        outbound_network_access_restricted = conf.get('outbound_network_access_restricted', [[]])[0]
+        outbound_network_access_restricted = conf.get('outbound_network_access_restricted', [None])[0]
         fqdns = conf.get('fqdns', [[]])[0]
         if not outbound_network_access_restricted or not fqdns:
             return CheckResult.FAILED
