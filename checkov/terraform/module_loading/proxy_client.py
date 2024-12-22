@@ -19,7 +19,7 @@ class ProxyClient:
             "http": proxy_url,
             "https": proxy_url,
         }
-        session.proxies.update(proxies)
+        session.proxies.update(proxies)  # type: ignore
         return session
 
     def send_request(self, request: requests.Request) -> requests.Response:
