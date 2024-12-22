@@ -19,6 +19,7 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints
 )
+from checkov.terraform.module_loading.proxy_client import call_http_request_with_proxy
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams
@@ -83,11 +84,19 @@ class RegistryLoader(ModuleLoader):
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
         logging.debug(f"Module download url: {request_download_url}")
         try:
-            response = requests.get(
+            request = requests.Request(
+                method='GET',
                 url=request_download_url,
-                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
-                timeout=DEFAULT_TIMEOUT
+                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
+            if os.getenv('PROXY_URL'):
+                logging.info('Send request with proxy')
+                response = call_http_request_with_proxy(request)
+            else:
+                session = requests.Session()
+                prepared_request = session.prepare_request(request)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
+
             response.raise_for_status()
         except HTTPError as e:
             self.logger.warning(e)
