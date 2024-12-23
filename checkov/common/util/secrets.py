@@ -20,7 +20,7 @@ AWS = 'aws'
 AZURE = 'azure'
 GCP = 'gcp'
 GENERAL = 'general'
-PASSWORD = 'password' #nosec B105
+PASSWORD = 'password'  # nosec B105
 ALL = 'all'
 
 GENERIC_OBFUSCATION_LENGTH = 10
