@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Dict
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -17,7 +17,7 @@ class OpenAICognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
             supported_resources=supported_resources,
         )
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if conf.get("kind", [""])[0].lower() != 'openai':
             return CheckResult.PASSED
 
