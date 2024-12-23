@@ -79,6 +79,8 @@ class EnvVarsConfig:
         self.HCL_PARSE_TIMEOUT_SEC = force_int(os.getenv("HCL_PARSE_TIMEOUT_SEC", 10))
         self.ENABLE_DOTNET_CPM = os.getenv('ENABLE_DOTNET_CPM', False)
         self.JAVA_FULL_DT = os.getenv('JAVA_FULL_DT', False)
+        self.PROXY_CA_PATH = os.getenv('PROXY_CA_PATH', None)
+        self.PROXY_URL = os.getenv('PROXY_URL', None)
 
 
 env_vars_config = EnvVarsConfig()
