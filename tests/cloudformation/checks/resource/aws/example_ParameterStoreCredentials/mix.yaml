@@ -30,8 +30,12 @@ Resources:
 
   GoodFnSub:
     Type: AWS::SSM::Parameter
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E1019
     Properties:
-      # cfn-lint: ignore-check E1019
       Type: String
       Name: secret
       Value:
