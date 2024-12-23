@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class CognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure that Cognitive Services accounts restrict outbound network traffic."
+        name = "Ensure that Azure Cognitive Services account hosted with OpenAI is configured with data loss prevention"
         id = "CKV_AZURE_247"
         supported_resources = ('azurerm_cognitive_account', )
         categories = (CheckCategories.NETWORKING, )
