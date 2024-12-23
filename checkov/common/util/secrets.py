@@ -246,8 +246,8 @@ def get_secrets_from_string(s: str, *categories: str) -> list[str]:
     if not categories or "all" in categories:
         categories = ("all",)
 
-    secrets: list[str] = []
+    secrets: set[str] = set()  # Change to a set for automatic deduplication
     for c in categories:
         for pattern in _patterns[c]:
-            secrets.extend(str(match.group()) for match in pattern.finditer(s))
-    return secrets
+            secrets.update(str(match.group()) for match in pattern.finditer(s))
+    return list(secrets)  # Convert set back to list before returning
