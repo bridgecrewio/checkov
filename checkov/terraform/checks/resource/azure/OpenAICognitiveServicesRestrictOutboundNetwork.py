@@ -1,7 +1,6 @@
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.output.ai import OpenAi
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
