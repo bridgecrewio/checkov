@@ -1,10 +1,11 @@
-from typing import Dict, List, Any
+from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.output.ai import OpenAi
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class CognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
+class OpenAICognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Azure Cognitive Services account hosted with OpenAI is configured with data loss prevention"
         id = "CKV_AZURE_247"
@@ -17,7 +18,7 @@ class CognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
             supported_resources=supported_resources,
         )
 
-    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if conf.get("kind", [""])[0].lower() != 'openai':
             return CheckResult.PASSED
 
@@ -29,4 +30,4 @@ class CognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = CognitiveServicesRestrictOutboundNetwork()
+check = OpenAICognitiveServicesRestrictOutboundNetwork()
