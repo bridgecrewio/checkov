@@ -27,10 +27,11 @@ Resources:
       Name: '/myapp/secret2'
       Type: 'String'
       Value: "${aws_iam_role.lambda[count.index].arn}"
-  
+
   GoodFnSub:
     Type: AWS::SSM::Parameter
     Properties:
+      # cfn-lint: ignore-check E1019
       Type: String
       Name: secret
       Value:
@@ -46,20 +47,20 @@ Resources:
   Bad2:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: '/MYSECRET'
+      Name: 'MYSECRET'
       Type: 'String'
       Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
 
   PassTestName:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: '/MYSECRET_TEST'
+      Name: 'MYSECRET_TEST'
       Type: 'String'
       Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
 
   PassTestVALUE:
     Type: 'AWS::SSM::Parameter'
     Properties:
-      Name: '/MYSECRET'
+      Name: 'MYSECRET2'
       Type: 'String'
       Value: 'akdfaksdfjkaEXAMPLEsdfjskafjdkfajsdfk345'
