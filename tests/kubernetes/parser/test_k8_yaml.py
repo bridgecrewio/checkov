@@ -68,6 +68,18 @@ class TestScannerRegistry(unittest.TestCase):
         assert template[0]["kind"] == "Pod"
         assert len(file_lines) == 28
 
+    def test_load_templating_configmap(self):
+        # given
+        file_path = EXAMPLES_DIR / "yaml/not_helm_configmap.yaml"
+
+        # when
+        template, file_lines = load(file_path)
+
+        # then
+        assert len(template) == 1
+        assert template[0]["apiVersion"] == "v1"
+        assert template[0]["kind"] == "ConfigMap"
+        assert len(file_lines) == 8
 
 if __name__ == '__main__':
     unittest.main()
