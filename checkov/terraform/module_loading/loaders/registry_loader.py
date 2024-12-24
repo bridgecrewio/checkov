@@ -19,7 +19,7 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints
 )
-from checkov.terraform.module_loading.proxy_client import call_http_request_with_proxy
+from checkov.common.proxy.proxy_client import call_http_request_with_proxy
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams

@@ -31,3 +31,12 @@ class ProxyClient:
 def call_http_request_with_proxy(request: requests.Request) -> Any:
     proxy_client = ProxyClient()
     return proxy_client.send_request(request=request)
+
+
+def get_proxy_envs():
+    proxy_env = os.environ.copy()
+    if os.getenv('PROXY_URL'):
+        proxy_env["GIT_SSL_CAINFO"] = os.getenv('PROXY_CA_PATH', None)  # Path to the CA cert
+        proxy_env["http_proxy"] = os.getenv('PROXY_URL')  # Proxy URL
+        proxy_env["https_proxy"] = os.getenv('PROXY_URL')  # HTTPS Proxy URL (if needed)
+    return proxy_env
