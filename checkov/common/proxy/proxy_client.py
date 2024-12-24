@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Mapping
 
 import requests
 
@@ -33,10 +33,11 @@ def call_http_request_with_proxy(request: requests.Request) -> Any:
     return proxy_client.send_request(request=request)
 
 
-def get_proxy_envs():
-    proxy_env = os.environ.copy()
+def get_proxy_envs() -> Mapping[str, str] | None:
     if os.getenv('PROXY_URL'):
-        proxy_env["GIT_SSL_CAINFO"] = os.getenv('PROXY_CA_PATH', None)  # Path to the CA cert
+        proxy_env = os.environ.copy()
+        proxy_env["GIT_SSL_CAINFO"] = os.getenv('PROXY_CA_PATH')  # Path to the CA cert
         proxy_env["http_proxy"] = os.getenv('PROXY_URL')  # Proxy URL
         proxy_env["https_proxy"] = os.getenv('PROXY_URL')  # HTTPS Proxy URL (if needed)
-    return proxy_env
+        return proxy_env
+    return None
