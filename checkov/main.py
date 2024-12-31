@@ -163,7 +163,7 @@ class Checkov:
         self.config.mask = resource_attributes_to_omit
 
     def parse_config(self, argv: list[str] = sys.argv[1:]) -> None:
-        """Parses the user defined config via CLI flags"""
+        """Parses the user-defined config via CLI flags and handles missing config-file"""
 
         default_config_paths = get_default_config_paths(sys.argv[1:])
         self.parser = ExtArgumentParser(
@@ -174,6 +174,14 @@ class Checkov:
         )
         self.parser.add_parser_args()
         argcomplete.autocomplete(self.parser)
+
+        # Pre-validate the config-file argument
+        for i, arg in enumerate(argv):
+            if arg == "--config-file" and i + 1 < len(argv):
+                config_path = Path(argv[i + 1])
+                if not config_path.is_file():
+                    logger.debug(f"The config file at '{config_path}' does not exist. Running without a config file.")
+                    argv[i + 1] = ""  # Clear the non-existent file from arguments
 
         self.config = self.parser.parse_args(argv)
         self.normalize_config()
