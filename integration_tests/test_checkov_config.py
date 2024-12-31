@@ -47,17 +47,16 @@ class TestCheckovConfig(unittest.TestCase):
 
     def test_missing_config_file(self):
         """Test when the provided config-file does not exist."""
-        argv = ["--config-file", "/path/to/missing/config.yaml"]
+        config_path = os.path.join('path', 'to', 'missing', 'config.yaml')
+        argv = ["--config-file", config_path]
 
         with mock.patch("pathlib.Path.is_file", return_value=False):
             checkov_instance = Checkov(argv=argv)
             checkov_instance.parse_config()
 
         logged_messages = self.get_logged_messages()
-        self.assertIn(
-            "The config file at '/path/to/missing/config.yaml' does not exist. Running without a config file.",
-            logged_messages,
-        )
+        expected_message = f"The config file at '{config_path}' does not exist. Running without a config file."
+        self.assertIn(expected_message, logged_messages)
 
     def test_no_config_file_argument(self):
         """Test when no --config-file argument is provided."""
