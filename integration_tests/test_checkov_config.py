@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+from unittest import mock
 from checkov.common.logger_streams import LoggerStreams
 from checkov.logging_init import log_stream, erase_log_stream
 from checkov.main import Checkov
@@ -48,7 +49,7 @@ class TestCheckovConfig(unittest.TestCase):
         """Test when the provided config-file does not exist."""
         argv = ["--config-file", "/path/to/missing/config.yaml"]
 
-        with unittest.mock.patch("pathlib.Path.is_file", return_value=False):
+        with mock.patch("pathlib.Path.is_file", return_value=False):
             checkov_instance = Checkov(argv=argv)
             checkov_instance.parse_config()
 
