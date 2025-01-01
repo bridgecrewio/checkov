@@ -24,7 +24,7 @@ class ProxyClient:
             "http": proxy_url,
             "https": proxy_url,
         }
-        session.proxies.update(proxies)
+        session.proxies.update(proxies)  # type: ignore
         return session
 
     def update_request_header(self, request: requests.Request) -> None:
