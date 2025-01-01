@@ -41,4 +41,3 @@ class ProxyClient:
 def call_http_request_with_proxy(request: requests.Request) -> Any:
     proxy_client = ProxyClient()
     return proxy_client.send_request(request=request)
-
