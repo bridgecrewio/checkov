@@ -5,7 +5,6 @@ import re
 import shutil
 
 from checkov.common.goget.base_getter import BaseGetter
-from checkov.common.proxy.proxy_client import get_proxy_envs
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.contextmanagers import temp_environ
 
@@ -83,17 +82,16 @@ class GitGetter(BaseGetter):
 
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
-        proxy_env = get_proxy_envs()
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
             if self.branch:
-                Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1, env=proxy_env)  # depth=1 for shallow clone
+                Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
             elif self.commit_id:  # no commit id support for branch
-                repo = Repo.clone_from(git_url, clone_dir, no_checkout=True, env=proxy_env)  # need to be a full git clone
+                repo = Repo.clone_from(git_url, clone_dir, no_checkout=True)  # need to be a full git clone
                 repo.git.checkout(self.commit_id)
             elif self.tag:
-                Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag, env=proxy_env)
+                Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
             else:
-                Repo.clone_from(git_url, clone_dir, depth=1, env=proxy_env)
+                Repo.clone_from(git_url, clone_dir, depth=1)
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
