@@ -32,10 +32,10 @@ class EMRClusterConfEncryptsEBS(BaseResourceCheck):
         return CheckResult.UNKNOWN
 
     def get_evaluated_keys(self) -> List[str]:
-             return [
-                 "configuration",
-                 "configuration/[0]/EncryptionConfiguration/AtRestEncryptionConfiguration/LocalDiskEncryptionConfiguration/EnableEbsEncryption"
-             ]
+        return [
+            "configuration",
+            "configuration/[0]/EncryptionConfiguration/AtRestEncryptionConfiguration/LocalDiskEncryptionConfiguration/EnableEbsEncryption"
+        ]
 
 
 check = EMRClusterConfEncryptsEBS()

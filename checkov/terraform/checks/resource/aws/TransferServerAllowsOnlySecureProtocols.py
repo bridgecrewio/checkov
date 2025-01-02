@@ -21,8 +21,8 @@ class TransferServerAllowsOnlySecureProtocols(BaseResourceCheck):
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
-
     def get_evaluated_keys(self) -> List[str]:
         return ["protocols"]
+
 
 check = TransferServerAllowsOnlySecureProtocols()

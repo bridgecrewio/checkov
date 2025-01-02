@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
