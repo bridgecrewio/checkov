@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.data_structures_utils import find_in_dict
@@ -30,6 +30,12 @@ class EMRClusterConfEncryptsEBS(BaseResourceCheck):
             return CheckResult.FAILED
 
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+             return [
+                 "configuration",
+                 "configuration/[0]/EncryptionConfiguration/AtRestEncryptionConfiguration/LocalDiskEncryptionConfiguration/EnableEbsEncryption"
+             ]
 
 
 check = EMRClusterConfEncryptsEBS()

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -57,8 +58,8 @@ class TransferServerLatestPolicy(BaseResourceCheck):
                 return CheckResult.PASSED
         return CheckResult.FAILED  # default is TransferSecurityPolicy-2018-11 which is old: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/transfer_server
 
-    def get_evaluated_key(self) -> str:
-        return "security_policy_name"
+    def get_evaluated_keys(self) -> List[str]:
+        return ["security_policy_name"]
 
 
 check = TransferServerLatestPolicy()

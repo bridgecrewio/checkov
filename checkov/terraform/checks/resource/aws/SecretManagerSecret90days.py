@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -16,10 +16,12 @@ class SecretManagerSecret90days(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        self.evaluated_keys = ["rotation_rules"]
         rules = conf.get("rotation_rules")
         if rules and isinstance(rules, list):
             days = rules[0].get('automatically_after_days')
             if days and isinstance(days, list):
+                self.evaluated_keys = ["rotation_rules/[0]/automatically_after_days"]
                 days = force_int(days[0])
                 if days is not None and days < 90:
                     return CheckResult.PASSED
