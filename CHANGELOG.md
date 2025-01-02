@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.345...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.346...HEAD)
+
+## [3.2.346](https://github.com/bridgecrewio/checkov/compare/3.2.345...3.2.346) - 2025-01-01
+
+### Feature
+
+- **terraform:** add option to add proxy to request - [#6923](https://github.com/bridgecrewio/checkov/pull/6923)
 
 ## [3.2.345](https://github.com/bridgecrewio/checkov/compare/3.2.344...3.2.345) - 2024-12-31
 

@@ -1,19 +1,24 @@
-import os
+from __future__ import annotations
+
+import logging
 from typing import Any
 
 import requests
 
+from checkov.common.util.env_vars_config import env_vars_config
+
 
 class ProxyClient:
     def __init__(self) -> None:
-        self.proxy_ca_path = os.getenv('PROXY_CA_PATH', None)
+        self.identity = env_vars_config.PROXY_HEADER_VALUE
+        self.proxy_ca_path = env_vars_config.PROXY_CA_PATH
         if self.proxy_ca_path is None:
-            raise Exception("[ProxyClient] CA certificate path is missing")
+            logging.warning("[ProxyClient] CA certificate path is missing")
 
     def get_session(self) -> requests.Session:
-        if not os.getenv('PROXY_URL', None):
-            raise Exception('Please provide "PROXY_URL" env var')
-        proxy_url = os.getenv('PROXY_URL')
+        if not env_vars_config.PROXY_URL:
+            logging.warning('Please provide "PROXY_URL" env var')
+        proxy_url = env_vars_config.PROXY_URL
         session = requests.Session()
         proxies = {
             "http": proxy_url,
@@ -22,8 +27,13 @@ class ProxyClient:
         session.proxies.update(proxies)  # type: ignore
         return session
 
+    def update_request_header(self, request: requests.Request) -> None:
+        if env_vars_config.PROXY_HEADER_VALUE:
+            request.headers[env_vars_config.PROXY_HEADER_VALUE] = self.identity
+
     def send_request(self, request: requests.Request) -> requests.Response:
         session = self.get_session()
+        self.update_request_header(request=request)
         prepared_request = session.prepare_request(request)
         return session.send(prepared_request, verify=self.proxy_ca_path)
 
