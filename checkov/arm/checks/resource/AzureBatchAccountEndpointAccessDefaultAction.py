@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -11,7 +13,7 @@ class AzureBatchAccountEndpointAccessDefaultAction(BaseResourceCheck):
 
     def __init__(self) -> None:
         name = "Ensure that Azure Batch account public network access is 'enabled' account access default action is 'ignore'"
-        id = "CKV_AZURE_244"
+        id = "CKV_AZURE_248"
         supported_resources = ("Microsoft.Batch/batchAccounts",)
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
