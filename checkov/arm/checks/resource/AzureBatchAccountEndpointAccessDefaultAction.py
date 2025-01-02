@@ -13,7 +13,7 @@ class AzureBatchAccountEndpointAccessDefaultAction(BaseResourceCheck):
         name = "Ensure that Azure Batch account public network access is 'enabled' account access default action is 'ignore'"
         id = "CKV_AZURE_244"
         supported_resources = ("Microsoft.Batch/batchAccounts",)
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     @staticmethod
