@@ -19,11 +19,14 @@ class TestStorageLocalUsers(unittest.TestCase):
 
         passing_resources = {
             "azurerm_storage_account.pass",
+            "azurerm_storage_account.pass_missing_not_sftp",
+            "azurerm_storage_account.pass_missing_not_sftp2",
+            "azurerm_storage_account.pass_sftp_local_user_disabled",
         }
 
         failing_resources = {
             "azurerm_storage_account.fail",
-            "azurerm_storage_account.fail_missing",
+            "azurerm_storage_account.fail_missing_sftp",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
