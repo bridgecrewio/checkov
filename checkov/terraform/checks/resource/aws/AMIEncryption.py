@@ -13,11 +13,13 @@ class AMIEncryptionWithCMK(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get('ebs_block_device'):
             mappings = conf.get('ebs_block_device')
-            for mapping in mappings:
+            self.evaluated_keys = ["ebs_block_device"]
+            for mapping_idx, mapping in enumerate(mappings):
                 if not mapping.get("snapshot_id"):
                     if not mapping.get("encrypted"):
                         return CheckResult.FAILED
                     if mapping.get("encrypted")[0] is False:
+                        self.evaluated_keys.append(f"ebs_block_device/[{mapping_idx}]/encrypted")
                         return CheckResult.FAILED
         # pass thru
         return CheckResult.PASSED

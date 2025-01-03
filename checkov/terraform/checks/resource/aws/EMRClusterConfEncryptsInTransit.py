@@ -29,5 +29,8 @@ class EMRClusterConfEncryptsInTransit(BaseResourceCheck):
 
         return CheckResult.UNKNOWN
 
+    def get_evaluated_keys(self) -> list[str]:
+        return ["configuration"]
+
 
 check = EMRClusterConfEncryptsInTransit()

@@ -29,5 +29,8 @@ class AWSCodeGuruHasCMK(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ['kms_key_details']
+
 
 check = AWSCodeGuruHasCMK()

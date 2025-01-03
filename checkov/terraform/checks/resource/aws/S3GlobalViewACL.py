@@ -16,9 +16,10 @@ class S3GlobalViewACL(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if 'access_control_policy' in conf:
-            for policy in conf.get('access_control_policy'):
+            for policy_idx, policy in enumerate(conf["access_control_policy"]):
                 if 'grant' in policy:
-                    for grant in policy.get('grant'):
+                    for grant_idx, grant in enumerate(policy["grant"]):
+                        self.evaluated_keys = [f"access_control_policy/[{policy_idx}]/grant/[{grant_idx}]/permission"]
                         if (isinstance(grant, dict) and 'permission' in grant and
                                 ('FULL_CONTROL' in grant.get('permission') or 'READ_ACP' in grant.get('permission'))):
                             if 'grantee' in grant:
