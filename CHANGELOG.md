@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.344...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.346...HEAD)
+
+## [3.2.346](https://github.com/bridgecrewio/checkov/compare/3.2.345...3.2.346) - 2025-01-01
+
+### Feature
+
+- **terraform:** add option to add proxy to request - [#6923](https://github.com/bridgecrewio/checkov/pull/6923)
+
+## [3.2.345](https://github.com/bridgecrewio/checkov/compare/3.2.344...3.2.345) - 2024-12-31
+
+### Feature
+
+- **cloudformation:** Add sensitive param check - [#6921](https://github.com/bridgecrewio/checkov/pull/6921)
+- **terraform:** add option to add proxy to request - [#6916](https://github.com/bridgecrewio/checkov/pull/6916)
+- **terraform:** check cognitive services restrict outbound network - [#6919](https://github.com/bridgecrewio/checkov/pull/6919)
+
+### Bug Fix
+
+- **terraform_json:** support CDKTF output in CKV_TF_3 - [#6918](https://github.com/bridgecrewio/checkov/pull/6918)
 
 ## [3.2.344](https://github.com/bridgecrewio/checkov/compare/3.2.342...3.2.344) - 2024-12-21
 
