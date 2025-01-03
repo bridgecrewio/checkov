@@ -58,6 +58,7 @@ from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.docs_generator import print_checks
@@ -176,12 +177,13 @@ class Checkov:
         argcomplete.autocomplete(self.parser)
 
         # Pre-validate the config-file argument
-        for i, arg in enumerate(argv):
-            if arg == "--config-file" and i + 1 < len(argv):
-                config_path = Path(argv[i + 1])
-                if not config_path.is_file():
-                    logger.debug(f"The config file at '{config_path}' does not exist. Running without a config file.")
-                    argv[i + 1] = ""  # Clear the non-existent file from arguments
+        if env_vars_config.ENABLE_CONFIG_FILE_VALIDATION:
+            for i, arg in enumerate(argv):
+                if arg == "--config-file" and i + 1 < len(argv):
+                    config_path = Path(argv[i + 1])
+                    if not config_path.is_file():
+                        logger.debug(f"The config file at '{config_path}' does not exist. Running without a config file.")
+                        argv[i + 1] = ""  # Clear the non-existent file from arguments
 
         self.config = self.parser.parse_args(argv)
         self.normalize_config()

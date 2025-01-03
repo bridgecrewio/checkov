@@ -1,10 +1,12 @@
 import json
 import os
+import io
 import unittest
 from unittest import mock
 from checkov.common.logger_streams import LoggerStreams
 from checkov.logging_init import log_stream, erase_log_stream
 from checkov.main import Checkov
+from checkov.common.util.env_vars_config import env_vars_config
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -47,6 +49,7 @@ class TestCheckovConfig(unittest.TestCase):
 
     def test_missing_config_file(self):
         """Test when the provided config-file does not exist."""
+        env_vars_config.ENABLE_CONFIG_FILE_VALIDATION = True
         config_path = os.path.join('path', 'to', 'missing', 'config.yaml')
         argv = ["--config-file", config_path]
 
@@ -60,6 +63,7 @@ class TestCheckovConfig(unittest.TestCase):
 
     def test_no_config_file_argument(self):
         """Test when no --config-file argument is provided."""
+        env_vars_config.ENABLE_CONFIG_FILE_VALIDATION = True
         argv = []
 
         checkov_instance = Checkov(argv=argv)
