@@ -78,3 +78,4 @@ nav_order: 2
 | `EVAL_TF_PLAN_AFTER_UNKNOWN` | Experimental feature to leverage the after_unknown section of plan files to determine if the check should pass or fail. | `False` |
 | `CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES` | Experimental feature to leverage the local cache of modules rather than downloading them. Requires terraform init before using. | `False` |
 | `GITHUB_PAT`, `BITBUCKET_TOKEN`, `TF_REGISTRY_TOKEN`, `TF_HOST_NAME`, `VCS_BASE_URL`, `VCS_USERNAME`, `VCS_TOKEN` | See [Scanning Private Terraform Modules](https://www.checkov.io/7.Scan%20Examples/Terraform.html) for more details. |
+| `ENABLE_CONFIG_FILE_VALIDATION` | If the conf-file explicitly set using the `--config-file` command does not exist, skip rather than throw an error (default) | `False` |
