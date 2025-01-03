@@ -1,6 +1,5 @@
 import json
 import os
-import io
 import unittest
 from unittest import mock
 from checkov.common.logger_streams import LoggerStreams
