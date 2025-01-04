@@ -58,3 +58,15 @@ resource "azurerm_batch_account" "fail_publicNetworkAccess_enabled_default_actio
     }
   }
 }
+
+resource "azurerm_batch_account" "fail_bad_default_action_no_public_network" {
+  name                                = "testbatchaccount"
+  resource_group_name                 = "group"
+  location                            = "azurerm_resource_group.example.location"
+  pool_allocation_mode                = "BatchService"
+  network_profile {
+    account_access {
+      default_action = "allow"
+    }
+  }
+}

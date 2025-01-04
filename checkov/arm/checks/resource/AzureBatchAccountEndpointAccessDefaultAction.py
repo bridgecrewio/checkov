@@ -8,11 +8,11 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 class AzureBatchAccountEndpointAccessDefaultAction(BaseResourceCheck):
 
-    FORBIDDEN_PUBLIC_NETWORK_ACCESS = "enabled"
+    DISABLED_PUBLIC_NETWORK_ACCESS = "disabled"
     FORBIDDEN_NETWORK_ACCESS_DEFAULT_ACTION = "allow"
 
     def __init__(self) -> None:
-        name = "Ensure that Azure Batch account public network access is 'enabled' account access default action is 'ignore'"
+        name = "Ensure that if Azure Batch account public network access in case 'enabled' then its account access must be 'deny'"
         id = "CKV_AZURE_248"
         supported_resources = ("Microsoft.Batch/batchAccounts",)
         categories = [CheckCategories.NETWORKING]
@@ -27,9 +27,9 @@ class AzureBatchAccountEndpointAccessDefaultAction(BaseResourceCheck):
         if not properties or not isinstance(properties, dict):
             return CheckResult.FAILED
 
-        # public network access is disabled, no need to check for account access default action
         public_network_access = properties.get('publicNetworkAccess')
-        if not self._exists_and_lower_equal(public_network_access, self.FORBIDDEN_PUBLIC_NETWORK_ACCESS):
+        # public network access is disabled, no need to check for account access default action
+        if self._exists_and_lower_equal(public_network_access, self.DISABLED_PUBLIC_NETWORK_ACCESS):
             return CheckResult.PASSED
 
         network_profile = properties.get('networkProfile')
@@ -42,6 +42,7 @@ class AzureBatchAccountEndpointAccessDefaultAction(BaseResourceCheck):
         if not self._exists_and_lower_equal(default_action, self.FORBIDDEN_NETWORK_ACCESS_DEFAULT_ACTION):
             return CheckResult.PASSED
 
+        self.evaluated_keys = ["properties/networkProfile/accountAccess/defaultAction"]
         return CheckResult.FAILED
 
 

@@ -5,9 +5,21 @@
     {
       "type": "Microsoft.Batch/batchAccounts",
       "apiVersion": "2024-02-01",
-      "name": "fail",
+      "name": "fail_explicit_publicNetworkAccess",
       "properties": {
         "publicNetworkAccess": "Enabled",
+        "networkProfile": {
+          "accountAccess": {
+            "defaultAction": "Allow"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "fail_default_publicNetworkAccess",
+      "properties": {
         "networkProfile": {
           "accountAccess": {
             "defaultAction": "Allow"

@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Batch/batchAccounts",
       "apiVersion": "2024-02-01",
-      "name": "pass_no_publicNetworkAccess",
+      "name": "pass_empty",
       "properties": {
       }
     },
