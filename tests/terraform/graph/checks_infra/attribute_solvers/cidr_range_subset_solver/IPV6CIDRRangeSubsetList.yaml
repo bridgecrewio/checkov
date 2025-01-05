@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "IPV6CIDRRangeSubsetList"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "ipv6_cidr_value"
+  operator: "cidr_range_subset"
+  value:
+    - "fc00::/7"
+    - "fe80::1"
+

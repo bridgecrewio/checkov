@@ -76,6 +76,13 @@ class EnvVarsConfig:
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
         self.CKV_SUPPORT_ALL_RESOURCE_TYPE = os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False)
+        self.HCL_PARSE_TIMEOUT_SEC = force_int(os.getenv("HCL_PARSE_TIMEOUT_SEC", 10))
+        self.ENABLE_DOTNET_CPM = os.getenv('ENABLE_DOTNET_CPM', False)
+        self.JAVA_FULL_DT = os.getenv('JAVA_FULL_DT', False)
+        self.PROXY_CA_PATH = os.getenv('PROXY_CA_PATH', None)
+        self.PROXY_URL = os.getenv('PROXY_URL', None)
+        self.PROXY_HEADER_VALUE = os.getenv('PROXY_HEADER_VALUE', None)
+        self.PROXY_HEADER_KEY = os.getenv('PROXY_HEADER_VALUE', None)
 
 
 env_vars_config = EnvVarsConfig()

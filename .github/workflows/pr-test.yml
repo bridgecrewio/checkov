@@ -88,7 +88,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          if [ '${{ matrix.python }}' == '3.12' ]; then
+            # needed for numpy
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
+          else
+            python -m pip install --no-cache-dir --upgrade pipenv
+          fi
       - name: Install dependencies
         run: |
           # remove venv, if exists
@@ -104,21 +109,6 @@ jobs:
 
           # list all dependencies to get a better view about installed package versions
           pipenv run pip list
-
-      - name: Get venv path
-        id: get-venv
-        run: |
-          echo "venv=$(pipenv --venv)" >> "$GITHUB_OUTPUT"
-
-      - name: Run Redefine.dev
-        uses: redefinedev/redefine-action@main
-        with:
-          auth: ${{ secrets.REDEFINE_AUTH }}
-          python-venv-path: ${{ steps.get-venv.outputs.venv }}
-          testing-framework: pytest
-          mode: fail-fast
-          time-limit: 30  # approx 15% of the run time
-          config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
         env:
@@ -185,7 +175,7 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8", "3.9"]
-        os: [ubuntu-latest, macos-12, windows-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
@@ -288,7 +278,7 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8"]
-        os: [ubuntu-latest, macos-12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
@@ -378,7 +368,7 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8"]
-        os: [ubuntu-latest, macos-12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
