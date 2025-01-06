@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.346...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.347...HEAD)
+
+## [3.2.347](https://github.com/bridgecrewio/checkov/compare/3.2.346...3.2.347) - 2025-01-06
+
+### Feature
+
+- **general:** Change behavior where if a config file is missing, run the scan as if there was no config file - [#6926](https://github.com/bridgecrewio/checkov/pull/6926)
+
+### Bug Fix
+
+- **terraform:** Fix for multiple checks - [#6933](https://github.com/bridgecrewio/checkov/pull/6933)
 
 ## [3.2.346](https://github.com/bridgecrewio/checkov/compare/3.2.345...3.2.346) - 2025-01-01
 
