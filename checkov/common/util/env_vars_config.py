@@ -83,6 +83,7 @@ class EnvVarsConfig:
         self.PROXY_URL = os.getenv('PROXY_URL', None)
         self.PROXY_HEADER_VALUE = os.getenv('PROXY_HEADER_VALUE', None)
         self.PROXY_HEADER_KEY = os.getenv('PROXY_HEADER_VALUE', None)
+        self.ENABLE_CONFIG_FILE_VALIDATION = convert_str_to_bool(os.getenv("ENABLE_CONFIG_FILE_VALIDATION", False))
 
 
 env_vars_config = EnvVarsConfig()
