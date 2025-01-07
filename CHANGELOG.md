@@ -1,6 +1,178 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.307...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.347...HEAD)
+
+## [3.2.347](https://github.com/bridgecrewio/checkov/compare/3.2.346...3.2.347) - 2025-01-06
+
+### Feature
+
+- **general:** Change behavior where if a config file is missing, run the scan as if there was no config file - [#6926](https://github.com/bridgecrewio/checkov/pull/6926)
+
+### Bug Fix
+
+- **terraform:** Fix for multiple checks - [#6933](https://github.com/bridgecrewio/checkov/pull/6933)
+
+## [3.2.346](https://github.com/bridgecrewio/checkov/compare/3.2.345...3.2.346) - 2025-01-01
+
+### Feature
+
+- **terraform:** add option to add proxy to request - [#6923](https://github.com/bridgecrewio/checkov/pull/6923)
+
+## [3.2.345](https://github.com/bridgecrewio/checkov/compare/3.2.344...3.2.345) - 2024-12-31
+
+### Feature
+
+- **cloudformation:** Add sensitive param check - [#6921](https://github.com/bridgecrewio/checkov/pull/6921)
+- **terraform:** add option to add proxy to request - [#6916](https://github.com/bridgecrewio/checkov/pull/6916)
+- **terraform:** check cognitive services restrict outbound network - [#6919](https://github.com/bridgecrewio/checkov/pull/6919)
+
+### Bug Fix
+
+- **terraform_json:** support CDKTF output in CKV_TF_3 - [#6918](https://github.com/bridgecrewio/checkov/pull/6918)
+
+## [3.2.344](https://github.com/bridgecrewio/checkov/compare/3.2.342...3.2.344) - 2024-12-21
+
+### Bug Fix
+
+- **kubernetes:** Add to nested resources on k8s graph inherit namespace - [#6912](https://github.com/bridgecrewio/checkov/pull/6912)
+
+## [3.2.342](https://github.com/bridgecrewio/checkov/compare/3.2.339...3.2.342) - 2024-12-18
+
+### Feature
+
+- **serverless:** serverless definitions context - [#6910](https://github.com/bridgecrewio/checkov/pull/6910)
+- **serverless:** Serverless graph integration - [#6911](https://github.com/bridgecrewio/checkov/pull/6911)
+- **terraform:** Add a terraform block check - [#6904](https://github.com/bridgecrewio/checkov/pull/6904)
+
+## [3.2.339](https://github.com/bridgecrewio/checkov/compare/3.2.336...3.2.339) - 2024-12-17
+
+### Bug Fix
+
+- **general:** Fix jsonpath-key handling for special characters like "/" and reduce log size - [#6907](https://github.com/bridgecrewio/checkov/pull/6907)
+- **serverless:** Fix serverless check crash - [#6909](https://github.com/bridgecrewio/checkov/pull/6909)
+
+## [3.2.336](https://github.com/bridgecrewio/checkov/compare/3.2.334...3.2.336) - 2024-12-16
+
+### Feature
+
+- **general:** add cortex:skip for suppressions - [#6908](https://github.com/bridgecrewio/checkov/pull/6908)
+
+### Bug Fix
+
+- **terraform:** fix CKV_AZURE_136 for replicas - [#6895](https://github.com/bridgecrewio/checkov/pull/6895)
+- **terraform:** Fix CKV_AZURE_227 for Azure V4 - [#6906](https://github.com/bridgecrewio/checkov/pull/6906)
+
+## [3.2.334](https://github.com/bridgecrewio/checkov/compare/3.2.332...3.2.334) - 2024-12-08
+
+### Feature
+
+- **serverless:** Serverless graph vertices - [#6894](https://github.com/bridgecrewio/checkov/pull/6894)
+
+### Bug Fix
+
+- **secrets:** fix indentation to remove duplications - [#6626](https://github.com/bridgecrewio/checkov/pull/6626)
+
+## [3.2.332](https://github.com/bridgecrewio/checkov/compare/3.2.328...3.2.332) - 2024-12-05
+
+### Feature
+
+- **terraform:** Add multi skip inline suppression - [#6860](https://github.com/bridgecrewio/checkov/pull/6860)
+- **terraform:** New bedrock check - [#6892](https://github.com/bridgecrewio/checkov/pull/6892)
+
+### Bug Fix
+
+- **kubernetes:** fix json file parsing - [#6891](https://github.com/bridgecrewio/checkov/pull/6891)
+- **terraform:** Fix CKV2_AZURE_31 - [#6893](https://github.com/bridgecrewio/checkov/pull/6893)
+
+## [3.2.328](https://github.com/bridgecrewio/checkov/compare/3.2.327...3.2.328) - 2024-12-04
+
+### Feature
+
+- **serverless:** Serverless refactor for graph implementation - [#6885](https://github.com/bridgecrewio/checkov/pull/6885)
+
+### Documentation
+
+- **general:** docs flags update - [#6888](https://github.com/bridgecrewio/checkov/pull/6888)
+
+## [3.2.327](https://github.com/bridgecrewio/checkov/compare/3.2.326...3.2.327) - 2024-12-03
+
+### Bug Fix
+
+- **terraform:** Convert to graph check - [#6875](https://github.com/bridgecrewio/checkov/pull/6875)
+
+## [3.2.326](https://github.com/bridgecrewio/checkov/compare/3.2.324...3.2.326) - 2024-12-02
+
+### Feature
+
+- **general:** add new CIDR operator - [#6877](https://github.com/bridgecrewio/checkov/pull/6877)
+
+### Bug Fix
+
+- **arm:** Fix resource ID generation to use variables - [#6884](https://github.com/bridgecrewio/checkov/pull/6884)
+
+## [3.2.324](https://github.com/bridgecrewio/checkov/compare/3.2.322...3.2.324) - 2024-12-01
+
+### Bug Fix
+
+- **terraform_plan:** run post_runner after get_enriched_resources for terraform_plan - [#6883](https://github.com/bridgecrewio/checkov/pull/6883)
+
+## [3.2.322](https://github.com/bridgecrewio/checkov/compare/3.2.320...3.2.322) - 2024-11-28
+
+### Feature
+
+- **general:** Update range includes to handle range values - [#6867](https://github.com/bridgecrewio/checkov/pull/6867)
+
+### Bug Fix
+
+- **general:** fix_memory error with adding new env - [#6879](https://github.com/bridgecrewio/checkov/pull/6879)
+- **general:** revert comment out ARM test - [#6882](https://github.com/bridgecrewio/checkov/pull/6882)
+
+## [3.2.320](https://github.com/bridgecrewio/checkov/compare/3.2.317...3.2.320) - 2024-11-27
+
+### Feature
+
+- **terraform:** Add new checks to match run checks - [#6868](https://github.com/bridgecrewio/checkov/pull/6868)
+
+### Bug Fix
+
+- **arm:** Fix arm root folder - [#6880](https://github.com/bridgecrewio/checkov/pull/6880)
+- **terraform:** Update CKV_AZURE_164 to correct check on trust policy - [#6757](https://github.com/bridgecrewio/checkov/pull/6757)
+
+## [3.2.317](https://github.com/bridgecrewio/checkov/compare/3.2.314...3.2.317) - 2024-11-26
+
+### Feature
+
+- **terraform:** support resource_type attribute - [#6872](https://github.com/bridgecrewio/checkov/pull/6872)
+
+### Bug Fix
+
+- **arm:** Fix arm report resource naming - [#6876](https://github.com/bridgecrewio/checkov/pull/6876)
+- **terraform:** Fix two checks and logs - [#6874](https://github.com/bridgecrewio/checkov/pull/6874)
+
+## [3.2.314](https://github.com/bridgecrewio/checkov/compare/3.2.312...3.2.314) - 2024-11-25
+
+### Feature
+
+- **general:** add logs for suppression - [#6873](https://github.com/bridgecrewio/checkov/pull/6873)
+
+### Bug Fix
+
+- **arm:** Fix arm resource naming on integration with Prisma - [#6870](https://github.com/bridgecrewio/checkov/pull/6870)
+
+## [3.2.312](https://github.com/bridgecrewio/checkov/compare/3.2.311...3.2.312) - 2024-11-24
+
+### Bug Fix
+
+- **arm:** Fix arm graph breadcrumbs - [#6869](https://github.com/bridgecrewio/checkov/pull/6869)
+
+## [3.2.311](https://github.com/bridgecrewio/checkov/compare/3.2.307...3.2.311) - 2024-11-21
+
+### Bug Fix
+
+- **cloudformation:** Fixed issue where Ref was not rendered correctly if the parameter name was identical to the default value - [#6856](https://github.com/bridgecrewio/checkov/pull/6856)
+- **secrets:** fix find line - [#6864](https://github.com/bridgecrewio/checkov/pull/6864)
+- **secrets:** masking test format - [#6859](https://github.com/bridgecrewio/checkov/pull/6859)
+- **secrets:** multiline matches show the secret and not the first line - [#6854](https://github.com/bridgecrewio/checkov/pull/6854)
 
 ## [3.2.307](https://github.com/bridgecrewio/checkov/compare/3.2.305...3.2.307) - 2024-11-20
 
