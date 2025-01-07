@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.347...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.350...HEAD)
+
+## [3.2.350](https://github.com/bridgecrewio/checkov/compare/3.2.347...3.2.350) - 2025-01-07
+
+### Feature
+
+- **terraform:** add CKV_AZURE_248 - Azure batch account network access restriction - [#6928](https://github.com/bridgecrewio/checkov/pull/6928)
+
+### Bug Fix
+
+- **terraform:** Revert feat(terraform): Add a terraform block check (#6904) - [#6937](https://github.com/bridgecrewio/checkov/pull/6937)
 
 ## [3.2.347](https://github.com/bridgecrewio/checkov/compare/3.2.346...3.2.347) - 2025-01-06
 
