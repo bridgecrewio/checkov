@@ -17,7 +17,7 @@ Resources:
   DefaultDB:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBName: !Sub "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+      DBName: !Sub "rds-${CompanyName}-${Environment}"
       DBInstanceClass: "db.m4.large"
 Outputs:
   DBEndpoint:
@@ -31,5 +31,5 @@ Outputs:
     Value: !Sub ${WebVPC.CidrBlockAssociations}
   DefaultDBName:
     Description: DefaultDB Name
-    Value: !Sub "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+    Value: !Sub "rds-${CompanyName}-${Environment}"
 

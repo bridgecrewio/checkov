@@ -5,7 +5,8 @@ from checkov.version import version
 from checkov.common.version_manager import check_for_update
 from checkov.common.util.env_vars_config import env_vars_config
 
-tool = "Checkov"
+default_tool = "Checkov"
+
 banner = r"""
        _               _
    ___| |__   ___  ___| | _______   __

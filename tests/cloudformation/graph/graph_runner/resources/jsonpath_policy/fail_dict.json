@@ -1,0 +1,33 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "fail-dict": {
+      "Type": "AWS::MediaStore::Container",
+      "Properties": {
+        "ContainerName": "fail-dict",
+        "Policy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "MediaStoredenyAccess",
+              "Effect": "Allow",
+              "Action": [
+                "mediastore:GetObject",
+                "mediastore:DeleteObject",
+                "mediastore:DescribeObject",
+                "mediastore:ListItems"
+              ],
+              "Principal": "*",
+              "Resource": "arn:aws:mediastore:${AWS::Region}:${AWS::AccountId}:container/compmediastorecontainer/*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "RangeIncludesListWRange"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "range"
+  operator: "range_includes"
+  value:
+    - 200
+    - 3000-4000
+    - "400-500"
