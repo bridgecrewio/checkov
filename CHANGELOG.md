@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.350...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.351...HEAD)
+
+## [3.2.351](https://github.com/bridgecrewio/checkov/compare/3.2.350...3.2.351) - 2025-01-08
+
+### Bug Fix
+
+- **terraform:** Skip tsconfig in terraform plan - [#6941](https://github.com/bridgecrewio/checkov/pull/6941)
 
 ## [3.2.350](https://github.com/bridgecrewio/checkov/compare/3.2.347...3.2.350) - 2025-01-07
 
