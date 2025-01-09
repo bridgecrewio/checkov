@@ -25,7 +25,7 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ) -> tuple[KubernetesLocalGraph, dict[str, list[dict[str, Any]]]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)
         local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False)

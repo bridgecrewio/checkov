@@ -25,7 +25,7 @@ class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        **kwargs: dict[str, Any],
+        **kwargs: Any,
     ) -> tuple[DockerfileLocalGraph, dict[str, dict[str, list[_Instruction]]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((source_dir, f)))}"
