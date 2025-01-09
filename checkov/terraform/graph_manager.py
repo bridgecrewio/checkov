@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinitionKey, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
         self.parser: TFParser  # just to make sure it won't be None
+
         parser = TFParser()
         super().__init__(db_connector=db_connector, parser=parser, source=source)
 
