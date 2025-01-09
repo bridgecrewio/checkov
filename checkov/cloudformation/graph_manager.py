@@ -27,7 +27,7 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
         parsing_errors: Optional[Dict[str, Exception]] = None,
         download_external_modules: bool = False,
         excluded_paths: Optional[List[str]] = None,
-        **kwargs
+        **kwargs: dict[str, Any],
     ) -> Tuple[CloudformationLocalGraph, dict[str, dict[str, Any]]]:
         logging.info(f"[CloudformationGraphManager] Parsing files in source dir {source_dir}")
         parsing_errors = {} if parsing_errors is None else parsing_errors

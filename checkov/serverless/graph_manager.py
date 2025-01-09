@@ -23,7 +23,7 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        **kwargs
+        **kwargs: dict[str, Any],
     ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         definitions, _ = get_files_definitions(files=file_paths)

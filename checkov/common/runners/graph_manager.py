@@ -23,7 +23,7 @@ class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[s
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        **kwargs
+        **kwargs: dict[str, Any],
     ) -> tuple[ObjectLocalGraph, dict[str | Path, dict[str, Any] | list[dict[str, Any]]]]:
         definitions = local_graph_class.get_files_definitions(root_folder=source_dir)
         local_graph = self.build_graph_from_definitions(definitions=definitions, graph_class=local_graph_class)

@@ -68,7 +68,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         excluded_paths: list[str] | None = None,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
-        **kwargs
+        **kwargs: dict[str, Any],
     ) -> tuple[TerraformLocalGraph, dict[TFDefinitionKey, dict[str, Any]]]:
         logging.info("Parsing HCL files in source dir to graph")
         module, tf_definitions = self.parser.parse_hcl_module(
