@@ -26,7 +26,7 @@ class BicepGraphManager(GraphManager[BicepLocalGraph, "dict[Path, BicepJson]"]):
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        **kwargs
+        **kwargs: dict[str, Any],
     ) -> tuple[BicepLocalGraph, dict[Path, BicepJson]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir)
         definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)  # type:ignore[assignment]
