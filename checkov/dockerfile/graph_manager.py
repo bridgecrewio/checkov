@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
@@ -25,6 +25,7 @@ class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
+        **kwargs: Any,
     ) -> tuple[DockerfileLocalGraph, dict[str, dict[str, list[_Instruction]]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((source_dir, f)))}"

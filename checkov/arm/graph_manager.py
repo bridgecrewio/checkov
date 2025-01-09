@@ -23,6 +23,7 @@ class ArmGraphManager(GraphManager[ArmLocalGraph, "dict[str, dict[str, Any]]"]):
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
+        **kwargs: Any,
     ) -> tuple[ArmLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         definitions, _, _ = get_files_definitions(files=file_paths)
