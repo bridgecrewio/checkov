@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.351...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.352...HEAD)
+
+## [3.2.352](https://github.com/bridgecrewio/checkov/compare/3.2.351...3.2.352) - 2025-01-09
+
+### Feature
+
+- **terraform:** add option to add external_modules_content_cache to terraform build_graph - [#6942](https://github.com/bridgecrewio/checkov/pull/6942)
 
 ## [3.2.351](https://github.com/bridgecrewio/checkov/compare/3.2.350...3.2.351) - 2025-01-08
 
