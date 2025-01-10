@@ -71,7 +71,6 @@ class AppGWDefinesSecureProtocols(BaseResourceCheck):
                 self.evaluated_keys = ["ssl_policy/[0]/policy_name"]
                 return CheckResult.FAILED
 
-
         self.evaluated_keys = ["ssl_policy"]
         return CheckResult.FAILED
 
