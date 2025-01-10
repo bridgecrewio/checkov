@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 _TerraformContext: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 _TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 
-CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module", "terraform"])
+CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 
 
 class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDefinitionKey]):
@@ -99,9 +99,9 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         source_dir=root_folder,
                         local_graph_class=self.graph_class,
                         download_external_modules=runner_filter.download_external_modules,
-                        external_modules_download_path=runner_filter.external_modules_download_path,
                         parsing_errors=parsing_errors,
                         excluded_paths=runner_filter.excluded_paths,
+                        external_modules_download_path=runner_filter.external_modules_download_path,
                         vars_files=runner_filter.var_files,
                     )
                     # Make graph a list to allow single processing method for all cases
