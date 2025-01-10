@@ -23,15 +23,18 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: list[Edge]) -> None:
         origin_vertex_attributes = self.local_graph.vertices[edge_list[0].origin].attributes
-        val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge_list[0].label, ""))
+        value_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge_list[0].label, ""))
         attr_path = None
         for edge in edge_list:
             attr_path, attr_value = self.extract_dest_attribute_path_and_value(dest_index=edge.dest,
-                                                                               origin_value=val_to_eval)
+                                                                               origin_value=value_to_eval)
+            if not attr_value:
+                continue
+
             '''if the arg start with '[parameters'/ '[variables' its mean we need to eval the all attribute
             like here - "addressPrefix": "[parameters('subnetAddressPrefix')]" '''
-            if len(edge_list) == 1 and isinstance(val_to_eval, str) and val_to_eval.startswith(("[parameters", "[variables")):
-                val_to_eval = attr_value
+            if len(edge_list) == 1 and isinstance(value_to_eval, str) and value_to_eval.startswith(("[parameters", "[variables")):
+                value_to_eval = attr_value
                 continue
             '''
             if the value i need to eval is part of the full attribute like "[format('{0}/{1}', parameters('vnetName'), variables('subnetName'))]"
@@ -39,13 +42,13 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
             vertices[edge.dest].id = variables.networkProfileName -> variables('networkProfileName')
             '''
             val_to_replace = self.local_graph.vertices[edge.dest].id.replace(".", "('") + "')"
-            if attr_value and isinstance(val_to_eval, str):
-                val_to_eval = val_to_eval.replace(val_to_replace, str(attr_value))
+            if attr_value and isinstance(value_to_eval, str):
+                value_to_eval = value_to_eval.replace(val_to_replace, str(attr_value))
 
         self.local_graph.update_vertex_attribute(
             vertex_index=edge_list[0].origin,
             attribute_key=edge_list[0].label,
-            attribute_value=val_to_eval,
+            attribute_value=value_to_eval,
             change_origin_id=edge_list[0].dest,
             attribute_at_dest=attr_path,
         )
@@ -59,7 +62,7 @@ class ArmVariableRenderer(VariableRenderer["ArmLocalGraph"]):
                 return "defaultValue", new_value
             else:
                 logging.warning(f'No defaultValue for parameter id = {vertex.id}')
-                return "defaultValue", origin_value
+                return "defaultValue", None
         elif vertex.block_type == BlockType.VARIABLE:
             new_value = adjust_value(element_name=origin_value, value=vertex.attributes.get("value"))
             return "value", new_value

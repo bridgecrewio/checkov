@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable, TypedDict
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
 from checkov.cloudformation.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions
+from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, PseudoParameters
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.parsers.node import StrNode
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
@@ -382,13 +384,17 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                 # The operand is a simple string
                 evaluated_value = operand_to_eval
                 evaluated_value_hierarchy = str(operand_index)
-            elif isinstance(operand_to_eval, dict) and ConditionFunctions.IF in operand_to_eval:
-                # The operand is {'Fn::If': new value to evaluate}
-                condition_to_eval = operand_to_eval[ConditionFunctions.IF]
-                if isinstance(condition_to_eval, list) and isinstance(condition_to_eval[0], str):
-                    condition_vertex_attributes = self._fetch_vertex_attributes(condition_to_eval[0], BlockType.CONDITIONS)
-                    evaluated_value, evaluated_value_operand_index = self._evaluate_if_connection(condition_to_eval, condition_vertex_attributes)
-                    evaluated_value_hierarchy = f'{operand_index}.{ConditionFunctions.IF}.{evaluated_value_operand_index}'
+            elif isinstance(operand_to_eval, dict):
+                if ConditionFunctions.IF in operand_to_eval:
+                    # The operand is {'Fn::If': new value to evaluate}
+                    condition_to_eval = operand_to_eval[ConditionFunctions.IF]
+                    if isinstance(condition_to_eval, list) and isinstance(condition_to_eval[0], str):
+                        condition_vertex_attributes = self._fetch_vertex_attributes(condition_to_eval[0], BlockType.CONDITIONS)
+                        evaluated_value, evaluated_value_operand_index = self._evaluate_if_connection(condition_to_eval, condition_vertex_attributes)
+                        evaluated_value_hierarchy = f'{operand_index}.{ConditionFunctions.IF}.{evaluated_value_operand_index}'
+                elif not any([op for op in self.CONDITIONS_EVALUATED_FUNCTIONS if op in operand_to_eval]):
+                    # The operand is a dict without any further actions to perform
+                    evaluated_value = operand_to_eval
 
         return evaluated_value, evaluated_value_hierarchy
 
@@ -443,7 +449,6 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         ), None)
 
         if cfn_evaluation_function:
-            original_value = val_to_eval.get(cfn_evaluation_function, None)
 
             evaluated_edges: "list[_EvaluatedEdge]" = []
             for edge in edge_list:
@@ -455,7 +460,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                     logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
                     continue
 
-                if evaluated_value and evaluated_value != original_value:
+                if evaluated_value:
                     # succeeded to evaluate an edge
                     val_to_eval[cfn_evaluation_function] = evaluated_value
                     evaluated_edges.append({
@@ -510,5 +515,32 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         return evaluated_value, changed_origin_id, attribute_at_dest
 
     def evaluate_non_rendered_values(self) -> None:
-        # not used
-        pass
+
+        for vertex in self.local_graph.vertices:
+            vertex_attributes = pickle_deepcopy(vertex.attributes)
+            for attr_key, attr_value in vertex_attributes.items():
+                self._handle_sub_with_pseudo_param(attr_key, attr_value, vertex)
+
+    @staticmethod
+    def _handle_sub_with_pseudo_param(attr_key: str, attr_value: Any, vertex: CloudformationBlock) -> None:
+        """
+        Pseudo Parameter in CFN is a parameter which is dynamically available (see reference).
+        As we do not render it on buildtime, we want to handle this case by keeping the reference itself without the
+        value, so we can at least build a semi-full resource.
+        https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html
+        """
+        if isinstance(attr_value, dict) and IntrinsicFunctions.SUB in attr_value:
+            inner_value = attr_value[IntrinsicFunctions.SUB]
+            is_pseudo_param_in_value = any([p.value for p in PseudoParameters if p.value in inner_value])
+            if isinstance(inner_value, (str, StrNode)):
+                try:
+                    inner_value = json.loads(inner_value)
+                except Exception as e:
+                    logging.debug(f"[Cloudformation_evaluate_non_rendered_values]- "
+                                  f"Inner_value - {inner_value} is not a valid json. "
+                                  f"Full exception - {str(e)}")
+            if is_pseudo_param_in_value:
+                vertex.update_attribute(
+                    attribute_key=attr_key, attribute_value=inner_value, change_origin_id=None,
+                    previous_breadcrumbs=[], attribute_at_dest=None
+                )
