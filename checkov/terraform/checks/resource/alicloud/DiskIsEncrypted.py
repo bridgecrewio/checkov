@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -16,6 +18,9 @@ class DiskIsEncrypted(BaseResourceCheck):
         if conf.get("encrypted") and conf.get("encrypted") == [True]:
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self):
+        return ['encrypted']
 
 
 check = DiskIsEncrypted()
