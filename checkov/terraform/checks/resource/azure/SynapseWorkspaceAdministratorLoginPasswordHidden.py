@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -14,6 +16,9 @@ class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
         if 'sql_administrator_login_password' in conf:
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self):
+        return ['sql_administrator_login_password']
 
 
 check = SynapseWorkspaceAdministratorLoginPasswordHidden()
