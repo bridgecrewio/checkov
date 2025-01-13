@@ -87,5 +87,85 @@ class TestRunningGraphChecks(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
+    def test_complex_jsonpath_if_condition(self):
+        test_dir_path = Path(__file__).parent / "resources" / "complex_jsonpath_if_condition"
+        check_dir = Path(__file__).parent / "external_graph_checks"
+
+        test_check_registry = Registry(
+            checks_dir=f'{check_dir}',
+            parser=GraphCheckParser()
+        )
+
+        # when
+        report = Runner(
+            external_registries=[test_check_registry]).\
+            run(root_folder=str(test_dir_path),
+                runner_filter=RunnerFilter(checks=["complex_jsonpath_if_condition"])
+        )
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "AWS::ECS::TaskDefinition.PassingExample",
+        }
+
+        failing_resources = {
+            "AWS::ECS::TaskDefinition.FailingExample"
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_template_with_parameters_names_identical_to_default_values(self):
+        test_dir_path = Path(__file__).parent / "resources" / \
+                        "template_with_parameters_names_identical_to_default_values"
+        check_dir = Path(__file__).parent / "external_graph_checks"
+
+        test_check_registry = Registry(
+            checks_dir=f'{check_dir}',
+            parser=GraphCheckParser()
+        )
+
+        # when
+        report = Runner(
+            external_registries=[test_check_registry]).\
+            run(root_folder=str(test_dir_path),
+                runner_filter=RunnerFilter(checks=["CKV2_TEST_SIMPLE"])
+        )
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "AWS::ECS::TaskDefinition.Pass",
+        }
+
+        failing_resources = {
+            "AWS::ECS::TaskDefinition.Fail"
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
 if __name__ == '__main__':
     unittest.main()

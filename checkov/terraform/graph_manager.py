@@ -32,6 +32,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         excluded_paths: list[str] | None = None,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
+        external_modules_content_cache: dict[str, Any] | None = None,
     ) -> tuple[list[tuple[TerraformLocalGraph, list[dict[TFDefinitionKey, dict[str, Any]]], str]], dict[str, str]]:
         logging.info("Parsing HCL files in source dir to multi graph")
         modules_with_definitions = self.parser.parse_multi_graph_hcl_module(
@@ -42,6 +43,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
             parsing_errors=parsing_errors,
             excluded_paths=excluded_paths,
             vars_files=vars_files,
+            external_modules_content_cache=external_modules_content_cache
         )
 
         graphs: list[tuple[TerraformLocalGraph, list[dict[TFDefinitionKey, dict[str, Any]]], str]] = []
@@ -64,18 +66,18 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        vars_files: list[str] | None = None,
+        **kwargs: Any,
     ) -> tuple[TerraformLocalGraph, dict[TFDefinitionKey, dict[str, Any]]]:
         logging.info("Parsing HCL files in source dir to graph")
         module, tf_definitions = self.parser.parse_hcl_module(
             source_dir=source_dir,
             source=self.source,
             download_external_modules=download_external_modules,
-            external_modules_download_path=external_modules_download_path,
+            external_modules_download_path=kwargs.get('external_modules_download_path', DEFAULT_EXTERNAL_MODULES_DIR),
             parsing_errors=parsing_errors,
             excluded_paths=excluded_paths,
-            vars_files=vars_files,
+            vars_files=kwargs.get('vars_files', None),
+            external_modules_content_cache=kwargs.get('external_modules_content_cache', None)
         )
 
         logging.info("Building graph from parsed module")
