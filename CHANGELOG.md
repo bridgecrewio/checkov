@@ -1,6 +1,98 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.332...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.352...HEAD)
+
+## [3.2.352](https://github.com/bridgecrewio/checkov/compare/3.2.351...3.2.352) - 2025-01-09
+
+### Feature
+
+- **terraform:** add option to add external_modules_content_cache to terraform build_graph - [#6942](https://github.com/bridgecrewio/checkov/pull/6942)
+
+## [3.2.351](https://github.com/bridgecrewio/checkov/compare/3.2.350...3.2.351) - 2025-01-08
+
+### Bug Fix
+
+- **terraform:** Skip tsconfig in terraform plan - [#6941](https://github.com/bridgecrewio/checkov/pull/6941)
+
+## [3.2.350](https://github.com/bridgecrewio/checkov/compare/3.2.347...3.2.350) - 2025-01-07
+
+### Feature
+
+- **terraform:** add CKV_AZURE_248 - Azure batch account network access restriction - [#6928](https://github.com/bridgecrewio/checkov/pull/6928)
+
+### Bug Fix
+
+- **terraform:** Revert feat(terraform): Add a terraform block check (#6904) - [#6937](https://github.com/bridgecrewio/checkov/pull/6937)
+
+## [3.2.347](https://github.com/bridgecrewio/checkov/compare/3.2.346...3.2.347) - 2025-01-06
+
+### Feature
+
+- **general:** Change behavior where if a config file is missing, run the scan as if there was no config file - [#6926](https://github.com/bridgecrewio/checkov/pull/6926)
+
+### Bug Fix
+
+- **terraform:** Fix for multiple checks - [#6933](https://github.com/bridgecrewio/checkov/pull/6933)
+
+## [3.2.346](https://github.com/bridgecrewio/checkov/compare/3.2.345...3.2.346) - 2025-01-01
+
+### Feature
+
+- **terraform:** add option to add proxy to request - [#6923](https://github.com/bridgecrewio/checkov/pull/6923)
+
+## [3.2.345](https://github.com/bridgecrewio/checkov/compare/3.2.344...3.2.345) - 2024-12-31
+
+### Feature
+
+- **cloudformation:** Add sensitive param check - [#6921](https://github.com/bridgecrewio/checkov/pull/6921)
+- **terraform:** add option to add proxy to request - [#6916](https://github.com/bridgecrewio/checkov/pull/6916)
+- **terraform:** check cognitive services restrict outbound network - [#6919](https://github.com/bridgecrewio/checkov/pull/6919)
+
+### Bug Fix
+
+- **terraform_json:** support CDKTF output in CKV_TF_3 - [#6918](https://github.com/bridgecrewio/checkov/pull/6918)
+
+## [3.2.344](https://github.com/bridgecrewio/checkov/compare/3.2.342...3.2.344) - 2024-12-21
+
+### Bug Fix
+
+- **kubernetes:** Add to nested resources on k8s graph inherit namespace - [#6912](https://github.com/bridgecrewio/checkov/pull/6912)
+
+## [3.2.342](https://github.com/bridgecrewio/checkov/compare/3.2.339...3.2.342) - 2024-12-18
+
+### Feature
+
+- **serverless:** serverless definitions context - [#6910](https://github.com/bridgecrewio/checkov/pull/6910)
+- **serverless:** Serverless graph integration - [#6911](https://github.com/bridgecrewio/checkov/pull/6911)
+- **terraform:** Add a terraform block check - [#6904](https://github.com/bridgecrewio/checkov/pull/6904)
+
+## [3.2.339](https://github.com/bridgecrewio/checkov/compare/3.2.336...3.2.339) - 2024-12-17
+
+### Bug Fix
+
+- **general:** Fix jsonpath-key handling for special characters like "/" and reduce log size - [#6907](https://github.com/bridgecrewio/checkov/pull/6907)
+- **serverless:** Fix serverless check crash - [#6909](https://github.com/bridgecrewio/checkov/pull/6909)
+
+## [3.2.336](https://github.com/bridgecrewio/checkov/compare/3.2.334...3.2.336) - 2024-12-16
+
+### Feature
+
+- **general:** add cortex:skip for suppressions - [#6908](https://github.com/bridgecrewio/checkov/pull/6908)
+
+### Bug Fix
+
+- **terraform:** fix CKV_AZURE_136 for replicas - [#6895](https://github.com/bridgecrewio/checkov/pull/6895)
+- **terraform:** Fix CKV_AZURE_227 for Azure V4 - [#6906](https://github.com/bridgecrewio/checkov/pull/6906)
+
+## [3.2.334](https://github.com/bridgecrewio/checkov/compare/3.2.332...3.2.334) - 2024-12-08
+
+### Feature
+
+- **serverless:** Serverless graph vertices - [#6894](https://github.com/bridgecrewio/checkov/pull/6894)
+
+### Bug Fix
+
+- **secrets:** fix indentation to remove duplications - [#6626](https://github.com/bridgecrewio/checkov/pull/6626)
 
 ## [3.2.332](https://github.com/bridgecrewio/checkov/compare/3.2.328...3.2.332) - 2024-12-05
 

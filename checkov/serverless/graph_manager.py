@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[str, Any]]"]):
-    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.ARM) -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.SERVERLESS) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
@@ -23,6 +23,7 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
+        **kwargs: Any,
     ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         definitions, _ = get_files_definitions(files=file_paths)
