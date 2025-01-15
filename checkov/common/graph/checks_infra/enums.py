@@ -76,3 +76,5 @@ class Operators:
     NUMBER_OF_WORDS_GREATER_THAN_OR_EQUAL = 'number_of_words_greater_than_or_equal'
     NUMBER_OF_WORDS_LESS_THAN = 'number_of_words_less_than'
     NUMBER_OF_WORDS_LESS_THAN_OR_EQUAL = 'number_of_words_less_than_or_equal'
+    CIDR_RANGE_SUBSET = 'cidr_range_subset'
+    CIDR_RANGE_NOT_SUBSET = 'cidr_range_not_subset'

@@ -131,12 +131,13 @@ class ForeachAbstractHandler:
                                 if attrs[k][0] == dollar_wrapped_str_to_replace:
                                     attrs[k][0] = inner_value
                                     v_changed = True
+                                    # Since we assigned a value to attrs[k][0] we don't need to check the value again for
+                                    # interpolations to replace, we can break out of the loop
                                     break
                                 elif dollar_wrapped_str_to_replace in attrs[k][0]:
                                     str_to_replace = dollar_wrapped_str_to_replace
                                 attrs[k][0] = attrs[k][0].replace(str_to_replace, str(inner_value))
                                 v_changed = True
-                                break
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
                         if self.need_to_add_quotes(attrs[k][0], key_to_change):

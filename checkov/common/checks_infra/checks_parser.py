@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -55,6 +56,8 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsLessThanAttributeSolver,
     NumberOfWordsLessThanOrEqualAttributeSolver,
     NotWithinAttributeSolver,
+    CIDRRangeSubsetAttributeSolver,
+    CIDRRangeNotSubsetAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -119,6 +122,8 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "number_of_words_greater_than_or_equal": NumberOfWordsGreaterThanOrEqualAttributeSolver,
     "number_of_words_less_than_or_equal": NumberOfWordsLessThanOrEqualAttributeSolver,
     "number_of_words_less_than": NumberOfWordsLessThanAttributeSolver,
+    "cidr_range_subset": CIDRRangeSubsetAttributeSolver,
+    "cidr_range_not_subset": CIDRRangeNotSubsetAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
@@ -201,6 +206,9 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        severity = get_severity(raw_check.get("metadata", {}).get("severity", ""))
+        if severity:
+            check.severity = severity
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
