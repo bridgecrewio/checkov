@@ -241,6 +241,8 @@ class GitHistoryScanner:
 
         for file_diff in git_diff:
             file_name = file_diff.b_path
+            if not file_name:  # Add null check
+                continue
             if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                 continue
             file_path = os.path.join(self.root_folder, file_name)
@@ -250,9 +252,11 @@ class GitHistoryScanner:
         return first_commit_diff
 
     @staticmethod
-    def get_decoded_diff(diff: bytes | None) -> str:
+    def get_decoded_diff(diff: str | bytes | None) -> str:
         if not diff:
             return ''
+        if isinstance(diff, str):
+            return diff
         try:
             decoded_diff = diff.decode('utf-8')
         except UnicodeDecodeError as ue:
