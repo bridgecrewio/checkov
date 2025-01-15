@@ -154,10 +154,16 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
                             transform_step=True,
                         )
                     elif isinstance(value, list):
+                        # Remove duplicates
+                        list_updated_value = [*vertex.attributes[property], *value]
+                        list_updated_value_unique = []
+                        for item in list_updated_value:
+                            if item not in list_updated_value_unique:
+                                list_updated_value_unique.append(item)
                         self.update_vertex_attribute(
                             vertex_index=self.vertices.index(vertex),
                             attribute_key=property,
-                            attribute_value=[*vertex.attributes[property], *value],
+                            attribute_value=list_updated_value_unique,
                             change_origin_id=index,
                             attribute_at_dest=property,
                             transform_step=True,
