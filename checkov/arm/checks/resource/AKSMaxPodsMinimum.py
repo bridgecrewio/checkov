@@ -18,8 +18,10 @@ class AKSMaxPodsMinimum(BaseResourceCheck):
         max_pods: Optional[int] = 30
 
         properties = conf.get("properties")
-        if properties and isinstance(properties, dict):
-            max_pods = properties.get("maxPods")
+        if not properties or not isinstance(properties, dict):
+            return CheckResult.FAILED
+
+        max_pods = properties.get("maxPods")
 
         if "agentPoolProfiles" in properties and isinstance(properties["agentPoolProfiles"], list) and properties[
             "agentPoolProfiles"]:

@@ -34,14 +34,13 @@ if TYPE_CHECKING:
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
 
-# type: ignore[misc]
 class BicepElements(str, Enum):
-    GLOBALS: Literal["globals"] = "globals"
-    PARAMETERS: Literal["parameters"] = "parameters"
-    VARIABLES: Literal["variables"] = "variables"
-    RESOURCES: Literal["resources"] = "resources"
-    MODULES: Literal["modules"] = "modules"
-    OUTPUTS: Literal["outputs"] = "outputs"
+    GLOBALS = "globals"
+    PARAMETERS = "parameters"
+    VARIABLES = "variables"
+    RESOURCES = "resources"
+    MODULES = "modules"
+    OUTPUTS = "outputs"
 
 
 class BicepLocalGraph(LocalGraph[BicepBlock]):

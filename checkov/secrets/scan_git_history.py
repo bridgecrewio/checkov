@@ -250,7 +250,7 @@ class GitHistoryScanner:
         return first_commit_diff
 
     @staticmethod
-    def get_decoded_diff(self, diff: bytes | None) -> str:
+    def get_decoded_diff(diff: bytes | None) -> str:
         if not diff:
             return ''
         try:
