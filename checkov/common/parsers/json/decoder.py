@@ -6,7 +6,7 @@ from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray  # type:ignore[attr-defined]  # they are not explicitly exported
 from typing import Any, Callable, Pattern, Match
 
-from json.scanner import NUMBER_RE  # type:ignore[import-not-found]  # is not explicitly exported
+from json.scanner import NUMBER_RE  # type:ignore[attr-defined]  # is not explicitly exported
 
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError

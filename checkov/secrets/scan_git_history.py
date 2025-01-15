@@ -148,12 +148,12 @@ class GitHistoryScanner:
                     )
                 )
                 for file_diff in git_diff:
-                    file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
-                    if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
-                        continue
-                    file_path = os.path.join(self.root_folder, file_name)
+                    if file_name := (file_diff.a_path if file_diff.a_path else file_diff.b_path):
+                        if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+                            continue
+                        file_path = os.path.join(self.root_folder, file_name)
 
-                    if file_diff.renamed_file:
+                    if file_diff.renamed_file and file_diff.rename_from and file_diff.rename_to:
                         logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                         curr_diff.rename_file(
                             file_path=file_path,
@@ -250,8 +250,8 @@ class GitHistoryScanner:
         return first_commit_diff
 
     @staticmethod
-    def get_decoded_diff(diff: bytes) -> str:
-        if diff is None:
+    def get_decoded_diff(self, diff: bytes | None) -> str:
+        if not diff:
             return ''
         try:
             decoded_diff = diff.decode('utf-8')
