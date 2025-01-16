@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.352...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.353...HEAD)
+
+## [3.2.353](https://github.com/bridgecrewio/checkov/compare/3.2.352...3.2.353) - 2025-01-15
+
+### Bug Fix
+
+- **general:** Support CVE suppressions with the root file in repo - [#6948](https://github.com/bridgecrewio/checkov/pull/6948)
 
 ## [3.2.352](https://github.com/bridgecrewio/checkov/compare/3.2.351...3.2.352) - 2025-01-09
 
