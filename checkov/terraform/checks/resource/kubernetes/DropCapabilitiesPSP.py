@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -17,11 +19,13 @@ class DropCapabilitiesPSP(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get('spec'):
+            self.evaluated_keys = ['spec']
             spec = conf.get('spec')[0]
             if not spec:
                 return CheckResult.UNKNOWN
 
             if spec.get("required_drop_capabilities"):
+                self.evaluated_keys = ['spec/[0]/required_drop_capabilities']
                 drop_cap = spec.get("required_drop_capabilities")[0]
                 if drop_cap and isinstance(drop_cap, list):
                     if any(cap in drop_cap for cap in ("ALL", "NET_RAW")):
