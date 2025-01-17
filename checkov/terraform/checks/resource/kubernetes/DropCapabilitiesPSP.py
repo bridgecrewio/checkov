@@ -1,12 +1,10 @@
-from typing import List
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class DropCapabilitiesPSP(BaseResourceCheck):
 
-    def __init__(self):
+    def __init__(self) -> None:
         # CIS-1.3 1.7.7
         # CIS-1.5 5.2.7
         name = "Do not admit containers with the NET_RAW capability"
