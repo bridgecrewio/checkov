@@ -499,51 +499,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+
+      - name: Get changed Python files
+        id: changed-files
+        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        with:
+          files: checkov/**/*.py
 
       - name: Validate 'BaseResourceCheck' usage
+        if: steps.changed-files.outputs.any_changed == 'true'
         run: |
-          # 1. Collect all changed files in this pull request
-          CHANGED_FILES=$(git diff --name-only ${{ github.base_ref }}..${{ github.head_ref }})
-
-          # Define an array of exceptions (files to skip).
+          # Define an array of exceptions (files to skip)
           EXCEPTIONS=(
             "base_resource_check.py" 
             "VPCDefaultNetwork.py"
             "IAMUserNotUsedForAccess.py"  # Whole Resource type check
           )
-
+          
           echo "Changed files:"
-          echo "$CHANGED_FILES"
-
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          
           EXIT_CODE=0
-          for file in $CHANGED_FILES; do
-            # Only examine Python files within the 'checkov/' directory
-            if [[ $file == checkov/**/*.py ]]; then
-              # Check if the file is in the list of exceptions
-              SKIP_FILE="false"
-              for exception in "${EXCEPTIONS[@]}"; do
-                # If the file ends with one of the exception file names, skip it
-                if [[ "$file" == *"$exception" ]]; then
-                  echo "Skipping $file (allowed exception)"
-                  SKIP_FILE="true"
-                  break
-                fi
-              done
-
-              # Only run checks if not in exceptions list
-              if [[ "$SKIP_FILE" == "false" ]]; then
-                # If file contains 'BaseResourceCheck', check for 'get_inspected_key' or 'evaluated_keys'
-                if grep -q "BaseResourceCheck" "$file"; then
-                  if ! grep -q "get_inspected_key" "$file" && ! grep -q "evaluated_keys" "$file"; then
-                    echo "ERROR: $file has BaseResourceCheck but does NOT contain 'get_inspected_key' or 'evaluated_keys'"
-                    EXIT_CODE=1
-                  fi
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            # Check if the file is in the list of exceptions
+            SKIP_FILE="false"
+            for exception in "${EXCEPTIONS[@]}"; do
+              # If the file ends with one of the exception file names, skip it
+              if [[ "$file" == *"$exception" ]]; then
+                echo "Skipping $file (allowed exception)"
+                SKIP_FILE="true"
+                break
+              fi
+            done
+          
+            # Only run checks if not in exceptions list
+            if [[ "$SKIP_FILE" == "false" ]]; then
+              # If file contains 'BaseResourceCheck', check for 'get_inspected_key' or 'evaluated_keys'
+              if grep -q "BaseResourceCheck" "$file"; then
+                if ! grep -q "get_inspected_key" "$file" && ! grep -q "evaluated_keys" "$file"; then
+                  echo "ERROR: $file has BaseResourceCheck but does NOT contain 'get_inspected_key' or 'evaluated_keys'"
+                  EXIT_CODE=1
                 fi
               fi
             fi
           done
-
+          
           # Fail the job if any file violated the rule
           if [ "$EXIT_CODE" -ne 0 ]; then
             echo "One or more files did not satisfy the requirement."
