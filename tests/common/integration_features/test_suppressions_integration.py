@@ -515,11 +515,19 @@ class TestSuppressionsIntegration(unittest.TestCase):
                          resource=None, evaluations=None,
                          check_class=None, file_abs_path='notrequirements.txt', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-45452'})
+        record5 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='home/requirements.txt', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2021-23727'})
+        record5.file_path = '/requirements.txt'
 
         self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
         self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record5, suppression))
 
     def test_suppress_by_cve_with_empty_cves(self):
         instance = BcPlatformIntegration()

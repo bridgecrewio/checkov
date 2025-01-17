@@ -169,6 +169,25 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return suppression
         return None
 
+    def _check_cve_suppression(self, record: Record, suppression: dict[str, Any]) -> bool:
+        if 'accountIds' not in suppression:
+            return False
+        if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in \
+                suppression['accountIds'] \
+                and suppression['cves']:
+            repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
+            suppression_path = self._get_cve_suppression_path(suppression)
+            repo_file_path = align_path(record.repo_file_path)
+            file_abs_path = align_path(record.file_abs_path)
+            if file_abs_path == suppression_path[1:] or \
+                    file_abs_path == suppression_path or \
+                    file_abs_path.endswith("".join([repo_name, suppression_path])) or \
+                    removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/') \
+                    or record.file_path == suppression_path:
+                return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
+                           for cve in suppression['cves'])
+        return False
+
     def _check_suppression(self, record: Record, suppression: dict[str, Any]) -> bool:
         """
         Returns True if and only if the specified suppression applies to the specified record.
@@ -217,21 +236,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         elif type == 'Cves':
-            if 'accountIds' not in suppression:
-                return False
-            if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']\
-                    and suppression['cves']:
-                repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
-                suppression_path = self._get_cve_suppression_path(suppression)
-                repo_file_path = align_path(record.repo_file_path)
-                file_abs_path = align_path(record.file_abs_path)
-                if file_abs_path == suppression_path[1:] or \
-                        file_abs_path == suppression_path or \
-                        file_abs_path.endswith("".join([repo_name, suppression_path])) or \
-                        removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/'):
-                    return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
-                               for cve in suppression['cves'])
-            return False
+            return self._check_cve_suppression(record, suppression)
 
         elif type == 'LicenseType':
             return any(record.vulnerability_details and record.vulnerability_details['license'] == license_type
