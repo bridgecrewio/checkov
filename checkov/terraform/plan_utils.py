@@ -29,7 +29,7 @@ def create_definitions(
             filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
-                if file_ending == '.json':
+                if file != 'tsconfig.json' and file_ending == '.json':
                     file_path = os.path.join(root, file)
                     try:
                         with open(file_path, "rb") as f:

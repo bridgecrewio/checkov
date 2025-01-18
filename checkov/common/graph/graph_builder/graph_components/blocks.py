@@ -171,9 +171,9 @@ class Block:
                     try:
                         self._update_attribute_based_on_jsonpath_key(attribute_value, key)
                     except Exception as e:
-                        logging.warning(f"Failed updating attribute for key: {key} and value {attribute_value} for"
-                                        f"vertex attributes {self.attributes}. Falling back to explicitly setting it."
-                                        f"Exception - {e}")
+                        logging.debug(f"Failed updating attribute for key: {key} and value {attribute_value}."
+                                      f"Falling back to explicitly setting it."
+                                      f"Exception - {e}")
                         self.attributes[key] = attribute_value
                 else:
                     self.attributes[key] = attribute_value
@@ -204,20 +204,22 @@ class Block:
             match[0].value = attribute_value
         return None
 
-    def _get_jsonpath_key(self, key: str) -> str:
-        key = self._handle_unique_key_characters(key)
-        # Replace .0 with [0] to match jsonpath style
+    @staticmethod
+    def _get_jsonpath_key(key: str) -> str:
         jsonpath_key = "$."
         key_parts = key.split(".")
+        updated_parts = []
         for part in key_parts:
             if part.isnumeric():
-                jsonpath_key += f"[{part}]"
+                updated_parts.append(f"[{part}]")
+            elif "/" in part or "::" in part:
+                updated_parts.append(f'"{part}"')
             else:
-                jsonpath_key += part
+                updated_parts.append(part)
+        jsonpath_key += ".".join(updated_parts)
+        # Replace .0 with [0] to match jsonpath style
+        jsonpath_key = jsonpath_key.replace(".[", "[")
         return jsonpath_key
-
-    def _handle_unique_key_characters(self, key: str) -> str:
-        return key
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any

@@ -108,7 +108,7 @@ resource "azurerm_function_app" "pass2" {
   site_config {
     dotnet_framework_version = "v4.0"
     scm_type                 = "LocalGit"
-    min_tls_version          = 1.2
+    min_tls_version          = 1.3
     ftps_state               = "AllAllowed"
     http2_enabled            = false
     cors {
@@ -179,7 +179,7 @@ resource "azurerm_linux_function_app_slot" "pass7" {
   storage_account_name = azurerm_storage_account.example.name
 
   site_config {
-    minimum_tls_version = 1.2
+    minimum_tls_version = 1.3
   }
 }
 resource "azurerm_windows_function_app_slot" "pass8" {
