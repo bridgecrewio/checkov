@@ -522,7 +522,7 @@ jobs:
           
           EXIT_CODE=0
           IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          for file in $(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ',' '\n'); do
             # Check if the file is in the list of exceptions
             SKIP_FILE="false"
             for exception in "${EXCEPTIONS[@]}"; do
