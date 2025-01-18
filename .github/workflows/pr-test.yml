@@ -507,7 +507,7 @@ jobs:
         with:
           files: checkov/**/*.py
 
-      - name: Validate 'BaseResourceCheck' usage
+      - name: Validate 'BaseResourceCheck' use contains eval keys
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           # Define an array of exceptions (files to skip)
@@ -521,6 +521,7 @@ jobs:
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
           
           EXIT_CODE=0
+          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             # Check if the file is in the list of exceptions
             SKIP_FILE="false"
@@ -544,6 +545,7 @@ jobs:
               fi
             fi
           done
+          unset IFS  # Restore IFS to default
           
           # Fail the job if any file violated the rule
           if [ "$EXIT_CODE" -ne 0 ]; then
