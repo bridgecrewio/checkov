@@ -73,8 +73,11 @@ nav_order: 2
 | `LOG_LEVEL` | Set the threshold of log levels for outputs. Using `LOG_LEVEL=debug` is useful for seeing logs for debugging issues around parsing, checks, graph rendering, etc.  | `WARNING` |
 | `RENDER_EDGES_DUPLICATE_ITER_COUNT` | Set the threshold to break out of calculating duplicate edges in the graph. This can be determined if you see `Reached too many edge duplications...` in the Checkov logs. | `4` |
 | `CHECKOV_OUTPUT_CODE_LINE_LIMIT` | Set the threshold for how long the code snippet can be and still show in the console output of Checkov. | `50` |
-| `BC_ROOT_DIR` | Specifies the root directory for Bridgecrew scans.  |   |  
-| `EXPERIMENTAL_GRAPH_DEBUG` | Enables experimental log output for debugging graph policies. | `False` |
+| `CHECKOV_EXPERIMENTAL_GRAPH_DEBUG` | Enables experimental log output for debugging graph policies. | `False` |
 | `IGNORED_DIRECTORIES` | Comma-separated list of directories to ignore during scans.  | `node_modules,.terraform,.serverless` |
 | `EVAL_TF_PLAN_AFTER_UNKNOWN` | Experimental feature to leverage the after_unknown section of plan files to determine if the check should pass or fail. | `False` |
+| `CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES` | Experimental feature to leverage the local cache of modules rather than downloading them. Requires terraform init before using. | `False` |
 | `GITHUB_PAT`, `BITBUCKET_TOKEN`, `TF_REGISTRY_TOKEN`, `TF_HOST_NAME`, `VCS_BASE_URL`, `VCS_USERNAME`, `VCS_TOKEN` | See [Scanning Private Terraform Modules](https://www.checkov.io/7.Scan%20Examples/Terraform.html) for more details. |
+| `ENABLE_CONFIG_FILE_VALIDATION` | If the conf-file explicitly set using the `--config-file` command does not exist, skip rather than throw an error (default) | `False` |
+| `CHECKOV_MAX_IAC_FILE_SIZE` | Set the max size for CloudFormation file scans. | `50_000_000` or 50MB |
+| `CHECKOV_MAX_FILE_SIZE` | Set the max file size for Secrets scans. | `5000000` or 5MB |
