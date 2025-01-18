@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Azure Synapse Analytics workspace."
+      }
+    },
+    "retentionDays": {
+      "type": "int",
+      "defaultValue": 90,
+      "metadata": {
+        "description": "Number of days to retain audit logs."
+      }
+    },
+    "auditActionsAndGroups": {
+      "type": "array",
+      "defaultValue": [
+        "DATA_READ",
+        "DATA_WRITE",
+        "DATA_DELETE"
+      ],
+      "metadata": {
+        "description": "Actions and groups to audit."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01-preview",
+      "name": "fail2",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/extendedAuditingPolicies",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[fail1, '/Default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', fail2)]"
+      ],
+      "properties": {
+        "state": "Disabled",
+        "retentionDays": "[parameters('retentionDays')]",
+        "auditActionsAndGroups": "[parameters('auditActionsAndGroups')]"
+      }
+    }
+  ]
+}

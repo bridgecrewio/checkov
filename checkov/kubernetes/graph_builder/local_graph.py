@@ -171,6 +171,12 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 template['apiVersion'] = conf.get('apiVersion')
 
             template_metadata = template.get('metadata')
+
+            template_namespace = template_metadata.get('namespace')
+            metadata_namespace = metadata.get('namespace')
+            if template_namespace is None and metadata_namespace is not None:
+                template_metadata['namespace'] = metadata_namespace
+
             annotations = metadata.get('annotations')
             if annotations is not None and template_metadata is not None and 'annotations' not in template_metadata:
                 # Updates annotations to template as well to handle metadata added to the parent resource
