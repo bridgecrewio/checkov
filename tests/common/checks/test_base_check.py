@@ -63,6 +63,10 @@ class TestCheckDetails(BaseCheck):
             return CheckResult.FAILED
 
 
+def _clean_doc(st: str) -> list[str]:
+    return [line.strip() for line in st.splitlines() if not line.isspace()]
+
+
 # noinspection DuplicatedCode
 class TestBaseCheck(unittest.TestCase):
 
@@ -74,11 +78,11 @@ class TestBaseCheck(unittest.TestCase):
         # noinspection PyArgumentList
         scan_result = check.scan_entity_conf({}, "Some name")
         self.assertEqual(CheckResult.PASSED, scan_result)
-        self.assertEqual(check.scan_entity_conf.__doc__, """
+        self.assertEqual(_clean_doc(check.scan_entity_conf.__doc__), _clean_doc("""
         My documentation
         :param conf:
         :return:
-        """)
+        """))
 
     def test_invalid_signature_is_detected(self):
         with self.assertRaises(TypeError) as context:
