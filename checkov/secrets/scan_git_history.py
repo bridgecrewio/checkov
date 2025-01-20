@@ -241,7 +241,7 @@ class GitHistoryScanner:
 
         for file_diff in git_diff:
             file_name = file_diff.b_path
-            if not file_name:  # Add null check
+            if not file_name:  # Add check for null
                 continue
             if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                 continue
