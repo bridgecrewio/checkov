@@ -1,5 +1,6 @@
 import os
 import unittest
+from typing import List
 
 from unittest import mock
 from parameterized import parameterized
@@ -63,7 +64,7 @@ class TestCheckDetails(BaseCheck):
             return CheckResult.FAILED
 
 
-def _clean_doc(st: str) -> list[str]:
+def _clean_doc(st: str) -> List[str]:
     return [line.strip() for line in st.splitlines() if not line.isspace()]
 
 

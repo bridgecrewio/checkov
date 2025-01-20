@@ -88,9 +88,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
             # needed for numpy
-            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
           else
             python -m pip install --no-cache-dir --upgrade pipenv
           fi
@@ -100,7 +100,9 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
 
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
+            echo "patching >3.12 issues"
+            pipenv run pip install setuptools
             # needed for numpy
             pipenv install --skip-lock --dev -v
           else
