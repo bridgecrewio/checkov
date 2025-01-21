@@ -13,8 +13,9 @@ class LaunchTemplateDisksAreEncrypted(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         data_disks = conf.get("data_disks")
         if data_disks and isinstance(data_disks, list):
-            for disk in data_disks:
+            for idx, disk in enumerate(data_disks):
                 if disk.get('encrypted') != [True]:
+                    self.evaluated_keys = [f'data_disks/[{idx}]/encrypted']
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
