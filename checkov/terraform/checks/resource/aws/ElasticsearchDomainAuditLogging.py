@@ -27,5 +27,8 @@ class ElasticsearchDomainAuditLogging(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> list[str]:
+        return ["log_publishing_options"]
+
 
 check = ElasticsearchDomainAuditLogging()

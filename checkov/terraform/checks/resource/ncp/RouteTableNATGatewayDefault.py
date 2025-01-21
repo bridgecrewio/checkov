@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
@@ -19,6 +21,9 @@ class RouteTableNATGatewayDefault(BaseResourceCheck):
                 else:
                     return CheckResult.FAILED
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["destination_cidr_block"]
 
 
 check = RouteTableNATGatewayDefault()
