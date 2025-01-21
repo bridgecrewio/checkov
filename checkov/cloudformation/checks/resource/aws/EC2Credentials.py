@@ -3,7 +3,7 @@ from base64 import b64decode
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.common.util.secrets import get_secrets_from_string
+from checkov.common.util.secrets import AWS, GENERAL, get_secrets_from_string
 
 
 class EC2Credentials(BaseResourceCheck):
@@ -28,7 +28,7 @@ class EC2Credentials(BaseResourceCheck):
                     user_data_str = str(user_data)
 
                 if isinstance(user_data_str, str):
-                    secrets = get_secrets_from_string(str(user_data_str))
+                    secrets = get_secrets_from_string(str(user_data_str), GENERAL, AWS)
                     if secrets:
                         for idx, secret in enumerate(secrets):
                             conf[f'{self.id}_secret_{idx}'] = secret
