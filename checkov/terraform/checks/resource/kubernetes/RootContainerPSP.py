@@ -16,10 +16,13 @@ class RootContainersPSP(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         # required param
         if "spec" in conf:
+            self.evaluated_keys = ["spec"]
             # required param
             if "run_as_user" in conf["spec"][0]:
+                self.evaluated_keys = ["spec/[0]/run_as_user"]
                 runas = conf["spec"][0]["run_as_user"][0]
                 if runas["rule"]:
+                    self.evaluated_keys = ["spec/[0]/run_as_user/[0]/rule"]
                     inspected_value = runas["rule"][0]
                     if inspected_value == "MustRunAsNonRoot":
                         return CheckResult.PASSED
