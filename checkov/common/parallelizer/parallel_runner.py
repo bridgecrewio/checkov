@@ -107,7 +107,7 @@ class ParallelRunner:
                     v = parent_conn.recv()
 
                     if isinstance(v, ParallelRunException):
-                        raise v.internal_exception
+                        raise v.internal_exception.with_traceback(v.internal_exception.__traceback__)
 
                     yield v
                 except EOFError:
