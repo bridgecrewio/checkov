@@ -17,6 +17,12 @@ if TYPE_CHECKING:
 _T = TypeVar("_T")
 
 
+class ParallelRunException(Exception):
+    def __init__(self, internal_exception: Exception) -> None:
+        self.internal_exception = internal_exception
+        super().__init__("Parallel run failed", internal_exception)
+
+
 class ParallelRunner:
     def __init__(
         self, workers_number: int | None = None,
@@ -72,12 +78,12 @@ class ParallelRunner:
                         result = original_func(*item)
                     else:
                         result = original_func(item)
-                except Exception:
+                except Exception as e:
                     logging.error(
                         f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}",
                         exc_info=True,
                     )
-                    result = None
+                    result = ParallelRunException(e)
 
                 connection.send(result)
             connection.close()
@@ -97,7 +103,12 @@ class ParallelRunner:
         for _, parent_conn, group_len in processes:
             for _ in range(group_len):
                 try:
-                    yield parent_conn.recv()
+                    v = parent_conn.recv()
+
+                    if isinstance(v, ParallelRunException):
+                        raise v.internal_exception
+
+                    yield v
                 except EOFError:
                     pass
 
