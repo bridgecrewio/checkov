@@ -78,14 +78,15 @@ class ParallelRunner:
                         result = original_func(*item)
                     else:
                         result = original_func(item)
+
+                    connection.send(result)
                 except Exception as e:
                     logging.error(
                         f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}",
                         exc_info=True,
                     )
-                    result = ParallelRunException(e)
+                    connection.send(ParallelRunException(e))
 
-                connection.send(result)
             connection.close()
 
         logging.debug(
