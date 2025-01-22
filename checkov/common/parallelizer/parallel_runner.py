@@ -20,7 +20,7 @@ _T = TypeVar("_T")
 class ParallelRunException(Exception):
     def __init__(self, internal_exception: Exception) -> None:
         self.internal_exception = internal_exception
-        super().__init__("Parallel run failed", internal_exception)
+        super().__init__(internal_exception)
 
 
 class ParallelRunner:
