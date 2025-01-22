@@ -31,11 +31,6 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        print("\nPassed resources:", sorted(list(passed_check_resources)))
-        print("Expected passing:", sorted(list(passing_resources)))
-        print("\nFailed resources:", sorted(list(failed_check_resources)))
-        print("Expected failing:", sorted(list(failing_resources)))
-
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)

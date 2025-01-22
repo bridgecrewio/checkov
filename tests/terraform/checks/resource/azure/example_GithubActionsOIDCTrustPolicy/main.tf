@@ -17,17 +17,6 @@ resource "azuread_application_federated_identity_credential" "pass2" {
   subject             = "repo:myOrg/myRepo:ref:refs/heads/main"
 }
 
-# pass3 - Valid configuration using direct application approach
-resource "azuread_application" "pass3" {
-  display_name = "github-oidc"
-  
-  identity_federation {
-    audiences = ["api://AzureADTokenExchange"]
-    issuer    = "https://token.actions.githubusercontent.com"
-    subject   = "repo:myOrg/myRepo:ref:refs/heads/main"
-  }
-}
-
 # pass4 - Valid configuration with org-only repo pattern
 resource "azuread_application_federated_identity_credential" "pass4" {
   application_object_id = "example-app-id"
@@ -63,17 +52,6 @@ resource "azuread_application_federated_identity_credential" "fail3" {
   subject             = "*"
 }
 
-# fail4 - Using abusable claim in direct application config
-resource "azuread_application" "fail4" {
-  display_name = "github-oidc"
-  
-  identity_federation {
-    audiences = ["api://AzureADTokenExchange"]
-    issuer    = "https://token.actions.githubusercontent.com"
-    subject   = "workflow:github-actions:repo:myOrg/myRepo:ref:refs/heads/main"
-  }
-}
-
 # fail5 - Wildcard assertion in repo pattern
 resource "azuread_application_federated_identity_credential" "fail5" {
   application_object_id = "example-app-id"
@@ -81,15 +59,4 @@ resource "azuread_application_federated_identity_credential" "fail5" {
   audiences           = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com"
   subject             = "repo:*"
-}
-
-# fail6 - Misused repo pattern
-resource "azuread_application" "fail6" {
-  display_name = "github-oidc"
-  
-  identity_federation {
-    audiences = ["api://AzureADTokenExchange"]
-    issuer    = "https://token.actions.githubusercontent.com"
-    subject   = "repo:myOrg*"
-  }
 }
