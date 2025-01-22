@@ -19,11 +19,15 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             'aws_iam_policy_document.pass1',
             "aws_iam_policy_document.pass2",
             "aws_iam_policy_document.pass3",
-
+            "aws_iam_policy_document.pass-org-only"
         }
         failing_resources = {
             "aws_iam_policy_document.fail1",
-            "aws_iam_policy_document.fail2"
+            "aws_iam_policy_document.fail2",
+            "aws_iam_policy_document.fail-wildcard",
+            "aws_iam_policy_document.fail-abusable",
+            "aws_iam_policy_document.fail-wildcard-assertion",
+            "aws_iam_policy_document.fail-misused-repo"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
