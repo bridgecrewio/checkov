@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
 
-class BicepElements(str, Enum):
+class BicepElements(StrEnum):
     GLOBALS: BicepElements = "globals"
     PARAMETERS: BicepElements = "parameters"
     VARIABLES: BicepElements = "variables"
