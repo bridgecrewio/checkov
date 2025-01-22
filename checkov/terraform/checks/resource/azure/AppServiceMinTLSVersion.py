@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class AppServiceMinTLSVersion(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure web app uses at least TLS 1.2"
+        name = "Ensure web app is using the latest version of TLS encryption"
         id = "CKV_AZURE_15"
         supported_resources = ('azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app')
         categories = (CheckCategories.NETWORKING,)
