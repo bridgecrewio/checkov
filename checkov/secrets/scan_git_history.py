@@ -4,7 +4,7 @@ import hashlib
 import logging
 import os
 import platform
-from typing import TYPE_CHECKING, Optional, List, Tuple
+from typing import TYPE_CHECKING, Optional, List, Tuple, Union
 
 from detect_secrets.core import scan
 
@@ -149,6 +149,7 @@ class GitHistoryScanner:
                 )
                 for file_diff in git_diff:
                     file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                    assert file_name is not None
                     if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                         continue
                     file_path = os.path.join(self.root_folder, file_name)
@@ -157,8 +158,8 @@ class GitHistoryScanner:
                         logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                         curr_diff.rename_file(
                             file_path=file_path,
-                            prev_filename=file_diff.rename_from,
-                            new_filename=file_diff.rename_to
+                            prev_filename=file_diff.rename_from or "",
+                            new_filename=file_diff.rename_to or ""
                         )
                         continue
 
@@ -241,6 +242,7 @@ class GitHistoryScanner:
 
         for file_diff in git_diff:
             file_name = file_diff.b_path
+            assert file_name is not None
             if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                 continue
             file_path = os.path.join(self.root_folder, file_name)
@@ -250,9 +252,13 @@ class GitHistoryScanner:
         return first_commit_diff
 
     @staticmethod
-    def get_decoded_diff(diff: bytes) -> str:
+    def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
         if diff is None:
             return ''
+
+        if isinstance(diff, str):
+            return diff
+
         try:
             decoded_diff = diff.decode('utf-8')
         except UnicodeDecodeError as ue:
