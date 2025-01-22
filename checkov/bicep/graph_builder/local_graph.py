@@ -35,12 +35,12 @@ BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "r
 
 
 class BicepElements(str, Enum):
-    GLOBALS: Literal["globals"] = "globals"
-    PARAMETERS: Literal["parameters"] = "parameters"
-    VARIABLES: Literal["variables"] = "variables"
-    RESOURCES: Literal["resources"] = "resources"
-    MODULES: Literal["modules"] = "modules"
-    OUTPUTS: Literal["outputs"] = "outputs"
+    GLOBALS: BicepElements = "globals"
+    PARAMETERS: BicepElements = "parameters"
+    VARIABLES: BicepElements = "variables"
+    RESOURCES: BicepElements = "resources"
+    MODULES: BicepElements = "modules"
+    OUTPUTS: BicepElements = "outputs"
 
 
 class BicepLocalGraph(LocalGraph[BicepBlock]):
