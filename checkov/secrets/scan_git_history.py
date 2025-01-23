@@ -148,8 +148,7 @@ class GitHistoryScanner:
                     )
                 )
                 for file_diff in git_diff:
-                    file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
-                    assert file_name is not None
+                    file_name: str = file_diff.a_path if file_diff.a_path else file_diff.b_path  # type:ignore
                     if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                         continue
                     file_path = os.path.join(self.root_folder, file_name)
@@ -241,8 +240,7 @@ class GitHistoryScanner:
         )
 
         for file_diff in git_diff:
-            file_name = file_diff.b_path
-            assert file_name is not None
+            file_name: str = file_diff.b_path  # type:ignore
             if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                 continue
             file_path = os.path.join(self.root_folder, file_name)
