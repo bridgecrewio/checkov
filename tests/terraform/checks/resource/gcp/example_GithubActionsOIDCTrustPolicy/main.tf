@@ -10,7 +10,9 @@ resource "google_iam_workload_identity_pool_provider" "pass1" {
     "attribute.repository" = "assertion.repository"
   }
   attribute_condition               = "assertion.sub == 'repo:myOrg/myRepo:*'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # pass2 - Valid configuration with specific branch reference
@@ -21,7 +23,9 @@ resource "google_iam_workload_identity_pool_provider" "pass2" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'repo:myOrg/myRepo:ref:refs/heads/main'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # pass3 - Valid configuration with double equals
@@ -32,7 +36,9 @@ resource "google_iam_workload_identity_pool_provider" "pass3" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'repo:myOrg/myRepo:ref:refs/heads/main'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # pass4 - Valid configuration with org-only repo pattern
@@ -43,7 +49,9 @@ resource "google_iam_workload_identity_pool_provider" "pass_org_only" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'repo:myOrg/valid-repo:*'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail1 - Missing attribute condition
@@ -53,7 +61,9 @@ resource "google_iam_workload_identity_pool_provider" "fail1" {
   attribute_mapping                 = {
     "google.subject"       = "assertion.sub"
   }
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail2 - Invalid claim format
@@ -64,7 +74,9 @@ resource "google_iam_workload_identity_pool_provider" "fail2" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'invalid'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail3 - Wildcard in condition
@@ -75,7 +87,9 @@ resource "google_iam_workload_identity_pool_provider" "fail_wildcard" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == '*'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc{
+   issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail4 - Using abusable claim
@@ -86,7 +100,9 @@ resource "google_iam_workload_identity_pool_provider" "fail_abusable" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'workflow:github-actions:repo:myOrg/myRepo:ref:refs/heads/main'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail5 - Wildcard assertion in repo pattern
@@ -97,7 +113,9 @@ resource "google_iam_workload_identity_pool_provider" "fail_wildcard_assertion" 
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'repo:*'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }
 
 # fail6 - Misused repo pattern
@@ -108,5 +126,7 @@ resource "google_iam_workload_identity_pool_provider" "fail_misused_repo" {
     "google.subject"       = "assertion.sub"
   }
   attribute_condition               = "assertion.sub == 'repo:myOrg*'"
-  issuer_uri                       = "https://token.actions.githubusercontent.com"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
 }

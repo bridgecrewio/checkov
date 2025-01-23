@@ -11,7 +11,6 @@ class AzureGithubActionsOIDCTrustPolicy(BaseResourceCheck):
         id = "CKV_AZURE_249"
         supported_resources = [
             "azuread_application_federated_identity_credential",
-            "azuread_application",  # Added to support both approaches
         ]
         categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -45,12 +44,7 @@ class AzureGithubActionsOIDCTrustPolicy(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         """Scans the configuration for Azure GitHub Actions OIDC trust policy"""
         try:
-            isAzureAdResource = conf.get("identity_federation", [None])[0] is not None
-            condition = force_list(
-                conf.get("subject", [None])
-                if not isAzureAdResource
-                else conf.get("identity_federation", [None])[0].get("subject", [None])[0]
-            )[0]
+            condition = force_list(conf.get("subject", [None]))[0]
             if not condition:
                 return CheckResult.FAILED
 
