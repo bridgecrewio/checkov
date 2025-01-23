@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.355...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.357...HEAD)
+
+## [3.2.357](https://github.com/bridgecrewio/checkov/compare/3.2.355...3.2.357) - 2025-01-23
+
+### Feature
+
+- **general:** initial support for python 3.13 - [#6962](https://github.com/bridgecrewio/checkov/pull/6962)
+
+### Bug Fix
+
+- **terraform:** OIDC checks fixes - [#6964](https://github.com/bridgecrewio/checkov/pull/6964)
 
 ## [3.2.355](https://github.com/bridgecrewio/checkov/compare/3.2.353...3.2.355) - 2025-01-22
 
