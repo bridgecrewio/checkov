@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -88,9 +88,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
             # needed for numpy
-            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
           else
             python -m pip install --no-cache-dir --upgrade pipenv
           fi
@@ -100,7 +100,9 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
 
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
+            echo "patching >3.12 issues"
+            pipenv run pip install setuptools
             # needed for numpy
             pipenv install --skip-lock --dev -v
           else
@@ -119,7 +121,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -229,7 +231,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -325,7 +327,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
