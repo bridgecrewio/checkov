@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -16,8 +16,10 @@ class SecurityCenterStandardPricing(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties"]
         if "properties" in conf:
             if "pricingTier" in conf["properties"]:
+                self.evaluated_keys = ["properties/pricingTier"]
                 if str(conf["properties"]["pricingTier"]).lower() == "standard":
                     return CheckResult.PASSED
         return CheckResult.FAILED

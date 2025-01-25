@@ -17,11 +17,14 @@ class ECSTaskDefinitionEFSVolumeEncryption(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("Properties")
         if properties and isinstance(properties, dict):
+            self.evaluated_keys = ["Properties"]
             volumes = properties.get("Volumes")
             if volumes and isinstance(volumes, list):
-                for volume in volumes:
+                self.evaluated_keys = ["Properties/Volumes"]
+                for idx, volume in enumerate(volumes):
                     efs_config = volume.get("EFSVolumeConfiguration")
                     if efs_config and isinstance(efs_config, dict):
+                        self.evaluated_keys = [f"Properties/Volumes/[{idx}]/EFSVolumeConfiguration"]
                         if efs_config.get("TransitEncryption") == "ENABLED":
                             return CheckResult.PASSED
                         else:

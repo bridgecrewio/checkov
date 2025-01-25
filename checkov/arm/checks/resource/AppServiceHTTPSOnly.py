@@ -22,5 +22,8 @@ class AppServiceHTTPSOnly(BaseResourceCheck):
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties", "properties/httpsOnly"]
+
 
 check = AppServiceHTTPSOnly()

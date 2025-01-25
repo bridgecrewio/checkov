@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -20,7 +20,9 @@ class GlueSecurityConfiguration(BaseResourceCheck):
         cw_enc = False
         book_enc = False
         if 'Properties' in conf.keys():
+            self.evaluated_keys = ['Properties']
             if 'EncryptionConfiguration' in conf['Properties'].keys():
+                self.evaluated_keys = ['Properties/EncryptionConfiguration']
                 enc_conf = conf['Properties']['EncryptionConfiguration']
 
                 if 'CloudWatchEncryption' in enc_conf.keys():

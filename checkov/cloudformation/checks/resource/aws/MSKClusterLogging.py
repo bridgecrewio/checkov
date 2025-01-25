@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -12,9 +12,11 @@ class MSKClusterLogging(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf) -> Any:
+    def scan_resource_conf(self, conf) -> CheckResult:
         if 'Properties' in conf.keys():
+            self.evaluated_keys = ['Properties']
             if 'LoggingInfo' in conf['Properties'].keys():
+                self.evaluated_keys = ['Properties/LoggingInfo']
                 if 'BrokerLogs' in conf['Properties']['LoggingInfo'].keys():
                     logging = conf['Properties']['LoggingInfo']['BrokerLogs']
                     types = ["CloudWatchLogs", "Firehose", "S3"]

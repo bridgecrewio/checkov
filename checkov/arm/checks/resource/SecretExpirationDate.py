@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -17,7 +17,9 @@ class SecretExpirationDate(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "properties" in conf:
+            self.evaluated_keys = ['properties']
             if "attributes" in conf["properties"]:
+                self.evaluated_keys = ['properties/attributes']
                 if "exp" in conf["properties"]["attributes"]:
                     if conf["properties"]["attributes"]["exp"]:
                         return CheckResult.PASSED

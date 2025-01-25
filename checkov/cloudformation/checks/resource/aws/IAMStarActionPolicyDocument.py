@@ -15,16 +15,19 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         myproperties = conf.get("Properties")
         type = conf['Type']
+        self.evaluated_keys = ['Properties']
 
         # catch for inline policies
         if type != 'AWS::IAM::Policy':
             if isinstance(myproperties, dict) and 'Policies' in myproperties.keys():
                 policies = myproperties['Policies']
                 if len(policies) > 0:
-                    for policy in policies:
+                    for idx, policy in enumerate(policies):
+                        self.evaluated_keys = [f"Properties/Policies"]
                         if not isinstance(policy, dict):
                             return CheckResult.UNKNOWN
                         if policy.get('PolicyDocument'):
+                            self.evaluated_keys = [f"Properties/Policies/{idx}/PolicyDocument"]
                             result = check_policy(policy['PolicyDocument'])
                             if result == CheckResult.FAILED:
                                 return result
@@ -33,6 +36,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                 return CheckResult.UNKNOWN
         # this is just for Policy resources
         if isinstance(myproperties, dict) and 'PolicyDocument' in myproperties.keys():
+            self.evaluated_keys = [f"Properties/PolicyDocument"]
             return check_policy(myproperties['PolicyDocument'])
         return CheckResult.UNKNOWN
 

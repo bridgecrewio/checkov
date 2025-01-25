@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -23,6 +23,9 @@ class AppServiceUsedAzureFiles(BaseResourceCheck):
                     if isinstance(account_data, dict) and account_data.get('type') == "AzureFiles":
                         return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['properties', 'properties/azureStorageAccounts']
 
 
 check = AppServiceUsedAzureFiles()

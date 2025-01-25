@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -21,10 +21,12 @@ class ECSClusterContainerInsights(BaseResourceCheck):
         :param conf: AWS::ECS::Cluster configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = ["Properties"]
         properties = conf.get("Properties")
         if properties and isinstance(properties, dict):
             settings = properties.get("ClusterSettings")
             if settings and isinstance(settings, list):
+                self.evaluated_keys = ["Properties/ClusterSettings"]
                 for setting in settings:
                     if setting["Name"] == "containerInsights" and setting["Value"] == "enabled":
                         return CheckResult.PASSED
