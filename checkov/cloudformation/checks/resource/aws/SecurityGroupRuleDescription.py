@@ -29,13 +29,13 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
                 if security_group_ingress_rules:
                     for rule in security_group_ingress_rules:
                         if isinstance(rule, dict) and ('Description' not in rule or not rule['Description']):
-                            self.evaluated_keys =  ['Properties/SecurityGroupIngress']
+                            self.evaluated_keys = ['Properties/SecurityGroupIngress']
                             return CheckResult.FAILED
                 security_group_egress_rules = conf.get('Properties', {}).get('SecurityGroupEgress')
                 if security_group_egress_rules:
                     for rule in security_group_egress_rules:
                         if isinstance(rule, dict) and ('Description' not in rule.keys() or not rule['Description']):
-                            self.evaluated_keys =  ['Properties/SecurityGroupEgress']
+                            self.evaluated_keys = ['Properties/SecurityGroupEgress']
                             return CheckResult.FAILED
                 return CheckResult.PASSED
 

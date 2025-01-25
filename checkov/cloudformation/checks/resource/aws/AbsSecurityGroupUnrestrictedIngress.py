@@ -1,5 +1,3 @@
-from typing import List
-
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 

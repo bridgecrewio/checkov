@@ -20,8 +20,8 @@ class APIGatewayAuthorization(BaseResourceCheck):
             if 'HttpMethod' in conf['Properties'].keys() and 'AuthorizationType' in conf['Properties'].keys():
                 if conf['Properties']['HttpMethod'] != "OPTIONS" and conf['Properties']['AuthorizationType'] == "NONE":
                     if 'ApiKeyRequired' not in conf['Properties'].keys() or conf['Properties']['ApiKeyRequired'] is False:
-                        self.evaluated_keys =  ["Properties/HttpMethod", "Properties/AuthorizationType",
-                                                "Properties/ApiKeyRequired"]
+                        self.evaluated_keys = ["Properties/HttpMethod", "Properties/AuthorizationType",
+                                               "Properties/ApiKeyRequired"]
                         return CheckResult.FAILED
         return CheckResult.PASSED
 

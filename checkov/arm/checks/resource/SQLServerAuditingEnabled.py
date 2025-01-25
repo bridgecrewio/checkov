@@ -39,6 +39,7 @@ class SQLServerAuditingEnabled(BaseResourceCheck):
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
-         return ["resources"]
+        return ["resources"]
+
 
 check = SQLServerAuditingEnabled()

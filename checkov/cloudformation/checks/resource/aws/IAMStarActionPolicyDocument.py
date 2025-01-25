@@ -23,7 +23,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                 policies = myproperties['Policies']
                 if len(policies) > 0:
                     for idx, policy in enumerate(policies):
-                        self.evaluated_keys = [f"Properties/Policies"]
+                        self.evaluated_keys = ["Properties/Policies"]
                         if not isinstance(policy, dict):
                             return CheckResult.UNKNOWN
                         if policy.get('PolicyDocument'):
@@ -36,7 +36,7 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                 return CheckResult.UNKNOWN
         # this is just for Policy resources
         if isinstance(myproperties, dict) and 'PolicyDocument' in myproperties.keys():
-            self.evaluated_keys = [f"Properties/PolicyDocument"]
+            self.evaluated_keys = ["Properties/PolicyDocument"]
             return check_policy(myproperties['PolicyDocument'])
         return CheckResult.UNKNOWN
 
