@@ -17,7 +17,7 @@ class AKSMaxPodsMinimum(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         max_pods: Optional[int] = 30
 
-        properties = conf.get("properties")
+        properties = conf.get("properties", {})
         if properties and isinstance(properties, dict):
             max_pods = properties.get("maxPods")
 

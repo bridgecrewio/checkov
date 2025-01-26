@@ -107,3 +107,109 @@ data "aws_iam_policy_document" "fail2" {
     }
   }
 }
+
+# fail for wildcard as condition
+data "aws_iam_policy_document" "fail-wildcard" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# fail for abusable value as condition
+data "aws_iam_policy_document" "fail-abusable" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["workflow:github-actions:repo:myOrg/myRepo:ref:refs/heads/MyBranch"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# fail for condition that asserts wildcard
+data "aws_iam_policy_document" "fail-wildcard-assertion" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# fail for misused "repo" condition
+data "aws_iam_policy_document" "fail-misused-repo" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:myOrg*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# pass for org only "repo" condition
+data "aws_iam_policy_document" "pass-org-only" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:myOrg/*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}

@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.353...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.357...HEAD)
+
+## [3.2.357](https://github.com/bridgecrewio/checkov/compare/3.2.355...3.2.357) - 2025-01-23
+
+### Feature
+
+- **general:** initial support for python 3.13 - [#6962](https://github.com/bridgecrewio/checkov/pull/6962)
+
+### Bug Fix
+
+- **terraform:** OIDC checks fixes - [#6964](https://github.com/bridgecrewio/checkov/pull/6964)
+
+## [3.2.355](https://github.com/bridgecrewio/checkov/compare/3.2.353...3.2.355) - 2025-01-22
+
+### Feature
+
+- **terraform:** Update CKV_AWS_358, add CKV_GCP_125 and CKV_AZURE_249 for OIDC claims analysis for GitHub - [#6960](https://github.com/bridgecrewio/checkov/pull/6960)
+
+### Bug Fix
+
+- **terraform:** Accept TLS 1.3 for Azure web apps and web app slots - [#6956](https://github.com/bridgecrewio/checkov/pull/6956)
+
+### Platform
+
+- **terraform:** Add eval keys - [#6929](https://github.com/bridgecrewio/checkov/pull/6929)
 
 ## [3.2.353](https://github.com/bridgecrewio/checkov/compare/3.2.352...3.2.353) - 2025-01-15
 

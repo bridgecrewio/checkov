@@ -1,14 +1,11 @@
 import json
-import sys
 import xml
 import xml.dom.minidom
 import os
 from operator import itemgetter
 from pathlib import Path
 from typing import List
-from unittest import mock
 
-import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -31,7 +28,8 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
         if not any(word in line for word in black_list_words):
             if i == 0 or not any(tool_name in pretty_xml_as_list[i - 1] for tool_name in
                                  ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
-                filtered_list.append(line)
+                filtered_list.append(
+                    line.replace('&quot;', '\"'))  # fixes differences in xml prettyprint between python 3.12 and 3.13
     return filtered_list
 
 
@@ -153,7 +151,7 @@ def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path):
     actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
     expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
 
-    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+    assert '\n'.join(actual_pretty_xml_as_list) == '\n'.join(expected_pretty_xml_as_list)
 
 
 def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_2_with_comma_in_licenses, tmp_path: Path):
