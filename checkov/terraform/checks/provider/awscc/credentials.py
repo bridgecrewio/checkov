@@ -9,7 +9,7 @@ from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 class AWSCCCredentials(BaseProviderCheck):
     def __init__(self) -> None:
         name = "Ensure no hard coded AWS access key and secret key exists in provider"
-        id = "CKV_AWSCC_41"
+        id = "CKV_AWS_41"
         supported_provider = ["awscc"]
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
