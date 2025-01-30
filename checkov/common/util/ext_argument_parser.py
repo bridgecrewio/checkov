@@ -471,6 +471,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
                  "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
+            env_var="CKV_POLICY_METADATA_FILTER"
         )
         self.add(
             "--policy-metadata-filter-exception",
@@ -480,6 +481,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
                  "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
+            env_var="CKV_POLICY_METADATA_FILTER_EXCEPTION"
         )
         self.add(
             "--secrets-scan-file-type",

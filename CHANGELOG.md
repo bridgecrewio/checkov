@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.357...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.358...HEAD)
+
+## [3.2.358](https://github.com/bridgecrewio/checkov/compare/3.2.357...3.2.358) - 2025-01-28
+
+### Feature
+
+- **general:** Add env var for policy metadata - [#6979](https://github.com/bridgecrewio/checkov/pull/6979)
 
 ## [3.2.357](https://github.com/bridgecrewio/checkov/compare/3.2.355...3.2.357) - 2025-01-23
 
