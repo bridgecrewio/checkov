@@ -1,7 +1,7 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-ALLOWED_SSL_MODES = ["TRUSTED_CLIENT_CERTIFICATE_REQUIRED", "ENCRYPTED_ONLY"],
+ALLOWED_SSL_MODES = ["TRUSTED_CLIENT_CERTIFICATE_REQUIRED", "ENCRYPTED_ONLY"]
 
 
 class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
