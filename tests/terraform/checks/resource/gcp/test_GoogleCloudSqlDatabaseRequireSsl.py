@@ -21,7 +21,7 @@ class GoogleCloudSqlDatabaseRequireSsl(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_failure_sslmode_encryptonly(self):
+    def test_success_sslmode_encryptonly(self):
         resource_conf = {'settings': [{'tier': ['1'], 'ip_configuration': [{'ssl_mode': ["ENCRYPTED_ONLY"]}]}]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
