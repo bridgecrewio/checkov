@@ -17,8 +17,10 @@ class APIManagementMinTLS12(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
         if isinstance(properties, dict) and "customProperties" in properties:
+            self.evaluated_keys = ["properties"]
             customProperties = properties.get("customProperties")
             if isinstance(customProperties, dict):
+                self.evaluated_keys = ["properties/customProperties"]
                 if customProperties.get("Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30"):
                     return CheckResult.FAILED
                 if customProperties.get("Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10"):
