@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.358...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.362...HEAD)
+
+## [3.2.362](https://github.com/bridgecrewio/checkov/compare/3.2.358...3.2.362) - 2025-02-03
+
+### Bug Fix
+
+- **secrets:** Multiple matching groups are being caught as regex separated by | sign - [#6967](https://github.com/bridgecrewio/checkov/pull/6967)
+- **secrets:** Remove both random and base64 entropy secrets finding - [#6969](https://github.com/bridgecrewio/checkov/pull/6969)
+
+### Platform
+
+- **general:** Backfill more eval keys - [#6970](https://github.com/bridgecrewio/checkov/pull/6970)
 
 ## [3.2.358](https://github.com/bridgecrewio/checkov/compare/3.2.357...3.2.358) - 2025-01-28
 
