@@ -3,6 +3,7 @@ from checkov.secrets.runner import should_filter_vault_secret
 HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
 
 def test_vault_secrets_false_positives():
+
     fp_secrets = [
         'DB_RBMQ_PASSWORD: vault: secret/data/product-web/mcrp-qwr-v2/mabbot#PASSWORD',
         'WEB_PASSWORD: vault: secret/data/product/fwrp-qe-v3/parme3#PASSWORD',
