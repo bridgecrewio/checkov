@@ -55,7 +55,7 @@ There are three resulting states that can occur when calling this function:
         """
         self.discover(module_params)
         if not self._is_matching_loader(module_params):
-            print(f'the module params do not match loader so returning None {module_params}')
+            print(f'the module params of {module_params.module_source} do not match loader {self.__class__} so returning None')
             return ModuleContent(dir=None)
 
         module_path = self._find_module_path(module_params)
