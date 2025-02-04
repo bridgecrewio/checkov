@@ -66,9 +66,7 @@ class GitGetter(BaseGetter):
         if git_import_error is not None:
             raise ImportError("Unable to load git module (is the git executable available?)") \
                 from git_import_error
-
         git_url, internal_dir = self._source_subdir()
-
         clone_dir = self.temp_dir + "/clone/" if self.create_clone_and_res_dirs else self.temp_dir
         self._clone(git_url, clone_dir)
 
@@ -85,11 +83,13 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.info(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
+            self.logger.info(f'The proxy url {os.getenv("PROXY_URL")}')
             if os.getenv('PROXY_URL'):
                 self.logger.info(f'Performing clone through proxy - {env_vars_config.PROXY_URL}')
                 with temp_environ(GIT_SSL_CAINFO=env_vars_config.PROXY_CA_PATH,
                                   https_proxy=env_vars_config.PROXY_URL,
                                   GIT_CONFIG_PARAMETERS=f"'http.extraHeader={env_vars_config.PROXY_HEADER_KEY}:{env_vars_config.PROXY_HEADER_VALUE}'"):
+                    self.logger.info(f'Performing clone through proxy - {env_vars_config.PROXY_URL}')
                     self._clone_helper(clone_dir, git_url)
             self._clone_helper(clone_dir, git_url)
 

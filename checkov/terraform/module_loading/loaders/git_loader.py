@@ -60,10 +60,12 @@ class GenericGitLoader(ModuleLoader):
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
+            self.logger.info(f'attempting to load module {module_params.module_source}')
             self._process_generic_git_repo(module_params)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
+            self.logger.info('performing git operation')
             git_getter.do_get()
         except Exception as e:
             str_e = str(e)
@@ -75,6 +77,7 @@ class GenericGitLoader(ModuleLoader):
                 self.logger.warning(f"failed to get {module_params.module_source} in git loader because of {e}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
+        self.logger.info(f'finished loading {module_params.module_source}')
         if module_params.inner_module:
             return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
         return ModuleContent(dir=return_dir)
