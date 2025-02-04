@@ -131,16 +131,6 @@
 			</licenses>
 			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</purl>
 		</component>
-		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0">
-			<name>requests</name>
-			<version>2.26.0</version>
-			<licenses>
-				<license>
-					<name>OSI_APACHE</name>
-				</license>
-			</licenses>
-			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0</purl>
-		</component>
 		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0">
 			<name>requests</name>
 			<version>2.26.0</version>
@@ -150,6 +140,16 @@
 				</license>
 			</licenses>
 			<purl>pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<licenses>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0</purl>
 		</component>
 	</components>
 	<dependencies>
