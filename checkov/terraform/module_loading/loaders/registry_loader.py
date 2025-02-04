@@ -70,6 +70,7 @@ class RegistryLoader(ModuleLoader):
         return False
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
+        print(f'attempting to load module {module_params.module_source} via registry loader')
         if module_params.best_version:
             best_version = module_params.best_version
         else:
@@ -81,8 +82,9 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=None)
 
         request_download_url = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, best_version, "download")))
-        logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
-        logging.debug(f"Module download url: {request_download_url}")
+        self.logger.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
+        self.logger.debug(f"Module download url: {request_download_url}")
+        print(f'The proxy url currently: {os.getenv("PROXY_URL")}')
         try:
             request = requests.Request(
                 method='GET',

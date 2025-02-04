@@ -60,7 +60,7 @@ class GenericGitLoader(ModuleLoader):
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
-            self.logger.info(f'attempting to load module {module_params.module_source}')
+            print(f'attempting to load module {module_params.module_source} via git loader')
             self._process_generic_git_repo(module_params)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)

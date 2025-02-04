@@ -40,6 +40,7 @@ class ModuleLoaderRegistry:
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
         """
+        print(f'Module loader registry loading modules')
         if source is None:
             return None
 
@@ -82,7 +83,7 @@ information, see `loader.ModuleLoader.load`.
                         inner_module=inner_module,
                         tf_managed=tf_managed,
                     )
-                    logging.info(f"Attempting loading via {loader.__class__} loader")
+                    logging.warning(f"Attempting loading via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
