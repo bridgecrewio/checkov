@@ -72,7 +72,7 @@ class GenericGitLoader(ModuleLoader):
                 # but the current loader (ex. GithubLoader) is not using it
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
-                self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
+                self.logger.warning(f"failed to get {module_params.module_source} in git loader because of {e}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:

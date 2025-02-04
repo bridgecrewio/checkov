@@ -90,7 +90,7 @@ class RegistryLoader(ModuleLoader):
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
             if os.getenv('PROXY_URL'):
-                logging.info('Sending request with proxy')
+                self.logger.info('Sending request with proxy')
                 response = call_http_request_with_proxy(request)
             else:
                 session = requests.Session()
@@ -117,7 +117,7 @@ class RegistryLoader(ModuleLoader):
             except Exception as e:
                 str_e = str(e)
                 if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
-                    self.logger.error(f"failed to get {module_params.module_source} because of {e}")
+                    self.logger.error(f"failed to get {module_params.module_source} in registry loader because of {e}")
                     return ModuleContent(dir=None, failed_url=module_params.module_source)
             if module_params.inner_module:
                 return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
