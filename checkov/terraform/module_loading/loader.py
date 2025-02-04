@@ -55,10 +55,12 @@ There are three resulting states that can occur when calling this function:
         """
         self.discover(module_params)
         if not self._is_matching_loader(module_params):
+            print(f'the module params do not match loader so returning None {module_params}')
             return ModuleContent(dir=None)
 
         module_path = self._find_module_path(module_params)
         if os.path.exists(module_path):
+            print(f'path {module_path} exists so no need to load')
             return ModuleContent(dir=module_path)
 
         self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
