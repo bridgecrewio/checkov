@@ -76,6 +76,19 @@ resource databaseEnabledWithoutAlertsAttribute 'Microsoft.Sql/servers/databases@
 }
 
 // fail
+resource serverWithoutSecurityPolicy 'Microsoft.Sql/servers@2021-02-01-preview' = {
+  name: 'default'
+  location: location
+
+  properties: {
+    administratorLogin: sqlLogicalServer.userName
+    administratorLoginPassword: password
+    version: '12.0'
+    minimalTlsVersion: sqlLogicalServer.minimalTlsVersion
+    publicNetworkAccess: sqlLogicalServer.publicNetworkAccess
+  }
+}
+
 resource serverDisabledState 'Microsoft.Sql/servers@2021-02-01-preview' = {
   name: 'default'
   location: location
@@ -141,6 +154,15 @@ resource serverDisabled 'Microsoft.Sql/servers@2021-02-01-preview' = {
         'disabledAlert'
       ]
     }
+  }
+}
+
+resource databaseWithoutSecurityPolicy 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+  name: '${server.name}/${sqlDBName}'
+  location: location
+  sku: {
+    name: 'GP_S_Gen5_2'
+    tier: 'GeneralPurpose'
   }
 }
 
