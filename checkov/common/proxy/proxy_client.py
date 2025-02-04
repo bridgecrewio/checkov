@@ -28,8 +28,8 @@ class ProxyClient:
         return session
 
     def update_request_header(self, request: requests.Request) -> None:
-        if env_vars_config.PROXY_HEADER_VALUE:
-            request.headers[env_vars_config.PROXY_HEADER_VALUE] = self.identity
+        if env_vars_config.PROXY_HEADER_KEY:
+            request.headers[env_vars_config.PROXY_HEADER_KEY] = self.identity
 
     def send_request(self, request: requests.Request) -> requests.Response:
         session = self.get_session()

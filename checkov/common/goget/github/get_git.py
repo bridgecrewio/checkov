@@ -3,10 +3,12 @@ from __future__ import annotations
 import logging
 import re
 import shutil
+import os
 
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.contextmanagers import temp_environ
+from checkov.common.util.env_vars_config import env_vars_config
 
 try:
     from git import Repo
@@ -83,15 +85,24 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
-            if self.branch:
-                Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
-            elif self.commit_id:  # no commit id support for branch
-                repo = Repo.clone_from(git_url, clone_dir, no_checkout=True)  # need to be a full git clone
-                repo.git.checkout(self.commit_id)
-            elif self.tag:
-                Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
-            else:
-                Repo.clone_from(git_url, clone_dir, depth=1)
+            if os.getenv('PROXY_URL'):
+                logging.info(f'Performing clone through proxy - {env_vars_config.PROXY_URL}')
+                with temp_environ(GIT_SSL_CAINFO=env_vars_config.PROXY_CA_PATH,
+                                  https_proxy=env_vars_config.PROXY_URL,
+                                  GIT_CONFIG_PARAMETERS=f"'http.extraHeader={env_vars_config.PROXY_HEADER_KEY}:{env_vars_config.PROXY_HEADER_VALUE}'"):
+                    self._clone_helper(clone_dir, git_url)
+            self._clone_helper(clone_dir, git_url)
+
+    def _clone_helper(self, clone_dir, git_url):
+        if self.branch:
+            Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
+        elif self.commit_id:  # no commit id support for branch
+            repo = Repo.clone_from(git_url, clone_dir, no_checkout=True)  # need to be a full git clone
+            repo.git.checkout(self.commit_id)
+        elif self.tag:
+            Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
+        else:
+            Repo.clone_from(git_url, clone_dir, depth=1)
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
