@@ -160,11 +160,18 @@ class RegistryLoader(ModuleLoader):
             return False
 
         try:
-            response = requests.get(
-                url=module_params.tf_modules_versions_endpoint,
+            request = requests.Request(
+                method='GET',
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
-                timeout=DEFAULT_TIMEOUT,
+                url=module_params.tf_modules_versions_endpoint
             )
+            if os.getenv('PROXY_URL'):
+                print('Sending request with proxy')
+                response = call_http_request_with_proxy(request)
+            else:
+                session = requests.Session()
+                prepared_request = session.prepare_request(request)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
@@ -196,10 +203,17 @@ class RegistryLoader(ModuleLoader):
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
             module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
             try:
-                response = requests.get(
-                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
-                    timeout=DEFAULT_TIMEOUT,
+                request = requests.Request(
+                    method='GET',
+                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json"
                 )
+                if os.getenv('PROXY_URL'):
+                    print('Sending request with proxy')
+                    response = call_http_request_with_proxy(request)
+                else:
+                    session = requests.Session()
+                    prepared_request = session.prepare_request(request)
+                    response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
                 response.raise_for_status()
             except HTTPError as e:
                 self.logger.debug(e)

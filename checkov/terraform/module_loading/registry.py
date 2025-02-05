@@ -85,6 +85,7 @@ information, see `loader.ModuleLoader.load`.
                     )
                     print(f"Attempting loading {source} via {loader.__class__} loader")
                     content = loader.load(module_params)
+                    logging.info(f"Loading result of {module_address}={content.loaded()} via {loader.__class__} loader")
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__} due to: {e}')
                     last_exception = e
