@@ -34,7 +34,6 @@ class RegistryLoader(ModuleLoader):
         super().__init__()
 
     def discover(self, module_params: ModuleParams) -> None:
-        print('Dicovering in registry loader')
         module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
         module_params.token = os.getenv("TF_REGISTRY_TOKEN", "")
         tfc_token = os.getenv("TFC_TOKEN")
@@ -43,7 +42,6 @@ class RegistryLoader(ModuleLoader):
             module_params.token = tfc_token
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
-        print('Matching in registry loader')
         # https://developer.hashicorp.com/terraform/language/modules/sources#github
         if module_params.module_source.startswith(("/", "github.com", "bitbucket.org", "git::", "git@github.com")):
             return False
@@ -71,7 +69,6 @@ class RegistryLoader(ModuleLoader):
         return False
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
-        print(f'loading NOW {module_params.module_source} via registry loader')
         if module_params.best_version:
             best_version = module_params.best_version
         else:
@@ -84,8 +81,7 @@ class RegistryLoader(ModuleLoader):
 
         request_download_url = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, best_version, "download")))
         self.logger.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
-        self.logger.debug(f"Module download url: {request_download_url}")
-        print(f'The proxy url currently: {os.getenv("PROXY_URL")}')
+        self.logger.debug(f"Module download url: {request_download_url} and proxy: {os.getenv('PROXY_URL')}")
         try:
             request = requests.Request(
                 method='GET',
@@ -93,7 +89,7 @@ class RegistryLoader(ModuleLoader):
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
             if os.getenv('PROXY_URL'):
-                print('Sending request with proxy')
+                self.logger.info(f'Sending request to {request.url} through proxy')
                 response = call_http_request_with_proxy(request)
             else:
                 session = requests.Session()
@@ -166,7 +162,7 @@ class RegistryLoader(ModuleLoader):
                 url=module_params.tf_modules_versions_endpoint
             )
             if os.getenv('PROXY_URL'):
-                print('Sending request with proxy')
+                self.logger.info(f'Sending request to {request.url} through proxy')
                 response = call_http_request_with_proxy(request)
             else:
                 session = requests.Session()
@@ -208,7 +204,7 @@ class RegistryLoader(ModuleLoader):
                     url=f"https://{module_params.tf_host_name}/.well-known/terraform.json"
                 )
                 if os.getenv('PROXY_URL'):
-                    print('Sending request with proxy')
+                    self.logger.info(f'Sending request to {request.url} through proxy')
                     response = call_http_request_with_proxy(request)
                 else:
                     session = requests.Session()

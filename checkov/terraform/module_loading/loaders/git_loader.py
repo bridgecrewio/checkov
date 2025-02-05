@@ -60,13 +60,10 @@ class GenericGitLoader(ModuleLoader):
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
-            print(f'attempting to load module {module_params.module_source} via git loader: {module_params.__dict__}')
             self._process_generic_git_repo(module_params)
             module_source = module_params.module_source.replace("git::", "")
-            print(f'running git getter with  {module_source} via git loader: {module_params.__dict__}')
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
-            print('performing git operation')
             git_getter.do_get()
         except Exception as e:
             str_e = str(e)

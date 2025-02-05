@@ -81,11 +81,10 @@ class GitGetter(BaseGetter):
         return clone_dir
 
     def _clone(self, git_url: str, clone_dir: str) -> None:
-        print(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
+        logging.info(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
-            print(f'The proxy url {os.getenv("PROXY_URL")}')
             if os.getenv('PROXY_URL'):
-                print(f'Performing clone through proxy - {env_vars_config.PROXY_URL} - {os.getenv("PROXY_URL")}')
+                logging.info(f'Performing clone through proxy - {os.getenv("PROXY_URL")}')
                 with temp_environ(GIT_SSL_CAINFO=os.getenv('PROXY_CA_PATH'),
                                   https_proxy=os.getenv('PROXY_URL'),
                                   GIT_CONFIG_PARAMETERS=f"'http.extraHeader={os.getenv('PROXY_HEADER_KEY')}:{os.getenv('PROXY_HEADER_VALUE')}'"):

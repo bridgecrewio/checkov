@@ -53,24 +53,20 @@ There are three resulting states that can occur when calling this function:
                               the data of this object can be changed according to the loader logic
         :return: A ModuleContent object which may or may not being loaded.
         """
-        print(f'Going to discover in {self.__class__}')
         self.discover(module_params)
-        print(f'Discovered {module_params.__dict__}')
         if not self._is_matching_loader(module_params):
-            print(f'the module params of {module_params.module_source} do not match loader {self.__class__} so returning None')
+            self.logger.info(f'the module params of {module_params.module_source} do not match loader {self.__class__}')
             return ModuleContent(dir=None)
 
-        print(f'past matching')
         module_path = self._find_module_path(module_params)
-        print(f'past finding module')
         if os.path.exists(module_path):
-            print(f'path {module_path} exists so no need to load')
+            self.logger.info(f'path {module_path} exists so no need to load')
             return ModuleContent(dir=module_path)
 
-        print(f"Using {self.__class__.__name__} attempting to get module "
+        self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
                           f"{module_params.module_source if '@' not in module_params.module_source else module_params.module_source.split('@')[1]} "
                           f"version: {module_params.version}")
-        print(f'about to load {module_params.module_source} with {self.__class__}')
+        self.logger.info(f'about to load {module_params.module_source} with {self.__class__}')
         return self._load_module(module_params)
 
     @abstractmethod
