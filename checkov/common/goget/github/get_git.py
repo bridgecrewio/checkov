@@ -57,7 +57,7 @@ class GitGetter(BaseGetter):
             url = re.sub(TAG_PATTERN, '', url)
             return url
 
-        logging.info(f"Module URL has an unknown ref: {url}")
+        self.logger.info(f"Module URL has an unknown ref: {url}")
 
         return url
 
@@ -80,10 +80,10 @@ class GitGetter(BaseGetter):
         return clone_dir
 
     def _clone(self, git_url: str, clone_dir: str) -> None:
-        logging.info(f"cloning {git_url} to {clone_dir}")
+        self.logger.info(f"cloning {git_url} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
             if os.getenv('PROXY_URL'):
-                logging.info(f'Performing clone through proxy - {os.getenv("PROXY_URL")}')
+                self.logger.info(f'Performing clone through proxy - {os.getenv("PROXY_URL")}')
                 with temp_environ(GIT_SSL_CAINFO=os.getenv('PROXY_CA_PATH'),
                                   https_proxy=os.getenv('PROXY_URL'),
                                   GIT_CONFIG_PARAMETERS=f"'http.extraHeader={os.getenv('PROXY_HEADER_KEY')}:{os.getenv('PROXY_HEADER_VALUE')}'"):
