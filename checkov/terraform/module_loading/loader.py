@@ -55,7 +55,7 @@ There are three resulting states that can occur when calling this function:
         """
         print(f'Going to discover in {self.__class__}')
         self.discover(module_params)
-        print(f'Discovered')
+        print(f'Discovered {module_params.__dict__}')
         if not self._is_matching_loader(module_params):
             print(f'the module params of {module_params.module_source} do not match loader {self.__class__} so returning None')
             return ModuleContent(dir=None)
