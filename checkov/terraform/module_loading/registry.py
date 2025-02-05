@@ -67,8 +67,9 @@ information, see `loader.ModuleLoader.load`.
             next_url = ""
             if source in self.failed_urls_cache:
                 break
-            logging.info(f"Iterating over {len(self.loaders)} loaders")
+            print(f"Iterating over {len(self.loaders)} loaders")
             for loader in self.loaders:
+                print(f"Trying loader {loader.__class__} loader")
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
@@ -82,10 +83,10 @@ information, see `loader.ModuleLoader.load`.
                         inner_module=inner_module,
                         tf_managed=tf_managed,
                     )
-                    logging.info(f"Attempting loading {source} via {loader.__class__} loader")
+                    print(f"Attempting loading {source} via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
-                    logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
+                    logging.warning(f'Module {module_address} failed to load via {loader.__class__} due to: {e}')
                     last_exception = e
                     continue
                 if content.next_url:
