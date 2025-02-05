@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.364...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.366...HEAD)
+
+## [3.2.366](https://github.com/bridgecrewio/checkov/compare/3.2.364...3.2.366) - 2025-02-05
+
+### Bug Fix
+
+- **bicep:** Add bicep specific for CKV_AZURE_25 since ARM implementation fails - [#6996](https://github.com/bridgecrewio/checkov/pull/6996)
+- **terraform:** CKV_AZURE_249 & CKV_AWS_358 - better support for OIDC 'repo' detection regex and conditions order - [#6994](https://github.com/bridgecrewio/checkov/pull/6994)
 
 ## [3.2.364](https://github.com/bridgecrewio/checkov/compare/3.2.362...3.2.364) - 2025-02-04
 
