@@ -80,7 +80,7 @@ class GitGetter(BaseGetter):
         return clone_dir
 
     def _clone(self, git_url: str, clone_dir: str) -> None:
-        logging.info(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
+        logging.info(f"cloning {git_url} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
             if os.getenv('PROXY_URL'):
                 logging.info(f'Performing clone through proxy - {os.getenv("PROXY_URL")}')
