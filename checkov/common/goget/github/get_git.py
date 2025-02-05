@@ -8,7 +8,6 @@ import os
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.contextmanagers import temp_environ
-from checkov.common.util.env_vars_config import env_vars_config
 
 try:
     from git import Repo
@@ -91,7 +90,7 @@ class GitGetter(BaseGetter):
                     self._clone_helper(clone_dir, git_url)
             self._clone_helper(clone_dir, git_url)
 
-    def _clone_helper(self, clone_dir, git_url):
+    def _clone_helper(self, clone_dir: str, git_url: str) -> None:
         if self.branch:
             Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
         elif self.commit_id:  # no commit id support for branch
