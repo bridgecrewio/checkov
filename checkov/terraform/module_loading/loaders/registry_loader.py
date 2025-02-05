@@ -70,7 +70,7 @@ class RegistryLoader(ModuleLoader):
         return False
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
-        print(f'attempting to load module {module_params.module_source} via registry loader')
+        print(f'loading NOW {module_params.module_source} via registry loader')
         if module_params.best_version:
             best_version = module_params.best_version
         else:

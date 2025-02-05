@@ -66,6 +66,7 @@ There are three resulting states that can occur when calling this function:
         self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
                           f"{module_params.module_source if '@' not in module_params.module_source else module_params.module_source.split('@')[1]} "
                           f"version: {module_params.version}")
+        print(f'about to load {module_params.module_source} with {self.__class__}')
         return self._load_module(module_params)
 
     @abstractmethod
