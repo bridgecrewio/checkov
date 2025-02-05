@@ -21,6 +21,7 @@ class ECSClusterLoggingEncryptedWithCMK(BaseResourceCheck):
             if execute_command and isinstance(execute_command, list):
                 execute_command = execute_command[0]
                 if isinstance(execute_command, dict) and not execute_command.get("logging") == ["NONE"]:
+                    self.evaluated_keys = ["configuration/[0]/execute_command_configuration"]
                     if execute_command.get("kms_key_id"):
                         log_conf = execute_command.get("log_configuration")
                         if log_conf and isinstance(log_conf, list):

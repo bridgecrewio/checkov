@@ -1,4 +1,6 @@
 import re
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -36,6 +38,9 @@ class MQBrokerVersion(BaseResourceCheck):
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["engine_type", "engine_version"]
 
 
 check = MQBrokerVersion()
