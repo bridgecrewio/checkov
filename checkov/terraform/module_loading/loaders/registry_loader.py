@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import logging
 from http import HTTPStatus
 from typing import List, Dict, TYPE_CHECKING
 
@@ -35,6 +34,7 @@ class RegistryLoader(ModuleLoader):
         super().__init__()
 
     def discover(self, module_params: ModuleParams) -> None:
+        print('Dicovering in registry loader')
         module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
         module_params.token = os.getenv("TF_REGISTRY_TOKEN", "")
         tfc_token = os.getenv("TFC_TOKEN")
@@ -43,6 +43,7 @@ class RegistryLoader(ModuleLoader):
             module_params.token = tfc_token
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
+        print('Matching in registry loader')
         # https://developer.hashicorp.com/terraform/language/modules/sources#github
         if module_params.module_source.startswith(("/", "github.com", "bitbucket.org", "git::", "git@github.com")):
             return False
@@ -92,7 +93,7 @@ class RegistryLoader(ModuleLoader):
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
             if os.getenv('PROXY_URL'):
-                self.logger.info('Sending request with proxy')
+                print('Sending request with proxy')
                 response = call_http_request_with_proxy(request)
             else:
                 session = requests.Session()

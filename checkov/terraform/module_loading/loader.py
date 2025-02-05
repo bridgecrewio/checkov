@@ -53,13 +53,16 @@ There are three resulting states that can occur when calling this function:
                               the data of this object can be changed according to the loader logic
         :return: A ModuleContent object which may or may not being loaded.
         """
-        print(f'Going to discover')
+        print(f'Going to discover in {self.__class__}')
         self.discover(module_params)
+        print(f'Discovered')
         if not self._is_matching_loader(module_params):
             print(f'the module params of {module_params.module_source} do not match loader {self.__class__} so returning None')
             return ModuleContent(dir=None)
 
+        print(f'past matching')
         module_path = self._find_module_path(module_params)
+        print(f'past finding module')
         if os.path.exists(module_path):
             print(f'path {module_path} exists so no need to load')
             return ModuleContent(dir=module_path)
