@@ -57,7 +57,7 @@ class GitGetter(BaseGetter):
             url = re.sub(TAG_PATTERN, '', url)
             return url
 
-        self.logger.info(f"Module URL has an unknown ref: {url}")
+        self.logger.info(f"Module URL has an unknown ref")
 
         return url
 
