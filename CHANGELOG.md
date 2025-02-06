@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.366...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.368...HEAD)
+
+## [3.2.368](https://github.com/bridgecrewio/checkov/compare/3.2.366...3.2.368) - 2025-02-06
+
+### Feature
+
+- **general:** fix proxy access from git and registry loader - [#6992](https://github.com/bridgecrewio/checkov/pull/6992)
 
 ## [3.2.366](https://github.com/bridgecrewio/checkov/compare/3.2.364...3.2.366) - 2025-02-05
 
