@@ -56,8 +56,8 @@ setup(
     ],
     extras_require={
         "dev": [
-            "pytest==5.3.1",
-            "coverage==5.5",
+            "pytest<8.0.0",
+            "coverage==7.6.1",
             "coverage-badge",
             "GitPython==3.1.41",
             "bandit",
@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.33",
+        "bc-detect-secrets==1.5.35",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.5.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -107,7 +107,7 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression<31.0.0,>=30.1.0",
         "rustworkx>=0.13.0,<0.14.0",
-        "pydantic<3.0.0,>=2.0.0"
+        "pydantic<3.0.0,>=2.0.0",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

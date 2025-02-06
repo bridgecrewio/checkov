@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
 
+# mypy: disable-error-code="misc"
 class BicepElements(str, Enum):
     GLOBALS: Literal["globals"] = "globals"
     PARAMETERS: Literal["parameters"] = "parameters"
