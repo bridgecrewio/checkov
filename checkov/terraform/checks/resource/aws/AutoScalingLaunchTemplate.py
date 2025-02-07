@@ -1,11 +1,10 @@
 from typing import Any
 
-from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.consts import ANY_VALUE
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
 
-class AutoScalingLaunchTemplate(BaseResourceValueCheck):
+class AutoScalingLaunchTemplate(BaseResourceCheck):
     def __init__(self) -> None:
         """
         NIST.800-53.r5 CA-9(1), NIST.800-53.r5 CM-2, NIST.800-53.r5 CM-2(2)
@@ -17,11 +16,14 @@ class AutoScalingLaunchTemplate(BaseResourceValueCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self) -> str:
-        return "launch_template"
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        if "launch_template" in conf:
+            return CheckResult.PASSED
 
-    def get_expected_value(self) -> Any:
-        return ANY_VALUE
+        if "mixed_instances_policy" in conf and "launch_template" in conf["mixed_instances_policy"][0]:
+            return CheckResult.PASSED
+
+        return CheckResult.FAILED
 
 
 check = AutoScalingLaunchTemplate()
