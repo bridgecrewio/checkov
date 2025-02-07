@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.358...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.368...HEAD)
+
+## [3.2.368](https://github.com/bridgecrewio/checkov/compare/3.2.366...3.2.368) - 2025-02-06
+
+### Feature
+
+- **general:** fix proxy access from git and registry loader - [#6992](https://github.com/bridgecrewio/checkov/pull/6992)
+
+## [3.2.366](https://github.com/bridgecrewio/checkov/compare/3.2.364...3.2.366) - 2025-02-05
+
+### Bug Fix
+
+- **bicep:** Add bicep specific for CKV_AZURE_25 since ARM implementation fails - [#6996](https://github.com/bridgecrewio/checkov/pull/6996)
+- **terraform:** CKV_AZURE_249 & CKV_AWS_358 - better support for OIDC 'repo' detection regex and conditions order - [#6994](https://github.com/bridgecrewio/checkov/pull/6994)
+
+## [3.2.364](https://github.com/bridgecrewio/checkov/compare/3.2.362...3.2.364) - 2025-02-04
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_339 - Add EKS platform version 1.32 to allowed lists of versions - [#6988](https://github.com/bridgecrewio/checkov/pull/6988)
+
+## [3.2.362](https://github.com/bridgecrewio/checkov/compare/3.2.358...3.2.362) - 2025-02-03
+
+### Bug Fix
+
+- **secrets:** Multiple matching groups are being caught as regex separated by | sign - [#6967](https://github.com/bridgecrewio/checkov/pull/6967)
+- **secrets:** Remove both random and base64 entropy secrets finding - [#6969](https://github.com/bridgecrewio/checkov/pull/6969)
+
+### Platform
+
+- **general:** Backfill more eval keys - [#6970](https://github.com/bridgecrewio/checkov/pull/6970)
 
 ## [3.2.358](https://github.com/bridgecrewio/checkov/compare/3.2.357...3.2.358) - 2025-01-28
 
