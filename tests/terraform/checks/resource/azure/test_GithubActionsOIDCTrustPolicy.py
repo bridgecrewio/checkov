@@ -5,7 +5,6 @@ from pathlib import Path
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.GithubActionsOIDCTrustPolicy import check
 from checkov.terraform.runner import Runner
-from checkov.terraform.plan_runner import Runner as PlanRunner
 
 
 class TestAzureGithubActionsOIDCTrustPolicy(unittest.TestCase):
@@ -19,6 +18,7 @@ class TestAzureGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "azuread_application_federated_identity_credential.pass1",
             "azuread_application_federated_identity_credential.pass2",
             "azuread_application_federated_identity_credential.pass4",
+            "azuread_application_federated_identity_credential.pass_special_chars",
         }
         failing_resources = {
             "azuread_application_federated_identity_credential.fail1",

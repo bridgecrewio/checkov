@@ -1,3 +1,25 @@
+data "aws_iam_policy_document" "pass_aud_first" {
+    statement {
+      effect  = "Allow"
+      actions = ["sts:AssumeRoleWithWebIdentity"]
+
+      principals {
+        type        = "Federated"
+        identifiers = ["arn:aws:iam::000000000000:oidc-provider/token.actions.githubusercontent.com"]
+      }
+      condition {
+        test     = "StringEquals"
+        values   = ["sts.pass_aud_first.com"]
+        variable = "token.actions.githubusercontent.com:aud"
+      }
+      condition {
+        test     = "StringLike"
+        values   = ["repo:org/our-repo-name:*"]
+        variable = "token.actions.githubusercontent.com:sub"
+      }
+  }
+}
+
 # pass1
 
 data "aws_iam_policy_document" "pass1" {

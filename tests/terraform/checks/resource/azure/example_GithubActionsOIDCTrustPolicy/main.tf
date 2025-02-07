@@ -26,6 +26,15 @@ resource "azuread_application_federated_identity_credential" "pass4" {
   subject             = "repo:myOrg/valid-repo:*"
 }
 
+# pass4 - Valid configuration with org-only repo pattern
+resource "azuread_application_federated_identity_credential" "pass_special_chars" {
+  application_object_id = "example-app-id"
+  display_name         = "github-actions-oidc"
+  audiences           = ["api://AzureADTokenExchange"]
+  issuer              = "https://token.actions.githubusercontent.com"
+  subject             = "repo:${var.github_organisation_target}/${github_repository.project.name}:environment:${var.environment}"
+}
+
 # fail1 - Missing subject
 resource "azuread_application_federated_identity_credential" "fail1" {
   application_object_id = "example-app-id"
