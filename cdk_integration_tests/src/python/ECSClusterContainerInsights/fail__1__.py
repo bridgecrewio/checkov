@@ -12,8 +12,24 @@ class MyECSClusterStack(core.Stack):
                       )
 
         cluster = ecs.Cluster(self, "EcsCluster", vpc=vpc, container_insights=False)
-        cluster2 = ecs.Cluster(self, "EcsCluster", vpc=vpc)
-        cluster3 = ecs.Cluster(self, "EcsCluster", vpc=vpc, container_insights_v2=ecs.ContainerInsights.DISABLED)
+        cluster2 = ecs.Cluster(self, "EcsCluster2", vpc=vpc)
+        cluster3 = ecs.Cluster(self, "EcsCluster3", vpc=vpc, container_insights_v2=ecs.ContainerInsights.DISABLED)
+
+        cluster4 = ecs.CfnCluster(
+            self, 'MyECSCluster4',
+            cluster_name='my-ecs-cluster',
+            cluster_settings=[{
+                'name': 'containerInsights',
+                'value': 'disabled'
+            }]
+            # Other properties for your ECS Cluster
+        )
+
+        cluster5 = ecs.CfnCluster(
+            self, 'MyECSCluster5',
+            cluster_name='my-ecs-cluster'
+            # Other properties for your ECS Cluster
+        )
 
 app = core.App()
 MyECSClusterStack(app, "MyECSClusterStack")
