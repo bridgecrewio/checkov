@@ -97,7 +97,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9"]
+        python: ["3.9"]
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -149,7 +149,7 @@ jobs:
   prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
@@ -180,7 +180,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     continue-on-error: true # for now it is ok to fail
@@ -220,7 +220,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9"]
+        python: ["3.9"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     continue-on-error: true # for now it is ok to fail
@@ -260,7 +260,7 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python ${{ env.PYTHON_VERSION }}
@@ -298,7 +298,7 @@ jobs:
       id-token: write
     timeout-minutes: 30
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
