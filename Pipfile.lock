@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2edc610fbf0e2e71a6351e6814dcad80968ae23c06b4b8a2b26893870b8727a8"
+            "sha256": "75e6aec9c1d6fde7e4d881ce4f8d51ed0b60da86b4d70f40bb16d88215cea5c0"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -232,20 +232,20 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:20d97739cea1b0f549e9096c453ac727a350da28bd0451098714260b655a85ea",
-                "sha256:c8031aa1c4a7c331081b2d86c49a362654b86e0b89d0a41fa166a68b226f4aba"
+                "sha256:0cf92ca0538ab115447e1c58050d43e1273e88c58ddfea2b6f133fdc508b400a",
+                "sha256:b10583bf8bd35be1b4027ee7e26b7cdf2078c79eab18357fd602cecb6d39400b"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.13"
+            "version": "==1.36.16"
         },
         "botocore": {
             "hashes": [
-                "sha256:50a3ff292f8dfdde21074b5c916afe847b01e074ab16d9c9fe71b34960c77134",
-                "sha256:d644a814440bf8d55f4e29b1c0e6f021e2573b7784e0c91f55f4d9d689e08005"
+                "sha256:10c6aa386ba1a9a0faef6bb5dbfc58fc2563a3c6b95352e86a583cd5f14b11f3",
+                "sha256:aca0348ccd730332082489b6817fdf89e1526049adcf6e9c8c11c96dd9f42c03"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.13"
+            "version": "==1.36.16"
         },
         "cached-property": {
             "hashes": [
@@ -498,12 +498,12 @@
         },
         "cyclonedx-python-lib": {
             "hashes": [
-                "sha256:1b6f9109b6b9e91636dff822c2de90a05c0c8af120317713c1b879dbfdebdff8",
-                "sha256:c366619cc4effd528675f1f7a7a00be30b6695ff03f49c64880ad15acbebc341"
+                "sha256:31186c5725ac0cfcca433759a407b1424686cdc867b47cc86e6cf83691310903",
+                "sha256:c42fab352cc0f7418d1b30def6751d9067ebcf0e8e4be210fc14d6e742a9edcc"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8' and python_version < '4.0'",
-            "version": "==6.4.4"
+            "version": "==7.6.2"
         },
         "decorator": {
             "hashes": [
@@ -2243,19 +2243,19 @@
                 "s3"
             ],
             "hashes": [
-                "sha256:4b0793aa21fa68b47ad00d1fc6b1ecf27ee15090a50e45bd9cc05575bd737c88",
-                "sha256:59edb57e9051b4df67c5ab87eb664ba296eb66b64f1dea9f94ead1300fdf79b3"
+                "sha256:0d9a9165eb7d6e1ea4846311520969137ef66e7dfbe6c6ae61718c068e7645b4",
+                "sha256:69475055611d007efedfdbced3ea9b0c7de24f7d14b634fdd07adb79e4b26fce"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.13"
+            "version": "==1.36.16"
         },
         "botocore-stubs": {
             "hashes": [
-                "sha256:31d17381def93fa41d009e11ccfb0a846a878dcf84f97c229bfb7ceffad7a56a",
-                "sha256:c1e7eac810e42de49b47cb23c118db206c0e719130e468ddedcb0eb82c21904c"
+                "sha256:0d888f16b29adec2648d1e0c0d2b5efcda4520d228a5fa038f62d408e03a2502",
+                "sha256:acb480ba8e46950d6760b8bf2f38f7e73c135bd8339c0b7d9f2b5c631d3caf17"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.12"
+            "version": "==1.36.16"
         },
         "certifi": {
             "hashes": [
@@ -2835,11 +2835,11 @@
         },
         "mypy-boto3-s3": {
             "hashes": [
-                "sha256:368c963969eda65bb3a9df61e87510dd8b3247cce59f559c2ec6c43d5796bef5",
-                "sha256:506edd56892452dff5b673e3c79a11b6f8935076ce4a9daaac4cda708a176201"
+                "sha256:a48031b4c84898756f03787baf711cf14cb219b5cb2e433a369c018544bfbffa",
+                "sha256:e5400f6a008f746c42bbbe767eb492cec96a211ceb34b6032673aedcd87b3d62"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==1.36.9"
+            "version": "==1.36.15"
         },
         "mypy-extensions": {
             "hashes": [

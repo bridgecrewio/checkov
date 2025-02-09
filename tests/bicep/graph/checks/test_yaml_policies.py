@@ -39,6 +39,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_SQLServerAuditingRetention90Days(self):
         self.go("SQLServerAuditingRetention90Days")
 
+    def test_SQLServerThreatDetectionTypes(self):
+        self.go("SQLServerThreatDetectionTypes")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
