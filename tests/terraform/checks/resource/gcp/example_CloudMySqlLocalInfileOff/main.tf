@@ -60,7 +60,7 @@ resource "google_sql_database_instance" "pass2" {
   }
 }
 
-//postgres doesnt have these flags so this isnt even working terraform
+//postgres does not have these flags so this isn't even working terraform
 resource "google_sql_database_instance" "unknown" {
   database_version = "POSTGRES_12"
   name             = "general-mysql81"

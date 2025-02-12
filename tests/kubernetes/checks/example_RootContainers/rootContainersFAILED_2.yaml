@@ -21,7 +21,7 @@ spec:
         - --source=ingress
         - --source=istio-gateway
         - --provider=google
-        - --google-project=guidewire-mgmt-dev-b81f  #Sepcify the Project Name where Cloud DNS Zones are hosted
+        - --google-project=guidewire-mgmt-dev-b81f  #Specify the Project Name where Cloud DNS Zones are hosted
         - --registry=txt
         - --txt-owner-id=my-identifier
       serviceAccountName: external-dns

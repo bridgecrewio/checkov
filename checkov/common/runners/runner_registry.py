@@ -98,7 +98,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.licensing_integration = licensing_integration  # can be manipulated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}

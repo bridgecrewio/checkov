@@ -376,7 +376,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                 condition_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.CONDITIONS:
             evaluated_condition = self._evaluate_condition_by_name(condition_name)
 
-        # After we evaluate ConditionName, we fetch OperandIfTrue or OperandIfFalse (according ot the result)
+        # After we evaluate ConditionName, we fetch OperandIfTrue or OperandIfFalse (according to the result)
         if isinstance(evaluated_condition, bool):
             (operand_index, operand_to_eval) = (1, operand_if_true) if evaluated_condition else (2, operand_if_false)
 
