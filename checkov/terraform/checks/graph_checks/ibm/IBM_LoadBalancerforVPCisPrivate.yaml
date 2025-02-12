@@ -16,3 +16,9 @@ definition:
       attribute: "type"
       operator: "equals_ignore_case"
       value: "private"
+
+    - cond_type: "attribute"
+      resource_types: "ibm_is_lb"
+      attribute: "type"
+      operator: "equals_ignore_case"
+      value: "private_path"
