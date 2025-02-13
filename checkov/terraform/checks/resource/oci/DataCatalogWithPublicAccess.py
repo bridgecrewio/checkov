@@ -4,6 +4,7 @@ from typing import Dict, List, Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class DataCatalogWithPublicAccess(BaseResourceCheck):
     def __init__(self) -> None:
         name = "OCI Data Catalog configured with overly permissive network access"
@@ -21,8 +22,8 @@ class DataCatalogWithPublicAccess(BaseResourceCheck):
         else:
             return CheckResult.FAILED
 
-
     def get_evaluated_keys(self) -> List[str]:
         return ['azurerm_storage_sync/incomingTrafficPolicy']
+
 
 check = DataCatalogWithPublicAccess()

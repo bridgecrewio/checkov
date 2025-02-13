@@ -3,6 +3,7 @@ from typing import Dict, List, Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class VMDiskWithPublicAccess(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Azure Virtual Machine disks that are configured with public network access"
@@ -20,8 +21,8 @@ class VMDiskWithPublicAccess(BaseResourceCheck):
         else:
             return CheckResult.FAILED
 
-
     def get_evaluated_keys(self) -> List[str]:
         return ['azurerm_storage_sync/incomingTrafficPolicy']
+
 
 check = VMDiskWithPublicAccess()
