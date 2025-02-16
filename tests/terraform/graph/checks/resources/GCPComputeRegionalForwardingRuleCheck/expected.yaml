@@ -1,0 +1,5 @@
+pass:
+  - "google_compute_region_forwarding_rule.pass"
+fail:
+  - "google_compute_region_forwarding_rule.fail"
+  - "google_compute_region_forwarding_rule.fail_missing_lbscheme"

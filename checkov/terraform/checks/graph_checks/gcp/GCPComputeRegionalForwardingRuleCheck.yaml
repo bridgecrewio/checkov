@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_GCP_37"
+  name: "Ensure GCP compute regional forwarding rule does not use targetHttpProxies and EXTERNAL loadBalancingScheme"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: attribute
+      attribute: target
+      operator: not_contains
+      value: "targetHttpProxies"
+      resource_types:
+        - google_compute_forwarding_rule
+    - and:
+      - cond_type: attribute
+        attribute: load_balancing_scheme
+        operator: not_equals_ignore_case
+        value: "EXTERNAL"
+        resource_types:
+          - google_compute_forwarding_rule
+      - cond_type: attribute
+        attribute: load_balancing_scheme
+        operator: exists
+        resource_types:
+          - google_compute_forwarding_rule
