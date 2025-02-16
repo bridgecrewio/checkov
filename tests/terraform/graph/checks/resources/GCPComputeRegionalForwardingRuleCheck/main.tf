@@ -1,4 +1,4 @@
-resource "google_compute_region_forwarding_rule" "pass" {
+resource "google_compute_forwarding_rule" "pass" {
   name                  = "passing-forwarding-rule"
   region                = "us-central1"
   load_balancing_scheme = "EXTERNAL"
@@ -7,7 +7,7 @@ resource "google_compute_region_forwarding_rule" "pass" {
   // Additional required configuration as needed...
 }
 
-resource "google_compute_region_forwarding_rule" "fail" {
+resource "google_compute_forwarding_rule" "fail" {
   name                  = "failing-forwarding-rule"
   region                = "us-central1"
   load_balancing_scheme = "EXTERNAL"
@@ -16,7 +16,7 @@ resource "google_compute_region_forwarding_rule" "fail" {
   // Additional required configuration as needed...
 }
 
-resource "google_compute_region_forwarding_rule" "fail_missing_lbscheme" {
+resource "google_compute_forwarding_rule" "fail_missing_lbscheme" {
   name                  = "failing-forwarding-rule"
   region                = "us-central1"
   # load_balancing_scheme = "EXTERNAL" # Default is EXTERNAL
