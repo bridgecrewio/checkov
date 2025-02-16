@@ -3,6 +3,7 @@ from typing import List
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckCategories
 
+
 class GoogleVertexAINotebookShieldedVM(BaseResourceNegativeValueCheck):
     def __init__(self) -> None:
         name = "Ensure Vertex AI Notebook instances are launched with Shielded VM enabled"
@@ -16,5 +17,6 @@ class GoogleVertexAINotebookShieldedVM(BaseResourceNegativeValueCheck):
 
     def get_forbidden_values(self) -> List[bool]:
         return [False]
+
 
 check = GoogleVertexAINotebookShieldedVM()
