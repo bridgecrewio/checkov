@@ -6,4 +6,3 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: "example_arn"
         maxReceiveCount: 5
-        SqsManagedSseEnabled: false
