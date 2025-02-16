@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -28,6 +28,9 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
                 if conf["Properties"]["TransitEncryptionEnabled"]:
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties", "Properties/TransitEncryptionEnabled", "Properties/AuthToken", "Properties/UserGroupIds"]
 
 
 check = ElasticacheReplicationGroupEncryptionAtTransitAuthToken()

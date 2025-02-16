@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.0" version="1">
+	<components>
+		<component type="library">
+			<name>django</name>
+			<version>1.2</version>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>flask</name>
+			<version>0.6</version>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>github.com/dgrijalva/jwt-go</name>
+			<version>v3.2.0</version>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>github.com/miekg/dns</name>
+			<version>v1.1.41</version>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>github.com/prometheus/client_model</name>
+			<version>v0.0.0-20190129233127-fd36f4220a90</version>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>golang.org/x/crypto</name>
+			<version>v0.0.1</version>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<purl>pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0</purl>
+			<modified>false</modified>
+		</component>
+		<component type="library">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0</purl>
+			<modified>false</modified>
+		</component>
+	</components>
+</bom>
