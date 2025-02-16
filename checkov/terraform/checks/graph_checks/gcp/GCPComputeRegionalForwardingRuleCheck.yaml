@@ -4,12 +4,19 @@ metadata:
   category: "NETWORKING"
 definition:
   or:
-    - cond_type: attribute
-      attribute: target
-      operator: not_contains
-      value: "targetHttpProxies"
-      resource_types:
-        - google_compute_forwarding_rule
+    - and:
+      - cond_type: attribute
+        attribute: target
+        operator: not_contains
+        value: "google_compute_region_target_http_proxy"
+        resource_types:
+          - google_compute_forwarding_rule
+      - cond_type: attribute
+        attribute: target
+        operator: not_contains
+        value: "targetHttpProxies"
+        resource_types:
+          - google_compute_forwarding_rule
     - and:
       - cond_type: attribute
         attribute: load_balancing_scheme

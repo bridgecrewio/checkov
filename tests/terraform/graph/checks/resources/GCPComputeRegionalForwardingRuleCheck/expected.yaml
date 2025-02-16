@@ -3,3 +3,4 @@ pass:
 fail:
   - "google_compute_forwarding_rule.fail"
   - "google_compute_forwarding_rule.fail_missing_lbscheme"
+  - "google_compute_forwarding_rule.fail2"
