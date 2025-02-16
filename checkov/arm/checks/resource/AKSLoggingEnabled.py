@@ -18,13 +18,16 @@ class AKSLoggingEnabled(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "apiVersion" in conf:
             if conf["apiVersion"] == "2017-08-31":
+                self.evaluated_keys = ["apiVersion"]
                 # No addonProfiles option to configure
                 return CheckResult.FAILED
 
         properties = conf.get("properties")
+        self.evaluated_keys = ["properties"]
         if isinstance(properties, dict):
             addon_profiles = properties.get("addonProfiles")
             if isinstance(addon_profiles, dict):
+                self.evaluated_keys = ["properties/addonProfiles"]
                 omsagent = addon_profiles.get("omsagent")
                 if not omsagent:
                     # it can be written in lowercase or camelCase
