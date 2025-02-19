@@ -398,7 +398,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
-        # Often 'data' does not even appear in the *_modules[x].resouces field within planned_values and is not scanned as expected
+        # Often 'data' does not even appear in the *_modules[x].resources field within planned_values and is not scanned as expected
         # It can occur when tf module B depends on tf module A
         # And tf module A creates a resource that is used in a data block in tf module B
         # So some values can be known but other are not at plan time

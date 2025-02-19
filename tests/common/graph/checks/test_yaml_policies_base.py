@@ -122,7 +122,7 @@ def get_expected_results_by_file_name(test_dir: str | Path) -> (list[str], list[
             elif file.startswith('pass'):
                 expected_pass.append(file)
             else:
-                raise NameError('yaml test files should start with eiter pass / fail')
+                raise NameError('yaml test files should start with either pass / fail')
 
     return (expected_fail, expected_pass)
 

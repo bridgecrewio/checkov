@@ -107,7 +107,7 @@ class NodeConstructor(SafeConstructor):
     def construct_yaml_map(self, node: MappingNode) -> DictNode:
         # Check for duplicate keys on the current level, this is not desirable
         # because a dict does not support this. It overwrites it with the last
-        # occurance, which can give unexpected results
+        # occurrence, which can give unexpected results
         mapping = {}
         self.flatten_mapping(node)
         for key_node, value_node in node.value:

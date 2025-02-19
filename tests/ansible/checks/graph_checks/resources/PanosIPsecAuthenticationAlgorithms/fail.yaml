@@ -52,7 +52,7 @@
         provider: '{{ provider }}'
         name: 'IPsec profile'
         esp_encryption: ['aes-128-gcm']
-        esp_authentication: ['md5', 'sha1'] # Multiple unnacceptable authentication algorithms
+        esp_authentication: ['md5', 'sha1'] # Multiple unacceptable authentication algorithms
 
     - name: ipsec_fail_7
       paloaltonetworks.panos.panos_ipsec_profile:

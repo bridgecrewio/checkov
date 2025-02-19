@@ -87,7 +87,7 @@ Check: CKV_K8S_15: "Image Pull Policy should be Always"
 # Third party Helm charts
 ## Scan Helm values.yaml files without a locally developed chart with Checkov
 
-If you are consuming third party charts, it is unlikley you will have a `Chart.yaml` file for Checkov to auto-detect.
+If you are consuming third party charts, it is unlikely you will have a `Chart.yaml` file for Checkov to auto-detect.
 
 For example, you may have run: 
 

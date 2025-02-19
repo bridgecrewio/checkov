@@ -156,7 +156,7 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
 
 
 def replace_terraform_managed_modules(path: str, found_modules: list[ModuleDownload]) -> list[ModuleDownload]:
-    """Replaces modules by Terraform managed ones to prevent addtional downloading
+    """Replaces modules by Terraform managed ones to prevent additional downloading
 
     It can't handle nested modules yet, ex.
     {
