@@ -54,7 +54,7 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
         return files_list
 
     for root, d_names, f_names in os.walk(root_folder):
-        # Don't walk in to "node_modules" directories under the root folder. If –for some reason–
+        # Don't walk in to "node_modules" directories under the root folder. If for some reason
         # scanning one of these is desired, it can be directly specified.
         if "node_modules" in d_names:
             d_names.remove("node_modules")
