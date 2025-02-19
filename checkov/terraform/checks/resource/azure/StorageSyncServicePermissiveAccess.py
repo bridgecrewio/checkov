@@ -22,7 +22,7 @@ class StorageSyncServicePermissiveAccess(BaseResourceCheck):
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ['azurerm_storage_sync/incomingTrafficPolicy']
+        return ['incoming_traffic_policy']
 
 
 check = StorageSyncServicePermissiveAccess()
