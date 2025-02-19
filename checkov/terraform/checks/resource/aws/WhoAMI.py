@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class WhoAMI(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "WhoAMI vulnerability: cloud image name confusion attack"
+        name = "Reduce potential for WhoAMI cloud image name confusion attack"
         id = "CKV_AWS_386"
         supported_resources = ['aws_ami']
         categories = [CheckCategories.SUPPLY_CHAIN]
