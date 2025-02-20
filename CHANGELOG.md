@@ -1,6 +1,88 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.353...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.372...HEAD)
+
+## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
+
+### Feature
+
+- **terraform:** Add multiple checks - [#7016](https://github.com/bridgecrewio/checkov/pull/7016)
+
+### Bug Fix
+
+- **terraform:** Postgres latest stable version - [#7015](https://github.com/bridgecrewio/checkov/pull/7015)
+
+## [3.2.370](https://github.com/bridgecrewio/checkov/compare/3.2.369...3.2.370) - 2025-02-13
+
+### Bug Fix
+
+- **general:** Handle ECS enhanced container insights - [#7001](https://github.com/bridgecrewio/checkov/pull/7001)
+
+## [3.2.369](https://github.com/bridgecrewio/checkov/compare/3.2.368...3.2.369) - 2025-02-10
+
+### Bug Fix
+
+- **terraform:** Multiple check fixes - [#6999](https://github.com/bridgecrewio/checkov/pull/6999)
+
+## [3.2.368](https://github.com/bridgecrewio/checkov/compare/3.2.366...3.2.368) - 2025-02-06
+
+### Feature
+
+- **general:** fix proxy access from git and registry loader - [#6992](https://github.com/bridgecrewio/checkov/pull/6992)
+
+## [3.2.366](https://github.com/bridgecrewio/checkov/compare/3.2.364...3.2.366) - 2025-02-05
+
+### Bug Fix
+
+- **bicep:** Add bicep specific for CKV_AZURE_25 since ARM implementation fails - [#6996](https://github.com/bridgecrewio/checkov/pull/6996)
+- **terraform:** CKV_AZURE_249 & CKV_AWS_358 - better support for OIDC 'repo' detection regex and conditions order - [#6994](https://github.com/bridgecrewio/checkov/pull/6994)
+
+## [3.2.364](https://github.com/bridgecrewio/checkov/compare/3.2.362...3.2.364) - 2025-02-04
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_339 - Add EKS platform version 1.32 to allowed lists of versions - [#6988](https://github.com/bridgecrewio/checkov/pull/6988)
+
+## [3.2.362](https://github.com/bridgecrewio/checkov/compare/3.2.358...3.2.362) - 2025-02-03
+
+### Bug Fix
+
+- **secrets:** Multiple matching groups are being caught as regex separated by | sign - [#6967](https://github.com/bridgecrewio/checkov/pull/6967)
+- **secrets:** Remove both random and base64 entropy secrets finding - [#6969](https://github.com/bridgecrewio/checkov/pull/6969)
+
+### Platform
+
+- **general:** Backfill more eval keys - [#6970](https://github.com/bridgecrewio/checkov/pull/6970)
+
+## [3.2.358](https://github.com/bridgecrewio/checkov/compare/3.2.357...3.2.358) - 2025-01-28
+
+### Feature
+
+- **general:** Add env var for policy metadata - [#6979](https://github.com/bridgecrewio/checkov/pull/6979)
+
+## [3.2.357](https://github.com/bridgecrewio/checkov/compare/3.2.355...3.2.357) - 2025-01-23
+
+### Feature
+
+- **general:** initial support for python 3.13 - [#6962](https://github.com/bridgecrewio/checkov/pull/6962)
+
+### Bug Fix
+
+- **terraform:** OIDC checks fixes - [#6964](https://github.com/bridgecrewio/checkov/pull/6964)
+
+## [3.2.355](https://github.com/bridgecrewio/checkov/compare/3.2.353...3.2.355) - 2025-01-22
+
+### Feature
+
+- **terraform:** Update CKV_AWS_358, add CKV_GCP_125 and CKV_AZURE_249 for OIDC claims analysis for GitHub - [#6960](https://github.com/bridgecrewio/checkov/pull/6960)
+
+### Bug Fix
+
+- **terraform:** Accept TLS 1.3 for Azure web apps and web app slots - [#6956](https://github.com/bridgecrewio/checkov/pull/6956)
+
+### Platform
+
+- **terraform:** Add eval keys - [#6929](https://github.com/bridgecrewio/checkov/pull/6929)
 
 ## [3.2.353](https://github.com/bridgecrewio/checkov/compare/3.2.352...3.2.353) - 2025-01-15
 

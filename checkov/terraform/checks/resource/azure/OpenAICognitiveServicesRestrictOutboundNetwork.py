@@ -24,6 +24,7 @@ class OpenAICognitiveServicesRestrictOutboundNetwork(BaseResourceCheck):
         outbound_network_access_restricted = conf.get('outbound_network_access_restricted', [None])[0]
         fqdns = conf.get('fqdns', [[]])[0]
         if not outbound_network_access_restricted or not fqdns:
+            self.evaluated_keys = ['outbound_network_access_restricted', 'fqdns']
             return CheckResult.FAILED
 
         return CheckResult.PASSED

@@ -22,15 +22,19 @@ class VPCSecurityGroupRuleAllowAll(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if conf["direction"][0] == "ingress":
             cidr_block = conf["v4_cidr_blocks"]
+            self.evaluated_keys = ["v4_cidr_blocks"]
             for cidr in cidr_block[0]:
                 if cidr == "0.0.0.0/0":
                     if "port" in conf.keys():
                         if conf["port"][0] == -1:
+                            self.evaluated_keys.append("port")
                             return CheckResult.FAILED
                         return CheckResult.PASSED
                     if "from_port" not in conf.keys() and "to_port" not in conf.keys():
+                        self.evaluated_keys.extend(["from_port", "to_port"])
                         return CheckResult.FAILED
                     if conf["from_port"][0] == 0 and conf["to_port"][0] == 65535:
+                        self.evaluated_keys.extend(["from_port", "to_port"])
                         return CheckResult.FAILED
         return CheckResult.PASSED
 
