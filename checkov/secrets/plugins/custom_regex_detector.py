@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast, Union
 from collections import defaultdict
 
 from detect_secrets.constants import VerifiedResult
@@ -170,6 +170,7 @@ class CustomRegexDetector(RegexBasedDetector):
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
+                    mm = self._extract_real_regex_match(mm)
                     line_num = find_line_number(file_content, mm, line_number)
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
@@ -217,6 +218,14 @@ class CustomRegexDetector(RegexBasedDetector):
                         yield submatch, regex
                 else:
                     yield match, regex
+
+    def _extract_real_regex_match(self, regex_matches: Union[str, Tuple[str]]) -> Union[str, Tuple[str]]:
+        if isinstance(regex_matches, tuple):
+            for match in regex_matches:
+                if match:
+                    return match
+
+        return regex_matches
 
 
 def find_line_number(file_string: str, substring: str, default_line_number: int) -> int:

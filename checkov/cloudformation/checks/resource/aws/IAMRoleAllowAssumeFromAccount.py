@@ -19,6 +19,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ['Properties']
         properties = conf.get('Properties')
         if properties and 'AssumeRolePolicyDocument' in properties:
             assume_role_policy_doc = properties['AssumeRolePolicyDocument']
@@ -45,6 +46,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                     if isinstance(assume_role_block['Statement'][0]['Principal']['AWS'], list) \
                             and isinstance(assume_role_block['Statement'][0]['Principal']['AWS'][0], str):
                         if re.match(ACCOUNT_ACCESS, assume_role_block['Statement'][0]['Principal']['AWS'][0]):
+                            self.evaluated_keys = ['Properties/AssumeRolePolicyDocument/Statement']
                             return CheckResult.FAILED
 
             return CheckResult.PASSED
