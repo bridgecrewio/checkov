@@ -73,8 +73,10 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
+RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
+ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -278,6 +280,20 @@ class Runner(BaseRunner[None, None, None]):
         for key, secret in secrets:
             secret_key_by_line = f'{key}_{secret.line_number}'
             secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+
+        # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
+        # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
+        for key, secrets_by_line in secret_key_by_line_to_secrets.items():
+            if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
+                continue
+            new_secrets = list()
+            key_with_no_line = key[:-2]
+            for s in secrets_by_line:
+                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
+                    continue
+                new_secrets.append(s)
+            secret_key_by_line_to_secrets[key] = new_secrets
+            secrets[key_with_no_line] = set(new_secrets)
 
         for key, secret in secrets:
             check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)

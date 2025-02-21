@@ -1,0 +1,61 @@
+metadata:
+  id: "CKV_AZURE_25"
+  name: "Azure SQL Server threat detection alerts are enabled for all threat types"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - Microsoft.Sql/servers
+        - Microsoft.Sql/servers/databases
+    - or:
+        - and:
+            - cond_type: connection
+              resource_types:
+                - Microsoft.Sql/servers
+              connected_resource_types:
+                - Microsoft.Sql/servers/securityAlertPolicies
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Sql/servers/securityAlertPolicies
+              attribute: properties.state
+              operator: equals
+              value: Enabled
+            - or:
+              - cond_type: attribute
+                resource_types:
+                  - Microsoft.Sql/servers/securityAlertPolicies
+                attribute: properties.disabledAlerts
+                operator: is_empty
+              - cond_type: attribute
+                resource_types:
+                  - Microsoft.Sql/servers/securityAlertPolicies
+                attribute: properties.disabledAlerts
+                operator: not_exists
+        - and:
+            - cond_type: connection
+              resource_types:
+                - Microsoft.Sql/servers/databases
+              connected_resource_types:
+                - Microsoft.Sql/servers/databases/securityAlertPolicies
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - Microsoft.Sql/servers/databases/securityAlertPolicies
+              attribute: properties.state
+              operator: equals
+              value: Enabled
+            - or:
+                - cond_type: attribute
+                  resource_types:
+                    - Microsoft.Sql/servers/databases/securityAlertPolicies
+                  attribute: properties.disabledAlerts
+                  operator: is_empty
+                - cond_type: attribute
+                  resource_types:
+                    - Microsoft.Sql/servers/databases/securityAlertPolicies
+                  attribute: properties.disabledAlerts
+                  operator: not_exists

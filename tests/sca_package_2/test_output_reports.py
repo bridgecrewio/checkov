@@ -6,6 +6,7 @@ from operator import itemgetter
 from pathlib import Path
 from typing import List
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -15,6 +16,31 @@ from checkov.common.output.sarif import Sarif
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 OUTPUTS_DIR = Path(__file__).parent / "outputs"
+
+
+@pytest.mark.parametrize("env_value, expected_result", [
+    ("value1", "result1"),
+    ("value2", "result2"),
+    ("value3", "result3"),
+])
+def test_env_var(monkeypatch, env_value, expected_result):
+    monkeypatch.setenv("MY_ENV_VAR", env_value)
+
+    # Simulate your function that depends on the env var
+    result = some_function_relying_on_env()
+
+    assert result == expected_result
+
+
+def some_function_relying_on_env():
+    value = os.getenv("MY_ENV_VAR")
+    if value == "value1":
+        return "result1"
+    elif value == "value2":
+        return "result2"
+    elif value == "value3":
+        return "result3"
+    return "default"
 
 
 def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List[str]:
@@ -140,12 +166,20 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
     )
 
 
-def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path):
+@pytest.mark.parametrize("cyclone_format", [
+    "1.0",
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4"
+])
+def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path, cyclone_format, monkeypatch):
+    monkeypatch.setenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", cyclone_format)
     cyclonedx_reports = [sca_package_2_report]
     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
     cyclonedx_output = cyclonedx.get_xml_output()
     pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
-    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+    with open(os.path.join(OUTPUTS_DIR, f"results_cyclonedx_{cyclone_format.replace('.', '_')}.xml")) as f_xml:
         expected_pretty_xml = f_xml.read()
 
     actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))

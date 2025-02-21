@@ -44,5 +44,8 @@ class StorageAccountName(BaseResourceCheck):
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> typing.List[str]:
+        return ["name"]
+
 
 check = StorageAccountName()
