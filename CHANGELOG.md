@@ -1,6 +1,28 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.368...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.372...HEAD)
+
+## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
+
+### Feature
+
+- **terraform:** Add multiple checks - [#7016](https://github.com/bridgecrewio/checkov/pull/7016)
+
+### Bug Fix
+
+- **terraform:** Postgres latest stable version - [#7015](https://github.com/bridgecrewio/checkov/pull/7015)
+
+## [3.2.370](https://github.com/bridgecrewio/checkov/compare/3.2.369...3.2.370) - 2025-02-13
+
+### Bug Fix
+
+- **general:** Handle ECS enhanced container insights - [#7001](https://github.com/bridgecrewio/checkov/pull/7001)
+
+## [3.2.369](https://github.com/bridgecrewio/checkov/compare/3.2.368...3.2.369) - 2025-02-10
+
+### Bug Fix
+
+- **terraform:** Multiple check fixes - [#6999](https://github.com/bridgecrewio/checkov/pull/6999)
 
 ## [3.2.368](https://github.com/bridgecrewio/checkov/compare/3.2.366...3.2.368) - 2025-02-06
 

@@ -2,28 +2,25 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.AutoScalingLaunchTemplate import check
+from checkov.terraform.checks.resource.gcp.GoogleVertexAINotebookShieldedVM import check
 from checkov.terraform.runner import Runner
 
-
-class TestAutoScalingLaunchTemplate(unittest.TestCase):
+class TestGoogleVertexAINotebookShieldedVM(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_AutoScalingLaunchTemplate"
+        test_files_dir = current_dir + "/example_GoogleVertexAINotebookShieldedVM"
         report = runner.run(
             root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
         )
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_autoscaling_group.pass",
-            "aws_autoscaling_group.pass_mixed",
-            "aws_autoscaling_group.pass_mixed_multiple",
+            'google_notebooks_instance.pass',
         }
         failing_resources = {
-            "aws_autoscaling_group.fail",
+            'google_notebooks_instance.fail',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
@@ -36,7 +33,6 @@ class TestAutoScalingLaunchTemplate(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
-
 
 if __name__ == "__main__":
     unittest.main()

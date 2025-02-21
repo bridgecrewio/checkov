@@ -9,8 +9,23 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: |
-    new ecs.Cluster(<ANY>)
-  conditions:
-    - not_pattern: |
-        new $AWS.Cluster(<ANY>, { <ANY>, containerInsights: true, <ANY>}, <ANY>)
+  patterns:
+    or:
+      - pattern: new ecs.Cluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Cluster(<ANY>, { <ANY>, containerInsights: true, <ANY>}, <ANY>)
+          - not_pattern: |
+              new $AWS.Cluster(<ANY>, { <ANY>, containerInsightsV2: $AWS.ContainerInsights.ENABLED, <ANY>}, <ANY>)
+          - not_pattern: |
+              new $AWS.Cluster(<ANY>, { <ANY>, containerInsightsV2: $AWS.ContainerInsights.ENHANCED, <ANY>}, <ANY>)
+      - pattern: new ecs.CfnCluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnCluster(<ANY>, { <ANY>, clusterSettings: [<ANY>, {name: 'containerInsights', value: 'enabled'}, <ANY>], <ANY>}, <ANY>)
+          - not_pattern: |
+              new $AWS.CfnCluster(<ANY>, { <ANY>, clusterSettings: [<ANY>, {name: 'containerInsights', value: 'enhanced'}, <ANY>], <ANY>}, <ANY>)
+          - not_pattern: |
+              new $AWS.CfnCluster(<ANY>, { <ANY>, clusterSettings: [<ANY>, {value: 'enabled', name: 'containerInsights'}, <ANY>], <ANY>}, <ANY>)
+          - not_pattern: |
+              new $AWS.CfnCluster(<ANY>, { <ANY>, clusterSettings: [<ANY>, {value: 'enhanced', name: 'containerInsights'}, <ANY>], <ANY>}, <ANY>)
