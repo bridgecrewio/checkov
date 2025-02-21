@@ -6,6 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 # private_ip_google_access is not supported for subnetworks with the following purpose set
 PURPOSE_EXCEPTIONS = ["INTERNAL_HTTPS_LOAD_BALANCER", "REGIONAL_MANAGED_PROXY", "GLOBAL_MANAGED_PROXY"]
 
+
 class GoogleSubnetworkIPV6PrivateGoogleEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that Private google access is enabled for IPV6"
