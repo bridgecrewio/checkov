@@ -44,10 +44,10 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
         connected_rules = [
             g1[1] for g1 in self.graph.nodes()
             if g1[1].get(CustomAttributes.RESOURCE_TYPE) == "google_compute_security_policy_rule" and
-               g1[1].get("security_policy") == resource_name
+            g1[1].get("security_policy") == resource_name
         ]
 
-        for idx_rule, rule in enumerate(force_list(connected_rules)):
+        for rule in force_list(connected_rules):
             match = rule.get("match")
             if match and isinstance(match, dict):
                 expr = match.get("expr")
@@ -64,7 +64,6 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
                         if rule.get("preview"):
                             return CheckResult.FAILED
                         return CheckResult.PASSED
-
 
         return CheckResult.FAILED
 
