@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.graph.graph_builder import CustomAttributes
 
 
 class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
@@ -38,6 +39,33 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
                         if rule.get("preview") == [True]:
                             return CheckResult.FAILED
                         return CheckResult.PASSED
+
+        resource_name = conf.get("name")[0]
+        connected_rules = [
+            g1[1] for g1 in self.graph.nodes()
+            if g1[1].get(CustomAttributes.RESOURCE_TYPE) == "google_compute_security_policy_rule" and
+               g1[1].get("security_policy") == resource_name
+        ]
+
+        for idx_rule, rule in enumerate(force_list(connected_rules)):
+            match = rule.get("match")
+            if match and isinstance(match, dict):
+                expr = match.get("expr")
+                if expr and isinstance(expr, dict):
+                    if expr.get("expression") == "evaluatePreconfiguredExpr('cve-canary')":
+                        if rule.get("action") == "allow":
+                            return CheckResult.FAILED
+                        if rule.get("preview"):
+                            return CheckResult.FAILED
+                        return CheckResult.PASSED
+                    elif expr.get("expression") == "evaluatePreconfiguredWaf('cve-canary')":
+                        if rule.get("action") == "allow":
+                            return CheckResult.FAILED
+                        if rule.get("preview"):
+                            return CheckResult.FAILED
+                        return CheckResult.PASSED
+
+
         return CheckResult.FAILED
 
 
