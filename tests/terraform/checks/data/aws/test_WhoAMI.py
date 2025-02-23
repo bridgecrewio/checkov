@@ -2,7 +2,7 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.WhoAMI import check
+from checkov.terraform.checks.data.aws.WhoAMI import check
 from checkov.terraform.runner import Runner
 
 class TestWhoAMI(unittest.TestCase):
@@ -21,7 +21,8 @@ class TestWhoAMI(unittest.TestCase):
             "aws_ami.pass2"
         }
         failing_resources = {
-            "aws_ami.fail",
+            "aws_ami.fail1",
+            "aws_ami.fail2"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
