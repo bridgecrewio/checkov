@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class VMDiskWithPublicAccess(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Azure Virtual Machine disks that are configured with public network access"
+        name = "Ensure Azure Virtual Machine disks are configured without public network access"
         id = "CKV_AZURE_251"
         supported_resources = ['azurerm_managed_disk']
         categories = [CheckCategories.NETWORKING]
