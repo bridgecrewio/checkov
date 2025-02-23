@@ -22,7 +22,7 @@ class VMDiskWithPublicAccess(BaseResourceCheck):
             return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ['azurerm_storage_sync/incomingTrafficPolicy']
+        return ['public_network_access_enabled']
 
 
 check = VMDiskWithPublicAccess()
