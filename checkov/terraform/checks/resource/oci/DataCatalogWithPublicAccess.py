@@ -23,7 +23,7 @@ class DataCatalogWithPublicAccess(BaseResourceCheck):
             return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ['azurerm_storage_sync/incomingTrafficPolicy']
+        return ['attached_catalog_private_endpoints']
 
 
 check = DataCatalogWithPublicAccess()
