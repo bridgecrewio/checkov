@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class DataCatalogWithPublicAccess(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "OCI Data Catalog configured with overly permissive network access"
+        name = "Ensure OCI Data Catalog is configured without overly permissive network access"
         id = "CKV_OCI_23"
         supported_resources = ['oci_datacatalog_catalog']
         categories = [CheckCategories.NETWORKING]
