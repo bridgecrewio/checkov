@@ -28,15 +28,15 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
                 expr = match[0].get("expr")
                 if expr and isinstance(expr[0], dict):
                     if expr[0].get("expression") == ["evaluatePreconfiguredExpr('cve-canary')"]:
-                        if rule.get("action") == ["allow"]:
-                            return CheckResult.FAILED
                         if rule.get("preview") == [True]:
+                            return CheckResult.FAILED
+                        if rule.get("action") == ["allow"]:
                             return CheckResult.FAILED
                         return CheckResult.PASSED
                     elif expr[0].get("expression") == ["evaluatePreconfiguredWaf('cve-canary')"]:
-                        if rule.get("action") == ["allow"]:
-                            return CheckResult.FAILED
                         if rule.get("preview") == [True]:
+                            return CheckResult.FAILED
+                        if rule.get("action") == ["allow"]:
                             return CheckResult.FAILED
                         return CheckResult.PASSED
 
@@ -53,15 +53,15 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
                 expr = match.get("expr")
                 if expr and isinstance(expr, dict):
                     if expr.get("expression") == "evaluatePreconfiguredExpr('cve-canary')":
-                        if rule.get("action") == "allow":
-                            return CheckResult.FAILED
                         if rule.get("preview"):
+                            return CheckResult.FAILED
+                        if rule.get("action") == "allow":
                             return CheckResult.FAILED
                         return CheckResult.PASSED
                     elif expr.get("expression") == "evaluatePreconfiguredWaf('cve-canary')":
-                        if rule.get("action") == "allow":
-                            return CheckResult.FAILED
                         if rule.get("preview"):
+                            return CheckResult.FAILED
+                        if rule.get("action") == "allow":
                             return CheckResult.FAILED
                         return CheckResult.PASSED
 
