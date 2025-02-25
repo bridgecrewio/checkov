@@ -39,8 +39,6 @@ class CustomRegexDetector(RegexBasedDetector):
 
         for detector in detectors:
             try:
-                # if detector.get("Check_ID") != "CKV_SECRET_2":
-                #     continue
                 if detector.get("prerun"):
                     self.denylist.add(re.compile('{}'.format(detector["prerun"])))
                     self.regex_to_metadata[detector["prerun"]] = detector
