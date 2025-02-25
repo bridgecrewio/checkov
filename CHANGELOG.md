@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.372...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.373...HEAD)
+
+## [3.2.373](https://github.com/bridgecrewio/checkov/compare/3.2.372...3.2.373) - 2025-02-24
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_74, CKV_GCP_76 incorrectly enforced for REGIONAL and GLOBAL managed proxy networks - [#7002](https://github.com/bridgecrewio/checkov/pull/7002)
 
 ## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
 
