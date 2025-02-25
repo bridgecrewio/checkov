@@ -278,22 +278,18 @@ class Runner(BaseRunner[None, None, None]):
 
         secret_key_by_line_to_secrets = defaultdict(list)
         for key, secret in secrets:
-            secret_key_by_line = f'{key}_{secret.line_number}'
-            secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+            # secret_key_by_line = f'{key}_{secret.line_number}'
+            secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
         #
         # # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
         # # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
-        # for key, secrets_by_line in secret_key_by_line_to_secrets.items():
-        #     if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
-        #         continue
-        #     new_secrets = list()
-        #     key_with_no_line = key[:-2]
-        #     for s in secrets_by_line:
-        #         if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
-        #             continue
-        #         new_secrets.append(s)
-        #     secret_key_by_line_to_secrets[key] = new_secrets
-        #     secrets[key_with_no_line] = set(new_secrets)
+        for secret_file_and_line_key, secrets_by_line in secret_key_by_line_to_secrets.items():
+            if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
+                continue
+            _file_key = secret_file_and_line_key[0]
+            for s in secrets_by_line:
+                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
+                    secrets[_file_key].remove(s)
 
         for key, secret in secrets:
             check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
