@@ -278,23 +278,22 @@ class Runner(BaseRunner[None, None, None]):
 
         secret_key_by_line_to_secrets = defaultdict(list)
         for key, secret in secrets:
-            secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
-        # secret_key_by_line_to_secrets = {(key, secret.line_number): secret for key, secret in secrets}
-
-
-        # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
-        # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
-        for key_and_line, secrets_by_line in secret_key_by_line_to_secrets.items():
-            _key, _line = key_and_line[0], key_and_line[1]
-            if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
-                continue
-            new_secrets = list()
-            for s in secrets_by_line:
-                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
-                    continue
-                new_secrets.append(s)
-            secret_key_by_line_to_secrets[key_and_line] = new_secrets
-            secrets[_key] = set(new_secrets)
+            secret_key_by_line = f'{key}_{secret.line_number}'
+            secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+        #
+        # # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
+        # # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
+        # for key, secrets_by_line in secret_key_by_line_to_secrets.items():
+        #     if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
+        #         continue
+        #     new_secrets = list()
+        #     key_with_no_line = key[:-2]
+        #     for s in secrets_by_line:
+        #         if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
+        #             continue
+        #         new_secrets.append(s)
+        #     secret_key_by_line_to_secrets[key] = new_secrets
+        #     secrets[key_with_no_line] = set(new_secrets)
 
         for key, secret in secrets:
             check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
