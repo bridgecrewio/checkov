@@ -278,11 +278,10 @@ class Runner(BaseRunner[None, None, None]):
 
         secret_key_by_line_to_secrets = defaultdict(list)
         for key, secret in secrets:
-            # secret_key_by_line = f'{key}_{secret.line_number}'
             secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
-        #
-        # # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
-        # # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
+
+        # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
+        # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
         for secret_file_and_line_key, secrets_by_line in secret_key_by_line_to_secrets.items():
             if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
                 continue
@@ -368,7 +367,7 @@ class Runner(BaseRunner[None, None, None]):
                 secret.secret_value, bc_check_id, check_id, resource, secret.line_number, result
             )
 
-            secret_key_by_line = f'{key}_{secret.line_number}'
+            secret_key_by_line = (key, secret.line_number)
             line_text_censored = line_text
             for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
                 line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
