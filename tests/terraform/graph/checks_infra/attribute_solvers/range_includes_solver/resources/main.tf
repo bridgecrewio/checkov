@@ -1,3 +1,7 @@
+resource "test" "pass8" {
+  range = ["1-5","2000-3100"]
+}
+
 resource "test" "pass1" {
   range = "*"
 }
