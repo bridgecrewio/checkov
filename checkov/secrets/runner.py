@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tup
 from collections import defaultdict
 
 import requests
-from boto3 import resource
 from detect_secrets.filters.heuristic import is_potential_uuid
 
 from checkov.common.util.decorators import time_it
@@ -287,14 +286,14 @@ class Runner(BaseRunner[None, None, None]):
             if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
                 continue
             # Save resource id as we will need it for later
-            entropy_secret = ""
+            entropy_secret: str = ""
             _file_key = secret_file_and_line_key[0]
             for s in secrets_by_line:
                 if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID and entropy_secret != "":
                     s.secret_value = entropy_secret
                 if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID:
                     try:
-                        entropy_secret = s.secret_value
+                        entropy_secret = s.secret_value if s.secret_value else ""
                         secrets[_file_key].remove(s)
                     except KeyError:
                         pass
