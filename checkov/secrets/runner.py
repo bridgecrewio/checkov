@@ -290,7 +290,6 @@ class Runner(BaseRunner[None, None, None]):
                 if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID:
                     try:
                         secrets[_file_key].remove(s)
-                        pass
                     except KeyError:
                         pass
 
