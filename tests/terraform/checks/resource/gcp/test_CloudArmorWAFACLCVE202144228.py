@@ -21,13 +21,16 @@ class TestCloudArmorWAFACLCVE202144228(unittest.TestCase):
             "google_compute_security_policy.enabled_deny_403",
             "google_compute_security_policy.enabled_deny_404",
             "google_compute_security_policy.pass_preconfigwaf",
+            "google_compute_security_policy.pass_separate_resource",
         }
 
         failing_resources = {
             "google_compute_security_policy.allow",
             "google_compute_security_policy.preview",
             "google_compute_security_policy.different_expr",
-            "google_compute_security_policy.pass_preconfigwaf"
+            "google_compute_security_policy.pass_preconfigwaf",
+            "google_compute_security_policy.fail",
+            "google_compute_security_policy.fail_separate_resource",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
