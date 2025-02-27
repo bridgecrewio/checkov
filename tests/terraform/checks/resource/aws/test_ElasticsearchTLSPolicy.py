@@ -17,7 +17,9 @@ class TestElasticsearchTLSPolicy(unittest.TestCase):
 
         passing_resources = {
             "aws_elasticsearch_domain.pass",
+            "aws_elasticsearch_domain.pass2",
             "aws_opensearch_domain.pass",
+            "aws_opensearch_domain.pass2"
         }
         failing_resources = {
             "aws_elasticsearch_domain.fail",
@@ -29,7 +31,7 @@ class TestElasticsearchTLSPolicy(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["passed"], 4)
         self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
