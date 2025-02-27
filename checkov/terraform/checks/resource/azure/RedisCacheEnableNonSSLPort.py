@@ -12,7 +12,7 @@ class RedisCacheEnableNonSSLPort(BaseResourceValueCheck):
                          missing_block_result=CheckResult.PASSED)
 
     def get_inspected_key(self):
-        return "enable_non_ssl_port"
+        return "non_ssl_port_enabled"
 
     def get_expected_value(self):
         return False
