@@ -293,7 +293,7 @@ class Runner(BaseRunner[None, None, None]):
                     s.secret_value = entropy_secret
                 if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID:
                     try:
-                        entropy_secret = s.secret_value if s.secret_value else ""
+                        entropy_secret = s.secret_value if s.secret_value else None
                         secrets[_file_key].remove(s)
                     except KeyError:
                         pass
