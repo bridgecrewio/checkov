@@ -556,6 +556,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPComputeGlobalForwardingRuleCheck(self):
         self.go("AzureSpringCloudTLSDisabled")
 
+    def test_AzureMySQLserverConfigPrivEndpt(self):
+        self.go("AzureMySQLserverConfigPrivEndpt")
+
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
