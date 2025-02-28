@@ -556,8 +556,11 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPComputeGlobalForwardingRuleCheck(self):
         self.go("AzureSpringCloudTLSDisabled")
 
-    def test_AzureMySQLserverConfigPrivEndpt(self):
-        self.go("AzureMySQLserverConfigPrivEndpt")
+    def test_AzureMySQLFlexibleServerConfigPrivEndpt(self):
+        self.go("AzureMySQLFlexibleServerConfigPrivEndpt")
+
+    def test_AzurePostgreSQLFlexibleServerConfigPrivEndpt(self):
+        self.go("AzurePostgreSQLFlexibleServerConfigPrivEndpt")
 
 
     def test_registry_load(self):
