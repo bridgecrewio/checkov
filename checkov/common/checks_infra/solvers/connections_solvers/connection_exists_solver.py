@@ -109,7 +109,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     failed=failed,
                     unknown=unknown,
                 )
-                destination_attributes["connected_node"] = origin_attributes
+                destination_attributes.setdefault("connected_node", {})
+                destination_attributes["connected_node"][tuple(self.connected_resources_types)] = origin_attributes
                 continue
             if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
                 print(1)
@@ -154,7 +155,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     failed=failed,
                     unknown=unknown,
                 )
-                destination_attributes["connected_node"] = origin_attributes
+                destination_attributes.setdefault("connected_node", {})
+                destination_attributes["connected_node"][tuple(self.connected_resources_types)] = origin_attributes
                 continue
 
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
