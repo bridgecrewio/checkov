@@ -1,6 +1,47 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.370...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.379...HEAD)
+
+## [3.2.379](https://github.com/bridgecrewio/checkov/compare/3.2.378...3.2.379) - 2025-03-03
+
+### Feature
+
+- **terraform:** Add azure DB checks for flexible server private endpoints - [#7030](https://github.com/bridgecrewio/checkov/pull/7030)
+
+## [3.2.378](https://github.com/bridgecrewio/checkov/compare/3.2.377...3.2.378) - 2025-02-27
+
+### Bug Fix
+
+- **secrets:** Remove CKV_SECRET_80 instead of CKV_SECRET_6 - [#7029](https://github.com/bridgecrewio/checkov/pull/7029)
+
+## [3.2.377](https://github.com/bridgecrewio/checkov/compare/3.2.373...3.2.377) - 2025-02-25
+
+### Feature
+
+- **terraform:** adding 3 policies & tests - [#7011](https://github.com/bridgecrewio/checkov/pull/7011)
+
+### Bug Fix
+
+- **cloudformation:** Handle subs in CKV_AWS_384 - [#7022](https://github.com/bridgecrewio/checkov/pull/7022)
+- **secrets:** Fix Duplicated Violation in line bug - [#7027](https://github.com/bridgecrewio/checkov/pull/7027)
+- **terraform:** Fixed CKV2_GCP_10 to exclude non http triggered cloud functions from security_level requirement - [#7008](https://github.com/bridgecrewio/checkov/pull/7008)
+- **terraform:** Handle new resource type for CKV_GCP_73 - [#7023](https://github.com/bridgecrewio/checkov/pull/7023)
+
+## [3.2.373](https://github.com/bridgecrewio/checkov/compare/3.2.372...3.2.373) - 2025-02-24
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_74, CKV_GCP_76 incorrectly enforced for REGIONAL and GLOBAL managed proxy networks - [#7002](https://github.com/bridgecrewio/checkov/pull/7002)
+
+## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
+
+### Feature
+
+- **terraform:** Add multiple checks - [#7016](https://github.com/bridgecrewio/checkov/pull/7016)
+
+### Bug Fix
+
+- **terraform:** Postgres latest stable version - [#7015](https://github.com/bridgecrewio/checkov/pull/7015)
 
 ## [3.2.370](https://github.com/bridgecrewio/checkov/compare/3.2.369...3.2.370) - 2025-02-13
 
