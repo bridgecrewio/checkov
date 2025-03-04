@@ -17,13 +17,10 @@ class DeprecatedLambdaRuntime(BaseResourceNegativeValueCheck):
 
     def get_forbidden_values(self) -> List[Any]:
         # Source: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-        return ["dotnetcore3.1", "nodejs12.x", "python3.6", "python2.7", "dotnet5.0", "dotnetcore2.1", "ruby2.5",
-                "nodejs10.x", "nodejs8.10", "nodejs4.3", "nodejs6.10", "dotnetcore1.0", "dotnetcore2.0",
-                "nodejs4.3-edge", "nodejs", "java8", "python3.7", "go1.x", "provided", "ruby2.7", "nodejs14.x"
-                # "nodejs16.x", # Uncomment on Jun 12, 2024
-                # "python3.8". # Uncomment on Oct 14, 2024
-                # "dotnet7", # Uncomment on May 14, 2024
-                # "dotnet6", # Uncomment on Nov 12, 2024
+        return ["python3.8", "python3.7", "python3.6", "python2.7",
+                "dotnetcore3.1", "dotnet7", "dotnet6", "dotnet5.0", "dotnetcore2.1", "dotnetcore1.0", "dotnetcore2.0",
+                "nodejs16.x", "nodejs14.x", "nodejs12.x", "nodejs10.x", "nodejs8.10", "nodejs6.10", "nodejs4.3", "nodejs4.3-edge", "nodejs",
+                "java8", "go1.x", "provided", "ruby2.7", "ruby2.5"
                 ]
 
 
