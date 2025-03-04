@@ -488,7 +488,7 @@ class RunnerRegistry:
             )
 
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
             sarif = Sarif(reports=sarif_reports, tool=self.tool)
