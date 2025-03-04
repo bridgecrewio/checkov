@@ -611,11 +611,10 @@ class TestYamlPolicies(unittest.TestCase):
             self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
 
 
-def get_policy_results(root_folder, policy, external_registries=None):
-    check_id = policy['metadata']['id']
+def get_policy_results(root_folder: str, check_ids: list[str], external_registries=None):
     graph_runner = Runner()
     graph_runner.external_registries = external_registries if external_registries else []
-    report = graph_runner.run(root_folder, runner_filter=RunnerFilter(checks=[check_id]))
+    report = graph_runner.run(root_folder, runner_filter=RunnerFilter(checks=check_ids))
     return report
 
 
