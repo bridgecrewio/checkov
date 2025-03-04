@@ -83,6 +83,9 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
         return passed, failed, unknown
 
+    def _set_connected_node(self, source, target):
+        source.setdefault("connected_node", {})[tuple(self.connected_resources_types)] = target
+
     def get_networkx_operation(
         self,
         graph_connector: DiGraph,
@@ -109,8 +112,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     failed=failed,
                     unknown=unknown,
                 )
-                destination_attributes.setdefault("connected_node", {})
-                destination_attributes["connected_node"][tuple(self.connected_resources_types)] = origin_attributes
+                self._set_connected_node(destination_attributes, origin_attributes)
                 continue
             if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
                 print(1)
@@ -155,8 +157,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     failed=failed,
                     unknown=unknown,
                 )
-                destination_attributes.setdefault("connected_node", {})
-                destination_attributes["connected_node"][tuple(self.connected_resources_types)] = origin_attributes
+                self._set_connected_node(destination_attributes, origin_attributes)
                 continue
 
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)

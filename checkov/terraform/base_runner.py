@@ -107,8 +107,8 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def get_connected_node_data(self, connected_nodes_per_resource_types: dict[tuple[str], Any], root_folder: str,
-                                connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
+    def _get_connected_node_data(self, connected_nodes_per_resource_types: dict[tuple[str], Any], root_folder: str,
+                                 connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
         if not connected_resource_types or not connected_nodes_per_resource_types:
             return None
         existing_tuple = next((item for item in connected_resource_types if item in connected_nodes_per_resource_types), None)
@@ -152,8 +152,8 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_resource_types = self.get_connected_resources_types_with_subchecks(check)
-                    connected_node_data = self.get_connected_node_data(entity.get("connected_node"), root_folder, connected_resource_types)
+                    connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
+                    connected_node_data = self._get_connected_node_data(entity.get("connected_node"), root_folder, connected_resource_types)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
@@ -204,11 +204,11 @@ class BaseTerraformRunner(
                     report.add_record(record=record)
         return report
 
-    def get_connected_resources_types_with_subchecks(self, check: BaseGraphCheck) -> list[tuple[str]]:
+    def _get_connected_resources_types_with_subchecks(self, check: BaseGraphCheck) -> list[tuple[str]]:
         resource_types_tuples: list[tuple[str]] = []
         for sub_check in check.sub_checks:
-            resource_types_tuples.append(tuple(sub_check.connected_resources_types))  # Store as a separate list
-            resource_types_tuples.extend(self.get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
+            resource_types_tuples.append(tuple(sub_check.connected_resources_types))
+            resource_types_tuples.extend(self._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
         return resource_types_tuples
 
     @abstractmethod
