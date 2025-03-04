@@ -83,7 +83,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
         return passed, failed, unknown
 
-    def _set_connected_node(self, source, target):
+    def _set_connected_node(self, source: Any, target: Any) -> None:
         source.setdefault(CustomAttributes.CONNECTED_NODE, {})[tuple(self.connected_resources_types)] = target
 
     def get_networkx_operation(

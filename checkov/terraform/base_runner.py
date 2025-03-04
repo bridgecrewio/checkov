@@ -109,7 +109,7 @@ class BaseTerraformRunner(
 
     @staticmethod
     def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
-                                         connected_nodes_per_resource_types: dict[tuple[str], Any]):
+                                         connected_nodes_per_resource_types: dict[tuple[str], Any]) -> tuple[str] | None:
         return next((resource_types for resource_types in check_connected_resource_types
               if resource_types in connected_nodes_per_resource_types), None)
 
@@ -117,7 +117,7 @@ class BaseTerraformRunner(
                                  check_connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
         if not check_connected_resource_types or not connected_nodes_per_resource_types:
             return None
-        check_relevant_connected_resource_types: tuple[str] = self._extract_relevant_resource_types(
+        check_relevant_connected_resource_types = self._extract_relevant_resource_types(
             check_connected_resource_types, connected_nodes_per_resource_types)
         if not check_relevant_connected_resource_types:
             return None
@@ -160,7 +160,7 @@ class BaseTerraformRunner(
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
                     connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
-                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder, connected_resource_types)
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder, connected_resource_types) # type: ignore
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
@@ -214,7 +214,7 @@ class BaseTerraformRunner(
     def _get_connected_resources_types_with_subchecks(self, check: BaseGraphCheck) -> list[tuple[str]]:
         resource_types_tuples: list[tuple[str]] = []
         for sub_check in check.sub_checks:
-            resource_types_tuples.append(tuple(sub_check.connected_resources_types))
+            resource_types_tuples.append(tuple(sub_check.connected_resources_types)) # type: ignore
             resource_types_tuples.extend(self._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
         return resource_types_tuples
 
