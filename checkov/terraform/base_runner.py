@@ -107,14 +107,21 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
+    @staticmethod
+    def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
+                                         connected_nodes_per_resource_types: dict[tuple[str], Any]):
+        return next((resource_types for resource_types in check_connected_resource_types
+              if resource_types in connected_nodes_per_resource_types), None)
+
     def _get_connected_node_data(self, connected_nodes_per_resource_types: dict[tuple[str], Any], root_folder: str,
-                                 connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
-        if not connected_resource_types or not connected_nodes_per_resource_types:
+                                 check_connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
+        if not check_connected_resource_types or not connected_nodes_per_resource_types:
             return None
-        existing_tuple = next((item for item in connected_resource_types if item in connected_nodes_per_resource_types), None)
-        if not existing_tuple:
+        check_relevant_connected_resource_types: tuple[str] = self._extract_relevant_resource_types(
+            check_connected_resource_types, connected_nodes_per_resource_types)
+        if not check_relevant_connected_resource_types:
             return None
-        connected_entity = connected_nodes_per_resource_types[existing_tuple]
+        connected_entity = connected_nodes_per_resource_types[check_relevant_connected_resource_types]
         connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
         if not connected_entity_context:
             return None
@@ -153,7 +160,7 @@ class BaseTerraformRunner(
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
                     connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
-                    connected_node_data = self._get_connected_node_data(entity.get("connected_node"), root_folder, connected_resource_types)
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder, connected_resource_types)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
