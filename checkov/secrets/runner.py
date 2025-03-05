@@ -291,7 +291,7 @@ class Runner(BaseRunner[None, None, None]):
             for s in secrets_by_line:
                 if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID and entropy_secret is not None:
                     s.secret_value = entropy_secret
-                if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID and BASE64_HIGH_ENTROPY_CHECK_ID in [SECRET_TYPE_TO_ID.get(i.type) for i in secrets_by_line]:
+                if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID and s.secret_value.strip(',";\'') in [i.secret_value for i in secrets_by_line if SECRET_TYPE_TO_ID.get(i.type) == BASE64_HIGH_ENTROPY_CHECK_ID]:
                     try:
                         entropy_secret = s.secret_value if s.secret_value else None
                         secrets[_file_key].remove(s)
