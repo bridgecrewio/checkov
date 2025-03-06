@@ -1,6 +1,96 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.358...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.381...HEAD)
+
+## [3.2.381](https://github.com/bridgecrewio/checkov/compare/3.2.379...3.2.381) - 2025-03-05
+
+### Bug Fix
+
+- **general:** prevent connected_node attribute from being overriden - [#7032](https://github.com/bridgecrewio/checkov/pull/7032)
+- **secrets:** ckv_secret_80 filtering fix - [#7037](https://github.com/bridgecrewio/checkov/pull/7037)
+
+## [3.2.379](https://github.com/bridgecrewio/checkov/compare/3.2.378...3.2.379) - 2025-03-03
+
+### Feature
+
+- **terraform:** Add azure DB checks for flexible server private endpoints - [#7030](https://github.com/bridgecrewio/checkov/pull/7030)
+
+## [3.2.378](https://github.com/bridgecrewio/checkov/compare/3.2.377...3.2.378) - 2025-02-27
+
+### Bug Fix
+
+- **secrets:** Remove CKV_SECRET_80 instead of CKV_SECRET_6 - [#7029](https://github.com/bridgecrewio/checkov/pull/7029)
+
+## [3.2.377](https://github.com/bridgecrewio/checkov/compare/3.2.373...3.2.377) - 2025-02-25
+
+### Feature
+
+- **terraform:** adding 3 policies & tests - [#7011](https://github.com/bridgecrewio/checkov/pull/7011)
+
+### Bug Fix
+
+- **cloudformation:** Handle subs in CKV_AWS_384 - [#7022](https://github.com/bridgecrewio/checkov/pull/7022)
+- **secrets:** Fix Duplicated Violation in line bug - [#7027](https://github.com/bridgecrewio/checkov/pull/7027)
+- **terraform:** Fixed CKV2_GCP_10 to exclude non http triggered cloud functions from security_level requirement - [#7008](https://github.com/bridgecrewio/checkov/pull/7008)
+- **terraform:** Handle new resource type for CKV_GCP_73 - [#7023](https://github.com/bridgecrewio/checkov/pull/7023)
+
+## [3.2.373](https://github.com/bridgecrewio/checkov/compare/3.2.372...3.2.373) - 2025-02-24
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_74, CKV_GCP_76 incorrectly enforced for REGIONAL and GLOBAL managed proxy networks - [#7002](https://github.com/bridgecrewio/checkov/pull/7002)
+
+## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
+
+### Feature
+
+- **terraform:** Add multiple checks - [#7016](https://github.com/bridgecrewio/checkov/pull/7016)
+
+### Bug Fix
+
+- **terraform:** Postgres latest stable version - [#7015](https://github.com/bridgecrewio/checkov/pull/7015)
+
+## [3.2.370](https://github.com/bridgecrewio/checkov/compare/3.2.369...3.2.370) - 2025-02-13
+
+### Bug Fix
+
+- **general:** Handle ECS enhanced container insights - [#7001](https://github.com/bridgecrewio/checkov/pull/7001)
+
+## [3.2.369](https://github.com/bridgecrewio/checkov/compare/3.2.368...3.2.369) - 2025-02-10
+
+### Bug Fix
+
+- **terraform:** Multiple check fixes - [#6999](https://github.com/bridgecrewio/checkov/pull/6999)
+
+## [3.2.368](https://github.com/bridgecrewio/checkov/compare/3.2.366...3.2.368) - 2025-02-06
+
+### Feature
+
+- **general:** fix proxy access from git and registry loader - [#6992](https://github.com/bridgecrewio/checkov/pull/6992)
+
+## [3.2.366](https://github.com/bridgecrewio/checkov/compare/3.2.364...3.2.366) - 2025-02-05
+
+### Bug Fix
+
+- **bicep:** Add bicep specific for CKV_AZURE_25 since ARM implementation fails - [#6996](https://github.com/bridgecrewio/checkov/pull/6996)
+- **terraform:** CKV_AZURE_249 & CKV_AWS_358 - better support for OIDC 'repo' detection regex and conditions order - [#6994](https://github.com/bridgecrewio/checkov/pull/6994)
+
+## [3.2.364](https://github.com/bridgecrewio/checkov/compare/3.2.362...3.2.364) - 2025-02-04
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_339 - Add EKS platform version 1.32 to allowed lists of versions - [#6988](https://github.com/bridgecrewio/checkov/pull/6988)
+
+## [3.2.362](https://github.com/bridgecrewio/checkov/compare/3.2.358...3.2.362) - 2025-02-03
+
+### Bug Fix
+
+- **secrets:** Multiple matching groups are being caught as regex separated by | sign - [#6967](https://github.com/bridgecrewio/checkov/pull/6967)
+- **secrets:** Remove both random and base64 entropy secrets finding - [#6969](https://github.com/bridgecrewio/checkov/pull/6969)
+
+### Platform
+
+- **general:** Backfill more eval keys - [#6970](https://github.com/bridgecrewio/checkov/pull/6970)
 
 ## [3.2.358](https://github.com/bridgecrewio/checkov/compare/3.2.357...3.2.358) - 2025-01-28
 

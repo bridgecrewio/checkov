@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.1" serialNumber="urn:uuid:46cc45b0-e8a1-424e-b82c-9571999dbfe6" version="1">
+	<components>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2">
+			<name>django</name>
+			<version>1.2</version>
+			<licenses>
+				<license>
+					<name>OSI_BDS</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6">
+			<name>flask</name>
+			<version>0.6</version>
+			<licenses>
+				<license>
+					<name>DUMMY_OTHER_LICENSE</name>
+				</license>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0">
+			<name>github.com/dgrijalva/jwt-go</name>
+			<version>v3.2.0</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41">
+			<name>github.com/miekg/dns</name>
+			<version>v1.1.41</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90">
+			<name>github.com/prometheus/client_model</name>
+			<version>v0.0.0-20190129233127-fd36f4220a90</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1">
+			<name>golang.org/x/crypto</name>
+			<version>v0.0.1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<licenses>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<licenses>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0</purl>
+		</component>
+	</components>
+</bom>

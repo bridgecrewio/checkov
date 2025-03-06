@@ -20,6 +20,7 @@ class TestParameterStoreCredentials(unittest.TestCase):
             "AWS::SSM::Parameter.GoodRef",
             "AWS::SSM::Parameter.PassTestName",
             "AWS::SSM::Parameter.PassTestVALUE",
+            "AWS::SSM::Parameter.DynamoDbParameter",
         }
         failing_resources = {
             "AWS::SSM::Parameter.FailAPIKey",

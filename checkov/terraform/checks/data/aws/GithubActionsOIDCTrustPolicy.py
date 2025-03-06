@@ -42,10 +42,15 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                                     break
                 if not found_federated_gh_oidc:
                     return CheckResult.PASSED
+
+                # By now we know that the statement is a federated GitHub OIDC provider
+                # First check - if the statement is a federated GitHub OIDC provider, it MUST have a condition
                 if found_federated_gh_oidc and not statement.get("condition"):
                     return CheckResult.FAILED
                 found_sub_condition_variable = False
                 found_sub_condition_value = False
+
+                # It is common to have multiple conditions, so we need to iterate over them
                 for condition in statement.get("condition"):
                     condition_variables = condition.get("variable")
                     condition_values = condition.get("values")
@@ -54,6 +59,10 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                             if condition_variable == "token.actions.githubusercontent.com:sub":
                                 found_sub_condition_variable = True
                                 break
+
+                        # If we didn't find the sub condition variable, we can skip the rest of the checks
+                        if not found_sub_condition_variable:
+                            continue
                         if isinstance(condition_values, list):
                             for condition_value in condition_values:
                                 if isinstance(condition_value, list):

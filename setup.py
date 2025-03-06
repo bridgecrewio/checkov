@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.35",
+        "bc-detect-secrets==1.5.37",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.5.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -89,7 +89,7 @@ setup(
         "typing-extensions<5.0.0,>=4.5.0",
         "importlib-metadata>=6.0.0,<8.0.0",
         "cachetools>=5.2.0,<6.0.0",
-        "cyclonedx-python-lib<7.0.0,>=6.0.0",
+        "cyclonedx-python-lib<8.0.0,>=6.0.0",
         "packageurl-python<0.14.0,>=0.11.1",
         "click<9.0.0,>=8.1.0",
         "aiohttp<4.0.0,>=3.8.0",
