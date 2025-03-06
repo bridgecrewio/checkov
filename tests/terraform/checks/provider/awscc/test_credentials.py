@@ -1,73 +1,39 @@
+import os
 import unittest
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.provider.awscc.credentials import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestCredentials(unittest.TestCase):
-    def test_success_empty(self):
-        hcl_res = hcl2.loads(
-            """
-            provider "awscc" {}
-            """
-        )
-        provider_conf = hcl_res["provider"][0]["awscc"]
-        scan_result = check.scan_provider_conf(conf=provider_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+class TestAWSCCCredentials(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_success_region(self):
-        hcl_res = hcl2.loads(
-            """
-            provider "awscc" {
-                region = "us-west-2"
-            }
-            """
-        )
-        provider_conf = hcl_res["provider"][0]["awscc"]
-        scan_result = check.scan_provider_conf(conf=provider_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        test_files_dir = current_dir + "/example_Credentials"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure_both_keys(self):
-        hcl_res = hcl2.loads(
-            """
-            provider "awscc" {
-                region     = "us-west-2"
-                access_key = "AKIAIOSFODNN7EXAMPLE"
-                secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-            }
-            """
-        )
-        provider_conf = hcl_res["provider"][0]["awscc"]
-        scan_result = check.scan_provider_conf(conf=provider_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "provider.awscc.pass"
+        }
+        failing_resources = {
+            "provider.awscc.fail",
+            "provider.awscc.fail2",
+            "provider.awscc.fail3",
+        }
 
-    def test_failure_access_key(self):
-        hcl_res = hcl2.loads(
-            """
-            provider "awscc" {
-                region     = "us-west-2"
-                access_key = "AKIAIOSFODNN7EXAMPLE"
-            }
-            """
-        )
-        provider_conf = hcl_res["provider"][0]["awscc"]
-        scan_result = check.scan_provider_conf(conf=provider_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_failure_secret_key(self):
-        hcl_res = hcl2.loads(
-            """
-            provider "awscc" {
-                region     = "us-west-2"
-                secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-            }
-            """
-        )
-        provider_conf = hcl_res["provider"][0]["awscc"]
-        scan_result = check.scan_provider_conf(conf=provider_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == "__main__":
