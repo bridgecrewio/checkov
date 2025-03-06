@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.379...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.381...HEAD)
+
+## [3.2.381](https://github.com/bridgecrewio/checkov/compare/3.2.379...3.2.381) - 2025-03-05
+
+### Bug Fix
+
+- **general:** prevent connected_node attribute from being overriden - [#7032](https://github.com/bridgecrewio/checkov/pull/7032)
+- **secrets:** ckv_secret_80 filtering fix - [#7037](https://github.com/bridgecrewio/checkov/pull/7037)
 
 ## [3.2.379](https://github.com/bridgecrewio/checkov/compare/3.2.378...3.2.379) - 2025-03-03
 
