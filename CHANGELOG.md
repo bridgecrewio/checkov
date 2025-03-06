@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.381...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.382...HEAD)
+
+## [3.2.382](https://github.com/bridgecrewio/checkov/compare/3.2.381...3.2.382) - 2025-03-06
+
+### Feature
+
+- **secrets:** Bump detect-secrets to remove more lock files - [#7039](https://github.com/bridgecrewio/checkov/pull/7039)
 
 ## [3.2.381](https://github.com/bridgecrewio/checkov/compare/3.2.379...3.2.381) - 2025-03-05
 
