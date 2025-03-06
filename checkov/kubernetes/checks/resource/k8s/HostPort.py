@@ -9,7 +9,7 @@ class HostPort(BaseK8sContainerCheck):
         """
         https://kubernetes.io/docs/concepts/configuration/overview/
 
-        Don’t specify a hostPort for a Pod unless it is absolutely necessary.
+        Don't specify a hostPort for a Pod unless it is absolutely necessary.
         When you bind a Pod to a hostPort, it limits the number of places the
         Pod can be scheduled, because each <hostIP, hostPort, protocol> combination
         must be unique.
