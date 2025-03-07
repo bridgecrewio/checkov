@@ -13,7 +13,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.serverless.parsers.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.serverless.registry import sls_registry
-from serverless.base_registry import ServerlessRegistry
+from checkov.serverless.base_registry import ServerlessRegistry
 
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
