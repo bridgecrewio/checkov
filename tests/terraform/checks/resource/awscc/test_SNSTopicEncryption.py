@@ -18,10 +18,10 @@ class TestS3Encryption(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_sns_topic.pass",
+            "awscc_sns_topic.pass",
         }
         failing_resources = {
-            "aws_sns_topic.fail",
+            "awscc_sns_topic.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
