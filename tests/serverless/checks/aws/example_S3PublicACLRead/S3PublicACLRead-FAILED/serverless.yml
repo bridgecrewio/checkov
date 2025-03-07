@@ -27,3 +27,6 @@ resources: # CloudFormation template syntax
           ServerSideEncryptionConfiguration:
             - ServerSideEncryptionByDefault:
                 SSEAlgorithm: AES256
+        Tags:
+          RESOURCE: lambda
+          PUBLIC: false

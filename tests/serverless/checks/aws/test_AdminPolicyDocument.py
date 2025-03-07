@@ -25,6 +25,9 @@ class TestAdminPolicyDocument(unittest.TestCase):
                          f"Skipped checks: {[fc.file_path for fc in report.skipped_checks]}")
         self.assertEqual(summary['parsing_errors'], 0)
 
+        for failed_check in report.failed_checks:
+            self.assertEqual(dict(sorted(failed_check.entity_tags.items())), {"RESOURCE": "lambda", "PUBLIC": "False"})
+
 
 if __name__ == '__main__':
     unittest.main()

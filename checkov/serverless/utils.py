@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import os
+import logging
 from collections.abc import Collection
 from enum import Enum
-from typing import Callable, Any
+from typing import Callable, Any, Optional
 from pathlib import Path
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.cloudformation import cfn_utils
 from checkov.serverless.parsers.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.serverless.registry import sls_registry
+from serverless.base_registry import ServerlessRegistry
 
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
@@ -85,3 +89,24 @@ def get_files_definitions(
 def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
     """Thin wrapper to return filename with parsed content"""
     return f, parse(f)
+
+
+def get_resource_tags(entity: dict[str, dict[str, Any]], registry: ServerlessRegistry = sls_registry) -> Optional[dict[str, str]]:
+    entity_details = registry.extract_entity_details(entity)
+
+    if not entity_details:
+        return None
+
+    entity_config = entity_details[-1]
+
+    if not isinstance(entity_config, dict):
+        return None
+
+    try:
+        tags = entity_config.get("tags")
+        if tags:
+            return cfn_utils.parse_entity_tags(tags)
+    except Exception as e:
+        logging.warning(f"Failed to parse tags for entity {entity} due to {e}")
+
+    return None

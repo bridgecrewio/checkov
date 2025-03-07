@@ -33,7 +33,7 @@ from checkov.common.output.report import Report
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
-from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK
+from checkov.serverless.utils import get_scannable_file_paths, get_files_definitions, SLS_FILE_MASK, get_resource_tags
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -44,10 +44,10 @@ MULTI_ITEM_SECTIONS = [
     ("layers", layer_registry)
 ]
 SINGLE_ITEM_SECTIONS = [
+    ("provider", provider_registry),
     ("custom", custom_registry),
     ("package", package_registry),
     ("plugins", plugin_registry),
-    ("provider", provider_registry),
     ("service", service_registry)
 ]
 
@@ -203,7 +203,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             variable_evaluations: dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-            tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
+            tags = get_resource_tags(entity, registry)  # type:ignore[arg-type]
             if results:
                 for check, check_result in results.items():
                     censored_code_lines = omit_secret_value_from_checks(
@@ -264,7 +264,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         sls_context_parser.enrich_function_with_provider(item_name)
                     entity = EntityDetails(sls_context_parser.provider_type, item_content)
                     results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                    tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
+                    tags = get_resource_tags(entity, registry)  # type:ignore[arg-type]
                     if results:
                         for check, check_result in results.items():
                             censored_code_lines = omit_secret_value_from_checks(
