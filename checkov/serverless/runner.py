@@ -203,7 +203,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             variable_evaluations: dict[str, Any] = {}
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-            tags = get_resource_tags(entity, registry)  # type:ignore[arg-type]
+            tags = get_resource_tags(entity, registry)
             if results:
                 for check, check_result in results.items():
                     censored_code_lines = omit_secret_value_from_checks(
@@ -264,7 +264,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         sls_context_parser.enrich_function_with_provider(item_name)
                     entity = EntityDetails(sls_context_parser.provider_type, item_content)
                     results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                    tags = get_resource_tags(entity, registry)  # type:ignore[arg-type]
+                    tags = get_resource_tags(entity, registry)
                     if results:
                         for check, check_result in results.items():
                             censored_code_lines = omit_secret_value_from_checks(
