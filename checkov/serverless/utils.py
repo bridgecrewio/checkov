@@ -13,7 +13,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.serverless.parsers.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.serverless.registry import sls_registry
-from checkov.serverless.base_registry import ServerlessRegistry
+from checkov.serverless.base_registry import ServerlessRegistry, EntityDetails
 
 SLS_FILE_MASK = os.getenv(
     "CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
@@ -91,7 +91,7 @@ def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, 
     return f, parse(f)
 
 
-def get_resource_tags(entity: dict[str, dict[str, Any]], registry: ServerlessRegistry = sls_registry) -> Optional[dict[str, str]]:
+def get_resource_tags(entity: EntityDetails, registry: ServerlessRegistry = sls_registry) -> Optional[dict[str, str]]:
     entity_details = registry.extract_entity_details(entity)
 
     if not entity_details:
