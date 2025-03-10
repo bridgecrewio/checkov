@@ -65,6 +65,7 @@ class ForeachEntityHandler(ForeachAbstractHandler):
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
             self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+        self.local_graph.vertices.append(main_resource)
 
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
                                      new_key: int | str, new_value: int | str) -> None:

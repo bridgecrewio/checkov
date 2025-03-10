@@ -3,7 +3,6 @@
     "module": [
       {
         "s3_module[\"a\"]": {
-          "__address__": "s3_module[\"a\"]",
           "__end_line__": 12,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}"
@@ -17,12 +16,12 @@
           ],
           "source": [
             "./module"
-          ]
+          ],
+          "__address__": "s3_module[\"a\"]"
         }
       },
       {
         "s3_module2[0]": {
-          "__address__": "s3_module2[0]",
           "__end_line__": 19,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}"
@@ -36,12 +35,12 @@
           ],
           "source": [
             "./module"
-          ]
+          ],
+          "__address__": "s3_module2[0]"
         }
       },
       {
         "s3_module[\"b\"]": {
-          "__address__": "s3_module[\"b\"]",
           "__end_line__": 12,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}"
@@ -55,12 +54,37 @@
           ],
           "source": [
             "./module"
-          ]
+          ],
+          "__address__": "s3_module[\"b\"]"
+        }
+      },
+      {
+        "s3_module": {
+          "__end_line__": 12,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": null, \"nested_tf_module\": null}}"
+          ],
+          "__start_line__": 7,
+          "bucket": [
+            false
+          ],
+          "bucket2": [
+            ""
+          ],
+          "for_each": [
+            [
+              "a",
+              "b"
+            ]
+          ],
+          "source": [
+            "./module"
+          ],
+          "__address__": "s3_module"
         }
       },
       {
         "s3_module2[1]": {
-          "__address__": "s3_module2[1]",
           "__end_line__": 19,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}"
@@ -74,14 +98,14 @@
           ],
           "source": [
             "./module"
-          ]
+          ],
+          "__address__": "s3_module2[1]"
         }
       }
     ],
     "provider": [
       {
         "aws": {
-          "__address__": "aws.test_provider",
           "__end_line__": 5,
           "__start_line__": 1,
           "alias": [
@@ -92,7 +116,8 @@
           ],
           "test_provider": [
             true
-          ]
+          ],
+          "__address__": "aws.test_provider"
         }
       }
     ]
@@ -101,7 +126,6 @@
     "module": [
       {
         "inner_s3_module[\"c\"]": {
-          "__address__": "module.s3_module[\"a\"].inner_s3_module[\"c\"]",
           "__end_line__": 5,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
@@ -112,12 +136,12 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].inner_s3_module[\"c\"]"
         }
       },
       {
         "inner_s3_module2[\"e\"]": {
-          "__address__": "module.s3_module[\"a\"].inner_s3_module2[\"e\"]",
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
@@ -128,12 +152,12 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].inner_s3_module2[\"e\"]"
         }
       },
       {
         "inner_s3_module[\"d\"]": {
-          "__address__": "module.s3_module[\"a\"].inner_s3_module[\"d\"]",
           "__end_line__": 5,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
@@ -144,12 +168,34 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].inner_s3_module[\"d\"]"
+        }
+      },
+      {
+        "inner_s3_module": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            false
+          ],
+          "for_each": [
+            [
+              "c",
+              "d"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"a\"].inner_s3_module"
         }
       },
       {
         "inner_s3_module2[\"f\"]": {
-          "__address__": "module.s3_module[\"a\"].inner_s3_module2[\"f\"]",
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
@@ -160,54 +206,12 @@
           ],
           "source": [
             "./module2"
-          ]
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket": {
-          "__address__": "module.s3_module[\"a\"].bucket",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].inner_s3_module2[\"f\"]"
         }
       },
       {
-        "bucket2": {
-          "__address__": "module.s3_module[\"a\"].bucket2",
-          "__end_line__": 20,
-          "__start_line__": 18,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}": {
-    "module": [
-      {
-        "inner_s3_module[\"c\"]": {
-          "__address__": "module.s3_module[\"b\"].inner_s3_module[\"c\"]",
-          "__end_line__": 5,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
-          ],
-          "__start_line__": 1,
-          "bucket2": [
-            false
-          ],
-          "source": [
-            "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module2[\"e\"]": {
-          "__address__": "module.s3_module[\"b\"].inner_s3_module2[\"e\"]",
+        "inner_s3_module2": {
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
@@ -216,63 +220,38 @@
           "bucket2": [
             ""
           ],
-          "source": [
-            "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module[\"d\"]": {
-          "__address__": "module.s3_module[\"b\"].inner_s3_module[\"d\"]",
-          "__end_line__": 5,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
-          ],
-          "__start_line__": 1,
-          "bucket2": [
-            false
+          "for_each": [
+            [
+              "e",
+              "f"
+            ]
           ],
           "source": [
             "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module2[\"f\"]": {
-          "__address__": "module.s3_module[\"b\"].inner_s3_module2[\"f\"]",
-          "__end_line__": 11,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
           ],
-          "__start_line__": 7,
-          "bucket2": [
-            ""
-          ],
-          "source": [
-            "./module2"
-          ]
+          "__address__": "module.s3_module[\"a\"].inner_s3_module2"
         }
       }
     ],
     "variable": [
       {
         "bucket": {
-          "__address__": "module.s3_module[\"b\"].bucket",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].bucket"
         }
       },
       {
         "bucket2": {
-          "__address__": "module.s3_module[\"b\"].bucket2",
           "__end_line__": 20,
           "__start_line__": 18,
           "type": [
             "string"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].bucket2"
         }
       }
     ]
@@ -281,7 +260,6 @@
     "module": [
       {
         "inner_s3_module[\"c\"]": {
-          "__address__": "module.s3_module2[0].inner_s3_module[\"c\"]",
           "__end_line__": 5,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
@@ -292,12 +270,12 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].inner_s3_module[\"c\"]"
         }
       },
       {
         "inner_s3_module2[\"e\"]": {
-          "__address__": "module.s3_module2[0].inner_s3_module2[\"e\"]",
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
@@ -308,12 +286,12 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].inner_s3_module2[\"e\"]"
         }
       },
       {
         "inner_s3_module[\"d\"]": {
-          "__address__": "module.s3_module2[0].inner_s3_module[\"d\"]",
           "__end_line__": 5,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
@@ -324,12 +302,34 @@
           ],
           "source": [
             "./module2"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].inner_s3_module[\"d\"]"
+        }
+      },
+      {
+        "inner_s3_module": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            ""
+          ],
+          "for_each": [
+            [
+              "c",
+              "d"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[0].inner_s3_module"
         }
       },
       {
         "inner_s3_module2[\"f\"]": {
-          "__address__": "module.s3_module2[0].inner_s3_module2[\"f\"]",
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
@@ -340,54 +340,12 @@
           ],
           "source": [
             "./module2"
-          ]
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket": {
-          "__address__": "module.s3_module2[0].bucket",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].inner_s3_module2[\"f\"]"
         }
       },
       {
-        "bucket2": {
-          "__address__": "module.s3_module2[0].bucket2",
-          "__end_line__": 20,
-          "__start_line__": 18,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}": {
-    "module": [
-      {
-        "inner_s3_module[\"c\"]": {
-          "__address__": "module.s3_module2[1].inner_s3_module[\"c\"]",
-          "__end_line__": 5,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
-          ],
-          "__start_line__": 1,
-          "bucket2": [
-            ""
-          ],
-          "source": [
-            "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module2[\"e\"]": {
-          "__address__": "module.s3_module2[1].inner_s3_module2[\"e\"]",
+        "inner_s3_module2": {
           "__end_line__": 11,
           "__resolved__": [
             "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
@@ -396,63 +354,38 @@
           "bucket2": [
             true
           ],
-          "source": [
-            "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module[\"d\"]": {
-          "__address__": "module.s3_module2[1].inner_s3_module[\"d\"]",
-          "__end_line__": 5,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
-          ],
-          "__start_line__": 1,
-          "bucket2": [
-            ""
+          "for_each": [
+            [
+              "e",
+              "f"
+            ]
           ],
           "source": [
             "./module2"
-          ]
-        }
-      },
-      {
-        "inner_s3_module2[\"f\"]": {
-          "__address__": "module.s3_module2[1].inner_s3_module2[\"f\"]",
-          "__end_line__": 11,
-          "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
           ],
-          "__start_line__": 7,
-          "bucket2": [
-            true
-          ],
-          "source": [
-            "./module2"
-          ]
+          "__address__": "module.s3_module2[0].inner_s3_module2"
         }
       }
     ],
     "variable": [
       {
         "bucket": {
-          "__address__": "module.s3_module2[1].bucket",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].bucket"
         }
       },
       {
         "bucket2": {
-          "__address__": "module.s3_module2[1].bucket2",
           "__end_line__": 20,
           "__start_line__": 18,
           "type": [
             "string"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].bucket2"
         }
       }
     ]
@@ -460,35 +393,35 @@
   "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
     "locals": [
       {
-        "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"c\"].bucket2",
         "bucket2": [
           false
-        ]
+        ],
+        "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"c\"].bucket2"
       }
     ],
     "resource": [
       {
         "aws_s3_bucket_public_access_block": {
           "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              false
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
             "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              false
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
+            "__provider_address__": ""
           }
         }
       }
@@ -496,61 +429,12 @@
     "variable": [
       {
         "bucket2": {
-          "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"c\"].bucket2",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].bucket2",
-        "bucket2": [
-          false
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              false
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"c\"].bucket2"
         }
       }
     ]
@@ -558,35 +442,35 @@
   "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
     "locals": [
       {
-        "__address__": "module.s3_module2[0].module.inner_s3_module[\"c\"].bucket2",
         "bucket2": [
           ""
-        ]
+        ],
+        "__address__": "module.s3_module2[0].module.inner_s3_module[\"c\"].bucket2"
       }
     ],
     "resource": [
       {
         "aws_s3_bucket_public_access_block": {
           "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
             "__address__": "module.s3_module2[0].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
+            "__provider_address__": ""
           }
         }
       }
@@ -594,257 +478,12 @@
     "variable": [
       {
         "bucket2": {
-          "__address__": "module.s3_module2[0].module.inner_s3_module[\"c\"].bucket2",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].bucket2",
-        "bucket2": [
-          false
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              false
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].bucket2",
-        "bucket2": [
-          false
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              false
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].module.inner_s3_module[\"c\"].bucket2"
         }
       }
     ]
@@ -852,35 +491,35 @@
   "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
     "locals": [
       {
-        "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"e\"].bucket2",
         "bucket2": [
           ""
-        ]
+        ],
+        "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"e\"].bucket2"
       }
     ],
     "resource": [
       {
         "aws_s3_bucket_public_access_block": {
           "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
             "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
+            "__provider_address__": ""
           }
         }
       }
@@ -888,61 +527,12 @@
     "variable": [
       {
         "bucket2": {
-          "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"e\"].bucket2",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"e\"].bucket2"
         }
       }
     ]
@@ -950,35 +540,35 @@
   "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
     "locals": [
       {
-        "__address__": "module.s3_module2[0].module.inner_s3_module2[\"e\"].bucket2",
         "bucket2": [
           true
-        ]
+        ],
+        "__address__": "module.s3_module2[0].module.inner_s3_module2[\"e\"].bucket2"
       }
     ],
     "resource": [
       {
         "aws_s3_bucket_public_access_block": {
           "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              true
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
             "__address__": "module.s3_module2[0].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              true
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
+            "__provider_address__": ""
           }
         }
       }
@@ -986,257 +576,12 @@
     "variable": [
       {
         "bucket2": {
-          "__address__": "module.s3_module2[0].module.inner_s3_module2[\"e\"].bucket2",
           "__end_line__": 16,
           "__start_line__": 14,
           "type": [
             "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].bucket2",
-        "bucket2": [
-          true
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              true
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].bucket2",
-        "bucket2": [
-          ""
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              ""
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].bucket2",
-        "bucket2": [
-          true
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              true
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
-        }
-      }
-    ]
-  },
-  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
-    "locals": [
-      {
-        "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].bucket2",
-        "bucket2": [
-          true
-        ]
-      }
-    ],
-    "resource": [
-      {
-        "aws_s3_bucket_public_access_block": {
-          "var_bucket": {
-            "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
-            "__end_line__": 11,
-            "__provider_address__": "",
-            "__start_line__": 5,
-            "block_public_acls": [
-              true
-            ],
-            "block_public_policy": [
-              true
-            ],
-            "bucket": [
-              true
-            ],
-            "ignore_public_acls": [
-              true
-            ],
-            "restrict_public_buckets": [
-              true
-            ]
-          }
-        }
-      }
-    ],
-    "variable": [
-      {
-        "bucket2": {
-          "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].bucket2",
-          "__end_line__": 16,
-          "__start_line__": 14,
-          "type": [
-            "string"
-          ]
+          ],
+          "__address__": "module.s3_module2[0].module.inner_s3_module2[\"e\"].bucket2"
         }
       }
     ]
@@ -1245,17 +590,16 @@
     "variable": [
       {
         "count_var": {
-          "__address__": "count_var",
           "__end_line__": 4,
           "__start_line__": 2,
           "default": [
             2
-          ]
+          ],
+          "__address__": "count_var"
         }
       },
       {
         "foreach_var": {
-          "__address__": "foreach_var",
           "__end_line__": 8,
           "__start_line__": 6,
           "default": [
@@ -1263,7 +607,864 @@
               "a",
               "b"
             ]
-          ]
+          ],
+          "__address__": "foreach_var"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}": {
+    "module": [
+      {
+        "inner_s3_module[\"c\"]": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            false
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module[\"c\"]"
+        }
+      },
+      {
+        "inner_s3_module2[\"e\"]": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            ""
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module2[\"e\"]"
+        }
+      },
+      {
+        "inner_s3_module[\"d\"]": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            false
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module[\"d\"]"
+        }
+      },
+      {
+        "inner_s3_module": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            false
+          ],
+          "for_each": [
+            [
+              "c",
+              "d"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module"
+        }
+      },
+      {
+        "inner_s3_module2[\"f\"]": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            ""
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module2[\"f\"]"
+        }
+      },
+      {
+        "inner_s3_module2": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            ""
+          ],
+          "for_each": [
+            [
+              "e",
+              "f"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module[\"b\"].inner_s3_module2"
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].bucket"
+        }
+      },
+      {
+        "bucket2": {
+          "__end_line__": 20,
+          "__start_line__": 18,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          false
+        ],
+        "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              false
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"c\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"e\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}": {
+    "module": [
+      {
+        "inner_s3_module[\"c\"]": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            ""
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module[\"c\"]"
+        }
+      },
+      {
+        "inner_s3_module2[\"e\"]": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            true
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module2[\"e\"]"
+        }
+      },
+      {
+        "inner_s3_module[\"d\"]": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            ""
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module[\"d\"]"
+        }
+      },
+      {
+        "inner_s3_module": {
+          "__end_line__": 5,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 1,
+          "bucket2": [
+            ""
+          ],
+          "for_each": [
+            [
+              "c",
+              "d"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module"
+        }
+      },
+      {
+        "inner_s3_module2[\"f\"]": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            true
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module2[\"f\"]"
+        }
+      },
+      {
+        "inner_s3_module2": {
+          "__end_line__": 11,
+          "__resolved__": [
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
+          ],
+          "__start_line__": 7,
+          "bucket2": [
+            true
+          ],
+          "for_each": [
+            [
+              "e",
+              "f"
+            ]
+          ],
+          "source": [
+            "./module2"
+          ],
+          "__address__": "module.s3_module2[1].inner_s3_module2"
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].bucket"
+        }
+      },
+      {
+        "bucket2": {
+          "__end_line__": 20,
+          "__start_line__": 18,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"c\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].module.inner_s3_module[\"c\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"e\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          true
+        ],
+        "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              true
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].module.inner_s3_module2[\"e\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          false
+        ],
+        "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              false
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module[\"d\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module2[\"f\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[0].module.inner_s3_module[\"d\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          true
+        ],
+        "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              true
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[0].module.inner_s3_module2[\"f\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          false
+        ],
+        "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              false
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module[\"d\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module2[\"f\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": \"d\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          ""
+        ],
+        "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              ""
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].module.inner_s3_module[\"d\"].bucket2"
+        }
+      }
+    ]
+  },
+  "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": \"f\", \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}": {
+    "locals": [
+      {
+        "bucket2": [
+          true
+        ],
+        "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].bucket2"
+      }
+    ],
+    "resource": [
+      {
+        "aws_s3_bucket_public_access_block": {
+          "var_bucket": {
+            "__end_line__": 11,
+            "__start_line__": 5,
+            "block_public_acls": [
+              true
+            ],
+            "block_public_policy": [
+              true
+            ],
+            "bucket": [
+              true
+            ],
+            "ignore_public_acls": [
+              true
+            ],
+            "restrict_public_buckets": [
+              true
+            ],
+            "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
+          }
+        }
+      }
+    ],
+    "variable": [
+      {
+        "bucket2": {
+          "__end_line__": 16,
+          "__start_line__": 14,
+          "type": [
+            "string"
+          ],
+          "__address__": "module.s3_module2[1].module.inner_s3_module2[\"f\"].bucket2"
         }
       }
     ]

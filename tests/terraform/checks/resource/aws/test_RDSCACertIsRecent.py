@@ -20,13 +20,14 @@ class TestRDSCACertIsRecent(unittest.TestCase):
         }
         failing_resources = {
             "aws_db_instance.fail",
+            "aws_db_instance.pass"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

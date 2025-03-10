@@ -42,7 +42,7 @@ class TestWildcardEntities(unittest.TestCase):
         del registry.wildcard_checks['*s3*']
         del registry.wildcard_checks['aws_iam_*']
         # Only for resource and nof for data "aws_iam_policy_document"
-        self.assertEqual(summary['passed'], 3)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
