@@ -24,7 +24,8 @@ def load_expected_data(path):
 def assert_object_equal(res, expected_res):
     assert len(res) == len(expected_res)
     if isinstance(res, dict):
-        assert dict(sorted(res.items(), key=lambda item: item[0])) == dict(sorted(expected_res.items(), key=lambda item: item[0]))
+        assert dict(sorted(res.items(), key=lambda item: item[0])) == dict(
+            sorted(expected_res.items(), key=lambda item: item[0]))
     if isinstance(res, list):
         assert res.sort() == expected_res.sort()
 
@@ -33,7 +34,8 @@ def build_and_get_graph_by_path(path, render_var=False):
     from checkov.terraform.graph_manager import TerraformGraphManager
     resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, 'resources', path))
     graph_manager = TerraformGraphManager('m', ['m'])
-    local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=render_var)
+    local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir,
+                                                                                  render_variables=render_var)
     return local_graph, tf_definitions
 
 
@@ -134,7 +136,8 @@ def test_new_resources_foreach():
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder._module_handler.local_graph.enable_foreach_handling = True
-    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[7]]:
+    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5],
+                     local_graph.vertices[7]]:
         assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
         assert resource.id.endswith("[\"bucket_a\"]") or resource.id.endswith("[\"bucket_b\"]")
         config_name = list(resource.config['aws_s3_bucket'].keys())[0]
@@ -148,7 +151,9 @@ def test_resources_flow():
     assert local_graph.vertices_by_block_type['resource'] == [0, 3, 4]
 
     assert local_graph.vertices_block_name_map['variable'] == {'foreach_map': [1], 'test': [2]}
-    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[\"bucket_a\"]': [0], 'aws_s3_bucket.foreach_map[\"bucket_b\"]': [3], 'aws_s3_bucket.foreach_map': [4]}
+    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[\"bucket_a\"]': [0],
+                                                               'aws_s3_bucket.foreach_map[\"bucket_b\"]': [3],
+                                                               'aws_s3_bucket.foreach_map': [4]}
 
     assert local_graph.edges[0].dest == 2
     assert local_graph.edges[0].origin == 0
@@ -166,7 +171,8 @@ def test_resources_flow():
     assert resources[0].name == resource_a_name
     assert resources[0].id == resource_a_name
     assert resources[0].attributes.get('__address__') == resource_a_name
-    assert resources[0].config.get('aws_s3_bucket').get('foreach_map[\"bucket_a\"]').get('__address__') == resource_a_name
+    assert resources[0].config.get('aws_s3_bucket').get('foreach_map[\"bucket_a\"]').get(
+        '__address__') == resource_a_name
     assert resources[0].attributes.get('location') == ["test"]
     assert resources[0].attributes.get('name') == ["bucket_a"]
     assert resources[0].attributes.get('region') == ["us-west-2"]
@@ -189,7 +195,8 @@ def test_tf_definitions_and_breadcrumbs():
 
     expected_breadcrumbs = expected_data['breadcrumbs']
     assert len(breadcrumbs) == len(expected_breadcrumbs)
-    assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
+    assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(
+        expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
     resource_vertices = [vertex for vertex in local_graph.vertices if vertex.block_type == 'resource']
     for resource_vertex in resource_vertices[:-1]:
         assert len(resource_vertex.foreach_attrs) == 2
@@ -198,17 +205,32 @@ def test_tf_definitions_and_breadcrumbs():
         assert f'aws_s3_bucket.foreach_map{name}' in breadcrumbs[list(breadcrumbs.keys())[0]]
 
         location_var = 'location'
-        assert list(breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [location_var]
-        assert list(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [location_var]
+        assert list(breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [
+            location_var]
+        assert list(
+            expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [
+                   location_var]
 
-        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['type'] == 'variable'
-        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['type'] == 'variable'
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0][
+                   'type'] == 'variable'
+        assert \
+            expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][
+                location_var][0][
+                'type'] == 'variable'
 
-        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['name'] == 'test'
-        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['name'] == 'test'
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0][
+                   'name'] == 'test'
+        assert \
+            expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][
+                location_var][0][
+                'name'] == 'test'
 
-        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
-        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0][
+            'path'].endswith('depend_resources/variable.tf')
+        assert \
+            expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][
+                location_var][0][
+                'path'].endswith('depend_resources/variable.tf')
 
 
 @pytest.mark.parametrize(
@@ -216,18 +238,26 @@ def test_tf_definitions_and_breadcrumbs():
     [
         ({"test_key": ["${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]}, ['test_key']),
         ({"test_key": ["${test}"]}, {"test_val": "new_val"}, {"test_key": ["${test}"]}, []),
-        ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
-        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}, ['test_key.nested_key']),
-        ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
+        ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]},
+         ['test_key']),
+        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"},
+         {"test_key": {"nested_key": ["new_val"]}}, ['test_key.nested_key']),
+        ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]},
+         ['test_key']),
         ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}, ['test_key']),
         ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key']),
         ({"test_key": {"a": "${test_val}"}}, {"test_val": "new_val"}, {"test_key": {"a": "new_val"}}, ['test_key.a']),
-        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b']),
-        ({'ports': '${each.value.port}', 'protocol': 'tcp'}, {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}}, {'ports': '22', 'protocol': 'tcp'}, ['ports']),
+        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}},
+         ['test_key.a.b']),
+        ({'ports': '${each.value.port}', 'protocol': 'tcp'},
+         {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}},
+         {'ports': '22', 'protocol': 'tcp'}, ['ports']),
         (
-                {"tags": ["${try(merge(var.tags,{'product_owner': '${each.value.product_owner}'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
+                {"tags": [
+                    "${try(merge(var.tags,{'product_owner': '${each.value.product_owner}'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
                 {'each.value': {'name': 'security', 'product_owner': 'barak@gmail.com'}, 'each.key': 'security'},
-                {"tags": ["${try(merge(var.tags,{'product_owner': 'barak@gmail.com'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
+                {"tags": [
+                    "${try(merge(var.tags,{'product_owner': 'barak@gmail.com'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
                 ["tags"]
         )
     ]
@@ -291,13 +321,16 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     assert len(tf_definitions[first_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
     assert len(tf_definitions[first_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
     assert len(tf_definitions[second_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
-    assert len(tf_definitions[second_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+    assert len(
+        tf_definitions[second_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
     assert len(tf_definitions[third_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
     assert len(tf_definitions[third_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
     assert len(tf_definitions[fourth_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
-    assert len(tf_definitions[fourth_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+    assert len(
+        tf_definitions[fourth_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
 
-    assert first_tf_module.file_path == os.path.join(checkov_source_path, 'tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
+    assert first_tf_module.file_path == os.path.join(checkov_source_path,
+                                                     'tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
 
     first_source_module = first_tf_module.tf_source_modules
     assert first_source_module.name == 's3_module'
@@ -313,7 +346,8 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     ]
     for dir_name, definitions_path in dir_name_and_definitions_path:
         local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
-        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
+        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices,
+                                                                     root_folder=dir_name)
 
         file_path = os.path.join(os.path.dirname(__file__), definitions_path)
         with open(file_path, 'r') as f:
@@ -331,7 +365,7 @@ def test_foreach_module_in_second_level_module(checkov_source_path):
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'module']) == 10
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 12
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 8
     assert len(tf_definitions.keys()) == 11
 
@@ -347,7 +381,7 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
     vars = [block for block in graph.vertices if block.block_type == 'variable']
     modules = [block for block in graph.vertices if block.block_type == 'module']
 
-    assert len(modules) == 20
+    assert len(modules) == 29
     assert len(resources) == 16
     assert len(tf_definitions.keys()) == 22
 
@@ -372,24 +406,29 @@ def test_foreach_module_and_resource(checkov_source_path):
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
-    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 3
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 6
     assert len(tf_definitions.keys()) == 3
 
-    assert graph.vertices[2].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["a"]'
-    assert graph.vertices[6].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["a"]'
-    assert graph.vertices[8].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["b"]'
-    assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
+    assert graph.vertices[2].config['aws_s3_bucket_public_access_block']['var_bucket["a"]'][
+               '__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[6].config['aws_s3_bucket_public_access_block']['var_bucket["a"]'][
+               '__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]'][
+               '__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["b"]'
+    assert graph.vertices[11].config['aws_s3_bucket_public_access_block']['var_bucket["b"]'][
+               '__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+@mock.patch.dict(os.environ,
+                 {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
 def test_foreach_data(checkov_source_path):
     dir_name = 'data_simple'
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'data']) == 6
-    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 6
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 9
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 9
 
     data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
     assert 'aws_s3_bucket.data_list["b"]' in data_vertices_names
@@ -400,14 +439,15 @@ def test_foreach_data(checkov_source_path):
     assert 'aws_s3_bucket.data_count[1]' in data_vertices_names
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+@mock.patch.dict(os.environ,
+                 {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
 def test_foreach_data_with_resource(checkov_source_path):
     dir_name = 'data_with_resource'
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'data']) == 5
-    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 5
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 7
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 7
 
     data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
     assert 'aws_s3_bucket.data_dict["key1"]' in data_vertices_names
@@ -417,8 +457,8 @@ def test_foreach_data_with_resource(checkov_source_path):
 
     assert graph.vertices[0].attributes['bucket'] == graph.vertices[3].attributes['bucket']
     assert graph.vertices[1].attributes['bucket'] == graph.vertices[4].attributes['bucket']
-    assert graph.vertices[8].attributes['bucket'] == graph.vertices[10].attributes['bucket']
-    assert graph.vertices[9].attributes['bucket'] == graph.vertices[11].attributes['bucket']
+    assert graph.vertices[8].attributes['bucket'] == graph.vertices[12].attributes['bucket']
+    assert graph.vertices[10].attributes['bucket'] == graph.vertices[14].attributes['bucket']
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
@@ -427,7 +467,7 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'module']) == 16
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 18
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 14
     assert len(tf_definitions.keys()) == 17
 
@@ -468,7 +508,7 @@ def test__get_tf_module_with_no_foreach():
                       nested_tf_module=TFModule(name='2', path='2', foreach_idx='2', nested_tf_module=None))
     result = ForeachModuleHandler._get_tf_module_with_no_foreach(module)
     assert result == TFModule(name='1', path='1', foreach_idx=None,
-                      nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
+                              nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
 
 
 def test__get_module_with_only_relevant_foreach_idx():
@@ -488,11 +528,12 @@ def test__get_module_with_only_relevant_foreach_idx():
                                                         )
                               )
 
+
 def test_nested_foreach_with_variable_reference():
     """
     Here we test that a nested foreach loop based on module locals is correctly rendered in the Terraform graph.
     """
-    resources_by_group_local_var = 2
+    resources_by_group_local_var = 3
     resources_by_files_local_var = 2
 
     dir_name = 'foreach_examples/nested_foreach_based_on_module_locals'
@@ -504,7 +545,9 @@ def test_nested_foreach_with_variable_reference():
     assert graph_resources_created == ['module.files["blue"].aws_s3_bucket_object.this_file["test1"]',
                                        'module.files["green"].aws_s3_bucket_object.this_file["test1"]',
                                        'module.files["blue"].aws_s3_bucket_object.this_file["test2"]',
-                                       'module.files["green"].aws_s3_bucket_object.this_file["test2"]']
+                                       'module.files["blue"].aws_s3_bucket_object.this_file',
+                                       'module.files["green"].aws_s3_bucket_object.this_file["test2"]',
+                                       'module.files["green"].aws_s3_bucket_object.this_file']
 
 
 def test_double_nested_foreach_with_variable_reference():
@@ -526,17 +569,22 @@ def test_double_nested_foreach_with_variable_reference():
     graph_resources_filter = filter(lambda blk: blk.block_type == 'resource', graph.vertices)
     graph_resources_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_resources_filter))
 
-    assert len(graph_modules_created) is 6    # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
-    assert len(graph_resources_created) is 8  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
+    assert len(graph_modules_created) is 9  # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
+    assert len(graph_resources_created) is 12  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
 
-    assert graph_resources_created == ['module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
-                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
-                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
-                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
-                                       'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
-                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
-                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
-                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]']
+    assert graph_resources_created == [
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file']
 
 
 def test_double_nested_foreach_and_count_with_variable_reference():
@@ -557,14 +605,19 @@ def test_double_nested_foreach_and_count_with_variable_reference():
     graph_resources_filter = filter(lambda blk: blk.block_type == 'resource', graph.vertices)
     graph_resources_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_resources_filter))
 
-    assert len(graph_modules_created) is 6    # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
-    assert len(graph_resources_created) is 8  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
+    assert len(graph_modules_created) is 9  # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
+    assert len(graph_resources_created) is 12  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
 
-    assert graph_resources_created == ['module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
-                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
-                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
-                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
-                                       'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
-                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
-                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]',
-                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]']
+    assert graph_resources_created == [
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
+        'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
+        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]',
+        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]',
+        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file']

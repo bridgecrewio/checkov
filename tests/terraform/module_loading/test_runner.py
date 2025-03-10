@@ -21,12 +21,12 @@ def test_runner_with_tf_managed_modules():
     summary = result.get_summary()
 
     assert summary["passed"] == 0
-    assert summary["failed"] == 1
+    assert summary["failed"] == 2
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
     failed_resources = [check.resource for check in result.failed_checks]
-    expected_failed_resources = ["module.log_group.aws_cloudwatch_log_group.this[0]"]
+    expected_failed_resources = ["module.log_group.aws_cloudwatch_log_group.this[0]", "module.log_group.aws_cloudwatch_log_group.this"]
 
     assert failed_resources == expected_failed_resources
 

@@ -21,9 +21,13 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_launch_template.default",
             "aws_launch_template.private",
             "aws_instance.public_foreach[\"key2\"]",
+            "aws_instance.public_foreach",
             "aws_instance.public_foreach_loop_list[\"k\"]",
             "aws_instance.public_foreach_loop_list[\"v\"]",
+            "aws_instance.public_foreach_loop_list",
             "aws_instance.public_foreach_loop_list_of_dicts[\"private\"]",
+            "aws_instance.public_foreach_loop_list_of_dicts",
+            "aws_instance.public_foreach_loop"
         }
         failing_resources = {
             "aws_instance.public",
@@ -53,11 +57,13 @@ class TestEC2PublicIP(unittest.TestCase):
 
         passing_resources = {
             "module.s3_module[\"a\"].aws_instance.poc_modules_foreach[\"key2\"]",
+            "module.s3_module[\"a\"].aws_instance.poc_modules_foreach",
             "module.s3_module[\"b\"].aws_instance.poc_modules_foreach[\"key2\"]",
+            "module.s3_module[\"b\"].aws_instance.poc_modules_foreach"
         }
         failing_resources = {
             "module.s3_module[\"a\"].aws_instance.poc_modules_foreach[\"key1\"]",
-            "module.s3_module[\"b\"].aws_instance.poc_modules_foreach[\"key1\"]",
+            "module.s3_module[\"b\"].aws_instance.poc_modules_foreach[\"key1\"]"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
