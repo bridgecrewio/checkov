@@ -20,6 +20,24 @@
             "module_connection": false
           }
         ]
+      },
+      "aws_s3_bucket.foreach_map": {
+        "for_each": [
+          {
+            "module_connection": false,
+            "name": "foreach_map",
+            "path": "/Users/oyoffe/repos/github/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/variable.tf",
+            "type": "variable"
+          }
+        ],
+        "location": [
+          {
+            "module_connection": false,
+            "name": "test",
+            "path": "/Users/oyoffe/repos/github/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/variable.tf",
+            "type": "variable"
+          }
+        ]
       }
     }
   },
@@ -86,6 +104,30 @@
                 "us-east-2"
               ],
               "__address__": "aws_s3_bucket.foreach_map[\"bucket_b\"]"
+            }
+          }
+        },
+        {
+          "aws_s3_bucket": {
+            "foreach_map": {
+              "__address__": "aws_s3_bucket.foreach_map",
+              "__end_line__": 6,
+              "__start_line__": 1,
+              "for_each": [
+                {
+                  "bucket_a": "us-west-2",
+                  "bucket_b": "us-east-2"
+                }
+              ],
+              "location": [
+                "test"
+              ],
+              "name": [
+                "each.key"
+              ],
+              "region": [
+                "each.value"
+              ]
             }
           }
         }

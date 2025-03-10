@@ -43,6 +43,7 @@ class ForeachAbstractHandler:
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
+        self.local_graph.vertices.append(main_resource)
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:

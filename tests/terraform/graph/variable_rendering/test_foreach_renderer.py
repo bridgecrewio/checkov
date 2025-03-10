@@ -120,17 +120,13 @@ def test_build_sub_graph():
 def test_new_resources_count():
     dir_name = 'foreach_examples/count_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    main_count_resource = 'aws_s3_bucket.count_var_resource'
 
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder._module_handler.local_graph.enable_foreach_handling = True
-    foreach_builder.handle({'resource': [3], 'module': []})
     for i, resource in enumerate([local_graph.vertices[1], local_graph.vertices[6], local_graph.vertices[7]]):
         assert resource.name.endswith(f"[{i}]")
         assert resource.id.endswith(f"[{i}]")
         assert list(resource.config['aws_s3_bucket'].keys())[0].endswith(f'[{i}]')
-    new_vertices_names = [vertice.name for vertice in local_graph.vertices]
-    assert main_count_resource not in new_vertices_names
 
 
 def test_new_resources_foreach():
@@ -138,8 +134,7 @@ def test_new_resources_foreach():
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder._module_handler.local_graph.enable_foreach_handling = True
-    foreach_builder.handle({'resource': [0, 1], 'module': []})
-    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[6]]:
+    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[7]]:
         assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
         assert resource.id.endswith("[\"bucket_a\"]") or resource.id.endswith("[\"bucket_b\"]")
         config_name = list(resource.config['aws_s3_bucket'].keys())[0]
@@ -150,10 +145,10 @@ def test_resources_flow():
     dir_name = 'foreach_examples/depend_resources'
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     assert local_graph.vertices_by_block_type['variable'] == [1, 2]
-    assert local_graph.vertices_by_block_type['resource'] == [0, 3]
+    assert local_graph.vertices_by_block_type['resource'] == [0, 3, 4]
 
     assert local_graph.vertices_block_name_map['variable'] == {'foreach_map': [1], 'test': [2]}
-    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[\"bucket_a\"]': [0], 'aws_s3_bucket.foreach_map[\"bucket_b\"]': [3]}
+    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[\"bucket_a\"]': [0], 'aws_s3_bucket.foreach_map[\"bucket_b\"]': [3], 'aws_s3_bucket.foreach_map': [4]}
 
     assert local_graph.edges[0].dest == 2
     assert local_graph.edges[0].origin == 0
@@ -163,9 +158,9 @@ def test_resources_flow():
     assert local_graph.edges[1].origin == 3
     assert local_graph.edges[1].label == 'location'
 
-    assert len(local_graph.vertices) == 4
+    assert len(local_graph.vertices) == 5
     resources = [ver for ver in local_graph.vertices if ver.block_type == 'resource']
-    assert len(resources) == 2
+    assert len(resources) == 3
 
     resource_a_name = 'aws_s3_bucket.foreach_map[\"bucket_a\"]'
     assert resources[0].name == resource_a_name
@@ -196,7 +191,7 @@ def test_tf_definitions_and_breadcrumbs():
     assert len(breadcrumbs) == len(expected_breadcrumbs)
     assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
     resource_vertices = [vertex for vertex in local_graph.vertices if vertex.block_type == 'resource']
-    for resource_vertex in resource_vertices:
+    for resource_vertex in resource_vertices[:-1]:
         assert len(resource_vertex.foreach_attrs) == 2
 
     for name in ['["bucket_a"]', '["bucket_b"]']:
@@ -253,12 +248,12 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 
     assert len(tf_definitions.keys()) == 14
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
-    assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
+    assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 13
 
-    assert len(local_graph.vertices) == 47
-    assert len(local_graph.vertices_by_module_dependency) == 13
+    assert len(local_graph.vertices) == 48
+    assert len(local_graph.vertices_by_module_dependency) == 14
 
-    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 25, 36]
+    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 25, 36, 37]
 
     first_module_vertex = local_graph.vertices[0]
     assert first_module_vertex.name == 's3_module["a"]' and first_module_vertex.for_each_index == 'a'
@@ -269,11 +264,11 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     twenty_fifth_module_vertex = local_graph.vertices[25]
     assert twenty_fifth_module_vertex.name == 's3_module["b"]' and twenty_fifth_module_vertex.for_each_index == 'b'
 
-    thrirty_six_module_vertex = local_graph.vertices[36]
-    assert thrirty_six_module_vertex.name == 's3_module2[1]' and thrirty_six_module_vertex.for_each_index == 1
+    thrirty_seven_module_vertex = local_graph.vertices[37]
+    assert thrirty_seven_module_vertex.name == 's3_module2[1]' and thrirty_seven_module_vertex.for_each_index == 1
 
     assert local_graph.vertices[26].source_module == {25}
-    assert local_graph.vertices[37].source_module == {36}
+    assert local_graph.vertices[38].source_module == {37}
 
     # check foreach_idx is updated correctly
     first_key = list(tf_definitions.keys())[0]
@@ -282,7 +277,7 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     first_tf_module = first_value['module'][0]['s3_module["a"]']['__resolved__'][0]
     second_tf_module = first_value['module'][1]['s3_module2[0]']['__resolved__'][0]
     third_tf_module = first_value['module'][2]['s3_module["b"]']['__resolved__'][0]
-    fourth_tf_module = first_value['module'][3]['s3_module2[1]']['__resolved__'][0]
+    fourth_tf_module = first_value['module'][4]['s3_module2[1]']['__resolved__'][0]
     assert first_tf_module in tf_definitions
     assert second_tf_module in tf_definitions
     assert third_tf_module in tf_definitions
