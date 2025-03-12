@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import os
 from typing import Optional, Any, TYPE_CHECKING
-
-from checkov.common.runners.base_runner import strtobool
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-RAW_ASSET_IN_GRAPH_ENV = strtobool(os.getenv("RAW_ASSET_IN_GRAPH", "False"))
+RAW_ASSET_IN_GRAPH_ENV = "RAW_ASSET_IN_GRAPH"
 
 FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'

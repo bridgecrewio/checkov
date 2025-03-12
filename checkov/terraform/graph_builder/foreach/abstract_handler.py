@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import abc
 import json
+import os
 import re
 import typing
 from typing import Any
 
+from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES, RAW_ASSET_IN_GRAPH_ENV
@@ -43,7 +45,7 @@ class ForeachAbstractHandler:
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
-        if RAW_ASSET_IN_GRAPH_ENV:
+        if strtobool(os.getenv(RAW_ASSET_IN_GRAPH_ENV, "False")):
             self.local_graph.vertices.append(main_resource)
 
     @staticmethod

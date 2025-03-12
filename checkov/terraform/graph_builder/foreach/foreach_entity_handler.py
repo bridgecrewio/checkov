@@ -4,6 +4,7 @@ import logging
 import os
 from typing import Any, Optional, TYPE_CHECKING
 
+from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOR_EACH_BLOCK_TYPE, FOREACH_STRING, COUNT_STRING, \
@@ -67,7 +68,7 @@ class ForeachEntityHandler(ForeachAbstractHandler):
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
             self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
-        if RAW_ASSET_IN_GRAPH_ENV:
+        if strtobool(os.getenv(RAW_ASSET_IN_GRAPH_ENV, "False")):
             self.local_graph.vertices.append(main_resource)
 
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
