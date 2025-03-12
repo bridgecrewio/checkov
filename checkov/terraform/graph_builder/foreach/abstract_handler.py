@@ -8,7 +8,7 @@ from typing import Any
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
-    EACH_KEY, REFERENCES_VALUES
+    EACH_KEY, REFERENCES_VALUES, RAW_ASSET_IN_GRAPH_ENV
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -43,6 +43,8 @@ class ForeachAbstractHandler:
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
+        if RAW_ASSET_IN_GRAPH_ENV:
+            self.local_graph.vertices.append(main_resource)
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
