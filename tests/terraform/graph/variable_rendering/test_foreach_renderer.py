@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytest
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
@@ -576,7 +577,7 @@ def test_double_nested_foreach_and_count_with_variable_reference():
                                        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]']
 
 
-@mock.patch.dict(os.environ, {"RAW_ASSET_IN_GRAPH": "True"})
+@mock.patch.object(env_vars_config, "RAW_TF_IN_GRAPH_ENV", "True")
 def test_foreach_renderer_with_raw_asset():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
@@ -588,4 +589,7 @@ def test_foreach_renderer_with_raw_asset():
         assert resource.id.endswith("[\"bucket_a\"]") or resource.id.endswith("[\"bucket_b\"]")
         config_name = list(resource.config['aws_s3_bucket'].keys())[0]
         assert config_name.endswith("[\"bucket_a\"]") or config_name.endswith("[\"bucket_b\"]")
+    for edge in [local_graph.edges[1], local_graph.edges[2], local_graph.edges[4], local_graph.edges[5]]:
+        assert edge.label == 'virtual_resource'
+
 

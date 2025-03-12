@@ -6,6 +6,7 @@ from typing import Any, Optional, TYPE_CHECKING
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOR_EACH_BLOCK_TYPE, FOREACH_STRING, COUNT_STRING, \
     RAW_ASSET_IN_GRAPH_ENV
@@ -66,14 +67,18 @@ class ForeachEntityHandler(ForeachAbstractHandler):
 
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
+        virtual_resources_names = []
         for i in range(statement):
-            self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
-        if strtobool(os.getenv(RAW_ASSET_IN_GRAPH_ENV, "False")):
+            virtual_resource_name = self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            if virtual_resource_name is not None:
+                virtual_resources_names.append(virtual_resource_name)
+        if env_vars_config.RAW_TF_IN_GRAPH_ENV:
+            main_resource.config["virtual_resources"] = virtual_resources_names
             self.local_graph.vertices.append(main_resource)
 
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
-                                     new_key: int | str, new_value: int | str) -> None:
-        self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=foreach_idx)
+                                     new_key: int | str, new_value: int | str) -> str | None:
+        return self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=foreach_idx)
 
     def _create_new_resource(
             self,
@@ -82,7 +87,7 @@ class ForeachEntityHandler(ForeachAbstractHandler):
             resource_idx: int,
             foreach_idx: int,
             new_key: int | str | None = None,
-    ) -> None:
+    ) -> str | None:
         new_resource = pickle_deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
@@ -95,6 +100,9 @@ class ForeachEntityHandler(ForeachAbstractHandler):
             self.local_graph.vertices[resource_idx] = new_resource
         else:
             self.local_graph.vertices.append(new_resource)
+
+        if env_vars_config.RAW_TF_IN_GRAPH_ENV:
+            return new_resource.name
 
     @staticmethod
     def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:

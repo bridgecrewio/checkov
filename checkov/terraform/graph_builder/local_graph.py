@@ -377,6 +377,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if target_variable:
                 self.create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
 
+        if "virtual_resources" in vertex.config:
+            for i, v in enumerate(self.vertices):
+                if v.name in vertex.config["virtual_resources"]:
+                    self.create_edge(i, origin_node_index, "virtual_resource")
+
+
     def _create_edge_from_reference(self, attribute_key: Any, origin_node_index: int, dest_node_index: int,
                                     sub_values: List[Any], vertex_reference: TerraformVertexReference,
                                     cross_variable_edges: bool) -> None:

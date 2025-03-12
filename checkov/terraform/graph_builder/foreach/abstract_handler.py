@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import abc
 import json
-import os
 import re
 import typing
 from typing import Any
 
-from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
-    EACH_KEY, REFERENCES_VALUES, RAW_ASSET_IN_GRAPH_ENV
+    EACH_KEY, REFERENCES_VALUES
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -30,7 +29,7 @@ class ForeachAbstractHandler:
 
     @abc.abstractmethod
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
-                                     new_key: int | str, new_value: int | str) -> None:
+                                     new_key: int | str, new_value: int | str) -> str | None:
         pass
 
     @abc.abstractmethod
@@ -39,13 +38,19 @@ class ForeachAbstractHandler:
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
+        virtual_resources_names = []
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
+                virtual_resource_name = self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
+                if virtual_resource_name is not None:
+                    virtual_resources_names.append(virtual_resource_name)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
-        if strtobool(os.getenv(RAW_ASSET_IN_GRAPH_ENV, "False")):
+                virtual_resource_name = self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
+                if virtual_resource_name is not None:
+                    virtual_resources_names.append(virtual_resource_name)
+        if env_vars_config.RAW_TF_IN_GRAPH_ENV:
+            main_resource.config["virtual_resources"] = virtual_resources_names
             self.local_graph.vertices.append(main_resource)
 
     @staticmethod
