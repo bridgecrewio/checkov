@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any, Optional, TYPE_CHECKING
 
-from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
-from checkov.terraform.graph_builder.foreach.consts import FOR_EACH_BLOCK_TYPE, FOREACH_STRING, COUNT_STRING, \
-    RAW_ASSET_IN_GRAPH_ENV
+from checkov.terraform.graph_builder.foreach.consts import FOR_EACH_BLOCK_TYPE, FOREACH_STRING, COUNT_STRING
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 if TYPE_CHECKING:
@@ -103,6 +100,8 @@ class ForeachEntityHandler(ForeachAbstractHandler):
 
         if env_vars_config.RAW_TF_IN_GRAPH_ENV:
             return new_resource.name
+
+        return None
 
     @staticmethod
     def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:
