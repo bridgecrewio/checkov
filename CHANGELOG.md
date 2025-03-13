@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.383...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.384...HEAD)
+
+## [3.2.384](https://github.com/bridgecrewio/checkov/compare/3.2.383...3.2.384) - 2025-03-12
+
+### Bug Fix
+
+- **terraform:** Update CKV_ALI_1 - [#7040](https://github.com/bridgecrewio/checkov/pull/7040)
 
 ## [3.2.383](https://github.com/bridgecrewio/checkov/compare/3.2.382...3.2.383) - 2025-03-11
 
