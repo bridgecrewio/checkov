@@ -4,10 +4,12 @@ from unittest import mock
 
 import pytest
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.consts import RAW_ASSET_IN_GRAPH_ENV
 from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -573,3 +575,21 @@ def test_double_nested_foreach_and_count_with_variable_reference():
                                        'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
                                        'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]',
                                        'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]']
+
+
+@mock.patch.object(env_vars_config, "RAW_TF_IN_GRAPH_ENV", "True")
+def test_foreach_renderer_with_raw_asset():
+    dir_name = 'foreach_examples/foreach_dup_resources'
+    local_graph = build_and_get_graph_by_path(dir_name)[0]
+    foreach_builder = ForeachBuilder(local_graph)
+    foreach_builder._module_handler.local_graph.enable_foreach_handling = True
+    assert len(local_graph.vertices) == 9
+    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[7]]:
+        assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
+        assert resource.id.endswith("[\"bucket_a\"]") or resource.id.endswith("[\"bucket_b\"]")
+        config_name = list(resource.config['aws_s3_bucket'].keys())[0]
+        assert config_name.endswith("[\"bucket_a\"]") or config_name.endswith("[\"bucket_b\"]")
+    for edge in [local_graph.edges[1], local_graph.edges[2], local_graph.edges[4], local_graph.edges[5]]:
+        assert edge.label == 'virtual_resource'
+
+

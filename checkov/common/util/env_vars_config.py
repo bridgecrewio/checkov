@@ -85,6 +85,7 @@ class EnvVarsConfig:
         self.PROXY_HEADER_VALUE = os.getenv('PROXY_HEADER_VALUE', None)
         self.PROXY_HEADER_KEY = os.getenv('PROXY_HEADER_KEY', None)
         self.ENABLE_CONFIG_FILE_VALIDATION = convert_str_to_bool(os.getenv("ENABLE_CONFIG_FILE_VALIDATION", False))
+        self.RAW_TF_IN_GRAPH_ENV = convert_str_to_bool(os.getenv("RAW_TF_IN_GRAPH", "False"))
 
 
 env_vars_config = EnvVarsConfig()

@@ -5,6 +5,8 @@ from typing import Optional, Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
+RAW_ASSET_IN_GRAPH_ENV = "RAW_ASSET_IN_GRAPH"
+
 FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'
 REFERENCES_VALUES = r"(var|module|local)\."
