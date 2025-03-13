@@ -256,10 +256,12 @@ class GraphCheckParser(BaseGraphCheckParser):
                     resource_type is not None and
                     resource_type != [] and
                     ((isinstance(resource_type, str) and resource_type.lower() == "taggable") or
-                    (isinstance(resource_type, list) and resource_type[0].lower() == "taggable"))
+                     (isinstance(resource_type, list) and resource_type[0].lower() == "taggable"))
             ):
-                provider = providers[0].lower()
-                check.resource_types = raw_resources_types.get(provider + "_taggable")
+                if providers and len(providers) > 0:
+                    provider = providers[0].lower()
+                    taggable_resources = raw_resources_types.get(provider + "_taggable", [])
+                    check.resource_types = taggable_resources
             elif (
                     not resource_type
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
