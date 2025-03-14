@@ -447,9 +447,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return metadata
 
     def check_system_deps(self) -> str | None:
-        # Ensure local system dependancies are available and of the correct version.
+        # Ensure local system dependencies are available and of the correct version.
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
-        logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
+        logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
 
         if shutil.which(self.kubectl_command) is not None:
             kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
