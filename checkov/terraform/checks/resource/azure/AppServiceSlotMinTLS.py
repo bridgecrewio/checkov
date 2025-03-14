@@ -1,3 +1,5 @@
+from typing import Any, List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -16,6 +18,9 @@ class AppServiceSlotMinTLS(BaseResourceValueCheck):
 
     def get_expected_value(self):
         return '1.2'
+
+    def get_expected_values(self) -> List[Any]:
+        return ["1.2", 1.2, "1.3", 1.3]
 
 
 check = AppServiceSlotMinTLS()

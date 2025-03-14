@@ -17,13 +17,16 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
 
         # catch for inline policies
         if isinstance(my_properties, dict) and type != 'AWS::IAM::Policy':
+            self.evaluated_keys = ['Properties']
             if 'Policies' in my_properties.keys():
+                self.evaluated_keys = ['Properties/Policies']
                 policies = my_properties['Policies']
                 if len(policies) > 0:
-                    for policy in policies:
+                    for idx, policy in enumerate(policies):
                         if not isinstance(policy, dict):
                             return CheckResult.UNKNOWN
                         if policy.get('PolicyDocument'):
+                            self.evaluated_keys = [f'Properties/Policies/[{idx}]/PolicyDocument']
                             result = check_policy(policy['PolicyDocument'])
                             if result == CheckResult.FAILED:
                                 return result
@@ -32,6 +35,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
                 return CheckResult.UNKNOWN
         # this is just for Policy resources
         if isinstance(my_properties, dict) and 'PolicyDocument' in my_properties.keys():
+            self.evaluated_keys = ['Properties/PolicyDocument']
             return check_policy(my_properties['PolicyDocument'])
         return CheckResult.UNKNOWN
 

@@ -27,6 +27,7 @@ class CustomAttributes:
     REFERENCES = "references_"
     FOREACH_ATTRS = "foreach_attrs_"
     SOURCE_MODULE_OBJECT = "source_module_object_"
+    CONNECTED_NODE = "connected_node"
 
 
 def props(cls: Any) -> List[str]:

@@ -20,8 +20,10 @@ class CodeBuildProjectEncryption(BaseResourceCheck):
         encryption_disabled = False
         properties = conf.get("Properties")
         if properties:
+            self.evaluated_keys = ["Properties"]
             artifacts = properties.get("Artifacts")
             if artifacts and isinstance(artifacts, dict):
+                self.evaluated_keys = ["Properties/Artifacts"]
                 if "Type" in artifacts.keys():
                     artifact_type = artifacts["Type"]
                 if "EncryptionDisabled" in artifacts.keys():
