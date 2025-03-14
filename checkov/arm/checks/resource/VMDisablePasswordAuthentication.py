@@ -22,15 +22,18 @@ class VMDisablePasswordAuthentication(BaseResourceCheck):
 
         properties = conf.get("properties")
         if properties and isinstance(properties, dict):
+            self.evaluated_keys = ["properties"]
             if self.entity_type == "Microsoft.Compute/virtualMachines":
                 tmp_os_profile = properties.get("osProfile")
                 if tmp_os_profile and isinstance(tmp_os_profile, dict):
+                    self.evaluated_keys = ["properties/osProfile"]
                     os_profile = tmp_os_profile
             elif self.entity_type == "Microsoft.Compute/virtualMachineScaleSets":
                 vm_profile = properties.get("virtualMachineProfile")
                 if vm_profile and isinstance(vm_profile, dict):
                     tmp_os_profile = vm_profile.get("osProfile")
                     if tmp_os_profile and isinstance(tmp_os_profile, dict):
+                        self.evaluated_keys = ["properties/virtualMachineProfile/osProfile"]
                         os_profile = tmp_os_profile
 
             if os_profile is None:

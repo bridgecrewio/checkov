@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -52,6 +52,9 @@ class IAMPassportAccountUsage(BaseResourceCheck):
             if conf["member"][0].startswith("userAccount"):
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["members", "member"]
 
 
 scanner = IAMPassportAccountUsage()

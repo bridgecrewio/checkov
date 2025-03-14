@@ -1,0 +1,18 @@
+pass:
+  - 'Microsoft.Sql/servers.serverEnabled'
+  - 'Microsoft.Sql/servers.serverEnabledWithoutAlertsAttribute'
+  - 'Microsoft.Sql/servers/databases.databaseEnabled'
+  - 'Microsoft.Sql/servers/databases.databaseEnabledWithoutAlertsAttribute'
+fail:
+  - 'Microsoft.Sql/servers.serverWithoutSecurityPolicy'
+  - 'Microsoft.Sql/servers.serverDisabledState'
+  - 'Microsoft.Sql/servers.serverDisabledAlerts'
+  - 'Microsoft.Sql/servers.serverDisabled'
+  - 'Microsoft.Sql/servers/databases.databaseWithoutSecurityPolicy'
+  - 'Microsoft.Sql/servers/databases.databaseDisabledState'
+  - 'Microsoft.Sql/servers/databases.databaseDisabledAlerts'
+  - 'Microsoft.Sql/servers/databases.databaseDisabled'
+evaluated_keys:
+  - 'resource_type'
+  - 'properties/state'
+  - 'properties/disabledAlerts'

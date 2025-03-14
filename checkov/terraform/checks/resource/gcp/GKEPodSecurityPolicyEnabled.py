@@ -37,6 +37,7 @@ class GKEPodSecurityPolicyEnabled(BaseResourceCheck):
                             secure = policy.get('enabled')[0]
                             if secure:
                                 return CheckResult.PASSED
+                    self.evaluated_keys = ['min_master_version', 'pod_security_policy_config/[0]/enabled']
                     return CheckResult.FAILED
         return CheckResult.UNKNOWN
 

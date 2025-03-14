@@ -28,6 +28,10 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                             # if it is a resolved instrinsic function like !Ref: xyz, then it can't be a secret
                             continue
 
+                        # Skip checking if the value starts with 'handler.'
+                        if isinstance(value, str) and (value.startswith('handler.') or value.startswith('git.')):
+                            continue
+
                         secrets = get_secrets_from_string(str(value), AWS, GENERAL)
                         if secrets:
                             self.evaluated_keys = [f"Properties/Environment/Variables/{var_name}"]

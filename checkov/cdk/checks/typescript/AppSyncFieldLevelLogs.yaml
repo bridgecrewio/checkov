@@ -9,14 +9,20 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: |
-    const $logConfig: $IMPORT.LogConfig = { <ANY> };
+  patterns:
+    or:
+    - pattern: |
+        const $logConfig: $IMPORT.LogConfig = $CONFIG;
+    - pattern: |
+        new $IMPORT.GraphqlApi($ARG1, $ARG2, {<ANY>, logConfig: $CONFIG, <ANY>});
   conditions:
-    - not_pattern: | 
-        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  logConfig: $ARG});
-    - not_pattern: |
-        const $LOG: $IMPORT.LogConfig = { FieldLogLevel: $ARG };
-        <ANY>
-        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});
-    - metavariable: $ARG
-      regex: (ERROR|ALL)
+    - or:
+      - metavariable: $CONFIG
+        not_pattern: |
+          {<ANY>, fieldLogLevel: $ARG, <ANY> }
+      - metavariable:  $CONFIG
+        pattern: |
+          {<ANY>, fieldLogLevel: $ARG, <ANY> }
+        conditions:
+          - metavariable: $ARG
+            regex: (NONE)

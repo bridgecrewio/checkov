@@ -4,6 +4,7 @@ import yaml
 from _pytest.logging import LogCaptureFixture
 
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
+from checkov.common.checks_infra.resources_types import resources_types as raw_resources_types
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -76,3 +77,17 @@ def test_validate_check_config_invalid_definition(caplog: LogCaptureFixture):
         f"Custom policy {file_path} has an invalid 'definition' block type 'NoneType', "
         "needs to be either a 'list' or 'dict'"
     ]
+
+def test_parse_taggable_resource_string():
+    parser = GraphCheckParser()
+    raw_check = {"resource_types": "taggable"}
+    providers = ["aws"]
+    check = parser._parse_raw_check(raw_check, [], providers)
+    assert check.resource_types == raw_resources_types.get("aws_taggable")
+
+def test_parse_taggable_resource_list():
+    parser = GraphCheckParser()
+    raw_check = {"resource_types": ["taggable"]}
+    providers = ["azure"]
+    check = parser._parse_raw_check(raw_check, [], providers)
+    assert check.resource_types == raw_resources_types.get("azure_taggable")

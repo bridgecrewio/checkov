@@ -32,6 +32,8 @@ if TYPE_CHECKING:
 
 
 class K8sHelmRunner(k8_runner):
+    check_type = CheckType.HELM  # noqa: CCE003  # a static attribute
+
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
@@ -40,7 +42,6 @@ class K8sHelmRunner(k8_runner):
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        self.check_type = CheckType.HELM
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta: list[tuple[str, dict[str, Any]]] = []
         self.pbar.turn_off_progress_bar()

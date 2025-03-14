@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -34,6 +34,9 @@ class CustomRoleDefinitionSubscriptionOwner(BaseResourceCheck):
                                 if "actions" in permission and "*" in permission["actions"]:
                                     return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties/assignableScopes", "properties/permissions/actions"]
 
 
 check = CustomRoleDefinitionSubscriptionOwner()

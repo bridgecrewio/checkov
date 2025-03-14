@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "JsonPathIPV6CIDRRangeNotSubsetList"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "ipv6_cidr_value"
+  operator: "jsonpath_cidr_range_not_subset"
+  value:
+    - "fc00::/7"
+    - "fe80::1"
+

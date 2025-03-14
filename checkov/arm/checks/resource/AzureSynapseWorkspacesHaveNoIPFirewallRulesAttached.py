@@ -16,6 +16,7 @@ class AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached(BaseResourceCheck):
         if depends_on is None or not len(depends_on):
             return CheckResult.PASSED
         if any('Microsoft.Synapse/workspaces/firewallRules' in item for item in depends_on):
+            self.evaluated_keys = ["dependsOn"]
             return CheckResult.FAILED
         return CheckResult.PASSED
 

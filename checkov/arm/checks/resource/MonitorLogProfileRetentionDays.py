@@ -18,7 +18,9 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties"]
         if "properties" in conf and "retentionPolicy" in conf["properties"]:
+            self.evaluated_keys = ["properties/retentionPolicy"]
             retention = conf["properties"]["retentionPolicy"]
             if "enabled" in retention and str(retention["enabled"]).lower() == "true":
                 if "days" in retention:

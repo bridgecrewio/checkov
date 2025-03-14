@@ -6,6 +6,9 @@ __pycache__/
 *$py.class
 *__pycache__/
 
+# Python tests residuals
+tests/sca_package_2/examples/obj*
+
 # Terraform
 *.tfstate*
 *.terraform*

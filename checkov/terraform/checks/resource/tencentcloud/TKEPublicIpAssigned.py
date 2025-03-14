@@ -13,17 +13,21 @@ class TKEPublicIpAssigned(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("master_config"):
-            for mc in conf["master_config"]:
+            for idx, mc in enumerate(conf["master_config"]):
                 if mc.get("public_ip_assigned") and mc["public_ip_assigned"][0]:
+                    self.evaluated_keys = [f"master_config/[{idx}]/public_ip_assigned"]
                     return CheckResult.FAILED
                 if mc.get("public_ip_assigned") is None and mc.get("internet_max_bandwidth_out") and mc["internet_max_bandwidth_out"][0] > 0:
+                    self.evaluated_keys = [f"master_config/[{idx}]/internet_max_bandwidth_out"]
                     return CheckResult.FAILED
 
         if conf.get("worker_config"):
-            for mc in conf["worker_config"]:
+            for idx, mc in enumerate(conf["worker_config"]):
                 if mc.get("public_ip_assigned") and mc["public_ip_assigned"][0]:
+                    self.evaluated_keys = [f"worker_config/[{idx}]/public_ip_assigned"]
                     return CheckResult.FAILED
                 if mc.get("public_ip_assigned") is None and mc.get("internet_max_bandwidth_out") and mc["internet_max_bandwidth_out"][0] > 0:
+                    self.evaluated_keys = [f"worker_config/[{idx}]/internet_max_bandwidth_out"]
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

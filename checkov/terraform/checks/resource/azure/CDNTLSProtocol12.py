@@ -25,12 +25,16 @@ class CDNTLSProtocol12(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "cdn_managed_https" in conf and isinstance(conf["cdn_managed_https"], list):
+            self.evaluated_keys = ["cdn_managed_https"]
             cdn = conf["cdn_managed_https"][0]
             if "tls_version" in cdn and isinstance(cdn["tls_version"], list) and cdn["tls_version"][0] in INSECURE_TLS_VERSIONS:
+                self.evaluated_keys = ["cdn_managed_https/[0]/tls_version"]
                 return CheckResult.FAILED
         if "user_managed_https" in conf and isinstance(conf["user_managed_https"], list):
+            self.evaluated_keys = ["user_managed_https"]
             user = conf["user_managed_https"][0]
             if "tls_version" in user and isinstance(user["tls_version"], list) and user["tls_version"][0] in INSECURE_TLS_VERSIONS:
+                self.evaluated_keys = ["user_managed_https/[0]/tls_version"]
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

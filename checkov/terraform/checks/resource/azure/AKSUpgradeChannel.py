@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, List
 
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class AKSUpgradeChannel(BaseResourceNegativeValueCheck):
+class AKSUpgradeChannel(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure AKS cluster upgrade channel is chosen"
         id = "CKV_AZURE_171"
@@ -17,14 +17,23 @@ class AKSUpgradeChannel(BaseResourceNegativeValueCheck):
             id=id,
             categories=categories,
             supported_resources=supported_resources,
-            missing_attribute_result=CheckResult.FAILED,
         )
 
-    def get_inspected_key(self) -> str:
-        return "automatic_channel_upgrade"
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if 'automatic_channel_upgrade' in conf:
+            automatic_channel_upgrade = conf.get('automatic_channel_upgrade')
+            if isinstance(automatic_channel_upgrade, list) and automatic_channel_upgrade != ['none']:
+                return CheckResult.PASSED
 
-    def get_forbidden_values(self) -> list[Any]:
-        return ["none"]
+        if 'automatic_upgrade_channel' in conf:
+            automatic_upgrade_channel = conf.get('automatic_upgrade_channel')
+            if isinstance(automatic_upgrade_channel, list) and automatic_upgrade_channel != ['none']:
+                return CheckResult.PASSED
+
+        return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['automatic_upgrade_channel', 'automatic_channel_upgrade']
 
 
 check = AKSUpgradeChannel()

@@ -25,3 +25,6 @@ class AbsRDSParameter(BaseResourceCheck):
                 if param['name'][0] == self.parameter and (param['value'][0]).lower() == 'on':
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self):
+        return ["parameters"]

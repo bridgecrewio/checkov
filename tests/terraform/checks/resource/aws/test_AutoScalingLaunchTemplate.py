@@ -19,9 +19,11 @@ class TestAutoScalingLaunchTemplate(unittest.TestCase):
 
         passing_resources = {
             "aws_autoscaling_group.pass",
+            "aws_autoscaling_group.pass_mixed",
+            "aws_autoscaling_group.pass_mixed_multiple",
         }
         failing_resources = {
-            "aws_autoscaling_group.fail"
+            "aws_autoscaling_group.fail",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

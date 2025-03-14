@@ -45,3 +45,11 @@ resource "aws_rds_cluster_instance" "pass" {
   performance_insights_enabled = true
   performance_insights_kms_key_id = aws_kms_key.pike.arn
 }
+
+resource "aws_db_instance" "pass_empty" {
+
+}
+
+resource "aws_db_instance" "pass_insights_disabled" {
+  performance_insights_enabled = false
+}

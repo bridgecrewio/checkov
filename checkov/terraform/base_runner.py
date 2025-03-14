@@ -9,6 +9,7 @@ import dpath
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -106,10 +107,21 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def get_connected_node(self, entity: dict[str, Any], root_folder: str) -> Optional[Dict[str, Any]]:
-        connected_entity = entity.get("connected_node")
-        if not connected_entity:
+    @staticmethod
+    def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
+                                         connected_nodes_per_resource_types: dict[tuple[str], Any]) -> tuple[str] | None:
+        return next((resource_types for resource_types in check_connected_resource_types
+                    if resource_types in connected_nodes_per_resource_types), None)
+
+    def _get_connected_node_data(self, connected_nodes_per_resource_types: dict[tuple[str], Any], root_folder: str,
+                                 check_connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
+        if not check_connected_resource_types or not connected_nodes_per_resource_types:
             return None
+        check_relevant_connected_resource_types = self._extract_relevant_resource_types(
+            check_connected_resource_types, connected_nodes_per_resource_types)
+        if not check_relevant_connected_resource_types:
+            return None
+        connected_entity = connected_nodes_per_resource_types[check_relevant_connected_resource_types]
         connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
         if not connected_entity_context:
             return None
@@ -147,7 +159,8 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_node_data = self.get_connected_node(entity, root_folder)
+                    connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder, connected_resource_types)  # type: ignore
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
@@ -197,6 +210,13 @@ class BaseTerraformRunner(
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
         return report
+
+    def _get_connected_resources_types_with_subchecks(self, check: BaseGraphCheck) -> list[tuple[str]]:
+        resource_types_tuples: list[tuple[str]] = []
+        for sub_check in check.sub_checks:
+            resource_types_tuples.append(tuple(sub_check.connected_resources_types))  # type: ignore
+            resource_types_tuples.extend(self._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
+        return resource_types_tuples
 
     @abstractmethod
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:

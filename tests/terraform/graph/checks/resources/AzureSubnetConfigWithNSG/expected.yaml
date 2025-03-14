@@ -1,6 +1,7 @@
 pass:
   - "azurerm_subnet.pass"
+  - "azurerm_subnet.pass_netapp"
+  - "azurerm_subnet.fw-snet[0]"
+  - "azurerm_subnet.gw_snet[0]"
 fail:
-  - "azurerm_subnet.fail_1"
-  - "azurerm_subnet.fail_2"
   - "azurerm_subnet.fail_3"

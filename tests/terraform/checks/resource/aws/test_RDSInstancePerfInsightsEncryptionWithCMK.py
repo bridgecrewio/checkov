@@ -17,7 +17,9 @@ class TestRDSInstancePerfInsightsEncryptionWithCMK(unittest.TestCase):
 
         passing_resources = {
             "aws_db_instance.pass",
-            "aws_rds_cluster_instance.pass"
+            "aws_rds_cluster_instance.pass",
+            "aws_db_instance.pass_empty",
+            "aws_db_instance.pass_insights_disabled",
         }
         failing_resources = {
             "aws_db_instance.fail",

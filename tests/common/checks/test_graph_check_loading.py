@@ -38,9 +38,6 @@ class TestGraphChecks(unittest.TestCase):
         runner_filter = RunnerFilter(framework=['terraform'])
         external_graph_checks = 0
 
-        # make sure internal checks are loaded beforehand
-        runner.graph_registry.load_checks()
-
         # with external yaml checks external graph registry checks count should be equal to the external graph checks
         extra_checks_dir_path = [current_dir + "/extra_checks", current_dir + "/extra_yaml_checks"]
         runner.run(root_folder=current_dir, external_checks_dir=extra_checks_dir_path,

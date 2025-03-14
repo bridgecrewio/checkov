@@ -3,18 +3,20 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 
 class GlueDataCatalogEncryption(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Glue Data Catalog Encryption is enabled"
         id = "CKV_AWS_94"
         supported_resources = ['AWS::Glue::DataCatalogEncryptionSettings']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> CheckResult:
         connection_encrypted = False
         encrypted_at_rest = False
         if 'Properties' in conf.keys():
+            self.evaluated_keys = ['Properties']
             if 'DataCatalogEncryptionSettings' in conf['Properties'].keys():
+                self.evaluated_keys = ['Properties/DataCatalogEncryptionSettings']
                 dc_enc_settings = conf['Properties']['DataCatalogEncryptionSettings']
                 if 'ConnectionPasswordEncryption' in dc_enc_settings.keys():
                     con_pass_enc = dc_enc_settings['ConnectionPasswordEncryption']

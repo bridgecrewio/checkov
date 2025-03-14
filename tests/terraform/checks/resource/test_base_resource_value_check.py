@@ -11,7 +11,18 @@ class TestAnyCheck(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestAnyCheck", [], ["doesnt_matter"])
+        name = "Ensure it ain't broke"
+        id = "test/TestAnyCheck"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-any-check"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def get_inspected_key(self):
         return "foo"
@@ -25,7 +36,18 @@ class TestStaticCheck(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestStaticCheck", [], ["doesnt_matter"])
+        name = "Ensure it ain't broke"
+        id = "test/TestStaticCheck"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-static-check"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def get_inspected_key(self):
         return "foo"

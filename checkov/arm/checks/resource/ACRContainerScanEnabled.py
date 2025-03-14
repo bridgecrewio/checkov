@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Dict
+from typing import Any, Dict, List
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
 
@@ -23,6 +23,9 @@ class ACRContainerScanEnabled(BaseResourceCheck):
             return CheckResult.PASSED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["sku", "sku/name"]
 
 
 check = ACRContainerScanEnabled()

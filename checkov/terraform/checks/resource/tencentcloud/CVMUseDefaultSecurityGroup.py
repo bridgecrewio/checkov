@@ -15,11 +15,13 @@ class CVMUseDefaultSecurityGroup(BaseResourceCheck):
         if conf.get("orderly_security_groups"):
             for osg in conf["orderly_security_groups"][0]:
                 if ".default." in osg:
+                    self.evaluated_keys = ["orderly_security_groups"]
                     return CheckResult.FAILED
 
         if conf.get("security_groups"):
             for sg in conf["security_groups"][0]:
                 if ".default." in sg:
+                    self.evaluated_keys = ["security_groups"]
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

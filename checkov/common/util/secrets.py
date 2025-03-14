@@ -20,6 +20,7 @@ AWS = 'aws'
 AZURE = 'azure'
 GCP = 'gcp'
 GENERAL = 'general'
+PASSWORD = 'password'  # nosec B105
 ALL = 'all'
 
 GENERIC_OBFUSCATION_LENGTH = 10
@@ -61,6 +62,13 @@ _secrets_regexes = {
 
     'general': [
         "^-----BEGIN (RSA|EC|DSA|GPP) PRIVATE KEY-----$",
+    ],
+
+    'password': [
+        r"[A-Za-z0-9+/]{40,}={0,2}",  # Base64 encoded string
+        r"[0-9a-fA-F]{32,}",  # MD5 hash or similar
+        r"(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}",  # Strong password pattern
+        r"[A-Za-z0-9]{20,}",  # Long alphanumeric string
     ]
 }
 
@@ -238,8 +246,8 @@ def get_secrets_from_string(s: str, *categories: str) -> list[str]:
     if not categories or "all" in categories:
         categories = ("all",)
 
-    secrets: list[str] = []
+    secrets: set[str] = set()  # Change to a set for automatic deduplication
     for c in categories:
         for pattern in _patterns[c]:
-            secrets.extend(str(match.group()) for match in pattern.finditer(s))
-    return secrets
+            secrets.update(str(match.group()) for match in pattern.finditer(s))
+    return list(secrets)  # Convert set back to list before returning

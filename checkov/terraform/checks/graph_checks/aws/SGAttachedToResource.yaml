@@ -47,9 +47,12 @@ definition:
         - aws_memorydb_cluster
         - aws_mq_broker
         - aws_msk_cluster
+        - aws_mskconnect_connector
         - aws_mwaa_environment
         - aws_neptune_cluster
         - aws_network_interface
+        - aws_opensearch_domain
+        - aws_opensearch_vpc_endpoint
         - aws_quicksight_vpc_connection
         - aws_rds_cluster
         - aws_redshift_cluster

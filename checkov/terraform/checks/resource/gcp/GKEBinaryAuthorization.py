@@ -25,5 +25,8 @@ class GKEBinaryAuthorization(BaseResourceCheck):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self):
+        return ['binary_authorization', 'enable_binary_authorization']
+
 
 check = GKEBinaryAuthorization()

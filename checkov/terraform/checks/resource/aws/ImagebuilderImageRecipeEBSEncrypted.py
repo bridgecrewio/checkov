@@ -15,8 +15,10 @@ class ImagebuilderImageRecipeEBSEncrypted(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         mappings = conf.get("block_device_mapping")
         if mappings and isinstance(mappings, list):
+            self.evaluated_keys = ["block_device_mapping"]
             for mapping in mappings:
                 if mapping.get("ebs"):
+                    self.evaluated_keys.append("block_device_mapping/[0]/ebs")
                     ebs = mapping["ebs"][0]
                     if not ebs.get("encrypted"):
                         return CheckResult.FAILED

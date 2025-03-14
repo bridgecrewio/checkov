@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "pass_empty",
+      "properties": {
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "pass_publicNetworkAccess_disabled",
+      "properties": {
+        "publicNetworkAccess": "Disabled"
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "pass_publicNetworkAccess_enabled_no_network_profile",
+      "properties": {
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "pass_publicNetworkAccess_enabled_no_account_access",
+      "properties": {
+        "publicNetworkAccess": "Enabled",
+        "networkProfile": {
+
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Batch/batchAccounts",
+      "apiVersion": "2024-02-01",
+      "name": "pass_publicNetworkAccess_enabled_default_action_deny",
+      "properties": {
+        "publicNetworkAccess": "Enabled",
+        "networkProfile": {
+          "accountAccess": {
+            "defaultAction": "Deny"
+          }
+        }
+      }
+    }
+  ]
+}

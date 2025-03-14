@@ -19,6 +19,7 @@ class SQLServerThreatDetectionTypes(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         resources = conf.get("resources")
         if isinstance(resources, list):
+            self.evaluated_keys = ["resources"]
             for resource in resources:
                 if "type" in resource:
                     if resource["type"] in (

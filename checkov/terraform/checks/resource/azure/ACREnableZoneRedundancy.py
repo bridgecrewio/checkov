@@ -21,14 +21,16 @@ class ACREnableZoneRedundancy(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # check registry. default=false
+        self.evaluated_keys = ["zone_redundancy_enabled"]
         if conf.get("zone_redundancy_enabled", []) != [True]:
             return CheckResult.FAILED
 
         # check each replica. default=false
         replications = conf.get("georeplications", {})
-        for replica in replications:
+        for idx, replica in enumerate(replications):
             zone_redundancy_enabled = replica.get('zone_redundancy_enabled', [])
             if zone_redundancy_enabled != [True]:
+                self.evaluated_keys.append(f"georeplications/[{idx}]/zone_redundancy_enabled")
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

@@ -31,5 +31,8 @@ class ElasticBeanstalkUseManagedUpdates(BaseResourceCheck):
                                 return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self):
+        return ["setting"]
+
 
 check = ElasticBeanstalkUseManagedUpdates()

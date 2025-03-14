@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -40,6 +40,9 @@ class PostgreSQLServerLogConnectionsEnabled(BaseResourceCheck):
 
         # If name not connection_throttling - don't report (neither pass nor fail)
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["type", "name", "properties/value"]
 
 
 check = PostgreSQLServerLogConnectionsEnabled()

@@ -23,6 +23,7 @@ class AzureSearchSLAIndex(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get("properties", {})
+        self.evaluated_keys = ["properties"]
         if not isinstance(properties, dict):
             return CheckResult.FAILED
         replica_count = properties.get("replicaCount")
@@ -30,6 +31,7 @@ class AzureSearchSLAIndex(BaseResourceCheck):
             if replica_count >= 3:
                 return CheckResult.PASSED
             else:
+                self.evaluated_keys = ["properties/replicaCount"]
                 return CheckResult.FAILED
         else:
             return CheckResult.FAILED

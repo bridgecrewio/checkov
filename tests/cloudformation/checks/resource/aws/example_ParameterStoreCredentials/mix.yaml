@@ -1,0 +1,70 @@
+Resources:
+
+  FailAPIKey:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/myapp/api_key'
+      Type: 'String'
+      Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
+  
+  Bad1:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/myapp/secret'
+      Type: 'String'
+      Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
+  
+  GoodNoKeyword:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/myapp/foo'
+      Type: 'String'
+      Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
+  
+  GoodVariable:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: '/myapp/secret2'
+      Type: 'String'
+      Value: "${aws_iam_role.lambda[count.index].arn}"
+
+  GoodFnSub:
+    Type: AWS::SSM::Parameter
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E1019
+    Properties:
+      Type: String
+      Name: secret
+      Value:
+        Fn::Sub: '/cdk-bootstrap/${Qualifier}/version'
+  
+  GoodRef:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: SuperSecret
+      Type: String
+      Value: !Ref GoodFnSub
+
+  Bad2:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: 'MYSECRET'
+      Type: 'String'
+      Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
+
+  PassTestName:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: 'MYSECRET_TEST'
+      Type: 'String'
+      Value: 'akdfaksdfjkasdfjskafjdkfajsdfk345'
+
+  PassTestVALUE:
+    Type: 'AWS::SSM::Parameter'
+    Properties:
+      Name: 'MYSECRET2'
+      Type: 'String'
+      Value: 'akdfaksdfjkaEXAMPLEsdfjskafjdkfajsdfk345'

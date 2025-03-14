@@ -21,7 +21,10 @@ class SQLServerNoPublicAccess(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         resources = conf.get("resources")
         if resources and isinstance(resources, list):
-            for resource in resources:
+            self.evaluated_keys = ["resources"]
+            for idx, resource in enumerate(resources):
+                self.evaluated_keys = [f"resources/[{idx}]/type", f"resources/[{idx}]/properties/startIpAddress",
+                                       f"resources/[{idx}]/properties/endIpAddress"]
                 resource_type = resource.get("type")
                 if resource_type in ("Microsoft.Sql/servers/firewallRules", "firewallRules", "firewallrules"):
                     if "properties" in resource:

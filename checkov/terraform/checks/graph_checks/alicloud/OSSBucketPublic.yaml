@@ -1,0 +1,47 @@
+metadata:
+  id: "CKV_ALI_1"
+  name: "Alibaba Cloud OSS bucket accessible to public"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "alicloud_oss_bucket"
+      attribute: "acl"
+      operator: "not_within"
+      value:
+        - "public-read"
+        - "public-read-write"
+    - or:
+      - and:
+        - cond_type: "filter"
+          attribute: "resource_type"
+          value:
+            - "alicloud_oss_bucket"
+          operator: "within"
+        - cond_type: "connection"
+          resource_types:
+            - "alicloud_oss_bucket"
+          connected_resource_types:
+            - "alicloud_oss_bucket_acl"
+          operator: "not_exists"
+      - and:
+        - cond_type: "filter"
+          attribute: "resource_type"
+          value:
+            - "alicloud_oss_bucket"
+          operator: "within"
+        - cond_type: "connection"
+          resource_types:
+            - "alicloud_oss_bucket"
+          connected_resource_types:
+            - "alicloud_oss_bucket_acl"
+          operator: "exists"
+        - cond_type: "attribute"
+          resource_types:
+            - "alicloud_oss_bucket_acl"
+          attribute: "acl"
+          operator: "not_within"
+          value:
+            - "public-read"
+            - "public-read-write"

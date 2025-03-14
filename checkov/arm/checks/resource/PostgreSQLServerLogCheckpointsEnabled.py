@@ -18,6 +18,7 @@ class PostgreSQLServerLogCheckpointsEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties"]
         if "type" in conf:
             if conf["type"] == "Microsoft.DBforPostgreSQL/servers/configurations":
                 if "name" in conf and conf["name"] == "log_checkpoints":
@@ -25,6 +26,7 @@ class PostgreSQLServerLogCheckpointsEnabled(BaseResourceCheck):
                         if "value" in conf["properties"] and \
                                 conf["properties"]["value"].lower() == "on":
                             return CheckResult.PASSED
+                    self.evaluated_keys.append("properties/value")
                     return CheckResult.FAILED
             elif conf["type"] == "configurations":
                 if "name" in conf and conf["name"] == "log_checkpoints":
@@ -34,6 +36,7 @@ class PostgreSQLServerLogCheckpointsEnabled(BaseResourceCheck):
                                 if "value" in conf["properties"] and \
                                         conf["properties"]["value"].lower() == "on":
                                     return CheckResult.PASSED
+                    self.evaluated_keys.append("properties/value")
                     return CheckResult.FAILED
         else:
             return CheckResult.FAILED

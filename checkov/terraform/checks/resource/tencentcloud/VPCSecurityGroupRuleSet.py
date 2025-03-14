@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import \
     BaseResourceCheck
@@ -25,6 +27,9 @@ class VPCSecurityGroupRuleSet(BaseResourceCheck):
                 return CheckResult.FAILED
 
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["ingress"]
 
 
 check = VPCSecurityGroupRuleSet()

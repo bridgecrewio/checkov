@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -36,6 +36,9 @@ class StorageAccountLoggingQueueServiceEnabled(BaseResourceCheck):
                         if storage["StorageRead"] and storage["StorageWrite"] and storage["StorageDelete"]:
                             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['properties', 'properties/logs']
 
 
 check = StorageAccountLoggingQueueServiceEnabled()

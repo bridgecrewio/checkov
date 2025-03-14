@@ -802,3 +802,42 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         interesting_failed_checks = _filter_reports_for_incident_ids(report.failed_checks, ["test1", "test2"])
         self.assertEqual(len(interesting_failed_checks), 1)
+
+    def test_prerun_singleline_regex_detector(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/multiline_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test1",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test1",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  prerun:\n  - (?i)(?:ACCESS)\n  supported_files:\n  - .mine\n  value:\n  - 'AWS_ACCESS_KEY_ID'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       enable_secret_scan_all_files=True))
+        interesting_failed_checks = _filter_reports_for_incident_ids(report.failed_checks, ["test1"])
+        self.assertEqual(len(interesting_failed_checks), 1)

@@ -25,6 +25,7 @@ class ACRAnonymousPullDisabled(BaseResourceCheck):
             and "anonymous_pull_enabled" in conf.keys()
             and conf["anonymous_pull_enabled"][0]
         ):
+            self.evaluated_keys = ["sku", "anonymous_pull_enabled"]
             return CheckResult.FAILED
 
         return CheckResult.PASSED

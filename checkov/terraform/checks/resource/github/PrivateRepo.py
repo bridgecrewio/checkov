@@ -19,5 +19,8 @@ class PrivateRepo(BaseResourceCheck):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ["private", "visibility"]
+
 
 check = PrivateRepo()

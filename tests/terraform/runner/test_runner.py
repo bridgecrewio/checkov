@@ -434,6 +434,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # duplicate of CKV_AZURE_3
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_243":
+                continue  # ARM only check, not a Terraform check
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')

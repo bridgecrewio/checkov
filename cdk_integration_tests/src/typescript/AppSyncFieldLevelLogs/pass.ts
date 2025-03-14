@@ -4,7 +4,7 @@ import * as appsync from '@aws-cdk/aws-appsync';
 // Example of a log configuration that does not enable field-level logging
 // FINDING
 const logConfig: appsync.LogConfig = {
-  // log configuration details
+  fieldLogLevel: appsync.FieldLogLevel.ALL
 };
 
 // This should not match the pattern as it includes a logConfig with FieldLogLevel
