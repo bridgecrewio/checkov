@@ -76,7 +76,7 @@ SECRET_TYPE_TO_ID = {
 BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
 RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
 ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -278,22 +278,25 @@ class Runner(BaseRunner[None, None, None]):
 
         secret_key_by_line_to_secrets = defaultdict(list)
         for key, secret in secrets:
-            secret_key_by_line = f'{key}_{secret.line_number}'
-            secret_key_by_line_to_secrets[secret_key_by_line].append(secret)
+            secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
 
         # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
         # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
-        for key, secrets_by_line in secret_key_by_line_to_secrets.items():
+        for secret_file_and_line_key, secrets_by_line in secret_key_by_line_to_secrets.items():
             if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
                 continue
-            new_secrets = list()
-            key_with_no_line = key[:-2]
+            # Save resource id as we will need it for later
+            entropy_secret = None
+            _file_key = secret_file_and_line_key[0]
             for s in secrets_by_line:
-                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID:
-                    continue
-                new_secrets.append(s)
-            secret_key_by_line_to_secrets[key] = new_secrets
-            secrets[key_with_no_line] = set(new_secrets)
+                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID and entropy_secret is not None:
+                    s.secret_value = entropy_secret
+                if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID and BASE64_HIGH_ENTROPY_CHECK_ID in [SECRET_TYPE_TO_ID.get(i.type) for i in secrets_by_line]:
+                    try:
+                        entropy_secret = s.secret_value if s.secret_value else None
+                        secrets[_file_key].remove(s)
+                    except KeyError:
+                        pass
 
         for key, secret in secrets:
             check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
@@ -369,7 +372,7 @@ class Runner(BaseRunner[None, None, None]):
                 secret.secret_value, bc_check_id, check_id, resource, secret.line_number, result
             )
 
-            secret_key_by_line = f'{key}_{secret.line_number}'
+            secret_key_by_line = (key, secret.line_number)
             line_text_censored = line_text
             for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
                 line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)

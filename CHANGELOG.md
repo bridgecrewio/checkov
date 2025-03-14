@@ -1,6 +1,88 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.369...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.385...HEAD)
+
+## [3.2.385](https://github.com/bridgecrewio/checkov/compare/3.2.384...3.2.385) - 2025-03-13
+
+### Bug Fix
+
+- **terraform:** Update all resources - [#7049](https://github.com/bridgecrewio/checkov/pull/7049)
+
+## [3.2.384](https://github.com/bridgecrewio/checkov/compare/3.2.383...3.2.384) - 2025-03-12
+
+### Bug Fix
+
+- **terraform:** Update CKV_ALI_1 - [#7040](https://github.com/bridgecrewio/checkov/pull/7040)
+
+## [3.2.383](https://github.com/bridgecrewio/checkov/compare/3.2.382...3.2.383) - 2025-03-11
+
+### Feature
+
+- **serverless:** add tags enrichment to serverless - [#7044](https://github.com/bridgecrewio/checkov/pull/7044)
+
+### Bug Fix
+
+- **sast:** Fix CKV_AWS_194 policy - [#7048](https://github.com/bridgecrewio/checkov/pull/7048)
+
+## [3.2.382](https://github.com/bridgecrewio/checkov/compare/3.2.381...3.2.382) - 2025-03-06
+
+### Feature
+
+- **secrets:** Bump detect-secrets to remove more lock files - [#7039](https://github.com/bridgecrewio/checkov/pull/7039)
+
+## [3.2.381](https://github.com/bridgecrewio/checkov/compare/3.2.379...3.2.381) - 2025-03-05
+
+### Bug Fix
+
+- **general:** prevent connected_node attribute from being overriden - [#7032](https://github.com/bridgecrewio/checkov/pull/7032)
+- **secrets:** ckv_secret_80 filtering fix - [#7037](https://github.com/bridgecrewio/checkov/pull/7037)
+
+## [3.2.379](https://github.com/bridgecrewio/checkov/compare/3.2.378...3.2.379) - 2025-03-03
+
+### Feature
+
+- **terraform:** Add azure DB checks for flexible server private endpoints - [#7030](https://github.com/bridgecrewio/checkov/pull/7030)
+
+## [3.2.378](https://github.com/bridgecrewio/checkov/compare/3.2.377...3.2.378) - 2025-02-27
+
+### Bug Fix
+
+- **secrets:** Remove CKV_SECRET_80 instead of CKV_SECRET_6 - [#7029](https://github.com/bridgecrewio/checkov/pull/7029)
+
+## [3.2.377](https://github.com/bridgecrewio/checkov/compare/3.2.373...3.2.377) - 2025-02-25
+
+### Feature
+
+- **terraform:** adding 3 policies & tests - [#7011](https://github.com/bridgecrewio/checkov/pull/7011)
+
+### Bug Fix
+
+- **cloudformation:** Handle subs in CKV_AWS_384 - [#7022](https://github.com/bridgecrewio/checkov/pull/7022)
+- **secrets:** Fix Duplicated Violation in line bug - [#7027](https://github.com/bridgecrewio/checkov/pull/7027)
+- **terraform:** Fixed CKV2_GCP_10 to exclude non http triggered cloud functions from security_level requirement - [#7008](https://github.com/bridgecrewio/checkov/pull/7008)
+- **terraform:** Handle new resource type for CKV_GCP_73 - [#7023](https://github.com/bridgecrewio/checkov/pull/7023)
+
+## [3.2.373](https://github.com/bridgecrewio/checkov/compare/3.2.372...3.2.373) - 2025-02-24
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_74, CKV_GCP_76 incorrectly enforced for REGIONAL and GLOBAL managed proxy networks - [#7002](https://github.com/bridgecrewio/checkov/pull/7002)
+
+## [3.2.372](https://github.com/bridgecrewio/checkov/compare/3.2.370...3.2.372) - 2025-02-18
+
+### Feature
+
+- **terraform:** Add multiple checks - [#7016](https://github.com/bridgecrewio/checkov/pull/7016)
+
+### Bug Fix
+
+- **terraform:** Postgres latest stable version - [#7015](https://github.com/bridgecrewio/checkov/pull/7015)
+
+## [3.2.370](https://github.com/bridgecrewio/checkov/compare/3.2.369...3.2.370) - 2025-02-13
+
+### Bug Fix
+
+- **general:** Handle ECS enhanced container insights - [#7001](https://github.com/bridgecrewio/checkov/pull/7001)
 
 ## [3.2.369](https://github.com/bridgecrewio/checkov/compare/3.2.368...3.2.369) - 2025-02-10
 
