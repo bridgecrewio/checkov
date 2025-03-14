@@ -43,7 +43,7 @@ class TestCustomYamlPolicies(unittest.TestCase):
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
                     registry = Registry(policy_dir_path, GraphCheckParser())
-                    report = get_policy_results(dir_path, policy, [registry])
+                    report = get_policy_results(dir_path, [policy['metadata']['id']], [registry])
                     expected = load_yaml_data("expected.yaml", dir_path)
 
                     expected_to_fail = expected.get('fail', [])

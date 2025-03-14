@@ -36,6 +36,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         if self.entity_type == "aws_iam_role":
             if "managed_policy_arns" in conf.keys():
                 if ADMIN_POLICY_ARN in conf["managed_policy_arns"][0]:
+                    self.evaluated_keys = ["managed_policy_arns"]
                     return CheckResult.FAILED
 
         elif self.entity_type in (
@@ -46,6 +47,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         ):
             policy_arn = conf.get("policy_arn")
             if policy_arn and isinstance(policy_arn, list) and policy_arn[0] == ADMIN_POLICY_ARN:
+                self.evaluated_keys = ["policy_arn"]
                 return CheckResult.FAILED
 
         elif self.entity_type in (
@@ -53,6 +55,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         ):
             managed_policy_arn = conf.get("managed_policy_arn")
             if managed_policy_arn and isinstance(managed_policy_arn, list) and managed_policy_arn[0] == ADMIN_POLICY_ARN:
+                self.evaluated_keys = ["managed_policy_arn"]
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

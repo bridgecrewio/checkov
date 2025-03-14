@@ -37,6 +37,10 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'map': {}
 }
 
+attrsToFilterByResourceType = {
+    "google_iam_workload_identity_pool_provider": ["attribute_condition"]
+}
+
 DYNAMIC_STRING = 'dynamic'
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
@@ -489,6 +493,14 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         else:
             dpath.set(block_conf, dynamic_argument, dynamic_value, separator=DOT_SEPERATOR)
 
+    def shouldBeFilteredByConditionAndResourceType(self, attr: str, resource_type: List[str]) -> bool:
+        if not resource_type:
+            return False
+        for resource in resource_type:
+            if resource in attrsToFilterByResourceType and attr in attrsToFilterByResourceType[resource]:
+                return True
+        return False
+
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
             changed_attributes = {}
@@ -500,6 +512,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 for attr in vertex.attributes
                 if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf)
                 and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
+                and not self.shouldBeFilteredByConditionAndResourceType(attr, vertex.attributes.get("resource_type", []))
             ]
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)

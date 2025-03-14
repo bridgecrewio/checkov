@@ -7,7 +7,8 @@ import os
 import re
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tuple, Callable
+from collections import defaultdict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -35,7 +36,7 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
 from checkov.common.util.dockerfile import is_dockerfile
-from checkov.common.util.secrets import omit_secret_value_from_line
+from checkov.common.util.secrets import omit_secret_value_from_line, GENERIC_OBFUSCATION_LENGTH
 from checkov.runner_filter import RunnerFilter
 from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
@@ -72,17 +73,81 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
-GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
+RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
+ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
-
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
 def should_filter_vault_secret(secret_value: str, check_id: str) -> bool:
     return 'vault:' in secret_value.lower() and check_id in ENTROPY_CHECK_IDS
+
+
+def _get_secret_suppressions_ids() -> List[str]:
+    secret_suppressions_ids: list[str] = []
+    if bc_integration.customer_run_config_response:
+        suppressions = bc_integration.customer_run_config_response.get('suppressions', [])
+        if suppressions:
+            secret_suppressions_ids = [
+                suppression['policyId'] for suppression in suppressions
+                if suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy'
+            ]
+            logging.info(f'The secret_suppressions_ids are: {secret_suppressions_ids}')
+
+    return secret_suppressions_ids
+
+
+def _find_files_from_root_folder(root_folder: str, runner_filter: RunnerFilter) -> List[str]:
+    files_to_scan: List[str] = []
+    excluded_paths = (runner_filter.excluded_paths or []) + EXCLUDED_PATHS
+    enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
+    block_list_secret_scan = runner_filter.block_list_secret_scan or []
+    block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
+    for root, d_names, f_names in os.walk(root_folder):
+        if enable_secret_scan_all_files:
+            # 'excluded_paths' shouldn't include the static paths from 'EXCLUDED_PATHS'
+            # they are separately referenced inside the 'filter_excluded_paths' function
+            filter_excluded_paths(
+                root_dir=root, names=d_names, excluded_paths=runner_filter.excluded_paths)
+            filter_excluded_paths(
+                root_dir=root, names=f_names, excluded_paths=runner_filter.excluded_paths)
+        else:
+            filter_ignored_paths(root, d_names, excluded_paths)
+            filter_ignored_paths(root, f_names, excluded_paths)
+        for file in f_names:
+            if enable_secret_scan_all_files:
+                if is_dockerfile(file):
+                    if 'dockerfile' not in block_list_secret_scan_lower:
+                        files_to_scan.append(os.path.join(root, file))
+                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower and file not in block_list_secret_scan_lower:
+                    files_to_scan.append(os.path.join(root, file))
+            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_dockerfile(
+                    file):
+                files_to_scan.append(os.path.join(root, file))
+    logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+
+    return files_to_scan
+
+
+def _cleanup_plugin_files(
+        work_path: str,
+        amount: int,
+        dir_obj: Optional[tempfile.TemporaryDirectory[Any]] = None
+) -> None:
+    if dir_obj is not None:
+        logging.info(f"Cleanup the whole temp directory: {work_path}")
+        dir_obj.cleanup()
+        return
+    for index in range(1, amount):
+        try:
+            os.remove(f"{work_path}/runnable_plugin_{index}.py")
+            logging.info(f"Removed runnable plugin at index {index}")
+        except Exception as e:
+            logging.info(f"Failed removing file at index {index} due to: {e}")
 
 
 class Runner(BaseRunner[None, None, None]):
@@ -104,26 +169,28 @@ class Runner(BaseRunner[None, None, None]):
     def get_history_secret_store(self) -> Dict[str, List[EnrichedPotentialSecret]]:
         return self.history_secret_store.secrets_by_file_value_type
 
-    def run(
-            self,
-            root_folder: str | None,
-            external_checks_dir: list[str] | None = None,
-            files: list[str] | None = None,
-            runner_filter: RunnerFilter | None = None,
-            collect_skip_comments: bool = True
-    ) -> Report:
-        runner_filter = runner_filter or RunnerFilter()
+    def _get_plugins_used(self) -> Tuple[List[Dict[str, Any]], Callable[[], None]]:
+        work_dir_obj = None
+        work_path_optional = os.getenv('WORKDIR')
+        if work_path_optional is None:
+            work_dir_obj = tempfile.TemporaryDirectory()
+            work_path = work_dir_obj.name
+        else:
+            work_path = work_path_optional
+
+        # load runnable plugins
         current_dir = Path(__file__).parent
-        secrets = SecretsCollection()
-        plugins_used = [
+        plugins_used: List[Dict[str, Any]] = [
             {'name': 'AWSKeyDetector'},
             {'name': 'ArtifactoryDetector'},
             {'name': 'AzureStorageKeyDetector'},
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'IbmCosHmacDetector'},
             {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
+            {'name': 'NpmDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
             {'name': 'SoftlayerDetector'},
@@ -133,26 +200,12 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
              'entropy_limit': self.entropy_limit}
         ]
-
-        # load runnable plugins
-        customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
-        work_dir_obj = None
-        secret_suppressions_id: list[str] = []
-        work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
-        if work_path is None:
-            work_dir_obj = tempfile.TemporaryDirectory()
-            work_path = work_dir_obj.name
-
-        if customer_run_config:
-            policies_list = customer_run_config.get('secretsPolicies', [])
-            suppressions = customer_run_config.get('suppressions', [])
-            if suppressions:
-                secret_suppressions_id = [suppression['policyId']
-                                          for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+        if bc_integration.customer_run_config_response:
+            policies_list = bc_integration.customer_run_config_response.get('secretsPolicies', [])
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
-                logging.info(f"Found {len(runnable_plugins)} runnable plugins")
+                logging.debug(f"Found {len(runnable_plugins)} runnable plugins")
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
@@ -164,7 +217,8 @@ class Runner(BaseRunner[None, None, None]):
                         'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
                     })
                     plugins_index += 1
-                    logging.info(f"Loaded runnable plugin {name}")
+                    logging.debug(f"Loaded runnable plugin {name}")
+
         # load internal regex detectors
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
         logging.info(f"Custom detector found at {detector_path}. Loading...")
@@ -172,18 +226,35 @@ class Runner(BaseRunner[None, None, None]):
             'name': 'CustomRegexDetector',
             'path': f'file://{detector_path}'
         })
+
+        return plugins_used, lambda: _cleanup_plugin_files(work_path, plugins_index, work_dir_obj)
+
+    def run(
+            self,
+            root_folder: str | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True
+    ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        secrets = SecretsCollection()
+
+        plugins_used, cleanupFn = self._get_plugins_used()
+        secret_suppressions_ids = _get_secret_suppressions_ids()
+        report = Report(self.check_type)
+
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
+        # Implement non IaC files (including .terraform dir)
+        files_to_scan = files or []
+        self._add_custom_detectors_to_metadata_integration()
+
         with transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
         }) as settings:
-            report = Report(self.check_type)
-            if not runner_filter.show_progress_bar:
-                self.pbar.turn_off_progress_bar()
-
-            # Implement non IaC files (including .terraform dir)
-            files_to_scan = files or []
-            excluded_paths = (runner_filter.excluded_paths or []) + EXCLUDED_PATHS
-            self._add_custom_detectors_to_metadata_integration()
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     git_history_scanner = GitHistoryScanner(
@@ -192,31 +263,7 @@ class Runner(BaseRunner[None, None, None]):
                     git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
-                    enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                    block_list_secret_scan = runner_filter.block_list_secret_scan or []
-                    block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
-                    for root, d_names, f_names in os.walk(root_folder):
-                        if enable_secret_scan_all_files:
-                            # 'excluded_paths' shouldn't include the static paths from 'EXCLUDED_PATHS'
-                            # they are separately referenced inside the 'filter_excluded_paths' function
-                            filter_excluded_paths(
-                                root_dir=root, names=d_names, excluded_paths=runner_filter.excluded_paths)
-                            filter_excluded_paths(
-                                root_dir=root, names=f_names, excluded_paths=runner_filter.excluded_paths)
-                        else:
-                            filter_ignored_paths(root, d_names, excluded_paths)
-                            filter_ignored_paths(root, f_names, excluded_paths)
-                        for file in f_names:
-                            if enable_secret_scan_all_files:
-                                if is_dockerfile(file):
-                                    if 'dockerfile' not in block_list_secret_scan_lower:
-                                        files_to_scan.append(os.path.join(root, file))
-                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower and file not in block_list_secret_scan_lower:
-                                    files_to_scan.append(os.path.join(root, file))
-                            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_dockerfile(
-                                    file):
-                                files_to_scan.append(os.path.join(root, file))
-                    logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+                    files_to_scan += _find_files_from_root_folder(root_folder, runner_filter)
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
@@ -226,111 +273,142 @@ class Runner(BaseRunner[None, None, None]):
                 self._scan_files(files_to_scan, secrets, self.pbar)
                 self.pbar.close()
 
-            secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116']
-            for key, secret in secrets:
-                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
-                if not check_id:
-                    logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
-                    continue
-                if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
-                    logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
-                    continue
-                secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
-                # secret history
-                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
-                if runner_filter.enable_git_history_secret_scan:
-                    enriched_potential_secret = git_history_scanner.\
-                        history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
-                    added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
-                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
-                    code_line = enriched_potential_secret.get('code_line') or ''
-                    added_by = enriched_potential_secret.get('added_by') or ''
-                    removed_date = enriched_potential_secret.get('removed_date') or ''
-                    added_date = enriched_potential_secret.get('added_date') or ''
-                    # run over secret key
-                    if isinstance(secret.secret_value, str) and secret.secret_value:
-                        stripped = secret.secret_value.strip(',"')
-                        if stripped != secret.secret_value:
-                            secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
-                    logging.info(
-                        f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
-                    continue
-                if secret_key in secret_records.keys():
-                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
-                    if not is_prioritise:
-                        continue
-                bc_check_id = metadata_integration.get_bc_id(check_id)
-                if bc_check_id in secret_suppressions_id:
-                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
-                    continue
-                severity = metadata_integration.get_severity(check_id)
-                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
-                                                      report_type=CheckType.SECRETS):
-                    logging.debug(
-                        f'Check was suppress - should_run_check. check_id {check_id}')
-                    continue
-                result: _CheckResult = {'result': CheckResult.FAILED}
-                try:
-                    if runner_filter.enable_git_history_secret_scan and code_line is not None:
-                        line_text = code_line
-                    else:
-                        line_text = linecache.getline(secret.filename, secret.line_number)
-                except SyntaxError as e:
-                    # If encoding is a problem, this is probably not human-readable source code
-                    # hence there's no need in flagging this secret
-                    logging.info(f'Failed to log secret {secret.type} for file {secret.filename} because of {e}')
-                    continue
-                if line_text and line_text.startswith('git_commit'):
-                    continue
-                result = self.search_for_suppression(
-                    check_id=check_id,
-                    bc_check_id=bc_check_id,
-                    severity=severity,
-                    secret=secret,
-                    runner_filter=runner_filter,
-                    root_folder=root_folder
-                ) or result
-                relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
-                resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
-                report.add_resource(resource)
-                # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
-                # via 'load_secret_from_dict'
-                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
-                line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
-                secret_records[secret_key] = SecretsRecord(
-                    check_id=check_id,
-                    bc_check_id=bc_check_id,
-                    severity=severity,
-                    check_name=secret.type,
-                    check_result=result,
-                    code_block=[(secret.line_number, line_text_censored)],
-                    file_path=relative_file_path,
-                    file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
-                    check_class="",
-                    evaluations=None,
-                    file_abs_path=os.path.abspath(secret.filename),
-                    validation_status=ValidationStatus.UNAVAILABLE.value,
-                    added_commit_hash=added_commit_hash,
-                    removed_commit_hash=removed_commit_hash,
-                    added_by=added_by,
-                    removed_date=removed_date,
-                    added_date=added_date
-                )
-            for _, v in secret_records.items():
-                report.add_record(v)
+        secret_records: dict[str, SecretsRecord] = {}
+        secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
-            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
-            if enriched_secrets_s3_path:
-                self.verify_secrets(report, enriched_secrets_s3_path)
-            logging.debug(f'report fail checks len: {len(report.failed_checks)}')
+        secret_key_by_line_to_secrets = defaultdict(list)
+        for key, secret in secrets:
+            secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
 
-            self.cleanup_plugin_files(work_path, plugins_index, work_dir_obj)
-            if runner_filter.skip_invalid_secrets:
-                self._modify_invalid_secrets_check_result_to_skipped(report)
-            return report
+        # If same line contains both Random High Entropy & Base64 High Entropy, only the Random one remains.
+        # https://jira-dc.paloaltonetworks.com/browse/BCE-42547
+        for secret_file_and_line_key, secrets_by_line in secret_key_by_line_to_secrets.items():
+            if not any([s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID for s in secrets_by_line]):
+                continue
+            # Save resource id as we will need it for later
+            entropy_secret = None
+            _file_key = secret_file_and_line_key[0]
+            for s in secrets_by_line:
+                if SECRET_TYPE_TO_ID.get(s.type) == BASE64_HIGH_ENTROPY_CHECK_ID and entropy_secret is not None:
+                    s.secret_value = entropy_secret
+                if s.check_id == RANDOM_HIGH_ENTROPY_CHECK_ID and BASE64_HIGH_ENTROPY_CHECK_ID in [SECRET_TYPE_TO_ID.get(i.type) for i in secrets_by_line]:
+                    try:
+                        entropy_secret = s.secret_value if s.secret_value else None
+                        secrets[_file_key].remove(s)
+                    except KeyError:
+                        pass
+
+        for key, secret in secrets:
+            check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
+            if not check_id:
+                logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                continue
+            if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
+                logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
+                continue
+            secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
+            # secret history
+            added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
+            if runner_filter.enable_git_history_secret_scan:
+                enriched_potential_secret = git_history_scanner. \
+                    history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
+                added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
+                removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
+                code_line = enriched_potential_secret.get('code_line') or ''
+                added_by = enriched_potential_secret.get('added_by') or ''
+                removed_date = enriched_potential_secret.get('removed_date') or ''
+                added_date = enriched_potential_secret.get('added_date') or ''
+            # run over secret key
+            if isinstance(secret.secret_value, str) and secret.secret_value:
+                stripped = secret.secret_value.strip(',";\'')
+                if stripped != secret.secret_value:
+                    secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
+            if secret.secret_value and is_potential_uuid(
+                    secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
+                logging.info(
+                    f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
+                continue
+            bc_check_id = metadata_integration.get_bc_id(check_id)
+            if bc_check_id in secret_suppressions_ids:
+                logging.debug(f'Secret was filtered - check {check_id} was suppressed')
+                continue
+            severity = metadata_integration.get_severity(check_id)
+            if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
+                                                  report_type=CheckType.SECRETS):
+                logging.debug(
+                    f'Check was suppress - should_run_check. check_id {check_id}')
+                continue
+            if secret_key in secret_records.keys():
+                is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                if not is_prioritise:
+                    continue
+            result: _CheckResult = {'result': CheckResult.FAILED}
+            try:
+                if runner_filter.enable_git_history_secret_scan and code_line is not None:
+                    line_text = code_line
+                else:
+                    line_text = linecache.getline(secret.filename, secret.line_number)
+            except SyntaxError as e:
+                # If encoding is a problem, this is probably not human-readable source code
+                # hence there's no need in flagging this secret
+                logging.info(f'Failed to log secret {secret.type} for file {secret.filename} because of {e}')
+                continue
+            if line_text and line_text.startswith('git_commit'):
+                continue
+            result = self.search_for_suppression(
+                check_id=check_id,
+                bc_check_id=bc_check_id,
+                severity=severity,
+                secret=secret,
+                runner_filter=runner_filter,
+                root_folder=root_folder
+            ) or result
+            relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+            resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
+            report.add_resource(resource)
+            # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
+            # via 'load_secret_from_dict'
+            self.save_secret_to_coordinator(
+                secret.secret_value, bc_check_id, check_id, resource, secret.line_number, result
+            )
+
+            secret_key_by_line = (key, secret.line_number)
+            line_text_censored = line_text
+            for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
+                line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
+
+            secret_records[secret_key] = SecretsRecord(
+                check_id=check_id,
+                bc_check_id=bc_check_id,
+                severity=severity,
+                check_name=secret.type,
+                check_result=result,
+                code_block=[(secret.line_number, line_text_censored)],
+                file_path=relative_file_path,
+                file_line_range=[secret.line_number, secret.line_number + 1],
+                resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
+                check_class="",
+                evaluations=None,
+                file_abs_path=os.path.abspath(secret.filename),
+                validation_status=ValidationStatus.UNAVAILABLE.value,
+                added_commit_hash=added_commit_hash,
+                removed_commit_hash=removed_commit_hash,
+                added_by=added_by,
+                removed_date=removed_date,
+                added_date=added_date
+            )
+        for _, v in secret_records.items():
+            report.add_record(v)
+
+        enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
+        if enriched_secrets_s3_path:
+            self.verify_secrets(report, enriched_secrets_s3_path)
+        logging.debug(f'report fail checks len: {len(report.failed_checks)}')
+
+        cleanupFn()
+        if runner_filter.skip_invalid_secrets:
+            self._modify_invalid_secrets_check_result_to_skipped(report)
+        return report
 
     @staticmethod
     def _prioritise_secrets(secret_records: Dict[str, SecretsRecord], secret_key: str, check_id: str) -> bool:
@@ -342,23 +420,6 @@ class Runner(BaseRunner[None, None, None]):
                 secret_records.pop(secret_key)
                 return True
         return False
-
-    def cleanup_plugin_files(
-            self,
-            work_path: str,
-            amount: int,
-            dir_obj: Optional[tempfile.TemporaryDirectory[Any]] = None
-    ) -> None:
-        if dir_obj is not None:
-            logging.info(f"Cleanup the whole temp directory: {work_path}")
-            dir_obj.cleanup()
-            return
-        for index in range(1, amount):
-            try:
-                os.remove(f"{work_path}/runnable_plugin_{index}.py")
-                logging.info(f"Removed runnable plugin at index {index}")
-            except Exception as e:
-                logging.info(f"Failed removing file at index {index} due to: {e}")
 
     @staticmethod
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
@@ -390,7 +451,7 @@ class Runner(BaseRunner[None, None, None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results len {len(file_results)}')
+            logging.debug(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
@@ -436,11 +497,21 @@ class Runner(BaseRunner[None, None, None]):
         return None
 
     def save_secret_to_coordinator(
-            self, secret_value: Optional[str], bc_check_id: str, resource: str, line_number: int, result: _CheckResult
+            self,
+            secret_value: Optional[str],
+            bc_check_id: str,
+            check_id: str,
+            resource: str,
+            line_number: int,
+            result: _CheckResult
     ) -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
             enriched_secret = EnrichedSecret(
-                original_secret=secret_value, bc_check_id=bc_check_id, resource=resource, line_number=line_number
+                original_secret=secret_value,
+                bc_check_id=bc_check_id,
+                check_id=check_id,
+                resource=resource,
+                line_number=line_number
             )
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
@@ -562,3 +633,56 @@ class Runner(BaseRunner[None, None, None]):
                 logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
+
+    def mask_files(self, root_folder: str | None,
+                   files: list[str] | None = None,
+                   runner_filter: RunnerFilter | None = None) -> None:
+        """
+        get files or/and root_folder and masking and replace automatically all the secrets found there
+        note: the changes are inplace
+        """
+        runner_filter = runner_filter or RunnerFilter()
+
+        plugins_used, cleanupFn = self._get_plugins_used()
+
+        files_to_scan = files or []
+        if root_folder:
+            files_to_scan += _find_files_from_root_folder(root_folder, runner_filter)
+
+        self._add_custom_detectors_to_metadata_integration()
+        secrets = SecretsCollection()
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': plugins_used
+        }) as settings:
+
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
+
+            self._scan_files(files_to_scan, secrets, self.pbar)
+
+        for file in files_to_scan:
+            with open(file, "r+") as f:
+                content = f.read()
+                f.seek(0)
+                for _key, secret in secrets:
+                    if not secret.secret_value:
+                        continue
+                    check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
+                    if not check_id:
+                        logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                        continue
+                    if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
+                        logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
+                        continue
+
+                    content = content.replace(secret.secret_value, masking_value(secret.secret_value))
+                f.write(content)
+                f.truncate()
+
+        logging.info(f"finish replacing {len(files_to_scan)} files")
+
+
+def masking_value(secret: str) -> str:
+    secret_len_to_expose = min(len(secret) // 4, 6)
+    return f'{secret[:secret_len_to_expose]}{"*" * GENERIC_OBFUSCATION_LENGTH}'

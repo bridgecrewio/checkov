@@ -471,6 +471,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
                  "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
+            env_var="CKV_POLICY_METADATA_FILTER"
         )
         self.add(
             "--policy-metadata-filter-exception",
@@ -480,6 +481,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
                  "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
+            env_var="CKV_POLICY_METADATA_FILTER_EXCEPTION"
         )
         self.add(
             "--secrets-scan-file-type",
@@ -556,4 +558,10 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
                  "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
                  "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
+        )
+        self.add(
+            "--custom-tool-name",
+            default="Checkov",
+            help="Add a tool name if you want your output to be tagged with a specific tool name,"
+                 "this is useful when integrating with other tools such as uploading SARIF files to github code scanning"
         )

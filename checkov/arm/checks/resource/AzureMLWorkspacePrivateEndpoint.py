@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -28,6 +28,9 @@ class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
                         if rule.get("type") == "PrivateEndpoint":
                             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties", "properties/[0]/managedNetwork", "properties/[0]/managedNetwork/[0]/outboundRules"]
 
 
 check = AzureMLWorkspacePrivateEndpoint()
