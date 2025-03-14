@@ -15,9 +15,11 @@ Public resources from ``stopit``
 from .utils import TimeoutException
 from .threadstop import ThreadingTimeout, async_raise, threading_timeoutable
 from .signalstop import SignalTimeout, signal_timeoutable
+from .processstop import ProcessTimeout, process_timeoutable
 
 
 __all__ = (
     'ThreadingTimeout', 'async_raise', 'threading_timeoutable',
-    'SignalTimeout', 'signal_timeoutable', 'TimeoutException'
+    'SignalTimeout', 'signal_timeoutable', 'TimeoutException',
+    'ProcessTimeout', 'process_timeoutable'
 )
