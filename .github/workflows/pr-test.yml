@@ -49,7 +49,10 @@ jobs:
         if: steps.changed-files.outputs.cfn == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(echo "${{ steps.changed-files.outputs.cfn_files }}" | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.python_files }}"
+          
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files.outputs.cfn_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
@@ -524,11 +527,12 @@ jobs:
           )
           
           echo "Changed files:"
-          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "${{ steps.changed-files.outputs.python_files }}"
           
           EXIT_CODE=0
-          # Process each file using a while-read loop
-          echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ',' '\n' | while IFS= read -r file; do
+          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
+          for file in $(echo "${{ steps.changed-files.outputs.python_files }}" | tr ',' '\n'); do
+            # Check if the file is in the list of exceptions
             SKIP_FILE="false"
             for exception in "${EXCEPTIONS[@]}"; do
               # If the file ends with one of the exception file names, skip it
@@ -550,6 +554,7 @@ jobs:
               fi
             fi
           done
+          unset IFS  # Restore IFS to default
           
           # Fail the job if any file violated the rule
           if [ "$EXIT_CODE" -ne 0 ]; then
