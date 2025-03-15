@@ -47,22 +47,9 @@ jobs:
               - 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
       - name: Filter YAML and JSON files
         if: steps.changed-files.outputs.cfn == 'true'
-        id: filter-files
-        run: |
-          echo "Changed files:"
-          echo "${{ steps.changed-files.outputs.python_files }}"
-          
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files.outputs.cfn_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
-          if [ -n "$YAML_JSON_FILES" ]; then
-            echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
-          fi
-      - name: Install cfn-lint & Lint Cloudformation templates
-        if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-          for file in $YAML_JSON_FILES; do
-            cfn-lint "$file" -i W
-          done
+          cfn-lint ${{ steps.changed-files.outputs.cfn_files }} -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
@@ -529,9 +516,15 @@ jobs:
           echo "Changed files:"
           echo "${{ steps.changed-files.outputs.python_files }}"
           
+          # Convert space-delimited output into an array
+          CHANGED_FILES="${{ steps.changed-files.outputs.python_files }}"
+          read -r -a files <<< "$CHANGED_FILES"
+          
           EXIT_CODE=0
-          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
-          for file in $(echo "${{ steps.changed-files.outputs.python_files }}" | tr ',' '\n'); do
+          for file in "${files[@]}"; do
+            # Unescape any escaped spaces (if necessary)
+            file=$(printf "%b" "$file")
+            
             # Check if the file is in the list of exceptions
             SKIP_FILE="false"
             for exception in "${EXCEPTIONS[@]}"; do
