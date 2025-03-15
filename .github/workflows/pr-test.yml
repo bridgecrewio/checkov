@@ -498,15 +498,15 @@ jobs:
 
       - name: Get changed Python files
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
-        id: changed-files
+        id: changed
         with:
           list-files: shell
           filters: |
             python:
-              - 'checkov/**/*.py'
+              - added|modified: 'checkov/**/*.py'
 
       - name: Validate 'BaseResourceCheck' use contains eval keys
-        if: steps.changed-files.outputs.python == 'true'
+        if: steps.changed.outputs.python == 'true'
         run: |
           # Define an array of exceptions (files to skip)
           EXCEPTIONS=(
@@ -516,10 +516,10 @@ jobs:
           )
           
           echo "Changed files:"
-          echo "${{ steps.changed-files.outputs.python_files }}"
+          echo "${{ steps.changed.outputs.python_files }}"
           
           # Convert space-delimited output into an array
-          CHANGED_FILES="${{ steps.changed-files.outputs.python_files }}"
+          CHANGED_FILES="${{ steps.changed.outputs.python_files }}"
           read -r -a files <<< "$CHANGED_FILES"
           
           EXIT_CODE=0
