@@ -47,7 +47,7 @@ jobs:
             cfn:
               - added|modified: 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
       - name: Filter YAML and JSON files
-        if: steps.changed-files.outputs.cfn == 'true'
+        if: steps.changed.outputs.cfn == 'true'
         run: |
           pip install -U cfn-lint
           cfn-lint ${{ steps.changed.outputs.cfn_files }} -i W
