@@ -38,13 +38,15 @@ Resources:
       Name: CheckovTest
       Subnets: !Ref Subnets
       SecurityGroups:
+        - !Ref SecurityGroup
       #  - !Ref ALBSecurityGroup
-  
+
   ListenerHTTP:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref LoadBalancer
       Port: 80
+      Protocol: HTTP
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref DefaultTargetGroup
@@ -56,6 +58,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       Name: checkov-default
+      VpcId: !Ref VPC
       Port: 80
       Protocol: HTTP
 
@@ -67,4 +70,3 @@ Outputs:
   LoadBalancerUrl:
     Description: The URL of the ALB
     Value: !GetAtt LoadBalancer.DNSName
-
