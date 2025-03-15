@@ -1,0 +1,70 @@
+Description: >
+  This template deploys an Application Load Balancer - HTTP listener only
+Parameters:
+  VPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose which VPC the Application Load Balancer should be deployed to
+
+  Subnets:
+    Description: Choose a minimum of 2 subnets the ALB should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+
+  SecurityGroup:
+    Description: Security Group for ALB 
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-0123456789abcdefc
+
+Resources:
+  #ALBSecurityGroup:
+  #  Type: 'AWS::EC2::SecurityGroup'
+  #  Properties:
+  #    GroupDescription: 'checkov-alb-test'
+  #    VpcId: !Ref VPC
+  #    SecurityGroupIngress:
+  #    - Description: 'HTTP Ingress' 
+  #      IpProtocol: tcp
+  #      FromPort: 80
+  #      ToPort: 80
+  #      CidrIp: 0.0.0.0/0
+  #    - Description: 'HTTPS Ingress' 
+  #      IpProtocol: tcp
+  #      FromPort: 443
+  #      ToPort: 443
+  #      CidrIp: 0.0.0.0/0
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Subnets: !Ref Subnets
+      SecurityGroups:
+      #  - !Ref ALBSecurityGroup
+  
+  ListenerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref DefaultTargetGroup
+
+  # We define a default target group here, as this is a mandatory Parameters
+  # when creating an Application Load Balancer Listener. This is not used, instead
+  # a target group is created per-service in each service template (../services/*)
+  DefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: checkov-default
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  LoadBalancer:
+    Description: A reference to the Application Load Balancer
+    Value: !Ref LoadBalancer
+
+  LoadBalancerUrl:
+    Description: The URL of the ALB
+    Value: !GetAtt LoadBalancer.DNSName
+
