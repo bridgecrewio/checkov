@@ -32,7 +32,7 @@ jobs:
   cfn-lint:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.12"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
@@ -40,16 +40,17 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Get changed CFN test files
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
-        id: changed-files
+        id: changed
         with:
+          list-files: shell
           filters: |
             cfn:
-              - 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
+              - added|modified: 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
       - name: Filter YAML and JSON files
         if: steps.changed-files.outputs.cfn == 'true'
         run: |
           pip install -U cfn-lint
-          cfn-lint ${{ steps.changed-files.outputs.cfn_files }} -i W
+          cfn-lint ${{ steps.changed.outputs.cfn_files }} -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
