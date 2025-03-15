@@ -44,12 +44,14 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> "$GITHUB_ENV"
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@9ed3155b72ba709881c967f75611fc5852f773b9  # v13
-        id: changed_files
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
+        id: changed
         with:
-          files: Pipfile.lock
+          filters: |
+            pipfile:
+              - 'Pipfile.lock'
       - name: Setup dependencies if they changed
-        if: steps.changed_files.outputs.files_changed == 'true'
+        if: steps.changed.outputs.pipfile == 'true'
         run: |
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
