@@ -39,15 +39,17 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Get changed CFN test files
-        id: changed-files-specific
-        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
+        id: changed-files
         with:
-          files: tests/cloudformation/checks/resource/aws/**/*
+          filters: |
+            cfn:
+              - 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
       - name: Filter YAML and JSON files
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.cfn == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          YAML_JSON_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E 'tests/cloudformation/checks/resource/aws/.*\.(ya?ml|json)$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
@@ -504,10 +506,12 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
 
       - name: Get changed Python files
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
         id: changed-files
-        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
         with:
-          files: checkov/**/*.py
+          filters: |
+            python:
+              - 'checkov/**/*.py'
 
       - name: Validate 'BaseResourceCheck' use contains eval keys
         if: steps.changed-files.outputs.any_changed == 'true'
