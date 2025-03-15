@@ -49,7 +49,7 @@ jobs:
         if: steps.changed-files.outputs.cfn == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E 'tests/cloudformation/checks/resource/aws/.*\.(ya?ml|json)$' | tr '\n' ' ')
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files.outputs.cfn }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
