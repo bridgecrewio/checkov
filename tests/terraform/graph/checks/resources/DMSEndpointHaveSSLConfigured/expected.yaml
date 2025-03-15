@@ -6,3 +6,4 @@ pass:
   - "aws_dms_endpoint.pass_source_2"
   - "aws_dms_endpoint.pass_target_1"
   - "aws_dms_endpoint.pass_target_2"
+  - "aws_dms_endpoint.pass_unknown_endpoint_type"
