@@ -514,7 +514,7 @@ jobs:
               - 'checkov/**/*.py'
 
       - name: Validate 'BaseResourceCheck' use contains eval keys
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.python == 'true'
         run: |
           # Define an array of exceptions (files to skip)
           EXCEPTIONS=(
