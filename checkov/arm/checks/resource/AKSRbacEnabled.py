@@ -19,17 +19,14 @@ class AKSRbacEnabled(BaseResourceCheck):
         if "apiVersion" in conf:
             if conf["apiVersion"] == "2017-08-31":
                 # No enableRBAC option to configure
-                self.evaluated_keys = ["apiVersion"]
                 return CheckResult.FAILED
 
-        self.evaluated_keys = ["properties"]
         properties = conf.get('properties')
         if not properties or not isinstance(properties, dict):
             return CheckResult.FAILED
         enable_RBAC = properties.get('enableRBAC')
         if str(enable_RBAC).lower() == "true":
             return CheckResult.PASSED
-        self.evaluated_keys.append("properties/enableRBAC")
         return CheckResult.FAILED
 
 
