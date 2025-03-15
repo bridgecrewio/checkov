@@ -32,32 +32,25 @@ jobs:
   cfn-lint:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.12"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Get changed CFN test files
-        id: changed-files-specific
-        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
+        id: changed
         with:
-          files: tests/cloudformation/checks/resource/aws/**/*
+          list-files: shell
+          filters: |
+            cfn:
+              - added|modified: 'tests/cloudformation/checks/resource/aws/**/*.{yml,yaml,json}'
       - name: Filter YAML and JSON files
-        if: steps.changed-files-specific.outputs.any_changed == 'true'
-        id: filter-files
-        run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
-          if [ -n "$YAML_JSON_FILES" ]; then
-            echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
-          fi
-      - name: Install cfn-lint & Lint Cloudformation templates
-        if: env.YAML_JSON_FILES != ''
+        if: steps.changed.outputs.cfn == 'true'
         run: |
           pip install -U cfn-lint
-          for file in $YAML_JSON_FILES; do
-            cfn-lint "$file" -i W
-          done
+          cfn-lint ${{ steps.changed.outputs.cfn_files }} -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
@@ -504,13 +497,16 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
 
       - name: Get changed Python files
-        id: changed-files
-        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
+        id: changed
         with:
-          files: checkov/**/*.py
+          list-files: shell
+          filters: |
+            python:
+              - added|modified: 'checkov/**/*.py'
 
       - name: Validate 'BaseResourceCheck' use contains eval keys
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed.outputs.python == 'true'
         run: |
           # Define an array of exceptions (files to skip)
           EXCEPTIONS=(
@@ -520,11 +516,17 @@ jobs:
           )
           
           echo "Changed files:"
-          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "${{ steps.changed.outputs.python_files }}"
+          
+          # Convert space-delimited output into an array
+          CHANGED_FILES="${{ steps.changed.outputs.python_files }}"
+          read -r -a files <<< "$CHANGED_FILES"
           
           EXIT_CODE=0
-          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
-          for file in $(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ',' '\n'); do
+          for file in "${files[@]}"; do
+            # Unescape any escaped spaces (if necessary)
+            file=$(printf "%b" "$file")
+            
             # Check if the file is in the list of exceptions
             SKIP_FILE="false"
             for exception in "${EXCEPTIONS[@]}"; do
@@ -547,7 +549,6 @@ jobs:
               fi
             fi
           done
-          unset IFS  # Restore IFS to default
           
           # Fail the job if any file violated the rule
           if [ "$EXIT_CODE" -ne 0 ]; then
