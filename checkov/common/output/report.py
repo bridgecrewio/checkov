@@ -575,6 +575,10 @@ class Report:
 
             if record.resource_address and record.resource_address.startswith("module."):
                 module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
+                # For module with for_each or count, the module path will be module.module_name[(.*)]. We can
+                # ignore the index and the for_each value and just use the module name as it's not possible to
+                # skip checks for a specific instance of a module
+                module_path = module_path.split('[')[0]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:
