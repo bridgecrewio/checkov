@@ -550,7 +550,6 @@ jobs:
               fi
             fi
           done
-          unset IFS  # Restore IFS to default
           
           # Fail the job if any file violated the rule
           if [ "$EXIT_CODE" -ne 0 ]; then
