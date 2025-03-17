@@ -4,12 +4,12 @@ from unittest import mock
 
 import pytest
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
-from checkov.terraform.graph_builder.foreach.consts import RAW_ASSET_IN_GRAPH_ENV
 from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -591,5 +591,10 @@ def test_foreach_renderer_with_raw_asset():
         assert config_name.endswith("[\"bucket_a\"]") or config_name.endswith("[\"bucket_b\"]")
     for edge in [local_graph.edges[1], local_graph.edges[2], local_graph.edges[4], local_graph.edges[5]]:
         assert edge.label == 'virtual_resource'
+    for resource in [local_graph.vertices[6], local_graph.vertices[8]]:
+        assert len(resource.config[CustomAttributes.VIRTUAL_RESOURCES]) == 2
+        for virtual_resource in resource.config[CustomAttributes.VIRTUAL_RESOURCES]:
+            assert virtual_resource.endswith("[\"bucket_a\"]") or virtual_resource.endswith("[\"bucket_b\"]")
+
 
 

@@ -6,10 +6,12 @@ import re
 import typing
 from typing import Any
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
+from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -41,16 +43,16 @@ class ForeachAbstractHandler:
         virtual_resources_names = []
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                virtual_resource_name = self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
-                if virtual_resource_name is not None:
-                    virtual_resources_names.append(virtual_resource_name)
+                append_virtual_resource(
+                    self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value,
+                                                      new_value=new_value), virtual_resources_names)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                virtual_resource_name = self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
-                if virtual_resource_name is not None:
-                    virtual_resources_names.append(virtual_resource_name)
+                append_virtual_resource(
+                    self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value),
+                    virtual_resources_names)
         if env_vars_config.RAW_TF_IN_GRAPH_ENV:
-            main_resource.config["virtual_resources"] = virtual_resources_names
+            main_resource.config[CustomAttributes.VIRTUAL_RESOURCES] = virtual_resources_names
             self.local_graph.vertices.append(main_resource)
 
     @staticmethod
@@ -63,7 +65,8 @@ class ForeachAbstractHandler:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
         sub_graph = TerraformLocalGraph(self.local_graph.module)
-        sub_graph.vertices = [{}] * len(self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
+        sub_graph.vertices = [{}] * len(
+            self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = pickle_deepcopy(block)
@@ -81,7 +84,8 @@ class ForeachAbstractHandler:
         attrs.pop(FOREACH_STRING, None)
 
     @staticmethod
-    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any], k: str) -> bool:
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any],
+                           k: str) -> bool:
         if key_to_change not in attrs[k]:
             return False
         if attrs[k] == "${" + key_to_change + "}":
@@ -97,7 +101,7 @@ class ForeachAbstractHandler:
             return True
 
     @staticmethod
-    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str | int, new_key: str | int | None)\
+    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str | int, new_key: str | int | None) \
             -> dict[str, str | int | None]:
         if main_resource.attributes.get(COUNT_STRING):
             return {COUNT_KEY: new_val}
@@ -195,7 +199,7 @@ class ForeachAbstractHandler:
             return self._handle_static_count_statement(count_statement)
         return None
 
-    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any])\
+    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) \
             -> list[str] | dict[str, Any] | None:
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)
