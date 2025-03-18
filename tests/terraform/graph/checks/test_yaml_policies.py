@@ -562,6 +562,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzurePostgreSQLFlexibleServerConfigPrivEndpt(self):
         self.go("AzurePostgreSQLFlexibleServerConfigPrivEndpt")
 
+    def test_OSSBucketPublic(self):
+        self.go("OSSBucketPublic")
+
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.382...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.386...HEAD)
+
+## [3.2.386](https://github.com/bridgecrewio/checkov/compare/3.2.385...3.2.386) - 2025-03-14
+
+- no noteworthy changes
+
+## [3.2.385](https://github.com/bridgecrewio/checkov/compare/3.2.384...3.2.385) - 2025-03-13
+
+### Bug Fix
+
+- **terraform:** Update all resources - [#7049](https://github.com/bridgecrewio/checkov/pull/7049)
+
+## [3.2.384](https://github.com/bridgecrewio/checkov/compare/3.2.383...3.2.384) - 2025-03-12
+
+### Bug Fix
+
+- **terraform:** Update CKV_ALI_1 - [#7040](https://github.com/bridgecrewio/checkov/pull/7040)
+
+## [3.2.383](https://github.com/bridgecrewio/checkov/compare/3.2.382...3.2.383) - 2025-03-11
+
+### Feature
+
+- **serverless:** add tags enrichment to serverless - [#7044](https://github.com/bridgecrewio/checkov/pull/7044)
+
+### Bug Fix
+
+- **sast:** Fix CKV_AWS_194 policy - [#7048](https://github.com/bridgecrewio/checkov/pull/7048)
 
 ## [3.2.382](https://github.com/bridgecrewio/checkov/compare/3.2.381...3.2.382) - 2025-03-06
 
