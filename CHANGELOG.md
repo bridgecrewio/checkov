@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.385...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.386...HEAD)
+
+## [3.2.386](https://github.com/bridgecrewio/checkov/compare/3.2.385...3.2.386) - 2025-03-14
+
+- no noteworthy changes
 
 ## [3.2.385](https://github.com/bridgecrewio/checkov/compare/3.2.384...3.2.385) - 2025-03-13
 
