@@ -30,3 +30,8 @@ def get_sanitized_terraform_resource_id(resource_id: str) -> str:
         original_resource_name = original_id_parts[-2]
         return original_resource_name
     return resource_id
+
+
+def append_virtual_resource(virtual_resource_name: str | None, virtual_resources_list: list[str]) -> None:
+    if virtual_resource_name is not None:
+        virtual_resources_list.append(virtual_resource_name)
