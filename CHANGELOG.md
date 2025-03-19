@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.386...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.390...HEAD)
+
+## [3.2.390](https://github.com/bridgecrewio/checkov/compare/3.2.386...3.2.390) - 2025-03-19
+
+### Feature
+
+- **terraform:** add raw tf resource to graph - [#7047](https://github.com/bridgecrewio/checkov/pull/7047)
+
+### Bug Fix
+
+- **general:** Fix a few checks - [#7051](https://github.com/bridgecrewio/checkov/pull/7051)
+- **general:** Remove sneaky unicode characters that break a regex and console outputs on Windows - [#6987](https://github.com/bridgecrewio/checkov/pull/6987)
+- **terraform:** CKV_AWS_228 - support new AWS Opensearch TLS policy - [#7007](https://github.com/bridgecrewio/checkov/pull/7007)
 
 ## [3.2.386](https://github.com/bridgecrewio/checkov/compare/3.2.385...3.2.386) - 2025-03-14
 
