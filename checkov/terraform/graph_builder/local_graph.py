@@ -817,7 +817,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
         )
 
-    def _build_virtual_resources_edges(self, origin_node_index: int, vertex: TerraformBlock):
+    def _build_virtual_resources_edges(self, origin_node_index: int, vertex: TerraformBlock) -> None:
         if CustomAttributes.VIRTUAL_RESOURCES in vertex.config:
             for i, v in enumerate(self.vertices):
                 if v.name in vertex.config[CustomAttributes.VIRTUAL_RESOURCES]:

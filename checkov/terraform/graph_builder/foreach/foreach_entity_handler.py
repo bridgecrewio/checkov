@@ -67,7 +67,7 @@ class ForeachEntityHandler(ForeachAbstractHandler):
 
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
-        virtual_resources_names = []
+        virtual_resources_names: list[str] = []
         for i in range(statement):
             append_virtual_resource(self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i),
                                     virtual_resources_names)
