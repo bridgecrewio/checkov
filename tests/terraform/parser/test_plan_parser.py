@@ -30,6 +30,25 @@ class TestPlanFileParser(unittest.TestCase):
         file_provider_definition = tf_definition['provider']
         self.assertTrue(file_provider_definition)  # assert a provider exists
         assert file_provider_definition[0].get('aws', {}).get('region', None) == ['us-west-2']
+    
+    def test_plan_multiple_providers(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        providers = tf_definition['provider']
+        self.assertEqual( len(providers), 3)
+        provider_keys = []
+        provider_aliases = []
+        provider_addresses = []
+        for provider in providers:
+            key = next(iter(provider))
+            provider_keys.append(key)
+            provider_aliases.append( provider[key]['alias'][0] )
+            provider_addresses.append( provider[key]['__address__'] )
+        
+        self.assertEqual(provider_keys, ["aws", "aws.ohio", "aws.oregon"])
+        self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
+        self.assertEqual(provider_addresses, ["aws.default", "aws.ohio", "aws.oregon"])
 
     def test_more_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

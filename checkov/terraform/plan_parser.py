@@ -333,10 +333,26 @@ def _is_provider_key(key: str) -> bool:
     return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
 
 
-def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Returns the provider dict"""
+def _get_providers(template: dict[str, dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
+    """Returns a list of provider dicts"""
 
-    provider_map: dict[str, dict[str, Any]] = {}
+    # `providers` should be a list of dicts, one dict for each provider:
+    # [
+    #     {
+    #         "aws": {
+    #             "region": ["us-east-1"],
+    #             . . .
+    #         }
+    #     },
+    #     {
+    #         "aws.west": {
+    #             "region": ["us-west-1"],
+    #             "alias": ["west"],
+    #             . . .
+    #         }
+    #     }
+    # ]
+    providers: list[dict[str, dict[str, Any]]] = []
     provider_config = template.get("configuration", {}).get("provider_config")
 
     if provider_config and isinstance(provider_config, dict):
@@ -344,8 +360,9 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
             if _is_provider_key(key=provider_key):
                 # Not a provider, skip
                 continue
-            provider_map[provider_key] = {}
             provider_alias = provider_data.get("alias", "default")
+            provider_map: dict[str, dict[str, Any]] = {}
+            provider_map[provider_key] = {}
             provider_map_entry = provider_map[provider_key]
             for field, value in provider_data.get('expressions', {}).items():
                 if field in LINE_FIELD_NAMES or not isinstance(value, dict):
@@ -360,9 +377,14 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
             provider_map_entry[start_line] = [provider_data.get(START_LINE, 1) - 1]
             provider_map_entry[end_line] = [provider_data.get(END_LINE, 1)]
             provider_map_entry['alias'] = [provider_alias]
-            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
+            # provider_key already contains the alias (ie "aws.east") for non-default providers
+            if provider_alias == "default":
+                provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
+            else:
+                provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = provider_key
+            providers.append(provider_map)
 
-    return provider_map
+    return providers
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -421,9 +443,7 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     if not template:
         return None, None
 
-    provider = _get_provider(template=template)
-    if bool(provider):
-        tf_definition["provider"].append(provider)
+    tf_definition["provider"] = _get_providers(template=template)
 
     resource_changes = _get_resource_changes(template=template)
 
