@@ -58,3 +58,24 @@ resource "aws_elasticsearch_domain" "pass" {
     enabled = false
   }
 }
+
+resource "aws_elasticsearch_domain" "pass2" {
+  domain_name = "pass2"
+
+  domain_endpoint_options {
+    enforce_https       = false
+    tls_security_policy = "Policy-Min-TLS-1-2-PFS-2023-10"
+  }
+
+  cluster_config {
+    instance_count = 2
+  }
+
+  encrypt_at_rest {
+    enabled = false
+  }
+
+  node_to_node_encryption {
+    enabled = false
+  }
+}
