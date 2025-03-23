@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AutoScalingGroupWithPublicAccess(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS Auto Scaling group launch configuration has public IP address assignment enabled"
+        name = "Ensure AWS Auto Scaling group launch configuration doesn't have public IP address assignment enabled"
         id = "CKV_AWS_389"
         supported_resources = ['aws_launch_configuration']
         categories = [CheckCategories.NETWORKING]
