@@ -17,10 +17,11 @@ class TestS3AccessPointPubliclyAccessible(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_s3_access_point.pass",
+            "aws_s3_account_public_access_block.pass1",
+            "aws_s3_account_public_access_block.pass2"
         }
         failing_resources = {
-            "aws_s3_access_point.fail"
+            "aws_s3_account_public_access_block.fail"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

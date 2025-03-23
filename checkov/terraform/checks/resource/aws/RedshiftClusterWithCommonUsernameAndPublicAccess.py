@@ -18,6 +18,9 @@ class RedshiftClusterWithCommonUsernameAndPublicAccess(BaseResourceCheck):
                 if 'publicly_accessible' in conf:
                     if str(conf['publicly_accessible'][0]).lower() == 'true':
                         return CheckResult.FAILED
+                else:
+                    # Default publicly_accessible is true
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 

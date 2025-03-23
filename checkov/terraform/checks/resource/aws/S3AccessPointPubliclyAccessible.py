@@ -8,18 +8,15 @@ class S3AccessPointPubliclyAccessible(BaseResourceCheck):
     def __init__(self):
         name = "AWS S3 access point Block public access setting disabled"
         id = "CKV_AWS_392"
-        supported_resources = ['aws_s3_access_point']
+        supported_resources = ['aws_s3_account_public_access_block']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'public_access_block_configuration' in conf:
-            for arg in list(conf['public_access_block_configuration'][0].keys()):
-                if arg == 'restrict_public_buckets':
-                    if str(conf['public_access_block_configuration'][0][arg][0]).lower() == 'false':
-                        return CheckResult.FAILED
-                    else:
-                        return CheckResult.PASSED
+        if 'restrict_public_buckets' in conf:
+            x = str(conf['restrict_public_buckets'][0]).lower()
+            if str(conf['restrict_public_buckets'][0]).lower() == 'false':
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
