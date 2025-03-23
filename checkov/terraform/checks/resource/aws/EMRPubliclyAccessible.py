@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class EMRPubliclyAccessible(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS EMR Block public access setting disabled"
+        name = "Ensure AWS EMR block public access setting is enabled"
         id = "CKV_AWS_390"
         supported_resources = ['aws_emr_block_public_access_configuration']
         categories = [CheckCategories.NETWORKING]
