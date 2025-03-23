@@ -1,5 +1,4 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -14,7 +13,6 @@ class S3AccessPointPubliclyAccessible(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'restrict_public_buckets' in conf:
-            x = str(conf['restrict_public_buckets'][0]).lower()
             if str(conf['restrict_public_buckets'][0]).lower() == 'false':
                 return CheckResult.FAILED
         return CheckResult.PASSED

@@ -1,5 +1,4 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -14,10 +13,9 @@ class UnpatchedAuroraPostgresDB(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'engine' in conf and 'aurora-postgresql' in conf['engine']:
-            if 'engine_version' in conf and conf['engine_version'][0] in ['10.11','10.12','10.13','11.6','11.7','11.8']:
+            if 'engine_version' in conf and conf['engine_version'][0] in ['10.11', '10.12', '10.13', '11.6', '11.7', '11.8']:
                 return CheckResult.FAILED
         return CheckResult.PASSED
-
 
 
 check = UnpatchedAuroraPostgresDB()
