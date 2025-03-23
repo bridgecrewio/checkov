@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.390...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.391...HEAD)
+
+## [3.2.391](https://github.com/bridgecrewio/checkov/compare/3.2.390...3.2.391) - 2025-03-23
+
+### Bug Fix
+
+- **secrets:** Bump detect-secrets to not flag AZ secrets in plan files - [#7064](https://github.com/bridgecrewio/checkov/pull/7064)
 
 ## [3.2.390](https://github.com/bridgecrewio/checkov/compare/3.2.386...3.2.390) - 2025-03-19
 
