@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class RedshiftClusterWithCommonUsernameAndPublicAccess(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS Redshift cluster with commonly used master username and public access setting enabled"
+        name = "Avoid AWS Redshift cluster with commonly used master username and public access setting enabled"
         id = "CKV_AWS_391"
         supported_resources = ['aws_redshift_cluster']
         categories = [CheckCategories.NETWORKING]

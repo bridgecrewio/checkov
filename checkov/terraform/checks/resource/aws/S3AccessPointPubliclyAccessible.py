@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class S3AccessPointPubliclyAccessible(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS S3 access point Block public access setting disabled"
+        name = "Ensure AWS S3 access point block public access setting is enabled"
         id = "CKV_AWS_392"
         supported_resources = ['aws_s3_account_public_access_block']
         categories = [CheckCategories.NETWORKING]

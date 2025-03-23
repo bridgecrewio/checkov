@@ -3,27 +3,26 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.alicloud.OSSBucketPublic import check
+from checkov.terraform.checks.resource.azure.VMDiskWithPublicAccess import check
 
 
-class TestOSSBucketPublic(unittest.TestCase):
+class TestVMDiskWithPublicAccess(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_OSSBucketPublic")
+        test_files_dir = os.path.join(current_dir, "example_VMDiskWithPublicAccess")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'alicloud_oss_bucket.good-bucket',
-            'alicloud_oss_bucket.good-bucket2',
+            'azurerm_managed_disk.pass'
         }
         failing_resources = {
-            'alicloud_oss_bucket.bad-bucket',
-            'alicloud_oss_bucket.bad-bucket2',
+            'azurerm_managed_disk.fail2',
+            'azurerm_managed_disk.fail1',
         }
         skipped_resources = {}
 
