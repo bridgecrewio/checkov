@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class WAFv2VulnerableForLog4j(BaseResourceCheck):
 
     def __init__(self):
-        name = "WAFv2 WebACL is not configured with AMR for Log4j Vulnerability"
+        name = "Ensure WAFv2 WebACL is configured with AMR for Log4j Vulnerability"
         id = "CKV_AWS_387"
         supported_resources = ['aws_wafv2_web_acl']
         categories = [CheckCategories.NETWORKING]
