@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class S3BucketPubliclyReadableViaACL(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS S3 buckets are accessible to public via ACL"
+        name = "Ensure AWS S3 buckets are not accessible to public via ACL"
         id = "CKV_AWS_393"
         supported_resources = ['aws_s3_bucket_acl']
         categories = [CheckCategories.NETWORKING]
