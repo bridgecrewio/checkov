@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class UnpatchedAuroraPostgresDB(BaseResourceCheck):
 
     def __init__(self):
-        name = "AWS Aurora PostgreSQL exposed to local file read vulnerability"
+        name = "Ensure AWS Aurora PostgreSQL is not exposed to local file read vulnerability"
         id = "CKV_AWS_388"
         supported_resources = ['aws_db_instance']
         categories = [CheckCategories.GENERAL_SECURITY]
