@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.391...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.392...HEAD)
+
+## [3.2.392](https://github.com/bridgecrewio/checkov/compare/3.2.391...3.2.392) - 2025-03-24
+
+### Bug Fix
+
+- **terraform_plan:** Run provider checks against all providers in plan - [#7061](https://github.com/bridgecrewio/checkov/pull/7061)
 
 ## [3.2.391](https://github.com/bridgecrewio/checkov/compare/3.2.390...3.2.391) - 2025-03-23
 
