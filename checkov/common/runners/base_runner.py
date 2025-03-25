@@ -149,7 +149,27 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
                 report_type=self.check_type
             )]
 
+        self._update_check_correct_connected_node(filtered_result)
+
         return filtered_result
+
+    @staticmethod
+    def _update_check_correct_connected_node(filtered_result: dict[BaseGraphCheck, list[_CheckResult]]) -> None:
+        """
+        Responsible for choosing the correct connected node per check (if exists), as every graph check may refer to
+        a different connection that a resource might have.
+        Before: connected_node could be a dict[tuple[resource_types], attributes].
+        After: connected_node == attributes (of relevant connected node)
+        """
+        for check, results in filtered_result.items():
+            for result in results:
+                connected_node = result.get("entity", {}).get(CustomAttributes.CONNECTED_NODE)
+                check_connected_resource_types = check.connected_resources_types
+                if connected_node is not None and check_connected_resource_types != [] and \
+                        check_connected_resource_types in connected_node:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = connected_node[check_connected_resource_types]
+                else:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = None
 
 
 def filter_ignored_paths(
