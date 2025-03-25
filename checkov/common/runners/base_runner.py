@@ -154,6 +154,21 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         return filtered_result
 
     @staticmethod
+    def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
+                                         connected_nodes_per_resource_types: list[tuple[str]]) -> tuple[str] | None:
+        return next((resource_types for resource_types in check_connected_resource_types
+                     if resource_types in connected_nodes_per_resource_types), None)
+
+    @staticmethod
+    def _get_connected_resources_types_with_subchecks(check: BaseGraphCheck) -> list[tuple[str]]:
+        resource_types_tuples: list[tuple[str]] = []
+        for sub_check in check.sub_checks:
+            resource_types_tuples.append(tuple(sub_check.connected_resources_types))  # type: ignore
+            resource_types_tuples.extend(
+                BaseRunner._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
+        return resource_types_tuples
+
+    @staticmethod
     def _update_check_correct_connected_node(filtered_result: dict[BaseGraphCheck, list[_CheckResult]]) -> None:
         """
         Responsible for choosing the correct connected node per check (if exists), as every graph check may refer to
@@ -162,14 +177,20 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         After: connected_node == attributes (of relevant connected node)
         """
         for check, results in filtered_result.items():
-            for result in results:
+            for i, result in enumerate(results):
                 connected_node = result.get("entity", {}).get(CustomAttributes.CONNECTED_NODE)
-                check_connected_resource_types = check.connected_resources_types
-                if connected_node is not None and check_connected_resource_types != [] and \
-                        check_connected_resource_types in connected_node:
-                    result["entity"][CustomAttributes.CONNECTED_NODE] = connected_node[check_connected_resource_types]
-                else:
-                    result["entity"][CustomAttributes.CONNECTED_NODE] = None
+                if connected_node is None:
+                    continue
+
+                check_connected_resource_types = BaseRunner._get_connected_resources_types_with_subchecks(check)
+
+                check_relevant_connected_resource_types = BaseRunner._extract_relevant_resource_types(
+                    connected_node, check_connected_resource_types)
+
+                if len(check_relevant_connected_resource_types) > 0 and \
+                        check_relevant_connected_resource_types in connected_node:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = \
+                        connected_node[check_relevant_connected_resource_types]
 
 
 def filter_ignored_paths(

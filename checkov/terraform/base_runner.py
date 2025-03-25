@@ -107,25 +107,14 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    @staticmethod
-    def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
-                                         connected_nodes_per_resource_types: dict[tuple[str], Any]) -> tuple[str] | None:
-        return next((resource_types for resource_types in check_connected_resource_types
-                    if resource_types in connected_nodes_per_resource_types), None)
-
-    def _get_connected_node_data(self, connected_nodes_per_resource_types: dict[tuple[str], Any], root_folder: str,
-                                 check_connected_resource_types: list[tuple[str]]) -> Optional[Dict[str, Any]]:
-        if not check_connected_resource_types or not connected_nodes_per_resource_types:
+    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str) \
+            -> Optional[Dict[str, Any]]:
+        if not connected_node:
             return None
-        check_relevant_connected_resource_types = self._extract_relevant_resource_types(
-            check_connected_resource_types, connected_nodes_per_resource_types)
-        if not check_relevant_connected_resource_types:
-            return None
-        connected_entity = connected_nodes_per_resource_types[check_relevant_connected_resource_types]
-        connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
+        connected_entity_context = self.get_entity_context_and_evaluations(connected_node)
         if not connected_entity_context:
             return None
-        full_file_path = connected_entity[CustomAttributes.FILE_PATH]
+        full_file_path = connected_node[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data["code_block"] = connected_entity_context.get("code_lines")
         connected_node_data["file_path"] = f"{os.sep}{os.path.relpath(full_file_path, root_folder)}"
@@ -134,7 +123,7 @@ class BaseTerraformRunner(
             connected_entity_context.get("end_line"),
         ]
         connected_node_data["resource"] = ".".join(connected_entity_context["definition_path"])
-        connected_node_data["entity_tags"] = connected_entity.get("tags", {})
+        connected_node_data["entity_tags"] = connected_node.get("tags", {})
         connected_node_data["evaluations"] = None
         connected_node_data["file_abs_path"] = os.path.abspath(full_file_path)
         connected_node_data["resource_address"] = connected_entity_context.get("address")
@@ -159,8 +148,7 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
-                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder, connected_resource_types)  # type: ignore
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
