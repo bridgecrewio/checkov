@@ -179,7 +179,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         After: connected_node == attributes (of relevant connected node)
         """
         for check, results in filtered_result.items():
-            for i, result in enumerate(results):
+            for result in results:
                 result["entity"] = pickle_deepcopy(result["entity"])  # Important to avoid changes between checks
                 connected_node = result.get("entity", {}).get(CustomAttributes.CONNECTED_NODE)
                 if connected_node is None:

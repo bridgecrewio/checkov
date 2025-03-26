@@ -9,7 +9,6 @@ import dpath
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -148,7 +147,7 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
                                                                         root_folder)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
@@ -199,17 +198,6 @@ class BaseTerraformRunner(
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
         return report
-
-    def _extract_connected_node(self, check: BaseGraphCheck, entity: dict[str, Any], root_folder: str) \
-            -> dict[str, Any]:
-        original_connected_node = entity.get(CustomAttributes.CONNECTED_NODE)
-        connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
-        connected_node_data = None
-        if original_connected_node:
-            res = self._extract_relevant_resource_types(connected_resource_types, original_connected_node)
-            if res:
-                connected_node_data = self._get_connected_node_data(original_connected_node, root_folder)
-        return connected_node_data
 
     @abstractmethod
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
