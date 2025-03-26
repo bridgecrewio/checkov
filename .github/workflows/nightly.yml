@@ -88,7 +88,7 @@ jobs:
     permissions:
       contents: write
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
@@ -135,7 +135,7 @@ jobs:
     if: needs.github-release.outputs.upload_url != ''
     runs-on: [self-hosted, public, linux, arm64]
     container:
-      image: arm64v8/python:3.8
+      image: arm64v8/python:3.9
     permissions:
       contents: write
     steps:
