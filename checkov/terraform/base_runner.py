@@ -111,9 +111,6 @@ class BaseTerraformRunner(
             -> Optional[Dict[str, Any]]:
         if not connected_node:
             return None
-        first_key = list(connected_node.keys())[0]
-        if isinstance(first_key, tuple):
-            return None
         connected_entity_context = self.get_entity_context_and_evaluations(connected_node)
         if not connected_entity_context:
             return None

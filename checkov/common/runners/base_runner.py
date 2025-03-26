@@ -180,6 +180,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         """
         for check, results in filtered_result.items():
             for i, result in enumerate(results):
+                result["entity"] = pickle_deepcopy(result["entity"])  # Important to avoid changes between checks
                 connected_node = result.get("entity", {}).get(CustomAttributes.CONNECTED_NODE)
                 if connected_node is None:
                     continue
@@ -193,7 +194,9 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
                         len(check_relevant_connected_resource_types) > 0 and \
                         check_relevant_connected_resource_types in connected_node:
                     result["entity"][CustomAttributes.CONNECTED_NODE] = \
-                        pickle_deepcopy(connected_node[check_relevant_connected_resource_types])
+                        connected_node[check_relevant_connected_resource_types]
+                else:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = None
 
 
 def filter_ignored_paths(
