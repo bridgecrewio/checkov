@@ -190,8 +190,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
                 check_relevant_connected_resource_types = BaseRunner._extract_relevant_resource_types(
                     check_connected_resource_types, connected_node)
 
-                if check_relevant_connected_resource_types is not None and \
-                        len(check_relevant_connected_resource_types) > 0 and \
+                if check_relevant_connected_resource_types and \
                         check_relevant_connected_resource_types in connected_node:
                     result["entity"][CustomAttributes.CONNECTED_NODE] = \
                         connected_node[check_relevant_connected_resource_types]
