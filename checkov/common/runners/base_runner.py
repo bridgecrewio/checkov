@@ -10,6 +10,7 @@ from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict, Optional
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -155,7 +156,8 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
 
     @staticmethod
     def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
-                                         connected_nodes_per_resource_types: list[tuple[str]]) -> tuple[str] | None:
+                                         connected_nodes_per_resource_types: dict[tuple[str], Any]) ->\
+            tuple[str] | None:
         return next((resource_types for resource_types in check_connected_resource_types
                      if resource_types in connected_nodes_per_resource_types), None)
 
@@ -185,12 +187,13 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
                 check_connected_resource_types = BaseRunner._get_connected_resources_types_with_subchecks(check)
 
                 check_relevant_connected_resource_types = BaseRunner._extract_relevant_resource_types(
-                    connected_node, check_connected_resource_types)
+                    check_connected_resource_types, connected_node)
 
-                if len(check_relevant_connected_resource_types) > 0 and \
+                if check_relevant_connected_resource_types is not None and \
+                        len(check_relevant_connected_resource_types) > 0 and \
                         check_relevant_connected_resource_types in connected_node:
                     result["entity"][CustomAttributes.CONNECTED_NODE] = \
-                        connected_node[check_relevant_connected_resource_types]
+                        pickle_deepcopy(connected_node[check_relevant_connected_resource_types])
 
 
 def filter_ignored_paths(

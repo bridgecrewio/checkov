@@ -111,6 +111,9 @@ class BaseTerraformRunner(
             -> Optional[Dict[str, Any]]:
         if not connected_node:
             return None
+        first_key = list(connected_node.keys())[0]
+        if isinstance(first_key, tuple):
+            return None
         connected_entity_context = self.get_entity_context_and_evaluations(connected_node)
         if not connected_entity_context:
             return None
@@ -148,7 +151,8 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE), root_folder)
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),
+                                                                        root_folder)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
@@ -199,12 +203,16 @@ class BaseTerraformRunner(
                     report.add_record(record=record)
         return report
 
-    def _get_connected_resources_types_with_subchecks(self, check: BaseGraphCheck) -> list[tuple[str]]:
-        resource_types_tuples: list[tuple[str]] = []
-        for sub_check in check.sub_checks:
-            resource_types_tuples.append(tuple(sub_check.connected_resources_types))  # type: ignore
-            resource_types_tuples.extend(self._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
-        return resource_types_tuples
+    def _extract_connected_node(self, check: BaseGraphCheck, entity: dict[str, Any], root_folder: str) \
+            -> dict[str, Any]:
+        original_connected_node = entity.get(CustomAttributes.CONNECTED_NODE)
+        connected_resource_types = self._get_connected_resources_types_with_subchecks(check)
+        connected_node_data = None
+        if original_connected_node:
+            res = self._extract_relevant_resource_types(connected_resource_types, original_connected_node)
+            if res:
+                connected_node_data = self._get_connected_node_data(original_connected_node, root_folder)
+        return connected_node_data
 
     @abstractmethod
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
