@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.392...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.393...HEAD)
+
+## [3.2.393](https://github.com/bridgecrewio/checkov/compare/3.2.392...3.2.393) - 2025-03-26
+
+### Bug Fix
+
+- **general:** Updated correct connected_node when creating graph report out of all options  - [#7068](https://github.com/bridgecrewio/checkov/pull/7068)
 
 ## [3.2.392](https://github.com/bridgecrewio/checkov/compare/3.2.391...3.2.392) - 2025-03-24
 
