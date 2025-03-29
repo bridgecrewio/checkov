@@ -7,6 +7,7 @@ import pytest
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 
 class TestTerraformEvaluation(TestCase):
@@ -530,3 +531,13 @@ class TestTerraformEvaluation(TestCase):
 def test_find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_value: str, expected: str):
     actual = _find_new_value_for_interpolation(origin_str, str_to_replace, new_value)
     assert actual == expected
+
+
+def test_evaluate_range_pattern() -> None:
+
+    # Test range pattern
+    assert evaluate("1-10") == "1-10"
+    assert evaluate("5-25") == "5-25"
+
+    # Test non-range pattern for comparison
+    assert evaluate("1+1") == 2
