@@ -78,7 +78,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         :param vertex_index: the index of the current vertex
         :return bool: True if the attribute should not be evaluated and False otherwise
         """
-        if attribute in {"template_body", "template", "destination_port_ranges"}:
+        if attribute in {"template_body", "template"}:
             return True
 
         # OCI policy statements have a special syntax and should not be evaluated.
