@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.393...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.394...HEAD)
+
+## [3.2.394](https://github.com/bridgecrewio/checkov/compare/3.2.393...3.2.394) - 2025-03-27
+
+### Bug Fix
+
+- **terraform:** Fix CKV2_GCP_12 and a few tests - [#7069](https://github.com/bridgecrewio/checkov/pull/7069)
 
 ## [3.2.393](https://github.com/bridgecrewio/checkov/compare/3.2.392...3.2.393) - 2025-03-26
 
