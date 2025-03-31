@@ -538,6 +538,7 @@ def test_evaluate_range_pattern() -> None:
     # Test range pattern
     assert evaluate("1-10") == "1-10"
     assert evaluate("5-25") == "5-25"
+    assert evaluate("10-5") == 5
 
     # Test non-range pattern for comparison
     assert evaluate("1+1") == 2

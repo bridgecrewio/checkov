@@ -371,7 +371,11 @@ def evaluate(input_str: str) -> Any:
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     if RANGE_PATTERN.match(input_str):
-        evaluated = input_str
+        temp_eval = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+        if temp_eval < 0:
+            evaluated = input_str
+        else:
+            evaluated = temp_eval
     else:
         evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
