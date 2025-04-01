@@ -11,6 +11,7 @@ from typing import Union, Any, Dict, Callable, List, Optional
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
+RANGE_PATTERN = re.compile(r'^\d+-\d+$')
 
 """
 This file contains a custom implementation of the builtin `eval` function.
@@ -369,7 +370,11 @@ def evaluate(input_str: str) -> Any:
 
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
-    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    if RANGE_PATTERN.match(input_str):
+        temp_eval = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+        evaluated = input_str if temp_eval < 0 else temp_eval
+    else:
+        evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 
