@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.394...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.395...HEAD)
+
+## [3.2.395](https://github.com/bridgecrewio/checkov/compare/3.2.394...3.2.395) - 2025-03-31
+
+### Feature
+
+- **serverless:** add check for empty resource attributes - [#7074](https://github.com/bridgecrewio/checkov/pull/7074)
 
 ## [3.2.394](https://github.com/bridgecrewio/checkov/compare/3.2.393...3.2.394) - 2025-03-27
 
