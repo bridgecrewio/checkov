@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.395...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.396...HEAD)
+
+## [3.2.396](https://github.com/bridgecrewio/checkov/compare/3.2.395...3.2.396) - 2025-04-01
+
+### Bug Fix
+
+- **terraform:** Fix keeping range a range - [#7073](https://github.com/bridgecrewio/checkov/pull/7073)
 
 ## [3.2.395](https://github.com/bridgecrewio/checkov/compare/3.2.394...3.2.395) - 2025-03-31
 
