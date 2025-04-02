@@ -453,6 +453,15 @@ resource "aws_elasticache_replication_group" "pass_elasticache_replication_group
   security_group_ids            = [aws_security_group.pass_elasticache_replication_group.id]
 }
 
+resource "aws_elasticache_serverless_cache" "pass_elasticache_serverless" {
+  name                 = "elasticache-serverless-cache"
+  security_group_ids   = [aws_security_group.pass_elasticache_serverless.id]
+}
+
+resource "aws_security_group" "pass_elasticache_serverless" {
+  name = "security-group"
+}
+
 # ELB
 
 resource "aws_security_group" "pass_alb" {
