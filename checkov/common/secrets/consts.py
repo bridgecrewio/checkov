@@ -29,7 +29,7 @@ SECRET_VALIDATION_STATUSES = {
 class VerifySecretsResult(Enum):
     INSUFFICIENT_PARAMS = "INSUFFICIENT_PARAMS"
     FAILURE = "FAILURE"
-    SUCCESS = "SUCCESS"
+    SUCCESS = "SUCESS"
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
