@@ -214,7 +214,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     if isinstance(default_val_eval, dict):
                         value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
-                    logging.debug(f"can't evaluate this rendered value: {default_val}")
+                    logging.debug(f"cannot evaluate this rendered value: {default_val}")
             return default_val if value is None else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")

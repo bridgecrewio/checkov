@@ -201,12 +201,12 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
                             logging.debug(
-                                f"[CloudformationLocalGraph] didn't create edge for target_id {target_id}"
+                                f"[CloudformationLocalGraph] did not create edge for target_id {target_id}"
                                 f"and vertex_path {vertex_path} as target_id is not a string"
                             )
                 else:
                     logging.debug(
-                        f"[CloudformationLocalGraph] didn't create edge for target_ids {target_ids}"
+                        f"[CloudformationLocalGraph] did not create edge for target_ids {target_ids}"
                         f"and vertex_path {vertex_path} as target_ids is not a list"
                     )
 

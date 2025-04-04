@@ -80,7 +80,7 @@ class ATestCompleteCheck(BaseCompleteCheck):
             return CheckResult.FAILED
         if conf["custom"]["my_custom_var"] != "sourced-in-value":
             return CheckResult.FAILED
-        if conf["layers"]["hello"]["path"] != "yup/that's/my/path":
+        if conf["layers"]["hello"]["path"] != "yup/that/is/my/path":
             return CheckResult.FAILED
 
         if conf["functions"]["myFunction"]["handler"] != "myfunction.invoke":
@@ -131,7 +131,7 @@ class ATestLayerCheck(BaseLayerCheck):
         super().__init__(name="test", id=id, categories=CATS, supported_entities=['serverless_aws'])
 
     def scan_layer_conf(self, conf):
-        if conf.get("path") == "yup/that's/my/path":
+        if conf.get("path") == "yup/that/is/my/path":
             return CheckResult.PASSED
         else:
             return CheckResult.FAILED
