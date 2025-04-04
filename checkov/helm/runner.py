@@ -267,7 +267,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         if e:
             if "Warning: Dependencies" in str(e, 'utf-8'):
                 logging.warning(
-                    f"V1 API chart without Chart.yaml dependencies. Skipping chart dependency list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"V1 API chart without Chart.yaml dependencies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             else:
                 logging.warning(
                     f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
