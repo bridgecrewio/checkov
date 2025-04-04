@@ -1364,7 +1364,7 @@
 - **general:** fix integration test in build - [#6227](https://github.com/bridgecrewio/checkov/pull/6227)
 - **general:** fix integration tests - [#6207](https://github.com/bridgecrewio/checkov/pull/6207)
 - **kubernetes:** Update checkov-job.yaml - [#5985](https://github.com/bridgecrewio/checkov/pull/5985)
-- **sca:** remove old test for the deprecated workflow github-action - [#6232](https://github.com/bridgecrewio/checkov/pull/6232)
+- **sca:** remove old test for the depracated workflow github-action - [#6232](https://github.com/bridgecrewio/checkov/pull/6232)
 - **terraform_plan:** Edges not created because of indexing in resource["address"] when resources in modules use count - [#6145](https://github.com/bridgecrewio/checkov/pull/6145)
 - **terraform:** CKV_AWS_23 rule description fixed for clarity - [#5993](https://github.com/bridgecrewio/checkov/pull/5993)
 - **terraform:** Fix CKV_AWS_358 to handle plan files - [#6202](https://github.com/bridgecrewio/checkov/pull/6202)
@@ -2885,7 +2885,7 @@
 
 ### Bug Fix
 
-- **kubernetes:** don't fail if spec is missing and default value is set to the fix value. - [#5167](https://github.com/bridgecrewio/checkov/pull/5167)
+- **kubernetes:** dont' fail if spec is missing and default value is set to the fix value. - [#5167](https://github.com/bridgecrewio/checkov/pull/5167)
 
 ## [2.3.276](https://github.com/bridgecrewio/checkov/compare/2.3.273...2.3.276) - 2023-06-04
 
@@ -3012,7 +3012,7 @@
 ### Feature
 
 - **general:** add SPDX output - [#5104](https://github.com/bridgecrewio/checkov/pull/5104)
-- **kubernetes:** separate service account builder to improve performance - [#5093](https://github.com/bridgecrewio/checkov/pull/5093)
+- **kubernetes:** seperate service acoount builder to improve performance - [#5093](https://github.com/bridgecrewio/checkov/pull/5093)
 - **sca:** showing line numbers in the cli output for csv - [#5096](https://github.com/bridgecrewio/checkov/pull/5096)
 - **sca:** showing line numbers in the cli output for licenses - [#5098](https://github.com/bridgecrewio/checkov/pull/5098)
 
@@ -3184,7 +3184,7 @@
 ### Feature
 
 - **terraform:** add support for private terraform registries - [#4964](https://github.com/bridgecrewio/checkov/pull/4964)
-- **terraform:** remove cross variables bad list comprehension - [#4948](https://github.com/bridgecrewio/checkov/pull/4948)
+- **terraform:** remove cross varaibles bad list comprehension - [#4948](https://github.com/bridgecrewio/checkov/pull/4948)
 
 ### Bug Fix
 
@@ -3534,7 +3534,7 @@
 - **terraform:** AWS Ensure cloudfront has a default root - [#4673](https://github.com/bridgecrewio/checkov/pull/4673)
 - **terraform:** AWS ensure secret rotation is less than 90 days - [#4672](https://github.com/bridgecrewio/checkov/pull/4672)
 - **terraform:** AWS Secrets are rotated - [#4671](https://github.com/bridgecrewio/checkov/pull/4671)
-- **terraform:** ensure DB snapshots aren't public - [#4667](https://github.com/bridgecrewio/checkov/pull/4667)
+- **terraform:** ensure DB snapshots arent public - [#4667](https://github.com/bridgecrewio/checkov/pull/4667)
 - **terraform:** ensure SSM docs are private - [#4668](https://github.com/bridgecrewio/checkov/pull/4668)
 - **terraform:** lambda permission is not public - [#4666](https://github.com/bridgecrewio/checkov/pull/4666)
 
@@ -4922,7 +4922,7 @@
 ### Breaking Change
 
 - **github:** Change github_failed_only output suffix to .md - [#3595](https://github.com/bridgecrewio/checkov/pull/3595)
-- **terraform:** adjust the check result return for dependent variables to unknown in  Python based checks - [#3743](https://github.com/bridgecrewio/checkov/pull/3743)
+- **terraform:** adjust the check result return for dependant variables to unknown in  Python based checks - [#3743](https://github.com/bridgecrewio/checkov/pull/3743)
 - **terraform:** return UNKNOWN for unrendered values in graph checks - [#3689](https://github.com/bridgecrewio/checkov/pull/3689)
 
 ### Feature
@@ -4982,7 +4982,7 @@
 
 ### Bug Fix
 
-- **general:** Custom Policies integration must run before Suppression integration - [#3701](https://github.com/bridgecrewio/checkov/pull/3701)
+- **general:** Custom Policies integration must run before Suppresion integration - [#3701](https://github.com/bridgecrewio/checkov/pull/3701)
 - **terraform:** Add or condition for TLS 1.3 policy, supporting CKV_AWS_103 - [#3700](https://github.com/bridgecrewio/checkov/pull/3700)
 - **terraform:** Fix TF AbsGoogleComputeFirewallUnrestrictedIngress check - [#3704](https://github.com/bridgecrewio/checkov/pull/3704)
 
