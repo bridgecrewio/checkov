@@ -77,7 +77,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
         # Iterate over each file, get sast imports and enrich it's Cves
         for sca_file_path, current_cves in grouped_records.items():
 
-            # Determine the langauge of file
+            # Determine the language of file
             lang = self.get_sast_lang_by_file_path(sca_file_path)
 
             # Extract Sast data from Sast report filtered by the language
@@ -118,7 +118,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
         return grouped_records
 
     '''
-    convert SAST report structure to a sturcture grouped by package_name, for better performance in the enrich step
+    convert SAST report structure to a structure grouped by package_name, for better performance in the enrich step
     '''
 
     def create_file_by_package_map(self, filtered_entries: List[Tuple[Any, Any]]) -> Dict[str, List[str]]:

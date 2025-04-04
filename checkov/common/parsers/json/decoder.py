@@ -392,7 +392,7 @@ class Decoder(JSONDecoder):
         """
             Check for duplicate keys on the current level, this is not desirable
             because a dict does not support this. It overwrites it with the last
-            occurance, which can give unexpected results
+            occurrence, which can give unexpected results
         """
         mapping = DictNode({}, beg_mark, end_mark)
         for key, value in ordered_pairs:

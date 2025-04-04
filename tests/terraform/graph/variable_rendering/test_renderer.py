@@ -461,7 +461,7 @@ class TestRenderer(TestCase):
             value_block_1 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0]['dynamic'][0]['authorized_networks']['content'][0]['value']
             value_block_2 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0][
                 'dynamic'][1]['authorized_networks']['content'][0]['value']
-            # TODO - for now we don't support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be diffrent and not overide each other
+            # TODO - for now we don't support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be different and not override each other
             assert not value_block_1 != value_block_2
 
 

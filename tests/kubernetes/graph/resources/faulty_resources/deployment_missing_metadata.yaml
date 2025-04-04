@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: podName
-        image: ngnix
+        image: nginx
         resources:
           limits:
             memory: "128Mi"

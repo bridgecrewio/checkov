@@ -163,9 +163,9 @@ def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], i
         logging.warning(f'missing file name for {commit_diff}, hence no available code line')
     if secret_value is None:
         return ''
-    splitted = commit_diff.split('\n')
+    split = commit_diff.split('\n')
     start_char = '+' if is_added else '-'
-    for line in splitted:
+    for line in split:
         if line.startswith(start_char) and secret_value in line:
             # remove +/- in the beginning & spaces and omit
             return omit_secret_value_from_line(secret_value, line[1:].strip()) or ''

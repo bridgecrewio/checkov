@@ -12,7 +12,7 @@ def removeprefix(input_str: str, prefix: str) -> str:
 
 
 # in case of comparing paths from the BE and from the client, we have to make sure the structures are the same
-# e.g: in windows the seperator for the path is '\' while in linux/max it is '/'
+# e.g: in windows the separator for the path is '\' while in linux/max it is '/'
 def align_path(path: str) -> str:
     return path.replace('\\', '/')
 

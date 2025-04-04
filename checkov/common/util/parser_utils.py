@@ -249,7 +249,7 @@ def split_merge_args(value: str) -> list[str] | None:
     for c in value:
         if c == "," and not inside_collection_stack:
             current_arg_buffer = current_arg_buffer.strip()
-            # Note: can get a zero-length buffer when there's a double comman. This can
+            # Note: can get a zero-length buffer when there's a double comma. This can
             #       happen with multi-line args (see parser_internals test)
             if len(current_arg_buffer) != 0:
                 to_return.append(current_arg_buffer)

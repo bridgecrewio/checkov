@@ -46,7 +46,7 @@ class SecretsOmitter:
     @staticmethod
     def get_secret_lines(code_block: list[tuple[int, str]] | None) -> tuple[list[int], list[str]]:
         """
-        Given a code block object, returns the lines containing asteriks including the line range
+        Given a code block object, returns the lines containing asterisks including the line range
         :param code_block: list of tuples containing line number and the line itself
         :return: list of size 2, representing the range of lines containing secrets from code_block,
          and a list containing the lines from the range.

@@ -214,7 +214,7 @@ class BcPlatformIntegration:
             "skip_fixes": self.skip_fixes,
             "timestamp": self.timestamp,
             "use_s3_integration": self.use_s3_integration,
-            # will be overriden with a simple lambda expression
+            # will be overridden with a simple lambda expression
             "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
         }
 
@@ -584,8 +584,8 @@ class BcPlatformIntegration:
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
                 if sast_languages:
-                    for framwork in sast_languages:
-                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                    for framework in sast_languages:
+                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framework]:
                             files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
                             break
 
@@ -604,8 +604,8 @@ class BcPlatformIntegration:
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
                     if sast_languages:
-                        for framwork in sast_languages:
-                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                        for framework in sast_languages:
+                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framework]:
                                 files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
                                 break
 

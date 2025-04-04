@@ -28,7 +28,7 @@ resource "aws_emr_security_configuration" "good_config" {
   name = "good"
 # compliant case EncryptionConfiguration.EnableAtRestEncryption is true and LocalDiskEncryptionConfiguration exists
 # Compliant EnableInTransitEncryption is true
-# Compliant securityConfiguration exists and attaced with cluster
+# Compliant securityConfiguration exists and attached with cluster
   configuration = <<EOF
 {
   "EncryptionConfiguration": {
@@ -74,7 +74,7 @@ resource "aws_emr_security_configuration" "also_good_config" {
   data_retention = "5"
 # compliant case EncryptionConfiguration.EnableAtRestEncryption is true and LocalDiskEncryptionConfiguration exists
 # Compliant EnableInTransitEncryption is true
-# Compliant securityConfiguration exists and attaced with cluster
+# Compliant securityConfiguration exists and attached with cluster
   configuration = <<EOF
 {
   "EncryptionConfiguration": {
@@ -117,7 +117,7 @@ resource "aws_emr_security_configuration" "bad_config" {
   name = "bad"
 # compliant case EncryptionConfiguration.EnableAtRestEncryption is true and LocalDiskEncryptionConfiguration exists
 # Compliant EnableInTransitEncryption is true
-# Compliant securityConfiguration exists and attaced with cluster
+# Compliant securityConfiguration exists and attached with cluster
   configuration = <<EOF
 {
   "EncryptionConfiguration": {
