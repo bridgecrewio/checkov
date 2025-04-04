@@ -1,6 +1,42 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.390...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.396...HEAD)
+
+## [3.2.396](https://github.com/bridgecrewio/checkov/compare/3.2.395...3.2.396) - 2025-04-01
+
+### Bug Fix
+
+- **terraform:** Fix keeping range a range - [#7073](https://github.com/bridgecrewio/checkov/pull/7073)
+
+## [3.2.395](https://github.com/bridgecrewio/checkov/compare/3.2.394...3.2.395) - 2025-03-31
+
+### Feature
+
+- **serverless:** add check for empty resource attributes - [#7074](https://github.com/bridgecrewio/checkov/pull/7074)
+
+## [3.2.394](https://github.com/bridgecrewio/checkov/compare/3.2.393...3.2.394) - 2025-03-27
+
+### Bug Fix
+
+- **terraform:** Fix CKV2_GCP_12 and a few tests - [#7069](https://github.com/bridgecrewio/checkov/pull/7069)
+
+## [3.2.393](https://github.com/bridgecrewio/checkov/compare/3.2.392...3.2.393) - 2025-03-26
+
+### Bug Fix
+
+- **general:** Updated correct connected_node when creating graph report out of all options  - [#7068](https://github.com/bridgecrewio/checkov/pull/7068)
+
+## [3.2.392](https://github.com/bridgecrewio/checkov/compare/3.2.391...3.2.392) - 2025-03-24
+
+### Bug Fix
+
+- **terraform_plan:** Run provider checks against all providers in plan - [#7061](https://github.com/bridgecrewio/checkov/pull/7061)
+
+## [3.2.391](https://github.com/bridgecrewio/checkov/compare/3.2.390...3.2.391) - 2025-03-23
+
+### Bug Fix
+
+- **secrets:** Bump detect-secrets to not flag AZ secrets in plan files - [#7064](https://github.com/bridgecrewio/checkov/pull/7064)
 
 ## [3.2.390](https://github.com/bridgecrewio/checkov/compare/3.2.386...3.2.390) - 2025-03-19
 
