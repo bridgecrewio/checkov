@@ -10,7 +10,7 @@ from typing import Any, TYPE_CHECKING, Optional, Dict
 from collections import defaultdict
 
 import dpath
-from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
+from rustworkx import PyDiGraph, digraph_node_link_json
 
 try:
     from networkx import DiGraph, node_link_data

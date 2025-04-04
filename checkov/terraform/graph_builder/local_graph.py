@@ -19,6 +19,7 @@ from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.consts import VIRTUAL_RESOURCE
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -296,6 +297,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
+            self._build_virtual_resources_edges(origin_node_index, vertex)
 
     def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, str]],
                                 resources_types: List[str], cross_variable_edges: bool = False,
@@ -814,6 +816,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 or self.get_abspath(vertex.source_module_object.path)
                 == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
         )
+
+    def _build_virtual_resources_edges(self, origin_node_index: int, vertex: TerraformBlock) -> None:
+        if CustomAttributes.VIRTUAL_RESOURCES in vertex.config:
+            for i, v in enumerate(self.vertices):
+                if v.name in vertex.config[CustomAttributes.VIRTUAL_RESOURCES]:
+                    self.create_edge(i, origin_node_index, VIRTUAL_RESOURCE)
 
 
 def to_list(data: Any) -> list[Any] | dict[str, Any]:

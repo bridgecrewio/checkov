@@ -34,7 +34,7 @@ class TestGoogleSubnetworkPrivateGoogleEnabled(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 6)  # 1 unknown
+        self.assertEqual(summary["resource_count"], 8)  # 3 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

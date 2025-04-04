@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -88,9 +88,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
             # needed for numpy
-            python -m pip install --no-cache-dir --upgrade pipenv==2024.0.3
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
           else
             python -m pip install --no-cache-dir --upgrade pipenv
           fi
@@ -100,7 +100,9 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
 
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
+            echo "patching >3.12 issues"
+            pipenv run pip install setuptools
             # needed for numpy
             pipenv install --skip-lock --dev -v
           else
@@ -119,7 +121,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -229,7 +231,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -325,7 +327,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -494,3 +496,61 @@ jobs:
         run: |
           pipenv run pytest
         working-directory: ${{ env.WORKING_DIRECTORY }}
+
+  eval-keys-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+
+      - name: Get changed Python files
+        id: changed-files
+        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        with:
+          files: checkov/**/*.py
+
+      - name: Validate 'BaseResourceCheck' use contains eval keys
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Define an array of exceptions (files to skip)
+          EXCEPTIONS=(
+            "base_resource_check.py" 
+            "VPCDefaultNetwork.py"
+            "IAMUserNotUsedForAccess.py"  # Whole Resource type check
+          )
+          
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          EXIT_CODE=0
+          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
+          for file in $(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ',' '\n'); do
+            # Check if the file is in the list of exceptions
+            SKIP_FILE="false"
+            for exception in "${EXCEPTIONS[@]}"; do
+              # If the file ends with one of the exception file names, skip it
+              if [[ "$file" == *"$exception" ]]; then
+                echo "Skipping $file (allowed exception)"
+                SKIP_FILE="true"
+                break
+              fi
+            done
+          
+            # Only run checks if not in exceptions list
+            if [[ "$SKIP_FILE" == "false" ]]; then
+              # If file contains 'BaseResourceCheck', check for 'get_inspected_key' or 'evaluated_keys'
+              if grep -q "BaseResourceCheck" "$file"; then
+                if ! grep -q "get_inspected_key" "$file" && ! grep -q "evaluated_keys" "$file"; then
+                  echo "ERROR: $file has BaseResourceCheck but does NOT contain 'get_inspected_key' or 'evaluated_keys'"
+                  EXIT_CODE=1
+                fi
+              fi
+            fi
+          done
+          unset IFS  # Restore IFS to default
+          
+          # Fail the job if any file violated the rule
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            echo "One or more files did not satisfy the requirement."
+            exit 1
+          fi

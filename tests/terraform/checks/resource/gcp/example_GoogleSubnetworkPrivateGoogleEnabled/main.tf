@@ -50,9 +50,27 @@ resource "google_compute_subnetwork" "unknown" {
   ip_cidr_range = "10.0.0.0/24"
   purpose       = "INTERNAL_HTTPS_LOAD_BALANCER"
   role          = "ACTIVE"
-  private_ip_google_access = true
 }
 
+resource "google_compute_subnetwork" "unknown2" {
+  name    = "internal-https-lb-europe-west2"
+  network = google_compute_network.pike.id
+  region  = "europe-west2"
+
+  ip_cidr_range = "10.0.0.0/24"
+  purpose       = "REGIONAL_MANAGED_PROXY"
+  role          = "ACTIVE"
+}
+
+resource "google_compute_subnetwork" "unknown3" {
+  name    = "internal-https-lb-europe-west2"
+  network = google_compute_network.pike.id
+  region  = "europe-west2"
+
+  ip_cidr_range = "10.0.0.0/24"
+  purpose       = "GLOBAL_MANAGED_PROXY"
+  role          = "ACTIVE"
+}
 
  resource "google_compute_network" "pike" {
    auto_create_subnetworks = false

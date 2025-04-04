@@ -1,0 +1,7 @@
+pass:
+  - "alicloud_oss_bucket.pass_no_attach"
+  - "alicloud_oss_bucket.pass_simple"
+  - "alicloud_oss_bucket.pass"
+fail:
+  - "alicloud_oss_bucket.fail"
+  - "alicloud_oss_bucket.fail2"
