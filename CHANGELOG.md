@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.397...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.398...HEAD)
+
+## [3.2.398](https://github.com/bridgecrewio/checkov/compare/3.2.397...3.2.398) - 2025-04-06
+
+### Bug Fix
+
+- **general:** handle connected_node tuple in CustomJSONEncoder for json report (#7062) - [#7063](https://github.com/bridgecrewio/checkov/pull/7063)
 
 ## [3.2.397](https://github.com/bridgecrewio/checkov/compare/3.2.396...3.2.397) - 2025-04-04
 
