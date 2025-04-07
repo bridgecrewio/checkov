@@ -23,7 +23,7 @@ custom:
 
 layers:
   hello:
-    path: "yup/thats/my/path"
+    path: "yup/that/is/my/path"
     name: "a-layer"
 
 functions:

@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class S3EnvironmentCheck(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure s3 has environment tag of developemnt/staging/production"
+        name = "Ensure s3 has environment tag of development/staging/production"
         id = "CUSTOM_AWS_2"
         supported_resources = ['aws_s3_bucket']
         categories = [CheckCategories.GENERAL_SECURITY]
@@ -13,7 +13,7 @@ class S3EnvironmentCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("tags") and isinstance(conf['tags'][0], dict):
             env = conf["tags"][0].get("Environment",{})
-            if env in ["Developemnt","Staging","Production"]:
+            if env in ["Development","Staging","Production"]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
