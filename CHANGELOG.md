@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.398...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.400...HEAD)
+
+## [3.2.400](https://github.com/bridgecrewio/checkov/compare/3.2.398...3.2.400) - 2025-04-07
+
+### Bug Fix
+
+- **general:** typos discovered by codespell - [#7012](https://github.com/bridgecrewio/checkov/pull/7012)
+- **terraform:** Update FunctionAppsAccessibleOverHttps - [#7084](https://github.com/bridgecrewio/checkov/pull/7084)
 
 ## [3.2.398](https://github.com/bridgecrewio/checkov/compare/3.2.397...3.2.398) - 2025-04-06
 
