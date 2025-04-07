@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.395...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.398...HEAD)
+
+## [3.2.398](https://github.com/bridgecrewio/checkov/compare/3.2.397...3.2.398) - 2025-04-06
+
+### Bug Fix
+
+- **general:** handle connected_node tuple in CustomJSONEncoder for json report (#7062) - [#7063](https://github.com/bridgecrewio/checkov/pull/7063)
+
+## [3.2.397](https://github.com/bridgecrewio/checkov/compare/3.2.396...3.2.397) - 2025-04-04
+
+- no noteworthy changes
+
+## [3.2.396](https://github.com/bridgecrewio/checkov/compare/3.2.395...3.2.396) - 2025-04-01
+
+### Bug Fix
+
+- **terraform:** Fix keeping range a range - [#7073](https://github.com/bridgecrewio/checkov/pull/7073)
 
 ## [3.2.395](https://github.com/bridgecrewio/checkov/compare/3.2.394...3.2.395) - 2025-03-31
 
