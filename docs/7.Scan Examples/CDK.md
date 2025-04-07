@@ -12,7 +12,7 @@ Full list of Cloudformation policies the checks can be found [here](https://www.
 
 
 ### Example misconfigured AWS CDK code 
-python CDK exmple
+python CDK example
 ```python
 
 from aws_cdk import (
@@ -59,7 +59,7 @@ class BucketApp(Stack):
         }
 
 ```
-typescript CDK exmple
+typescript CDK example
 ```typescript
 const bucket = new aws_s3.Bucket(this, 'MyBucket', {
   versioned: true

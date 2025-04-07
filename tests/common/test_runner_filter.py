@@ -103,7 +103,7 @@ class TestRunnerFilter(unittest.TestCase):
 
     def test_should_run_specific_disable_AND_enable(self):
         instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_1"])
-        # prioritze disable - also this is not valid input and would be blocked in main.py
+        # prioritize disable - also this is not valid input and would be blocked in main.py
         self.assertFalse(instance.should_run_check(check_id="CHECK_1"))
 
     def test_should_run_omitted_wildcard(self):

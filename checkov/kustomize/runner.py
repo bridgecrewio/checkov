@@ -421,18 +421,18 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                     metadata['type'] = "overlay"
                     metadata['referenced_bases'] = resources_representing_directories
                 else:
-                    logging.debug(f"Kustomization contains resources: section with only files (no dirs). Likley a base."
+                    logging.debug(f"Kustomization contains resources: section with only files (no dirs). Likely a base."
                                   f" {kustomization_path}")
                     metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in file_content:
-                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
+                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likely an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
                 if 'bases' in file_content:
                     metadata['referenced_bases'] = file_content['bases']
 
             elif 'bases' in file_content:
-                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
+                logging.debug(f"Kustomization contains bases: section. Likely an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
                 metadata['referenced_bases'] = file_content['bases']
 
@@ -454,7 +454,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         if shutil.which(self.kubectl_command) is not None:
             kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
             if kubectl_version and kubectl_version >= 1.14:
-                logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
+                logging.info(f"Found working version of {self.check_type} dependency {self.kubectl_command}: {kubectl_version}")
                 self.templateRendererCommand = self.kubectl_command
                 return None
             else:
@@ -614,7 +614,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         template_renderer_command: str,
     ) -> tuple[bytes, str] | tuple[None, None]:
         source_type = kustomize_processed_folder_and_meta[file_path].get('type')
-        logging.debug(f"Kustomization at {file_path} likley a {source_type}")
+        logging.debug(f"Kustomization at {file_path} likely a {source_type}")
         try:
             output = self._get_kubectl_output(file_path, template_renderer_command, source_type)
             if output is None:
@@ -748,7 +748,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
             self.graph_manager = k8s_runner.graph_manager
-            logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
+            logging.debug(f"Successfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
 
             shutil.rmtree(target_dir)
 

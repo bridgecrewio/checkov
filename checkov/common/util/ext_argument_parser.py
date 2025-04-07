@@ -536,7 +536,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default=[],
             help="List of <resource_type>:<variable> OR <variable> only. Each entry in the list will be used for"
                  "masking the desired attribute for resource (or for all resources, if no resource given)."
-                 "Notice: one entry can contain several variables, seperated with a comma. For example:"
+                 "Notice: one entry can contain several variables, separated with a comma. For example:"
                  "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
         )
         self.add(

@@ -89,7 +89,7 @@ resource "google_compute_firewall" "allow_unknown" {
 }
 
 resource "google_compute_firewall" "allow_null" {
-  name    = "exampe"
+  name    = "example"
   network = "google_compute_network.vpc.name"
 
   allow {
