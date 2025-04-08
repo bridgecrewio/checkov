@@ -5,17 +5,17 @@ provider "azurerm" {
 variable "resource_group_name" {
   description = "resource_group_name"
   type = string
-  default = "rg-wwe-ictd-cyselab"
+  default = "test_group_name"
 }
 
 variable "location" {
   description = "Azure location name"
   type = string
-  default = "westeurope"
+  default = "west"
 }
 
 resource "azurerm_storage_account" "example" {
-  name                     = "examplestorageacc"
+  name                     = "examples"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"
