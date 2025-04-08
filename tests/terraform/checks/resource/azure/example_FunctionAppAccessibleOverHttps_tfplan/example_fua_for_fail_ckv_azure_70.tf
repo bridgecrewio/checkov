@@ -5,7 +5,7 @@ provider "azurerm" {
 variable "resource_group_name" {
   description = "resource_group_name"
   type = string
-  default = "test_group_name"
+  default = "default_group_name"
 }
 
 variable "location" {
