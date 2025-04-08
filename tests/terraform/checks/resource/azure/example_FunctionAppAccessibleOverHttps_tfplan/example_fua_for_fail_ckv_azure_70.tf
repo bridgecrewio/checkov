@@ -5,7 +5,7 @@ provider "azurerm" {
 variable "resource_group_name" {
   description = "resource_group_name"
   type = string
-  default = "test"
+  default = "test_group_name"
 }
 
 variable "location" {
@@ -16,6 +16,11 @@ variable "location" {
 
 resource "azurerm_storage_account" "example" {
   name                     = "test"
+  default = "west"
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = "examples"
   resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = "Standard"
