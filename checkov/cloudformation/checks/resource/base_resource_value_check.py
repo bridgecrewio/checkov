@@ -59,7 +59,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         if len(matches) > 0:
             for match in matches:
                 # CFN files are parsed differently from terraform, which causes the path search above to behave differently.
-                # The tesult is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
+                # The result is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
                 # those, allowing inspected_keys in checks to use the same syntax.
                 # The last value shouldn't be changed, because it could be indeed a valid number
                 for i in range(0, len(match) - 1):

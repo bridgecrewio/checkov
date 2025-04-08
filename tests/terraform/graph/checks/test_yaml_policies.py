@@ -551,10 +551,10 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzureSpringCloudTLSDisabled")
 
     def test_GCPComputeRegionalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeRegionalForwardingRuleCheck")
 
     def test_GCPComputeGlobalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeGlobalForwardingRuleCheck")
 
     def test_AzureMySQLFlexibleServerConfigPrivEndpt(self):
         self.go("AzureMySQLFlexibleServerConfigPrivEndpt")
@@ -564,6 +564,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_OSSBucketPublic(self):
         self.go("OSSBucketPublic")
+
+    def test_Route53ZoneHasMatchingQueryLog(self):
+        self.go("Route53ZoneHasMatchingQueryLog")
 
 
     def test_registry_load(self):

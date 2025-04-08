@@ -1,4 +1,4 @@
-resource "google_compute_forwarding_rule" "pass" {
+resource "google_compute_forwarding_rule" "fail" {
   name                  = "passing-forwarding-rule"
   region                = "us-central1"
   load_balancing_scheme = "EXTERNAL"
@@ -7,7 +7,7 @@ resource "google_compute_forwarding_rule" "pass" {
   // Additional required configuration as needed...
 }
 
-resource "google_compute_forwarding_rule" "fail" {
+resource "google_compute_forwarding_rule" "pass" {
   name                  = "failing-forwarding-rule"
   region                = "us-central1"
   load_balancing_scheme = "EXTERNAL"
@@ -20,7 +20,7 @@ resource "google_compute_forwarding_rule" "fail_missing_lbscheme" {
   name                  = "failing-forwarding-rule"
   region                = "us-central1"
   # load_balancing_scheme = "EXTERNAL" # Default is EXTERNAL
-  target                = "https://www.googleapis.com/compute/v1/projects/my-project/global/targetSslProxies/my-target-proxy"
+  target                = "https://www.googleapis.com/compute/v1/projects/my-project/global/targetHttpProxies/my-target-proxy"
 
   // Additional required configuration as needed...
 }
