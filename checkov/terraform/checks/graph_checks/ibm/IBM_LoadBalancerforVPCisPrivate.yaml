@@ -2,23 +2,20 @@ metadata:
   id: "CKV2_IBM_1"
   name: "Ensure load balancer for VPC is private (disable public access)"
   category: "GENERAL_SECURITY"
-
 definition:
   and:
-
     - cond_type: "attribute"
       resource_types: "ibm_is_lb"
       attribute: "type"
       operator: "exists"
-
-    - cond_type: "attribute"
-      resource_types: "ibm_is_lb"
-      attribute: "type"
-      operator: "equals_ignore_case"
-      value: "private"
-
-    - cond_type: "attribute"
-      resource_types: "ibm_is_lb"
-      attribute: "type"
-      operator: "equals_ignore_case"
-      value: "private_path"
+    - or:
+      - cond_type: "attribute"
+        resource_types: "ibm_is_lb"
+        attribute: "type"
+        operator: "equals_ignore_case"
+        value: "private"
+      - cond_type: "attribute"
+        resource_types: "ibm_is_lb"
+        attribute: "type"
+        operator: "equals_ignore_case"
+        value: "private_path"
