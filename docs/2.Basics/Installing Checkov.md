@@ -6,7 +6,7 @@ nav_order: 1
 ---
 Installing Checkov is quick and straightforward—just install, configure input, and scan.
 
-### Install From PyPI Using Pip
+### Install From PyPi Using Pip
 
 ```shell
 pip install checkov
@@ -32,6 +32,27 @@ pip3 install checkov
 
 ```shell
 brew install checkov
+```
+
+### Install in a virtual environment
+
+For environments like Debian 12, it’s recommended to use a Python virtual environment:
+
+**Create and Activate Virtual Environment**:
+```sh
+python3 -m venv /path/to/venv/checkov
+cd /path/to/venv/checkov
+source ./bin/activate
+```
+
+**Install Checkov**:
+```sh
+pip install checkov
+```
+
+**Optional: Create Symlink for Easy Access**:
+```sh
+sudo ln -s /path/to/venv/checkov/bin/checkov /usr/local/bin/checkov
 ```
 
 ## Upgrading Checkov
