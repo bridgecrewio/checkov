@@ -5,7 +5,7 @@ provider "azurerm" {
 variable "resource_group_name" {
   description = "resource_group_name"
   type = string
-  default = "rg-wwe-ictd-cyselab"
+  default = "test_group_name"
 }
 
 variable "location" {
