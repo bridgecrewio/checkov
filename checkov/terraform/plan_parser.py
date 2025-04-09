@@ -372,10 +372,10 @@ def _get_providers(template: dict[str, dict[str, Any]]) -> list[dict[str, dict[s
                     if isinstance(expression_value, str):
                         expression_value = [expression_value]
                     provider_map_entry[field] = expression_value
-            provider_map_entry['start_line'] = [provider_data.get(START_LINE, 1) - 1]
-            provider_map_entry['end_line'] = [provider_data.get(END_LINE, 1)]
-            provider_map_entry[start_line] = [provider_data.get(START_LINE, 1) - 1]
-            provider_map_entry[end_line] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry['start_line'] = [0]
+            provider_map_entry['end_line'] = [0]
+            provider_map_entry[start_line] = [0]
+            provider_map_entry[end_line] = [0]
             provider_map_entry['alias'] = [provider_alias]
             # provider_key already contains the alias (ie "aws.east") for non-default providers
             if provider_alias == "default":
