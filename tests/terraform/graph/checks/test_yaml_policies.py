@@ -511,7 +511,7 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureSynapseWorkspaceVAisEnabled(self):
         self.go("AzureSynapseWorkspaceVAisEnabled")
 
-    def test_IBM_AppLBforVPCisPrivate(self):
+    def test_IBM_LoadBalancerforVPCisPrivate(self):
         self.go("IBM_LoadBalancerforVPCisPrivate")
 
     def test_IBM_VPCclassicAccessIsDisabled(self):
@@ -551,10 +551,10 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzureSpringCloudTLSDisabled")
 
     def test_GCPComputeRegionalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeRegionalForwardingRuleCheck")
 
     def test_GCPComputeGlobalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeGlobalForwardingRuleCheck")
 
     def test_AzureMySQLFlexibleServerConfigPrivEndpt(self):
         self.go("AzureMySQLFlexibleServerConfigPrivEndpt")
@@ -564,6 +564,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_OSSBucketPublic(self):
         self.go("OSSBucketPublic")
+
+    def test_Route53ZoneHasMatchingQueryLog(self):
+        self.go("Route53ZoneHasMatchingQueryLog")
 
 
     def test_registry_load(self):

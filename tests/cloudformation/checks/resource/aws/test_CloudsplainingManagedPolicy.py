@@ -6,7 +6,7 @@ from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 # This test is the same as for IAMPermissionsManagement but uses 'ManagedPolicy' test data
-# instead of 'Policy' data. This is to ensure some ManagedPolicy tests are excercised
+# instead of 'Policy' data. This is to ensure some ManagedPolicy tests are exercised
 # because it would be overkill to duplicate every test with both.
 
 class TestCloudsplainingManagedPolicy(unittest.TestCase):

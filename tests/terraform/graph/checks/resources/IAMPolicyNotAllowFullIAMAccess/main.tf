@@ -99,7 +99,7 @@ resource "aws_iam_policy" "policy_fail2" {
 POLICY
 }
 
-# Test standard IAM Policy with mutiple actions - fail
+# Test standard IAM Policy with multiple actions - fail
 resource "aws_iam_policy" "policy_mutiple_actions_fail" {
   name        = "IAMAndS3FullAccessPolicy"
   path        = "/"

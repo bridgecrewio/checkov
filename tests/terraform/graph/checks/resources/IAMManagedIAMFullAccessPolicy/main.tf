@@ -22,7 +22,7 @@ resource "aws_iam_role" "fail3" {
   assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
   managed_policy_arns = ["arn:aws:iam::aws:policy/IAMFullAccess"]
 }
-# Test iam role with mutiple policies including IAMFullAccess - Fail
+# Test iam role with multiple policies including IAMFullAccess - Fail
 resource "aws_iam_role" "fail3a" {
   name                = "role"
   assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
