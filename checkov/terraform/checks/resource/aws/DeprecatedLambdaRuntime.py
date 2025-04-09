@@ -21,9 +21,9 @@ class DeprecatedLambdaRuntime(BaseResourceNegativeValueCheck):
                 "nodejs10.x", "nodejs8.10", "nodejs4.3", "nodejs6.10", "dotnetcore1.0", "dotnetcore2.0",
                 "nodejs4.3-edge", "nodejs", "java8", "python3.7", "go1.x", "provided", "ruby2.7", "nodejs14.x",
                 "nodejs16.x", "python3.8", "dotnet7", "dotnet6"
-                #, "nodejs18.x" # Uncomment on Sept 1, 2025
-                #, "provided.al2" # Uncomment on Jun 30, 2026
-                #, "python3.9" # Uncomment on Nov 3, 2025
+                # , "nodejs18.x" # Uncomment on Sept 1, 2025
+                # , "provided.al2" # Uncomment on Jun 30, 2026
+                # , "python3.9" # Uncomment on Nov 3, 2025
                 ]
 
 
