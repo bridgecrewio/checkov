@@ -20,5 +20,8 @@ class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
     def get_expected_value(self) -> str:
         return "1.2"
 
+    def get_expected_values(self) -> str:
+        return ["1.2", 1.2, "1.3", 1.3]
+
 
 check = MSSQLServerMinTLSVersion()
