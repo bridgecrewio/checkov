@@ -15,7 +15,9 @@ class LBListenerUsesSecureProtocols(BaseResourceCheck):
         if 'protocol' in conf.keys():
             protocol = conf['protocol'][0]
             if protocol in ('HTTPS', 'TLS'):
+                self.evaluated_keys = ['protocol']
                 if 'tls_min_version_type' in conf.keys():
+                    self.evaluated_keys = ['protocol/[0]/tls_min_version_type']
                     if conf['tls_min_version_type'] == ['TLSV12']:
                         return CheckResult.PASSED
             return CheckResult.FAILED

@@ -1,0 +1,13 @@
+{
+  "terraform": {
+    "backend": {
+      "s3": {
+        "bucket": "example-bucket",
+        "encrypt": true,
+        "key": "path/to/state",
+        "profile": "example",
+        "region": "eu-central-1"
+      }
+    }
+  }
+}

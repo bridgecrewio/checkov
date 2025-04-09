@@ -1,3 +1,5 @@
+from typing import List, Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
@@ -19,6 +21,9 @@ class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
 
     def get_expected_value(self) -> str:
         return "1.2"
+
+    def get_expected_values(self) -> List[Any]:
+        return ["1.2", 1.2, "1.3", 1.3]
 
 
 check = MSSQLServerMinTLSVersion()

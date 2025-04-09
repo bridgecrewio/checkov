@@ -66,7 +66,7 @@ Scheduled scan result in Jenkins
 ## Getting started
 
 ### Requirements
- * Python >= 3.8 (Data classes are available for Python 3.8+)
+ * Python >= 3.9, <=3.12
  * Terraform >= 0.12
 
 ### Installation
@@ -75,6 +75,21 @@ To install pip follow the official [docs](https://pip.pypa.io/en/stable/cli/pip_
 
 ```sh
 pip3 install checkov
+```
+
+Certain environments (e.g., Debian 12) may require you to install Checkov in a virtual environment
+
+```sh
+# Create and activate a virtual environment
+python3 -m venv /path/to/venv/checkov
+cd /path/to/venv/checkov
+source ./bin/activate
+
+# Install Checkov with pip
+pip install checkov
+
+# Optional: Create a symlink for easy access
+sudo ln -s /path/to/venv/checkov/bin/checkov /usr/local/bin/checkov
 ```
 
 or with [Homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
@@ -287,7 +302,7 @@ checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --ski
 ```
 
 One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
-The masking can apply on resource & value (or multiple values, seperated with a comma).
+The masking can apply on resource & value (or multiple values, separated with a comma).
 Examples:
 ```sh
 mask:
@@ -389,7 +404,7 @@ The console output is in colour by default, to switch to a monochrome output, se
 
 #### VS Code Extension
 
-If you want to use Checkov within VS Code, give a try to the vscode extension available at [VS Code](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use Checkov within VS Code, give the [Prisma Cloud extension](https://marketplace.visualstudio.com/items?itemName=PrismaCloud.prisma-cloud) a try.
 
 ### Configuration using a config file
 
@@ -483,4 +498,4 @@ To skip this API call use the flag `--skip-download`.
 Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
 ## Python Version Support
-We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.8 - 3.11, inclusive. Note that Python 3.7 reached EOL on June 2023 and Python 3.8 will reach EOL in October 2024. If you run into any issues with any non-EOL Python version, please open an Issue.
+We follow the official support cycle of Python, and we use automated tests for supported versions of Python. This means we currently support Python 3.9 - 3.13, inclusive. Note that Python 3.8 reached EOL on October 2024 and Python 3.9 will reach EOL in October 2025. If you run into any issues with any non-EOL Python version, please open an Issue.

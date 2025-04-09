@@ -276,7 +276,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 106)
+        self.assertEqual(report.get_summary()["failed"], 107)
 
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -297,7 +297,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 3)
-        self.assertEqual(report.get_summary()["passed"], 4)
+        self.assertEqual(report.get_summary()["passed"], 5)
 
     def test_runner_nested_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -398,7 +398,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
-        # Often 'data' does not even appear in the *_modules[x].resouces field within planned_values and is not scanned as expected
+        # Often 'data' does not even appear in the *_modules[x].resources field within planned_values and is not scanned as expected
         # It can occur when tf module B depends on tf module A
         # And tf module A creates a resource that is used in a data block in tf module B
         # So some values can be known but other are not at plan time

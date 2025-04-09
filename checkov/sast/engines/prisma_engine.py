@@ -1,4 +1,6 @@
 import ctypes
+import subprocess  # nosec
+import sys
 from datetime import datetime
 import json
 import logging
@@ -46,6 +48,7 @@ SAST_CORE_URL_PATTERN = re.compile(rf".*/(?P<name>v?{FILE_NAME_PATTERN.pattern})
 class PrismaEngine(SastEngine):
     def __init__(self) -> None:
         self.lib_path = ""
+        self.winmode = sys.platform.startswith('win')
         self.check_type = CheckType.SAST
         self.prisma_sast_dir_path = Path(bridgecrew_dir) / "sast"
         self.sast_platform_base_path = "api/v1/sast"
@@ -144,7 +147,7 @@ class PrismaEngine(SastEngine):
             os_type = platform.system().lower()
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
-            headers["X-Required-Sast-Version"] = "latest"  # or ant version seperated with _
+            headers["X-Required-Sast-Version"] = "latest"  # or ant version separated with _
 
             # don't use the 'should_call_raise_for_status' parameter for now, because it logs errors messages
             response = request_wrapper(
@@ -252,33 +255,68 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
-        library = ctypes.cdll.LoadLibrary(self.lib_path)
-        analyze_code = library.analyzeCode
-        analyze_code.restype = ctypes.c_void_p
-
-        # send the document as a byte array of json format
-        analyze_code_output = analyze_code(json.dumps(document).encode('utf-8'))
-
-        # we dereference the pointer to a byte array
-        analyze_code_bytes = ctypes.string_at(analyze_code_output)
-
-        # convert our byte array to a string
-        analyze_code_string = analyze_code_bytes.decode('utf-8')
-        d = json.loads(analyze_code_string)
-
+        if self.winmode:
+            sast_report = self._windows_sast_scan(document)
+        else:
+            sast_report = self._sast_default_scan(document)
         try:
-            result = self.create_prisma_report(d)
+            result = self.create_prisma_report(sast_report)
         except ValidationError as e:
             result = create_empty_report(list(languages))
             result.errors = {REPORT_PARSING_ERRORS: [str(err) for err in e.errors()]}
         return self.create_report(result)
+
+    def _sast_default_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
+        library = ctypes.cdll.LoadLibrary(self.lib_path)
+        analyze_code = library.analyzeCode
+        analyze_code.restype = ctypes.c_void_p
+        # send the document as a byte array of json format
+        analyze_code_output = analyze_code(json.dumps(sast_input).encode('utf-8'))
+        # we dereference the pointer to a byte array
+        analyze_code_bytes = ctypes.string_at(analyze_code_output)
+        # convert our byte array to a string
+        analyze_code_string = analyze_code_bytes.decode('utf-8')
+        return json.loads(analyze_code_string)  # type: ignore
+
+    def _windows_sast_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
+        lib_dir_path = f"{os.path.dirname(self.lib_path)}"
+        checkov_input_path = os.path.join(lib_dir_path, "checkov_input.json")
+        sast_output_path = os.path.join(lib_dir_path, "sast_output.json")
+        with open(checkov_input_path, 'w') as f:
+            f.write(json.dumps(sast_input))
+        log_level_str = "set LOG_LEVEL=" + os.getenv("LOG_LEVEL", "INFO")
+        callargs = [log_level_str, "&", self.lib_path, checkov_input_path, sast_output_path]
+        subprocess.run(callargs, shell=True)  # nosec B404, B603, B602
+
+        with open(sast_output_path, 'r', encoding='utf-8') as f:
+            report = f.read()
+        parsed_report = json.loads(report)
+        # cleanup
+        os.remove(checkov_input_path)
+        os.remove(sast_output_path)
+        return parsed_report  # type: ignore
 
     def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
         if not data.get("imports"):
             data["imports"] = {}
         if not data.get("reachability_report"):
             data["reachability_report"] = {}
+
+        self.remove_none_conf_incidents_policies(data)
+
         return PrismaReport(**data)
+
+    @staticmethod
+    def remove_none_conf_incidents_policies(data: Dict[str, Any]) -> None:
+        remove_list = []  # type: ignore
+        for lang, match in data.get('rule_match', dict()).items():
+            for check in match.keys():
+                if bc_integration.customer_run_config_response:
+                    if check not in bc_integration.customer_run_config_response.get('policyMetadata', []):
+                        remove_list.append((lang, check))
+
+        for lang, check in remove_list:
+            del data['rule_match'][lang][check]
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
         try:

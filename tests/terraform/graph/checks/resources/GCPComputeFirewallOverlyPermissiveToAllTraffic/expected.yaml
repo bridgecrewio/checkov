@@ -2,8 +2,10 @@ pass:
   - "google_compute_firewall.compute-firewall-ok-1"
   - "google_compute_firewall.compute-firewall-ok-2"
   - "google_compute_firewall.compute-firewall-ok-3"
+  - "google_compute_firewall.pass_source_ranges"
 fail:
   - "google_compute_firewall.compute-firewall-not-ok-1"
   - "google_compute_firewall.compute-firewall-not-ok-2"
   - "google_compute_firewall.compute-firewall-not-ok-3"
   - "google_compute_firewall.compute-firewall-not-ok-4"
+  - "google_compute_firewall.fail_source_ranges"

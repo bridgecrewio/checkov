@@ -31,5 +31,8 @@ class GKEMetadataServerIsEnabled(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self):
+        return ['node_config']
+
 
 check = GKEMetadataServerIsEnabled()

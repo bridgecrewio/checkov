@@ -9,7 +9,18 @@ class TestDynamicCheck(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestDynamicCheck", [], ["doesnt_matter"])
+        name = "Ensure it ain't broke"
+        id = "test/TestDynamicCheck"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-dynamic-check"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def get_inspected_key(self):
         return "dynamic_block_name/[0]/foo"
@@ -22,8 +33,19 @@ class TestNestedDynamicCheck(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestNestedDynamicCheck", [], ["doesnt_matter"])
-
+        name = "Ensure it ain't broke"
+        id = "test/TestNestedDynamicCheck"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-dynamic-check"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
+        
     def get_inspected_key(self):
         return "outside/dynamic_block_name/[0]/foo"
 
@@ -36,7 +58,18 @@ class TestNestedMultipleDynamicCheckBlock1(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestNestedMultipleDynamicCheckBlock1", [], ["doesnt_matter"])
+        name = "Ensure it ain't broke"
+        id = "test/TestNestedMultipleDynamicCheckBlock1"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-1"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def get_inspected_key(self):
         return "outside/dynamic_block_name/[0]/dynamic_block_1/[0]/key"
@@ -49,7 +82,18 @@ class TestNestedMultipleDynamicCheckBlock2(BaseResourceValueCheck):
     __test__ = False
 
     def __init__(self):
-        super().__init__("Ensure it ain't broke", "test/TestNestedMultipleDynamicCheckBlock2", [], ["doesnt_matter"])
+        name = "Ensure it ain't broke"
+        id = "test/TestNestedMultipleDynamicCheckBlock2"
+        categories = []
+        supported_resources = ["doesnt_matter"]
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-2"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def get_inspected_key(self):
         return "outside/dynamic_block_name/[0]/dynamic_block_2/[0]/key"

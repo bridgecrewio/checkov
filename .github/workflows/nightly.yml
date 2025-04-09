@@ -56,13 +56,13 @@ jobs:
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/changelog-updater-action@622311becab6b400fd95efaf29719f401ffa4691  # v1
+        uses: stefanzweifel/changelog-updater-action@61ce794778aa787ea8d204d9fe2928543cb2fe40  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/git-auto-commit-action@8756aa072ef5b4a080af5dc8fef36c5d586e521d  # v5
+        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842  # v5
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md

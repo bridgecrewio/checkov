@@ -1,0 +1,279 @@
+Resources:
+  # Pass: enabled=false
+  ExamplePassDisabledDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: false  # disabled
+        Origins:
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "match-viewer"  # Does not enforce HTTPS only, matches RQL condition to fail
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Pass: enabled=true; no custom_origin_config
+  ExamplePassNoCustomOriginDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example"
+            # No CustomOriginConfig
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Pass: enabled=true; custom_origin_config->origin_protocol_policy=https-only
+  ExamplePassHttpsOnlyDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "https-only"  # HTTPS only
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Pass: enabled=true; custom_origin_config->origin_protocol_policy=match-viewer; domain_name does not contain dangerous domains
+  ExamplePassDomainDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.com"  # safe domain
+            Id: "custom-origin-example"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "match-viewer"  # Does not enforce HTTPS only, matches RQL condition to fail
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Fail: enabled=true; origin->custom_origin_config->origin_protocol_policy=match-viewer; domain_name contains "mediastore"
+  ExampleFailDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "match-viewer"  # Does not enforce HTTPS only, matches RQL condition to fail
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Fail: enabled=true; one good origin, one bad origin
+  ExampleFailOneGoodOneBadDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.com"  # safe domain
+            Id: "custom-origin-example-good"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "https-only"  # HTTPS only
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+          - DomainName: "example.data.mediastore.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example-bad"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "match-viewer"  # Does not enforce HTTPS only, matches RQL condition to fail
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example-bad"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # Fail: enabled=true; one origin without custom_origin_config, one bad origin
+  ExampleFailOneMissingOneBadDistribution:
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        Enabled: true  # enabled
+        Origins:
+          - DomainName: "example.com"  # safe domain
+            Id: "custom-origin-example-good"
+            # no CustomOriginConfig
+          - DomainName: "example.elb.amazonaws.com"  # contains dangerous domain name
+            Id: "custom-origin-example-bad"
+            CustomOriginConfig:
+              OriginProtocolPolicy: "match-viewer"  # Does not enforce HTTPS only, matches RQL condition to fail
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginSSLProtocols:
+                - "TLSv1"
+                - "TLSv1.1"
+                - "TLSv1.2"
+        DefaultCacheBehavior:
+          TargetOriginId: "custom-origin-example-bad"
+          ViewerProtocolPolicy: "redirect-to-https"
+          AllowedMethods:
+            - "GET"
+            - "HEAD"
+          CachedMethods:
+            - "GET"
+            - "HEAD"
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: "none"
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: "none"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true

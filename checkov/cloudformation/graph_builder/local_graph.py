@@ -154,10 +154,16 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
                             transform_step=True,
                         )
                     elif isinstance(value, list):
+                        # Remove duplicates
+                        list_updated_value = [*vertex.attributes[property], *value]
+                        list_updated_value_unique = []
+                        for item in list_updated_value:
+                            if item not in list_updated_value_unique:
+                                list_updated_value_unique.append(item)
                         self.update_vertex_attribute(
                             vertex_index=self.vertices.index(vertex),
                             attribute_key=property,
-                            attribute_value=[*vertex.attributes[property], *value],
+                            attribute_value=list_updated_value_unique,
                             change_origin_id=index,
                             attribute_at_dest=property,
                             transform_step=True,
@@ -195,12 +201,12 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
                             logging.debug(
-                                f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                                f"[CloudformationLocalGraph] did not create edge for target_id {target_id}"
                                 f"and vertex_path {vertex_path} as target_id is not a string"
                             )
                 else:
                     logging.debug(
-                        f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                        f"[CloudformationLocalGraph] did not create edge for target_ids {target_ids}"
                         f"and vertex_path {vertex_path} as target_ids is not a list"
                     )
 

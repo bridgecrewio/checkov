@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_AZURE_56"
+  name: "Ensure Azure MySQL Flexible Server is configured with private endpoint"
+  category: "NETWORKING"
+
+definition:
+  and:
+    - cond_type: "filter"
+      attribute: "resource_type"
+      operator: "within"
+      value:
+        - "azurerm_mysql_flexible_server"
+
+    - cond_type: "connection"
+      resource_types:
+        - "azurerm_mysql_flexible_server"
+      connected_resource_types:
+        - "azurerm_private_endpoint"
+      operator: "exists"

@@ -42,7 +42,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.sast.consts import CDKLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
-from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.banner import default_tool as tool_name
 from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -98,7 +98,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.licensing_integration = licensing_integration  # can be manipulated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
@@ -128,7 +128,8 @@ class RunnerRegistry:
                                         collect_skip_comments=collect_skip_comments)]
             else:
                 # This is the only runner, so raise a clear indication of failure
-                raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
+                raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform',
+                                            unsupported_frameworks=[runner_check_type])
         else:
             valid_runners = []
             invalid_runners = []
@@ -150,11 +151,11 @@ class RunnerRegistry:
             # if some frameworks are disabled and the user used --framework, log a warning so they see it
             # if some frameworks are disabled and the user did not use --framework, then log at a lower level so that we have it for troubleshooting
             if not valid_runners:
+                check_types = [runner.check_type for runner in self.runners]
                 runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
                 error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
                                 f'You must subscribe to one or more of the categories below to get results for these frameworks.{os.linesep}{runners_categories}'
-                logging.error(error_message)
-                raise ModuleNotEnabledError(error_message)
+                raise ModuleNotEnabledError(error_message, unsupported_frameworks=check_types)
             elif invalid_runners:
                 for runner in invalid_runners:
                     level = logging.INFO
@@ -269,7 +270,6 @@ class RunnerRegistry:
         return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
-        integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
@@ -279,6 +279,7 @@ class RunnerRegistry:
             )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+        integration_feature_registry.run_post_runner(scan_report)
         self.scan_reports.append(scan_report)
 
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
@@ -487,7 +488,7 @@ class RunnerRegistry:
             )
 
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
             sarif = Sarif(reports=sarif_reports, tool=self.tool)
@@ -718,7 +719,7 @@ class RunnerRegistry:
 
     def remove_runner(self, runner: _BaseRunner) -> None:
         if runner in self.runners:
-            self.runners.remove(runner)
+            self.runners.remove(runner)  # type:ignore[arg-type] # existence is checked one line above
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report: Report) -> None:

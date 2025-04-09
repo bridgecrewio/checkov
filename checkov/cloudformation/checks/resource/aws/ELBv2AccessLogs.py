@@ -12,7 +12,9 @@ class ELBv2AccessLogs(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'Properties' in conf.keys():
+            self.evaluated_keys = ['Properties']
             if 'LoadBalancerAttributes' in conf['Properties'].keys():
+                self.evaluated_keys = ['Properties/LoadBalancerAttributes']
                 if isinstance(conf['Properties']['LoadBalancerAttributes'], list):
                     for item in conf['Properties']['LoadBalancerAttributes']:
                         if 'Key' in item.keys() and 'Value' in item.keys():

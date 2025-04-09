@@ -4,6 +4,7 @@ import io
 import itertools
 import logging
 import os
+import shutil
 import subprocess  # nosec
 import tempfile
 import threading
@@ -31,6 +32,8 @@ if TYPE_CHECKING:
 
 
 class K8sHelmRunner(k8_runner):
+    check_type = CheckType.HELM  # noqa: CCE003  # a static attribute
+
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
@@ -39,7 +42,6 @@ class K8sHelmRunner(k8_runner):
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        self.check_type = CheckType.HELM
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta: list[tuple[str, dict[str, Any]]] = []
         self.pbar.turn_off_progress_bar()
@@ -148,9 +150,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return chart_path, chart_meta
 
     def check_system_deps(self) -> str | None:
-        # Ensure local system dependancies are available and of the correct version.
+        # Ensure local system dependencies are available and of the correct version.
         # Returns framework names to skip if deps fail.
-        logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
+        logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
         try:
             proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
@@ -158,7 +160,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             if "Version:" in oString:
                 helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
                 if "v3" in helmVersionOutput:
-                    logging.info(f"Found working version of {self.check_type} dependancies: {helmVersionOutput}")
+                    logging.info(f"Found working version of {self.check_type} dependencies: {helmVersionOutput}")
                     return None
             else:
                 return self.check_type
@@ -265,10 +267,10 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         if e:
             if "Warning: Dependencies" in str(e, 'utf-8'):
                 logging.warning(
-                    f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"V1 API chart without Chart.yaml dependencies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             else:
                 logging.warning(
-                    f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
         helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
         if runner_filter.var_files:
@@ -369,6 +371,12 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         list(parallel_runner.run_function(func=Runner._convert_chart_to_k8s, items=chart_items))
         return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
+    def remove_target_folder(self) -> None:
+        try:
+            shutil.rmtree(self.target_folder_path)  # delete directory
+        except OSError as exc:
+            logging.debug("failed to remove helm target folder path", exc_info=exc)
+
     def run(
         self,
         root_folder: str | None,
@@ -387,6 +395,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         k8s_runner.tmp_root_dir = self.get_k8s_target_folder_path()
         report = k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
         self.graph_manager = k8s_runner.graph_manager
+        self.remove_target_folder()
         return report
 
 

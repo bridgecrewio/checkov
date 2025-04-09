@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os.path
 import re
+import sys
 import uuid
 from collections import namedtuple
 from concurrent import futures
@@ -110,6 +112,7 @@ REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.clean()
+        self.set_config()
 
     def clean(self) -> None:
         self.bc_api_key = read_key()
@@ -211,7 +214,7 @@ class BcPlatformIntegration:
             "skip_fixes": self.skip_fixes,
             "timestamp": self.timestamp,
             "use_s3_integration": self.use_s3_integration,
-            # will be overriden with a simple lambda expression
+            # will be overridden with a simple lambda expression
             "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
         }
 
@@ -360,6 +363,12 @@ class BcPlatformIntegration:
                     retries=self.http_retry,
                 )
         logging.debug('Successfully set up HTTP manager')
+
+    @staticmethod
+    def set_config() -> None:
+        # asyncio - on windows aiodns needs SelectorEventLoop
+        if sys.platform == 'win32':
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     def setup_bridgecrew_credentials(
         self,
@@ -575,8 +584,8 @@ class BcPlatformIntegration:
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
                 if sast_languages:
-                    for framwork in sast_languages:
-                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                    for framework in sast_languages:
+                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framework]:
                             files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
                             break
 
@@ -595,8 +604,8 @@ class BcPlatformIntegration:
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
                     if sast_languages:
-                        for framwork in sast_languages:
-                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                        for framework in sast_languages:
+                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framework]:
                                 files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
                                 break
 

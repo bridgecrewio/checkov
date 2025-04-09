@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -32,6 +32,9 @@ class ECSServiceFargateLatest(BaseResourceCheck):
             return CheckResult.PASSED
 
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["launch_type", "platform_version"]
 
 
 check = ECSServiceFargateLatest()

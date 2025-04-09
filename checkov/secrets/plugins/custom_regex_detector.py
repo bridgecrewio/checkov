@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast, Union
 from collections import defaultdict
 
 from detect_secrets.constants import VerifiedResult
@@ -30,7 +30,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
         self.multiline_deny_list = set()
-        self.multiline_pattern_by_prerun_compiled: dict[str, Pattern[str]] = dict()
+        self.pattern_by_prerun_compiled: dict[str, Pattern[str]] = dict()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
@@ -39,23 +39,21 @@ class CustomRegexDetector(RegexBasedDetector):
 
         for detector in detectors:
             try:
-                if detector.get("isMultiline"):
-                    # If prerun exists, we will add it as 'regular detector' (special treat in analyze_line)
-                    if detector.get("prerun"):
-                        self.denylist.add(re.compile('{}'.format(detector["prerun"])))
-                        self.regex_to_metadata[detector["prerun"]] = detector
-                        self.multiline_pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
-                    else:
-                        self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                        self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                if detector.get("prerun"):
+                    self.denylist.add(re.compile('{}'.format(detector["prerun"])))
+                    self.regex_to_metadata[detector["prerun"]] = detector
+                    # currently supports only cases that have distinct preruns, if two policies
+                    # have the same prerunner then only one of them is gonna work
+                    self.pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
                     continue
-                self.denylist.add(re.compile('{}'.format(detector["Regex"])))
-                self.regex_to_metadata[detector["Regex"]] = detector
+                if detector.get("isMultiline"):
+                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                else:
+                    self.denylist.add(re.compile('{}'.format(detector["Regex"])))
+                    self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
-                logging.error(
-                    f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}",
-                    exc_info=True,
-                )
+                logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
 
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
@@ -144,6 +142,9 @@ class CustomRegexDetector(RegexBasedDetector):
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
         kwargs["regex_denylist"] = current_denylist
         for match, regex in self.analyze_string(string_to_analyze, **kwargs):
+            if len(match) == 0:
+                # Skip empty matches
+                continue
             try:
                 verified_result = call_function_with_arguments(self.verify, secret=match, context=context)
                 is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
@@ -164,17 +165,19 @@ class CustomRegexDetector(RegexBasedDetector):
                 file_content = read_file_safe(filename)
                 if not file_content:
                     continue
-                multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
+                multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
-                    mm = f"'{mm}'"
+                    mm = self._extract_real_regex_match(mm)
+                    line_num = find_line_number(file_content, mm, line_number)
+                    quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
                         filename=filename,
-                        secret=mm,
-                        line_number=line_number,
+                        secret=quoted_mm,
+                        line_number=line_num,
                         is_verified=is_verified,
                         is_added=is_added,
                         is_removed=is_removed,
@@ -215,3 +218,23 @@ class CustomRegexDetector(RegexBasedDetector):
                         yield submatch, regex
                 else:
                     yield match, regex
+
+    def _extract_real_regex_match(self, regex_matches: Union[str, Tuple[str]]) -> Union[str, Tuple[str]]:
+        if isinstance(regex_matches, tuple):
+            for match in regex_matches:
+                if match:
+                    return match
+
+        return regex_matches
+
+
+def find_line_number(file_string: str, substring: str, default_line_number: int) -> int:
+    try:
+        lines = file_string.splitlines()
+
+        for line_number, line in enumerate(lines, start=1):
+            if substring in line:
+                return line_number
+        return default_line_number
+    except Exception:
+        return default_line_number

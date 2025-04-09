@@ -12,7 +12,7 @@ class GoogleKMSKeyIsPublic(BaseResourceCheck):
         ensure key is not publicly available
         KMS Crypto Key policy should not set 'allUsers' or 'allAuthenticatedUsers' in the attribute 'member'/'members'
         """
-        name = "Esnure KMS policy should not allow public access"
+        name = "Ensure KMS policy should not allow public access"
         id = "CKV_GCP_112"
         supported_resources = (
             "google_kms_crypto_key_iam_policy",

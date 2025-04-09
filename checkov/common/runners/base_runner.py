@@ -10,6 +10,7 @@ from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict, Optional
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -149,7 +150,52 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
                 report_type=self.check_type
             )]
 
+        self._update_check_correct_connected_node(filtered_result)
+
         return filtered_result
+
+    @staticmethod
+    def _extract_relevant_resource_types(check_connected_resource_types: list[tuple[str]],
+                                         connected_nodes_per_resource_types: dict[tuple[str], Any]) ->\
+            tuple[str] | None:
+        return next((resource_types for resource_types in check_connected_resource_types
+                     if resource_types in connected_nodes_per_resource_types), None)
+
+    @staticmethod
+    def _get_connected_resources_types_with_subchecks(check: BaseGraphCheck) -> list[tuple[str]]:
+        resource_types_tuples: list[tuple[str]] = []
+        for sub_check in check.sub_checks:
+            resource_types_tuples.append(tuple(sub_check.connected_resources_types))  # type: ignore
+            resource_types_tuples.extend(
+                BaseRunner._get_connected_resources_types_with_subchecks(sub_check))  # Recursive call
+        return resource_types_tuples
+
+    @staticmethod
+    def _update_check_correct_connected_node(filtered_result: dict[BaseGraphCheck, list[_CheckResult]]) -> None:
+        """
+        Responsible for choosing the correct connected node per check (if exists), as every graph check may refer to
+        a different connection that a resource might have.
+        Before: connected_node could be a dict[tuple[resource_types], attributes].
+        After: connected_node == attributes (of relevant connected node)
+        """
+        for check, results in filtered_result.items():
+            for result in results:
+                result["entity"] = pickle_deepcopy(result["entity"])  # Important to avoid changes between checks
+                connected_node = result.get("entity", {}).get(CustomAttributes.CONNECTED_NODE)
+                if connected_node is None:
+                    continue
+
+                check_connected_resource_types = BaseRunner._get_connected_resources_types_with_subchecks(check)
+
+                check_relevant_connected_resource_types = BaseRunner._extract_relevant_resource_types(
+                    check_connected_resource_types, connected_node)
+
+                if check_relevant_connected_resource_types and \
+                        check_relevant_connected_resource_types in connected_node:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = \
+                        connected_node[check_relevant_connected_resource_types]
+                else:
+                    result["entity"][CustomAttributes.CONNECTED_NODE] = None
 
 
 def filter_ignored_paths(
@@ -179,10 +225,10 @@ def filter_ignored_paths(
     # mostly this will just remove those problematic directories hardcoded above.
     included_paths = included_paths or []
     for entry in list(names):
-        path = entry.name if isinstance(entry, os.DirEntry) else entry
-        if path in ignored_directories:
+        cur_path: str = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
+        if cur_path in ignored_directories:
             safe_remove(names, entry)
-        if path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV and path not in included_paths:
+        if cur_path.startswith(".") and IGNORE_HIDDEN_DIRECTORY_ENV and cur_path not in included_paths:
             safe_remove(names, entry)
 
     # now apply the new logic
@@ -197,7 +243,7 @@ def filter_ignored_paths(
                 # do not add compiled paths that aren't regexes
                 continue
         for entry in list(names):
-            path = entry.name if isinstance(entry, os.DirEntry) else entry
+            path: str = str(entry.name) if isinstance(entry, os.DirEntry) else str(entry)
             full_path = os.path.join(root_dir, path)
             if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)

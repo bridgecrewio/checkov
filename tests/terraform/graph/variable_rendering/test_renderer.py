@@ -461,7 +461,7 @@ class TestRenderer(TestCase):
             value_block_1 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0]['dynamic'][0]['authorized_networks']['content'][0]['value']
             value_block_2 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0][
                 'dynamic'][1]['authorized_networks']['content'][0]['value']
-            # TODO - for now we don't support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be diffrent and not overide each other
+            # TODO - for now we don't support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be different and not override each other
             assert not value_block_1 != value_block_2
 
 
@@ -486,3 +486,11 @@ class TestRenderer(TestCase):
                 "role": ["roles/run.developer"],
             },
         )
+
+    def test_foreach_with_tfvars_tag_merge(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_tfvars_merge")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        self.assertDictEqual(resources_vertex[0].config['aws_instance']['this["vm1"]'].get('tags')[0],
+                             {'Environment': 'prod', 'Department': 'Testing', 'Name': 'vm1'})

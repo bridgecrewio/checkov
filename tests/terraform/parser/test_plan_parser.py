@@ -1,9 +1,11 @@
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from pytest_mock import MockerFixture
 
+from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
 from checkov.terraform.plan_parser import parse_tf_plan
 from checkov.common.parsers.node import StrNode
 
@@ -26,8 +28,27 @@ class TestPlanFileParser(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan_tags/tfplan.json"
         tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         file_provider_definition = tf_definition['provider']
-        self.assertTrue(file_provider_definition) # assert a provider exists
-        assert file_provider_definition[0].get('aws',{}).get('region', None) == 'us-west-2'
+        self.assertTrue(file_provider_definition)  # assert a provider exists
+        assert file_provider_definition[0].get('aws', {}).get('region', None) == ['us-west-2']
+    
+    def test_plan_multiple_providers(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        providers = tf_definition['provider']
+        self.assertEqual( len(providers), 3)
+        provider_keys = []
+        provider_aliases = []
+        provider_addresses = []
+        for provider in providers:
+            key = next(iter(provider))
+            provider_keys.append(key)
+            provider_aliases.append( provider[key]['alias'][0] )
+            provider_addresses.append( provider[key]['__address__'] )
+        
+        self.assertEqual(provider_keys, ["aws", "aws.ohio", "aws.oregon"])
+        self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
+        self.assertEqual(provider_addresses, ["aws.default", "aws.ohio", "aws.oregon"])
 
     def test_more_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -79,6 +100,16 @@ class TestPlanFileParser(unittest.TestCase):
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
         self.assertTrue(resource_attributes['references_'])
+
+    @mock.patch.dict(os.environ, {"EVAL_TF_PLAN_AFTER_UNKNOWN": "True"})
+    def test_after_unknown_handling(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_after_unknown/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertEqual(resource_attributes['logging_config'][0]["bucket"], [TRUE_AFTER_UNKNOWN])
 
 def test_large_file(mocker: MockerFixture):
     # given

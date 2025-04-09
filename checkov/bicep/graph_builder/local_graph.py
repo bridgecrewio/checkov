@@ -11,10 +11,10 @@ from typing_extensions import TypeAlias  # noqa[TC002]
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
 from checkov.bicep.graph_builder.variable_rendering.renderer import BicepVariableRenderer
-from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.common.graph.graph_builder.utils import adjust_value
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
 
+# mypy: disable-error-code="misc"
 class BicepElements(str, Enum):
     GLOBALS: Literal["globals"] = "globals"
     PARAMETERS: Literal["parameters"] = "parameters"
