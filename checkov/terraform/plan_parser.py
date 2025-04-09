@@ -372,6 +372,7 @@ def _get_providers(template: dict[str, dict[str, Any]]) -> list[dict[str, dict[s
                     if isinstance(expression_value, str):
                         expression_value = [expression_value]
                     provider_map_entry[field] = expression_value
+            # Use 0 for all lines so we don't emit large plans or leak secrets into results output
             provider_map_entry['start_line'] = [0]
             provider_map_entry['end_line'] = [0]
             provider_map_entry[start_line] = [0]
