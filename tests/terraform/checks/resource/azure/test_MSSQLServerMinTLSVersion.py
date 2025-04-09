@@ -38,7 +38,7 @@ class TestMSSQLServerMinTLSVersion(unittest.TestCase):
               version                       = var.sql["version"]
               administrator_login           = var.sql["administrator_login"]
               administrator_login_password  = local.administrator_login_password
-              minimum_tls_version           = "1.3"
+              minimum_tls_version           = "1.2"
               public_network_access_enabled = var.sql["public_network_access_enabled"]
               identity {
                 type = "SystemAssigned"
