@@ -1,7 +1,6 @@
 from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_negative_value_check import (
-    BaseResourceNegativeValueCheck,
-)
+from checkov.terraform.checks.resource.base_resource_negative_value_check import \
+    BaseResourceNegativeValueCheck
 
 
 class SubnetPublicIP(BaseResourceNegativeValueCheck):

@@ -19,10 +19,10 @@ class TestSubnetPublicIP(unittest.TestCase):
 
         passing_resources = {
             "awscc_ec2_subnet.pass",
+            "awscc_ec2_subnet.pass2",
         }
         failing_resources = {
-            "awscc_ec2_subnet.fail",
-            "awscc_ec2_subnet.fail2"
+            "awscc_ec2_subnet.fail"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
