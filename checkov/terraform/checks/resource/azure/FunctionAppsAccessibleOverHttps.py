@@ -24,6 +24,7 @@ class FunctionAppsAccessibleOverHttps(BaseResourceCheck):
 
         https_only = conf.get('https_only')[0]
         if not https_only:
+            self.evaluated_keys = ['https_only']
             return CheckResult.FAILED
 
         # relevant for linux/windows resources
@@ -31,11 +32,12 @@ class FunctionAppsAccessibleOverHttps(BaseResourceCheck):
             auth_settings_v2 = conf['auth_settings_v2'][0]
 
             # default=true for require_https
-            if 'require_https' not in auth_settings_v2.keys():
+            if 'require_https' not in auth_settings_v2:
                 return CheckResult.PASSED
 
             require_https = auth_settings_v2.get('require_https')[0]
             if not require_https:
+                self.evaluated_keys = ['auth_settings_v2', 'auth_settings_v2/[0]/require_https']
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

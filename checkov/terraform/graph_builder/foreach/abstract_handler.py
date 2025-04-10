@@ -6,9 +6,12 @@ import re
 import typing
 from typing import Any
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
+from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -28,7 +31,7 @@ class ForeachAbstractHandler:
 
     @abc.abstractmethod
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
-                                     new_key: int | str, new_value: int | str) -> None:
+                                     new_key: int | str, new_value: int | str) -> str | None:
         pass
 
     @abc.abstractmethod
@@ -37,12 +40,20 @@ class ForeachAbstractHandler:
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
+        virtual_resources_names: list[str] = []
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
+                append_virtual_resource(
+                    self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value,
+                                                      new_value=new_value), virtual_resources_names)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
+                append_virtual_resource(
+                    self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value),
+                    virtual_resources_names)
+        if env_vars_config.RAW_TF_IN_GRAPH_ENV:
+            main_resource.config[CustomAttributes.VIRTUAL_RESOURCES] = virtual_resources_names
+            self.local_graph.vertices.append(main_resource)
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
@@ -72,7 +83,8 @@ class ForeachAbstractHandler:
         attrs.pop(FOREACH_STRING, None)
 
     @staticmethod
-    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any], k: str) -> bool:
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any],
+                           k: str) -> bool:
         if key_to_change not in attrs[k]:
             return False
         if attrs[k] == "${" + key_to_change + "}":
@@ -88,7 +100,7 @@ class ForeachAbstractHandler:
             return True
 
     @staticmethod
-    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str | int, new_key: str | int | None)\
+    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str | int, new_key: str | int | None) \
             -> dict[str, str | int | None]:
         if main_resource.attributes.get(COUNT_STRING):
             return {COUNT_KEY: new_val}
@@ -186,7 +198,7 @@ class ForeachAbstractHandler:
             return self._handle_static_count_statement(count_statement)
         return None
 
-    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any])\
+    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) \
             -> list[str] | dict[str, Any] | None:
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)

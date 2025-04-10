@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
+from checkov.common.checks_infra.resources_types import resources_types as raw_resources_types
 
 from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers import (
@@ -56,6 +57,8 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsLessThanAttributeSolver,
     NumberOfWordsLessThanOrEqualAttributeSolver,
     NotWithinAttributeSolver,
+    CIDRRangeSubsetAttributeSolver,
+    CIDRRangeNotSubsetAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -120,6 +123,8 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "number_of_words_greater_than_or_equal": NumberOfWordsGreaterThanOrEqualAttributeSolver,
     "number_of_words_less_than_or_equal": NumberOfWordsLessThanOrEqualAttributeSolver,
     "number_of_words_less_than": NumberOfWordsLessThanAttributeSolver,
+    "cidr_range_subset": CIDRRangeSubsetAttributeSolver,
+    "cidr_range_not_subset": CIDRRangeNotSubsetAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
@@ -248,6 +253,22 @@ class GraphCheckParser(BaseGraphCheckParser):
         else:
             resource_type = raw_check.get("resource_types", [])
             if (
+                    resource_type and
+                    ((isinstance(resource_type, str) and resource_type.lower() == "taggable") or
+                     (isinstance(resource_type, list) and resource_type[0].lower() == "taggable"))
+            ):
+                if providers and len(providers) > 0 and providers != ['']:
+                    provider = providers[0].lower()
+                    taggable_resources = raw_resources_types.get(provider + "_taggable", [])
+                    check.resource_types = taggable_resources
+                else:
+                    # Get all taggable resources across providers
+                    all_taggable = []
+                    for provider in ['aws', 'azure', 'gcp']:
+                        all_taggable.extend(raw_resources_types.get(f"{provider}_taggable", []))
+                    check.resource_types = all_taggable
+
+            elif (
                     not resource_type
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")

@@ -98,7 +98,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.licensing_integration = licensing_integration  # can be manipulated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
@@ -270,7 +270,6 @@ class RunnerRegistry:
         return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
-        integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
@@ -280,6 +279,7 @@ class RunnerRegistry:
             )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+        integration_feature_registry.run_post_runner(scan_report)
         self.scan_reports.append(scan_report)
 
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
@@ -488,7 +488,7 @@ class RunnerRegistry:
             )
 
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
             sarif = Sarif(reports=sarif_reports, tool=self.tool)

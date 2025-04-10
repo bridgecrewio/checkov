@@ -6,7 +6,7 @@ nav_order: 1
 ---
 Installing Checkov is quick and straightforward—just install, configure input, and scan.
 
-### Install From PyPI Using Pip
+### Install From PyPi Using Pip
 
 ```shell
 pip install checkov
@@ -32,6 +32,27 @@ pip3 install checkov
 
 ```shell
 brew install checkov
+```
+
+### Install in a virtual environment
+
+For environments like Debian 12, it’s recommended to use a Python virtual environment:
+
+**Create and Activate Virtual Environment**:
+```sh
+python3 -m venv /path/to/venv/checkov
+cd /path/to/venv/checkov
+source ./bin/activate
+```
+
+**Install Checkov**:
+```sh
+pip install checkov
+```
+
+**Optional: Create Symlink for Easy Access**:
+```sh
+sudo ln -s /path/to/venv/checkov/bin/checkov /usr/local/bin/checkov
 ```
 
 ## Upgrading Checkov
@@ -86,7 +107,7 @@ check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 ```
 
-If you have installed jq, you can convert a JSON file into multiple lines with the command `terraform show -json tf.plan | jq '.' > tf.json`, making it easier to read the scan result.
+If you have installed jq, you can convert a JSON file into multiple lines with the command `terraform show -json tf.plan | jq '.' > tf.json`, making it easier to read the scan result. NOTE: `jq` is required to show the code block as seen below. 
 
 ```json
 checkov -f tf.json
