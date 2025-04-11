@@ -22,6 +22,7 @@ pass:
   - "aws_security_group.pass_eks"
   - "aws_security_group.pass_eks_node"
   - "aws_security_group.pass_elasticache"
+  - "aws_security_group.pass_elasticache_serverless"
   - "aws_security_group.pass_elasticache_replication_group"
   - "aws_security_group.pass_elb"
   - "aws_security_group.pass_emr"
