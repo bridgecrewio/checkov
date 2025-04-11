@@ -568,6 +568,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ZoneHasMatchingQueryLog(self):
         self.go("Route53ZoneHasMatchingQueryLog")
 
+    def test_Route53ZoneEnableDNSSECSigning(self):
+        self.go("Route53ZoneEnableDNSSECSigning")
+
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
