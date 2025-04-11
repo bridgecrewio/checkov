@@ -34,13 +34,14 @@ resource "aws_route53_zone_association" "private" {
   vpc_id  = "vpc-1a2b3c4d"
 }
 
-#fail
-resource "aws_route53_zone" "fail" {
-  name = "fail"
+#pass with signing key
+resource "aws_route53_zone" "pass_signing_key" {
+  name = "pass"
 }
+
 resource "aws_route53_key_signing_key" "fail" {
-  hosted_zone_id             = aws_route53_zone.fail.id
-  key_management_service_arn = aws_kms_key.fail.arn
+  hosted_zone_id             = aws_route53_zone.pass_signing_key.id
+  key_management_service_arn = aws_kms_key.pass_signing_key.arn
   name                       = "pass"
 }
 
