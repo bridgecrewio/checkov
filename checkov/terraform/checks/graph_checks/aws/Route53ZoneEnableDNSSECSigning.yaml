@@ -4,11 +4,18 @@ metadata:
   category: "NETWORKING"
 definition:
   or:
-    - cond_type: attribute
-      resource_types:
-        - aws_route53_zone
-      attribute: vpc  # This indicates a private zone that can't have DNSSEC enabled
-      operator: exists
+    - and:
+      - cond_type: attribute
+        resource_types:
+          - aws_route53_zone
+        attribute: vpc  # This indicates a private zone that can't have DNSSEC enabled
+        operator: exists
+      - cond_type: attribute
+        resource_types:
+          - aws_route53_zone
+        attribute: vpc  # This indicates a private zone that can't have DNSSEC enabled
+        operator: not_equals
+        value: []
     - and:
       - cond_type: filter
         attribute: resource_type
