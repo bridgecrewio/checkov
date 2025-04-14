@@ -44,7 +44,7 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> "$GITHUB_ENV"
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@9ed3155b72ba709881c967f75611fc5852f773b9  # v13
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf  # v13
         id: changed_files
         with:
           files: Pipfile.lock
