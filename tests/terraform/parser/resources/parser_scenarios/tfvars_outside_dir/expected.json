@@ -1,0 +1,18 @@
+{
+  "{\"file_path\": \"main.tf\", \"tf_source_modules\": null}": {
+    "resource": [
+      {
+        "aws_s3_bucket": {
+          "my_bucket": {
+            "bucket": [
+              "xyz"
+            ],
+            "__start_line__": 5,
+            "__end_line__": 7,
+            "__address__": "aws_s3_bucket.my_bucket"
+          }
+        }
+      }
+    ]
+  }
+}
