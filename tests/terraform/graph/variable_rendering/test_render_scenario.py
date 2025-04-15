@@ -183,6 +183,9 @@ class TestRendererScenarios(TestCase):
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
 
+    def test_tfvars_outside_dir(self):
+        self.go('tfvars_outside_dir', vars_files=['../tfvars/other1.tfvars'])
+
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
 
