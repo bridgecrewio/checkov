@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.404...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.406...HEAD)
+
+## [3.2.406](https://github.com/bridgecrewio/checkov/compare/3.2.404...3.2.406) - 2025-04-17
+
+### Bug Fix
+
+- **kustomize:** handle kustomize file with empty resources section - [#7109](https://github.com/bridgecrewio/checkov/pull/7109)
 
 ## [3.2.404](https://github.com/bridgecrewio/checkov/compare/3.2.403...3.2.404) - 2025-04-14
 
