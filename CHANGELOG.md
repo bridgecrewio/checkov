@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.402...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.404...HEAD)
+
+## [3.2.404](https://github.com/bridgecrewio/checkov/compare/3.2.403...3.2.404) - 2025-04-14
+
+### Bug Fix
+
+- **terraform:** Fix for multiple checks - [#7097](https://github.com/bridgecrewio/checkov/pull/7097)
+
+## [3.2.403](https://github.com/bridgecrewio/checkov/compare/3.2.402...3.2.403) - 2025-04-10
+
+### Feature
+
+- **cloudformation:** Update Lambda Runtime checks - [#7065](https://github.com/bridgecrewio/checkov/pull/7065)
 
 ## [3.2.402](https://github.com/bridgecrewio/checkov/compare/3.2.400...3.2.402) - 2025-04-08
 
