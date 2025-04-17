@@ -10,6 +10,7 @@ from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketL
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
+from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
 
@@ -527,3 +528,24 @@ def test_multiple_similar_loaders():
     GenericGitLoader()
     BitbucketLoader()
     assert len(registry.loaders) == 7
+
+@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
+def test_latest_tf_managed(tmp_path: Path):
+    registry = ModuleLoaderRegistry(download_external_modules=False)
+    registry.module_content_cache = {
+        'terraform-aws-modules/iam:5.55.0': ModuleContent('xxx')
+    }
+
+    mc = registry.load(str(tmp_path / 'cache_check'), source='terraform-aws-modules/iam', source_version='latest')
+    assert mc and mc.path() == 'xxx'
+
+@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
+def test_latest_tf_managed_registry(tmp_path: Path):
+    registry = ModuleLoaderRegistry(download_external_modules=False)
+    registry.module_content_cache = {
+        'registry.terraform.io/terraform-aws-modules/iam:5.55.0': ModuleContent('xxx')
+    }
+
+    mc = registry.load(str(tmp_path / 'cache_check'), source='terraform-aws-modules/iam', source_version='latest')
+    assert mc and mc.path() == 'xxx'
+
