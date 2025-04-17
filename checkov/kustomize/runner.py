@@ -408,7 +408,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             if not isinstance(file_content, dict):
                 return {}
 
-            if 'resources' in file_content:
+            if 'resources' in file_content and file_content['resources'] is not None:
                 resources = file_content['resources']
 
                 # We can differentiate between "overlays" and "bases" based on if the `resources` refers to a directory,
