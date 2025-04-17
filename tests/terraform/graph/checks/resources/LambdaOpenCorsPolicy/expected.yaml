@@ -1,0 +1,7 @@
+pass:
+  - "aws_lambda_function_url.valid_lambda_function_url"
+  - "aws_lambda_function_url.valid_lambda_function_url_no_cors_definition"
+  - "aws_lambda_function_url.valid_lambda_function_url_only_allow_origins_star"
+  - "aws_lambda_function_url.valid_lambda_function_url_only_allow_methods_star"
+fail:
+  - "aws_lambda_function_url.invalid_lambda_function_url"
