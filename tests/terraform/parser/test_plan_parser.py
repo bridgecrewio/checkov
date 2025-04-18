@@ -9,6 +9,8 @@ from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
 from checkov.terraform.plan_parser import parse_tf_plan
 from checkov.common.parsers.node import StrNode
 
+from hcl2 import START_LINE as start_line, END_LINE as end_line
+
 class TestPlanFileParser(unittest.TestCase):
 
     def test_tags_values_are_flattened(self):
@@ -31,6 +33,23 @@ class TestPlanFileParser(unittest.TestCase):
         self.assertTrue(file_provider_definition)  # assert a provider exists
         assert file_provider_definition[0].get('aws', {}).get('region', None) == ['us-west-2']
     
+    def test_plan_provider_empty_code_lines(self):
+        """
+        Provider resources from a plan need to have 0 for start and end lines so checkov doesn't
+        print the plan when attempting to show relevant IaC for a resource.
+        """
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        providers = tf_definition['provider']
+        self.assertEqual( len(providers), 3)
+        for provider in providers:
+            key = next(iter(provider))
+            self.assertEqual(provider[key]["start_line"], [0])
+            self.assertEqual(provider[key]["end_line"], [0])
+            self.assertEqual(provider[key][start_line], [0])
+            self.assertEqual(provider[key][end_line], [0])
+        
     def test_plan_multiple_providers(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
