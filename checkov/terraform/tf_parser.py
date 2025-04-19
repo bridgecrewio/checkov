@@ -52,7 +52,7 @@ class TFParser:
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map: dict[str, dict[str, list[dict[str, Any]]] | None] = {}
-        self.external_variables_data: list[tuple[str, Any, str]] = []
+        self.external_variables_data: list[tuple[str, Any, str, bool]] = []
         self.temp_tf_definition: dict[str, Any] = {}
 
     def _init(self, directory: str,
@@ -526,19 +526,18 @@ class TFParser:
     def add_tfvars(self, module: Module, source: str) -> None:
         if not self.external_variables_data:
             return
-        for (var_name, default, path) in self.external_variables_data:
-            if ".tfvars" in path:
-                block = [{var_name: {"default": default}}]
+        for (var_name, default, path, explicit) in self.external_variables_data:
+            if explicit or ".tfvars" in path:
+                block = [{var_name: {"default": default, "explicit": explicit}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
     def add_tfvars_with_source_dir(self, module: Module, source: str, source_dir: str) -> None:
         if not self.external_variables_data:
             return
-        for var_name, default, path in self.external_variables_data:
-            if ".tfvars" in path:
-                if Path(source_dir) in Path(path).parents:
-                    block = [{var_name: {"default": default}}]
-                    module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
+        for var_name, default, path, explicit in self.external_variables_data:
+            if explicit or (".tfvars" in path and Path(source_dir) in Path(path).parents):
+                block = [{var_name: {"default": default, "explicit": explicit}}]
+                module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
     def get_dirname(self, path: TFDefinitionKey) -> str:
         file_path = path.file_path
@@ -579,7 +578,7 @@ class TFParser:
 
                     default_value = var_definition.get("default")
                     if default_value is not None and isinstance(default_value, list):
-                        self.external_variables_data.append((var_name, default_value[0], file))
+                        self.external_variables_data.append((var_name, default_value[0], file, False))
 
     def handle_variables(
             self,
@@ -605,38 +604,43 @@ class TFParser:
                 hcl_tfvars = file
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
                 auto_vars_files.append(file)
-            elif vars_files and file.path in vars_files:
-                explicit_var_files.append(file)
             elif file.name.endswith(".tf") or file.name.endswith('.hcl'):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
         for key, value in self.env_vars.items():
             if not key.startswith("TF_VAR_"):
                 continue
-            self.external_variables_data.append((key[7:], value, f"env:{key}"))
+            self.external_variables_data.append((key[7:], value, f"env:{key}", True))
         if hcl_tfvars:  # terraform.tfvars
             data = load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, clean_definitions=False)
             if data:
-                self.external_variables_data.extend([(k, safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
+                self.external_variables_data.extend([(k, safe_index(v, 0), hcl_tfvars.path, False) for k, v in data.items()])
         if json_tfvars:  # terraform.tfvars.json
             data = load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
-                self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
+                self.external_variables_data.extend([(k, v, json_tfvars.path, False) for k, v in data.items()])
 
         auto_var_files_to_data = self._load_files(auto_vars_files)
         for var_file, data in sorted(auto_var_files_to_data, key=lambda x: x[0]):
             if data:
-                self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
+                self.external_variables_data.extend([(k, v, var_file, False) for k, v in data.items()])
 
-        explicit_var_files_to_data = self._load_files(explicit_var_files)
-        # it's possible that os.scandir returned the var files in a different order than they were specified
         if vars_files:
-            for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
+            for f in [Path(x).resolve() for x in vars_files]:
+                if str(f) in [x[2] for x in self.external_variables_data]:
+                    continue
+                for ent in os.scandir(f.parent):
+                    if not ent.is_file() or Path(ent.path).resolve() != f:
+                        continue
+                    explicit_var_files.append(ent)
+                    break
+
+            for var_file, data in self._load_files(explicit_var_files):
                 if data:
-                    self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
+                    self.external_variables_data.extend([(k, v, var_file, True) for k, v in data.items()])
 
         if specified_vars:  # specified
-            self.external_variables_data.extend([(k, v, "manual specification") for k, v in specified_vars.items()])
+            self.external_variables_data.extend([(k, v, "manual specification", False) for k, v in specified_vars.items()])
 
         return tf_files_to_load
 
