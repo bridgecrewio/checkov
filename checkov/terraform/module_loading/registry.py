@@ -7,6 +7,7 @@ from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
 
@@ -42,15 +43,25 @@ information, see `loader.ModuleLoader.load`.
         """
         if source is None:
             return None
-
         if module_address is None:
             module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
             logging.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
-        else:
-            logging.debug(f'Cache miss for {module_address}')
 
+        # If we have tf managed modules, we likely have whatever :latest is in the cache
+        if convert_str_to_bool(os.getenv('CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', True)):
+            if source_version == 'latest':
+                vers = sorted([k.rsplit(':', 1)[1] for k in self.module_content_cache.keys() if k.startswith(f'{source}:')])
+                if vers:
+                    logging.debug(f'Used the cache for module {module_address}')
+                    return self.module_content_cache[f'{source}:{vers[-1]}']
+                vers = sorted([k.rsplit(':', 1)[1] for k in self.module_content_cache.keys() if k.startswith(f'registry.terraform.io/{source}:')])
+                if vers:
+                    logging.debug(f'Used the cache for module (from tf registry) {module_address}')
+                    return self.module_content_cache[f'registry.terraform.io/{source}:{vers[-1]}']
+
+        logging.debug(f'Cache miss for {module_address}')
         if os.name == 'nt':
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
             # https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
