@@ -1,0 +1,75 @@
+Resources:
+  ExampleLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: example_lambda_function
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
+
+  ValidLambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref ExampleLambdaFunction
+      Cors:
+        AllowOrigins:
+          - https://example.com
+        AllowMethods:
+          - GET
+          - POST
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ValidLambdaUrlNoCorsDefinition:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref ExampleLambdaFunction
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ValidLambdaUrlOnlyOriginsStar:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref ExampleLambdaFunction
+      Cors:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ValidLambdaUrlOnlyMethodsStar:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref ExampleLambdaFunction
+      Cors:
+        AllowOrigins:
+          - https://example.com
+        AllowMethods:
+          - "*"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  InvalidLambdaUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      FunctionName: !Ref ExampleLambdaFunction
+      Cors:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - "*"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ExampleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: example_role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
