@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.406...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.407...HEAD)
+
+## [3.2.407](https://github.com/bridgecrewio/checkov/compare/3.2.406...3.2.407) - 2025-04-21
+
+### Feature
+
+- **terraform:** Add new check and update old around cipher suites - [#7108](https://github.com/bridgecrewio/checkov/pull/7108)
 
 ## [3.2.406](https://github.com/bridgecrewio/checkov/compare/3.2.404...3.2.406) - 2025-04-17
 
