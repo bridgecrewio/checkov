@@ -1,5 +1,5 @@
 Resources:
-  ExampleLambdaFunction:
+  ValidLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: example_lambda_function
@@ -13,7 +13,7 @@ Resources:
   ValidLambdaUrl:
     Type: AWS::Lambda::Url
     Properties:
-      FunctionName: !Ref ExampleLambdaFunction
+      FunctionName: !Ref ValidLambdaFunction
       Cors:
         AllowOrigins:
           - https://example.com
@@ -21,17 +21,39 @@ Resources:
           - GET
           - POST
       ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ValidLambdaFunctionNoCorsDefinition:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: example_lambda_function
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
 
   ValidLambdaUrlNoCorsDefinition:
     Type: AWS::Lambda::Url
     Properties:
-      FunctionName: !Ref ExampleLambdaFunction
+      FunctionName: !Ref ValidLambdaFunctionNoCorsDefinition
       ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+
+  ValidLambdaFunctionOnlyOriginsStar:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: example_lambda_function
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
 
   ValidLambdaUrlOnlyOriginsStar:
     Type: AWS::Lambda::Url
     Properties:
-      FunctionName: !Ref ExampleLambdaFunction
+      FunctionName: !Ref ValidLambdaFunctionOnlyOriginsStar
       Cors:
         AllowOrigins:
           - "*"
@@ -40,10 +62,21 @@ Resources:
           - POST
       ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
 
+  ValidLambdaFunctionOnlyMethodsStar:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: example_lambda_function
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
+
   ValidLambdaUrlOnlyMethodsStar:
     Type: AWS::Lambda::Url
     Properties:
-      FunctionName: !Ref ExampleLambdaFunction
+      FunctionName: !Ref ValidLambdaFunctionOnlyMethodsStar
       Cors:
         AllowOrigins:
           - https://example.com
@@ -51,10 +84,21 @@ Resources:
           - "*"
       ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
 
+  InvalidLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: example_lambda_function
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
+
   InvalidLambdaUrl:
     Type: AWS::Lambda::Url
     Properties:
-      FunctionName: !Ref ExampleLambdaFunction
+      FunctionName: !Ref InvalidLambdaFunction
       Cors:
         AllowOrigins:
           - "*"

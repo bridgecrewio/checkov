@@ -9,7 +9,7 @@ definition:
     - cond_type: "filter"
       attribute: "resource_type"
       value:
-        - "AWS::Lambda::Url"
+        - "AWS::Lambda::Function"
       operator: "within"
     - cond_type: "connection"
       operator: "exists"

@@ -1,10 +1,10 @@
 pass:
-  - "AWS::Lambda::Url.ValidLambdaUrl"
-  - "AWS::Lambda::Url.ValidLambdaUrlNoCorsDefinition"
-  - "AWS::Lambda::Url.ValidLambdaUrlOnlyOriginsStar"
-  - "AWS::Lambda::Url.ValidLambdaUrlOnlyMethodsStar"
+  - "AWS::Lambda::Function.ValidLambdaFunction"
+  - "AWS::Lambda::Function.ValidLambdaFunctionNoCorsDefinition"
+  - "AWS::Lambda::Function.ValidLambdaFunctionOnlyOriginsStar"
+  - "AWS::Lambda::Function.ValidLambdaFunctionOnlyMethodsStar"
 fail:
-  - "AWS::Lambda::Url.InvalidLambdaUrl"
+  - "AWS::Lambda::Function.InvalidLambdaFunction"
 evaluated_keys:
   - Cors/AllowMethods
   - Cors/AllowOrigins
