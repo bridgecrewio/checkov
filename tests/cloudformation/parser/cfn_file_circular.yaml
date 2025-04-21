@@ -1,0 +1,13 @@
+---
+service: api-services
+provider:
+  name: aws
+  stage: ${sls:stage}
+  runtime: nodejs20.x
+  region: 'us-east-1'
+  iamManagedPolicies:
+    - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
+resources:
+  - ${file(./cfn_file_circular.yaml)}
+
