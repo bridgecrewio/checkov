@@ -117,7 +117,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
 
             logging.info("Creating Serverless graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info("Successfully created Serverless graph")
+            logging.info(f'Successfully created Serverless graph ({len(local_graph.vertices)} vertices)')
 
             self.graph_manager.save_graph(local_graph)
             self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
@@ -204,6 +204,8 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             entity = EntityDetails(sls_context_parser.provider_type, item_content)
             results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
             tags = get_resource_tags(entity, registry)
+            fname = Path(sls_context_parser.file(item_content)).resolve()
+
             if results:
                 for check, check_result in results.items():
                     censored_code_lines = omit_secret_value_from_checks(
@@ -218,7 +220,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         check_name=check.name,
                         check_result=check_result,
                         code_block=censored_code_lines,
-                        file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                        file_path=self.extract_file_path_from_abs_path(fname),
                         file_line_range=entity_lines_range or [0, 0],
                         resource=token,
                         evaluations=variable_evaluations,
@@ -265,6 +267,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                     entity = EntityDetails(sls_context_parser.provider_type, item_content)
                     results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                     tags = get_resource_tags(entity, registry)
+                    fname = Path(sls_context_parser.file(item_content)).resolve()
                     if results:
                         for check, check_result in results.items():
                             censored_code_lines = omit_secret_value_from_checks(
@@ -276,7 +279,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                             )
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                             code_block=censored_code_lines,
-                                            file_path=self.extract_file_path_from_abs_path(Path(sls_file)),
+                                            file_path=self.extract_file_path_from_abs_path(fname),
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__,
