@@ -1,4 +1,14 @@
 Resources:
+  ValidLambdaFunctionWithoutUrl:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Role: !GetAtt ExampleRole.Arn
+      Code:
+        S3Bucket: example-bucket
+        S3Key: lambda_function_payload.zip
+
   ValidLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:

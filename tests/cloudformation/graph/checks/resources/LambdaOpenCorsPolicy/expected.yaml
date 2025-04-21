@@ -1,5 +1,6 @@
 pass:
   - "AWS::Lambda::Function.ValidLambdaFunction"
+  - "AWS::Lambda::Function.ValidLambdaFunctionWithoutUrl"
   - "AWS::Lambda::Function.ValidLambdaFunctionNoCorsDefinition"
   - "AWS::Lambda::Function.ValidLambdaFunctionOnlyOriginsStar"
   - "AWS::Lambda::Function.ValidLambdaFunctionOnlyMethodsStar"

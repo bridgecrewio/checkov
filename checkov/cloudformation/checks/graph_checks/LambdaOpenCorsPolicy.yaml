@@ -11,22 +11,30 @@ definition:
       value:
         - "AWS::Lambda::Function"
       operator: "within"
-    - cond_type: "connection"
-      operator: "exists"
-      resource_types:
-        - "AWS::Lambda::Function"
-      connected_resource_types:
-        - "AWS::Lambda::Url"
     - or:
-      - cond_type: "attribute"
-        resource_types:
-          - "AWS::Lambda::Url"
-        attribute: "Cors.AllowOrigins"
-        operator: "not_contains"
-        value: "*"
-      - cond_type: "attribute"
-        resource_types:
-          - "AWS::Lambda::Url"
-        attribute: "Cors.AllowMethods"
-        operator: "not_contains"
-        value: "*"
+        - cond_type: "connection"
+          operator: "not_exists"
+          resource_types:
+            - "AWS::Lambda::Function"
+          connected_resource_types:
+            - "AWS::Lambda::Url"
+        - and:
+          - cond_type: "connection"
+            operator: "exists"
+            resource_types:
+              - "AWS::Lambda::Function"
+            connected_resource_types:
+              - "AWS::Lambda::Url"
+          - or:
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::Lambda::Url"
+              attribute: "Cors.AllowOrigins"
+              operator: "not_contains"
+              value: "*"
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::Lambda::Url"
+              attribute: "Cors.AllowMethods"
+              operator: "not_contains"
+              value: "*"

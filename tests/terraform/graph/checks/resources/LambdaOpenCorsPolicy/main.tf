@@ -10,6 +10,14 @@ resource "aws_lambda_function" "valid_lambda_function" {
   filename      = "lambda_function_payload.zip"
 }
 
+resource "aws_lambda_function" "valid_lambda_function_without_url" {
+  function_name = "example_lambda_function"
+  handler       = "index.handler"
+  runtime       = "nodejs14.x"
+  role          = aws_iam_role.example_role.arn
+  filename      = "lambda_function_payload.zip"
+}
+
 resource "aws_lambda_function_url" "valid_lambda_function_url" {
   function_name = aws_lambda_function.valid_lambda_function.function_name
   cors {
