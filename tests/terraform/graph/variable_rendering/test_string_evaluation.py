@@ -522,7 +522,6 @@ class TestTerraformEvaluation(TestCase):
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
     [
-
         ("${lookup({'a': ${local.protocol1}},\"a\",\"https\")}", '${local.protocol1}', 'local.protocol1', "'local.protocol1'"),
         ('${length(keys(var.identity)) > 0 ? [${var.identity}] : []}', '${var.identity}', 'var.identity', 'var.identity'),
     ],
@@ -545,7 +544,7 @@ def test_evaluate_range_pattern() -> None:
 
 
 EVAL_DANGEROUS_INPUTS = [
-    ("unicode_characters", "[x for x in {}._﹎class_﹎._﹎bases_﹎[0]._﹎subclasses_﹎() if x._﹎name_﹎ == 'catch_warnings'][0]()._module._﹎builtins_﹎['_'+'_import_'+'_']('os').system('date >> /tmp/unicode-example')"),
+    ("unicode_characters", "[{}._﹎class_﹎._﹎bases_﹎[0]._﹎subclasses_﹎()]"),
     ("generators_to_bypass_protections_code", "((gen:=(gen_list[0].gi_frame.f_back.f_back.f_globals for _ in [1,]),v:=gen_list.append(gen), gen_list[0])[2] for gen_list in [[]]).send(None).send(None).get('_'+'_builtins_'+'_')['_'+'_import_'+'_']('os').system('date >> /tmp/gen-example')"),
     ("system command", "__import__('os').system('rm -rf /')"),
     ("read passwd", "open('/etc/passwd').read()"),
