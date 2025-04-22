@@ -7,7 +7,7 @@ import pytest
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
-from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, asteval
 
 
 class TestTerraformEvaluation(TestCase):
@@ -542,3 +542,27 @@ def test_evaluate_range_pattern() -> None:
 
     # Test non-range pattern for comparison
     assert evaluate("1+1") == 2
+
+
+EVAL_DANGEROUS_INPUTS = [
+    ("unicode_characters", "[x for x in {}._﹎class_﹎._﹎bases_﹎[0]._﹎subclasses_﹎() if x._﹎name_﹎ == 'catch_warnings'][0]()._module._﹎builtins_﹎['_'+'_import_'+'_']('os').system('date >> /tmp/unicode-example')"),
+    ("generators_to_bypass_protections_code", "((gen:=(gen_list[0].gi_frame.f_back.f_back.f_globals for _ in [1,]),v:=gen_list.append(gen), gen_list[0])[2] for gen_list in [[]]).send(None).send(None).get('_'+'_builtins_'+'_')['_'+'_import_'+'_']('os').system('date >> /tmp/gen-example')"),
+    ("system command", "__import__('os').system('rm -rf /')"),
+    ("read passwd", "open('/etc/passwd').read()"),
+    ("access builtins", "__builtins__.__import__('os').listdir('.')"),
+    ("exec call", "exec('print(123)')"),
+    ("create file", "__import__('os').popen('touch /tmp/hacked').read()"),
+    ("subclasses", "().__class__.__bases__[0].__subclasses__()"),
+    ("socket connection", "__import__('socket').socket().connect(('example.com', 80))"),
+    ("lambda trick", "(lambda f: f('ls'))(__import__('os').system)")
+]
+
+
+@pytest.mark.parametrize("description, input_str", EVAL_DANGEROUS_INPUTS)
+def test_evaluate_malicious_code(description: str, input_str: str)-> None:
+    expected = input_str
+    result = evaluate(input_str)
+    assert result == expected
+
+    asteval(input_str)
+    assert asteval.error
