@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure no open CORS policy"
-  id: "CKV2_AWS_74"
+  id: "CKV2_AWS_75"
   category: "NETWORKING"
 scope:
   provider: "aws"
