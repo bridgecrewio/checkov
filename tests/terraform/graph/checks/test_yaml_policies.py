@@ -574,6 +574,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_LBWeakCiphers(self):
         self.go("LBWeakCiphers")
 
+    def test_LambdaOpenCorsPolicy(self):
+        self.go("LambdaOpenCorsPolicy")
+
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
