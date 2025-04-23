@@ -7,7 +7,7 @@ import pytest
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
-from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, asteval
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, get_asteval
 
 
 class TestTerraformEvaluation(TestCase):
@@ -536,7 +536,7 @@ def test_evaluate_range_pattern() -> None:
 
     # Test range pattern
     assert evaluate("1-10") == "1-10"
-    assert evaluate("5-25") == "5-25"
+    assert evaluate("5-25")== "5-25"
     assert evaluate("10-5") == 5
 
     # Test non-range pattern for comparison
@@ -560,8 +560,9 @@ EVAL_DANGEROUS_INPUTS = [
 @pytest.mark.parametrize("description, input_str", EVAL_DANGEROUS_INPUTS)
 def test_evaluate_malicious_code(description: str, input_str: str)-> None:
     expected = input_str
-    result = evaluate(input_str)
+    result = evaluate_terraform(input_str)
     assert result == expected
 
+    asteval = get_asteval()
     asteval(input_str)
     assert asteval.error
