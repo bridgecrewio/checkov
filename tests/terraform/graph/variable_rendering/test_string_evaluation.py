@@ -518,6 +518,17 @@ class TestTerraformEvaluation(TestCase):
         result = evaluate_terraform(input_str)
         self.assertEqual(expected, result)
 
+    def test_empty_string(self):
+        input_str = "   "
+        expected = input_str
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
+        input_str = ""
+        expected = input_str
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
