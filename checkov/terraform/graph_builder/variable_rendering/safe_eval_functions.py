@@ -366,27 +366,6 @@ def get_asteval() -> Interpreter:
         use_numpy=False
     )
 
-def evaluate2(input_str: str) -> Any:
-    count_underscores = input_str.count("__")
-    # We are operating under the assumption that the function name will start and end with "__", ensuring that we have at least two of them
-    if count_underscores >= 2:
-        logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
-        return input_str
-    if input_str == "...":
-        # don't create an Ellipsis object
-        return input_str
-    if input_str.startswith("try"):
-        # As `try` is a saved word in python, we can't override it like other functions as `eval` won't accept it.
-        # Instead, we are manually replacing this string with our own custom string, so we can pass it to `eval`.
-
-        # Don't use str.replace to make sure we replace just the first occurrence
-        input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
-    if RANGE_PATTERN.match(input_str):
-        temp_eval = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
-        evaluated = input_str if temp_eval < 0 else temp_eval
-    else:
-        evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
-    return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 def evaluate(input_str: str) -> Any:
     """
