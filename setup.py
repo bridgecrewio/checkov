@@ -108,6 +108,7 @@ setup(
         "license-expression<31.0.0,>=30.1.0",
         "rustworkx>=0.13.0,<1.0.0",
         "pydantic<3.0.0,>=2.0.0",
+        "asteval==1.0.5"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
