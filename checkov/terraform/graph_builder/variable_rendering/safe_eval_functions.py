@@ -358,12 +358,10 @@ SAFE_EVAL_DICT["formatdate"] = formatdate
 
 def get_asteval() -> Interpreter:
     # asteval provides a safer environment for evaluating expressions by restricting the operations to a secure subset, significantly reducing the risk of executing malicious code.
-    symtable = make_symbol_table(minimal=True, **SAFE_EVAL_DICT)
-    symtable.pop('__builtins__', None)
-    symtable.pop('open', None)
     return Interpreter(
-        symtable=symtable,
-        use_numpy=False
+        symtable=SAFE_EVAL_DICT,
+        use_numpy=False,
+        minimal=True
     )
 
 

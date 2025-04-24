@@ -86,7 +86,7 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
     try:
         result = evaluate(input_str)
         if result is None:
-            raise AssertionError()
+            raise Exception(f"Can't evaluate {input_str}")
         return result  # type:ignore[arg-type]
     except Exception:
         try:
