@@ -108,7 +108,6 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
                     return input_str
 
 
-
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
     if original_str is None or type(original_str) not in (str, list):
         return original_str
