@@ -102,7 +102,7 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
             except Exception:
                 try:
                     # Remove trailing commas before } or ]
-                    input_str_no_trailing = re.sub(r',(\s*[}\]])', r'\1', input_str)
+                    input_str_no_trailing = re.sub(r',(\s*[}\]])', r'\1', input_str)  # type:ignore[arg-type]
                     return json.loads(input_str_no_trailing)
                 except Exception:
                     return input_str
