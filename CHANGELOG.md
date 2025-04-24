@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.407...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.408...HEAD)
+
+## [3.2.408](https://github.com/bridgecrewio/checkov/compare/3.2.407...3.2.408) - 2025-04-24
+
+### Feature
+
+- **terraform:** Over permissive Lambda Cors check (Terraform & Cloudformation) - [#7113](https://github.com/bridgecrewio/checkov/pull/7113)
+
+### Bug Fix
+
+- **general:** base_runner: Properly escape excluded directories that begin with '.' - [#7112](https://github.com/bridgecrewio/checkov/pull/7112)
 
 ## [3.2.407](https://github.com/bridgecrewio/checkov/compare/3.2.406...3.2.407) - 2025-04-21
 
