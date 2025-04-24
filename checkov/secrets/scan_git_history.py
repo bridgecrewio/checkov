@@ -74,7 +74,7 @@ class GitHistoryScanner:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
             return False
         # else: everything was OK
-        return
+        return scanned
 
     @time_it
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
@@ -103,7 +103,7 @@ class GitHistoryScanner:
                                          maxQueueSize: int = 100) -> bool:
         commits = get_commits(self.repo, last_commit_scanned)
         GitHistoryScanner.commits_count = len(commits)
-        commits_diff_iter = get_commits_diff_iter(self.repo, self.root_folder, commits, last_commit_scanned == '')
+        commits_diff_iter = get_commits_diff_iter(self.repo, self.root_folder, commits, not last_commit_scanned)
         q: queue.Queue[Union[object, Commit]] = queue.Queue(maxsize=maxQueueSize)
         lock = threading.Lock()
 
@@ -133,6 +133,7 @@ class GitHistoryScanner:
         if not self.raw_store:  # scanned nothing
             return False
 
+        self.raw_store.sort(key=lambda rs: rs["commit"].metadata.committed_datetime)  # order the findings by datetime
         self._process_raw_store()
         return True
 
@@ -148,6 +149,7 @@ class GitHistoryScanner:
                 q.task_done()
                 break
 
+            assert isinstance(commits_diff, Commit)
             results, scanned_file_count = GitHistoryScanner._run_scan_one_commit(commits_diff)
             with lock:
                 for result in results:
@@ -285,7 +287,7 @@ class GitHistoryScanner:
 
 def set_repo(root_folder: str) -> Optional[Repo]:
     if root_folder == "":
-        logging.warning(f"Invalid root folder specified")
+        logging.warning("Invalid root folder specified")
         return None
 
     if git_import_error is not None:
@@ -380,7 +382,7 @@ def get_commits_diff_iter(repo: Repo, root_folder: str, git_commits: List[GitCom
             if not curr_diff.is_empty():
                 yield curr_diff
 
-        except TimeoutException as e:
+        except TimeoutException:
             logging.error(f"stopped while getting commits diff, iteration: {previous_commit_idx}")
             return
         except Exception as err:
