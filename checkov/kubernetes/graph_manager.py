@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
@@ -22,9 +22,9 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
         source_dir: str,
         local_graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
         render_variables: bool = True,
-        parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
+        parsing_errors: Optional[dict[str, Exception]] = None,
+        download_external_modules: Optional[bool] = False,
+        excluded_paths: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[KubernetesLocalGraph, dict[str, list[dict[str, Any]]]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)

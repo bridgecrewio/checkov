@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.serverless.graph_builder.local_graph import ServerlessLocalGraph
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -20,9 +20,9 @@ class ServerlessGraphManager(GraphManager[ServerlessLocalGraph, "dict[str, dict[
         source_dir: str,
         local_graph_class: type[ServerlessLocalGraph] = ServerlessLocalGraph,
         render_variables: bool = False,
-        parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
+        parsing_errors: Optional[dict[str, Exception]] = None,
+        download_external_modules: Optional[bool] = False,
+        excluded_paths: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[ServerlessLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)

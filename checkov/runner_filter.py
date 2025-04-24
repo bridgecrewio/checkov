@@ -35,7 +35,7 @@ class RunnerFilter(object):
             checks: Union[str, List[str], None] = None,
             skip_checks: Union[str, List[str], None] = None,
             include_all_checkov_policies: bool = True,
-            download_external_modules: bool = False,
+            download_external_modules: Optional[bool] = False,
             external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
             evaluate_variables: bool = True,
             runners: Optional[List[str]] = None,
@@ -360,8 +360,6 @@ class RunnerFilter(object):
         if include_all_checkov_policies is None:
             include_all_checkov_policies = True
         download_external_modules = obj.get('download_external_modules')
-        if download_external_modules is None:
-            download_external_modules = False
         external_modules_download_path = obj.get('external_modules_download_path')
         if external_modules_download_path is None:
             external_modules_download_path = DEFAULT_EXTERNAL_MODULES_DIR

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 from checkov.common.graph.graph_manager import GraphManager
@@ -20,9 +20,9 @@ class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[s
         source_dir: str,
         local_graph_class: type[ObjectLocalGraph] = ObjectLocalGraph,
         render_variables: bool = True,
-        parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
+        parsing_errors: Optional[dict[str, Exception]] = None,
+        download_external_modules: Optional[bool] = False,
+        excluded_paths: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[ObjectLocalGraph, dict[str | Path, dict[str, Any] | list[dict[str, Any]]]]:
         definitions = local_graph_class.get_files_definitions(root_folder=source_dir)
