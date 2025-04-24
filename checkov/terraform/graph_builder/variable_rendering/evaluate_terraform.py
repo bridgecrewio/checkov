@@ -84,10 +84,10 @@ def _eval_merge_as_list(eval_value: Any) -> Any:
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
     try:
-        result = evaluate(input_str)
+        result = evaluate(input_str)  # type:ignore[arg-type]
         if result is None:
             raise Exception(f"Can't evaluate {input_str}")
-        return result  # type:ignore[arg-type]
+        return result
     except Exception:
         try:
             return evaluate(f'"{input_str}"')

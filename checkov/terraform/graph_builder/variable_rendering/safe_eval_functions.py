@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
-from asteval import Interpreter, make_symbol_table
+from asteval import Interpreter
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
