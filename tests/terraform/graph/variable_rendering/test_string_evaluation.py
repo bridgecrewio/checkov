@@ -1,4 +1,6 @@
+import codecs
 import os
+import re
 from unittest import TestCase, mock
 from datetime import datetime
 
@@ -577,3 +579,18 @@ def test_evaluate_malicious_code(description: str, input_str: str)-> None:
     asteval = get_asteval()
     asteval(input_str)
     assert asteval.error
+
+
+def test_dict():
+    expected = {'Statement': [{'Action': ['lambda:CreateFunction', 'lambda:CreateEventSourceMapping', 'dynamodb:CreateTable'], 'Effect': 'Allow', 'Resource': '*'}], 'Version': '2012-10-17'}
+    input_str = '  {    "Version": "2012-10-17",    "Statement": [      {        "Effect": "Allow",        "Action": [          "lambda:CreateFunction",          "lambda:CreateEventSourceMapping",          "dynamodb:CreateTable",        ],        "Resource": "*"      }    ]  }'
+    # ev_old = evaluate(input_str)
+
+    s = codecs.decode(input_str, 'unicode_escape')
+
+    # Remove trailing commas before } or ]
+    s = re.sub(r',(\s*[}\]])', r'\1', s)
+    ev_new = evaluate_terraform(input_str)
+    asteval = get_asteval()
+    evaluated = asteval(input_str)
+    assert input_str == expected
