@@ -583,7 +583,6 @@ def test_evaluate_malicious_code(description: str, input_str: str)-> None:
     expected = input_str
     result = evaluate_terraform(input_str)
     assert result == expected
-
     asteval = get_asteval()
     asteval(input_str)
     assert asteval.error
