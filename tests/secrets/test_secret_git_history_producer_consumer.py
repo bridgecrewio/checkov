@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+from typing import List
 from unittest import mock
 from pathlib import Path
 import shutil
@@ -16,16 +18,18 @@ from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
-from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, \
-    mock_git_repo_commits3, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
-    mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
-    mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
-    mock_git_repo_multiline_yml, mock_commit_with_keyword_combinator, mock_set_repo, mock_get_first_commit, \
-    mock_get_first_empty_commit, mock_run_forever
+from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, mock_git_repo_commits3, \
+    mock_set_repo, mock_get_first_commit, mock_get_first_empty_commit, mock_run_forever, mock_get_commits, \
+    mock_get_commits_diff_iter1, mock_get_commits_diff_iter2, mock_get_commits_diff_iter3, \
+    mock_get_commits_diff_remove_file, mock_get_commits_diff_rename_file, mock_get_commits_diff_iter_keyword_combinator, \
+    mock_get_commits_diff_iter_modify_and_rename_file, mock_get_commits_diff_iter_remove_file_with_two_equal_secret, \
+    mock_get_commits_diff_iter_remove_file_with_two_secret, mock_get_commits_diff_iter_multiline_json, \
+    mock_get_commits_diff_iter_multiline_terraform, mock_get_commits_diff_iter_multiline_yml
 
 
-
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter1)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history() -> None:
@@ -47,7 +51,9 @@ def test_scan_git_history() -> None:
         assert failed_check.added_date
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter1)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_history_secrets() -> None:
@@ -67,7 +73,9 @@ def test_scan_history_secrets() -> None:
     assert len(secrets.data) == 3
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits2)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter2)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_merge_added_removed() -> None:
@@ -88,7 +96,9 @@ def test_scan_git_history_merge_added_removed() -> None:
         assert failed_check.added_date
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits2)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter2)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_history_secrets_merge_added_removed() -> None:
@@ -108,7 +118,9 @@ def test_scan_history_secrets_merge_added_removed() -> None:
     assert len(secrets.data) == 1
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits3)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter3)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_merge_added_removed2() -> None:
@@ -123,7 +135,7 @@ def test_scan_git_history_merge_added_removed2() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 5
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-            and report.failed_checks[0].removed_date
+             and report.failed_checks[0].removed_date
              and report.failed_checks[1].removed_commit_hash == '')
             or (report.failed_checks[1].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
                 and report.failed_checks[1].removed_date
@@ -149,8 +161,8 @@ def test_scan_git_history_merge_added_removed2() -> None:
 # this test is too flaky !
 # @pytest.mark.filterwarnings("error")  # otherwise pytest sometimes suppresses the raised Timeout Exception
 # @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
-# @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-# @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+# @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
+# @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 # def test_scan_history_secrets_timeout() -> None:
 #     """
 #     add way too many cases to check in 1 second
@@ -171,8 +183,9 @@ def test_scan_git_history_merge_added_removed2() -> None:
 #
 #     assert finished is False
 
-
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_run_forever)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_run_forever)
 def test_scan_history_secrets_timeout() -> None:
     """
     add way too many cases to check in 1 second
@@ -194,8 +207,9 @@ def test_scan_history_secrets_timeout() -> None:
     assert finished is False
 
 
-
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_remove_file)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_remove_file)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_remove_file() -> None:
@@ -212,7 +226,9 @@ def test_scan_git_history_remove_file() -> None:
     assert report.failed_checks[0].removed_date
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_rename_file)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_rename_file)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_rename_file() -> None:
@@ -229,8 +245,10 @@ def test_scan_git_history_rename_file() -> None:
             report.failed_checks[1].added_commit_hash == 'adef7360b86c62666f0a70521214220763b9c593')
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff',
-            mock_git_repo_commits_modify_and_rename_file)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter',
+            mock_get_commits_diff_iter_modify_and_rename_file)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_modify_and_rename_file() -> None:
@@ -246,8 +264,10 @@ def test_scan_git_history_modify_and_rename_file() -> None:
     assert report.failed_checks[0].removed_date
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff',
-            mock_remove_file_with_two_equal_secret)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter',
+            mock_get_commits_diff_iter_remove_file_with_two_equal_secret)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
@@ -259,10 +279,14 @@ def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
 
     assert report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash
     assert report.failed_checks[1].removed_commit_hash
-    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[1].removed_date
+    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[
+        1].removed_date
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_remove_file_with_two_secret)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter',
+            mock_get_commits_diff_iter_remove_file_with_two_secret)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_rename_file_with_two_secrets() -> None:
@@ -273,17 +297,20 @@ def test_scan_git_history_rename_file_with_two_secrets() -> None:
     assert len(report.failed_checks) == 2
     report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash
     assert report.failed_checks[1].removed_commit_hash
-    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[1].removed_date
+    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[
+        1].removed_date
 
 
-def assert_for_commit_str(report_str: [str], commit_type: str, commit_hash: str, found: bool = True) -> None:
+def assert_for_commit_str(report_str: List[str], commit_type: str, commit_hash: str, found: bool = True) -> None:
     to_find = f'; {commit_type}: {commit_hash}'
     assert (to_find in report_str) == found
 
 
 # added all file scenarios from multiline tests
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff',
-            mock_git_repo_multiline_json)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter',
+            mock_get_commits_diff_iter_multiline_json)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_multiline_keyword_json() -> None:
@@ -298,7 +325,9 @@ def test_scan_git_history_multiline_keyword_json() -> None:
     assert report.skipped_checks == []
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_multiline_terraform)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter_multiline_terraform)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_multiline_keyword_terraform() -> None:
@@ -325,7 +354,9 @@ def test_scan_git_history_multiline_keyword_terraform() -> None:
     assert failing_resources == failed_check_resources
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_multiline_yml)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff_iter', mock_get_commits_diff_iter_multiline_yml)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
 def test_scan_git_history_multiline_keyword_yml() -> None:
@@ -340,13 +371,15 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
     assert report.skipped_checks == []
 
 
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
 def test_scan_git_history_full_vs_partial(mocker: MockerFixture) -> None:
     # this takes the 3 mock commits and run _test_it on them
     commits_func = [mock_git_repo_commits1('', ''), mock_git_repo_commits2('', ''), mock_git_repo_commits3('', '')]
     all([_test_it(mocker, commits) for commits in commits_func])
 
 
-def _test_it(mocker: MockerFixture, all_commits) -> bool:
+def _test_it(mocker: MockerFixture, all_commits: List[Commit]) -> bool:
     """
     this test tries to run a full scan over 5 commits,
     then run two separate runs over the first 2 and the last 3 (the second will give the secret store to the third)
@@ -354,7 +387,7 @@ def _test_it(mocker: MockerFixture, all_commits) -> bool:
     """
     valid_dir_path = "test"
     mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        "checkov.secrets.scan_git_history.get_commits_diff_iter",
         return_value=all_commits,
     )
     runner = Runner()
@@ -367,7 +400,7 @@ def _test_it(mocker: MockerFixture, all_commits) -> bool:
         assert failed_check.added_by and failed_check.added_date
 
     mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=all_commits[0:1])
+        "checkov.secrets.scan_git_history.get_commits_diff_iter", return_value=all_commits[0:1])
     runner2 = Runner()
     report2 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
                           runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
@@ -376,7 +409,7 @@ def _test_it(mocker: MockerFixture, all_commits) -> bool:
     sec_store2_dc = deepcopy(sec_store2)
 
     mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=all_commits[2:5])
+        "checkov.secrets.scan_git_history.get_commits_diff_iter", return_value=all_commits[2:5])
     runner3 = Runner()
     runner3.set_history_secret_store(sec_store2_dc)
     report3 = runner3.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -402,7 +435,7 @@ def test_scan_git_history_real_repo() -> None:
     dir_path = Path(__file__).parent / 'git_history/testing_repo'
     git_conf_dir = dir_path / 'git_to_change'
     tmp_git_conf_dir = dir_path / '.git'
-    shutil.rmtree(tmp_git_conf_dir, ignore_errors=True)    # make sure no left overs from prev run
+    shutil.rmtree(tmp_git_conf_dir, ignore_errors=True)  # make sure no left overs from prev run
     shutil.copytree(git_conf_dir, tmp_git_conf_dir)
 
     runner = Runner()
@@ -411,17 +444,18 @@ def test_scan_git_history_real_repo() -> None:
     assert len(report.failed_checks) == 2
     assert report.failed_checks[0].added_commit_hash and not report.failed_checks[0].removed_commit_hash
     assert report.failed_checks[0].added_date and not report.failed_checks[0].removed_date
-    assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash and report.failed_checks[1].removed_date
+    assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash and \
+           report.failed_checks[1].removed_date
     shutil.rmtree(tmp_git_conf_dir)  # just for cleaning
 
 
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch("checkov.secrets.scan_git_history.get_commits_diff_iter", mock_get_commits_diff_iter_keyword_combinator)
 @mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
 @mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
-def test_git_history_plugin(mocker: MockerFixture) -> None:
+def test_git_history_plugin() -> None:
     valid_dir_path = "test"
-    commits = mock_commit_with_keyword_combinator()
-    mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=commits)
     runner = Runner()
     report = runner.run(root_folder=str(valid_dir_path), external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
@@ -431,9 +465,11 @@ def test_git_history_plugin(mocker: MockerFixture) -> None:
     assert check.check_name == 'Base64 High Entropy String'
 
 
-@mock.patch("checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", lambda self, last_commit_sha: [])
-@mock.patch('checkov.secrets.scan_git_history.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.get_first_commit', mock_get_first_commit)
+@mock.patch.dict(os.environ, {"GIT_HISTORY_PRODUCER_CONSUMER": "1"})
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_get_commits)
+@mock.patch("checkov.secrets.scan_git_history.get_commits_diff_iter", lambda a, b, c, d: [])
+@mock.patch("checkov.secrets.scan_git_history.set_repo", mock_set_repo)
+@mock.patch("checkov.secrets.scan_git_history.get_first_commit", mock_get_first_commit)
 def test_scan_history_secrets_with_history_store_and_no_new_commit() -> None:
     # given
     root_folder = "test"
@@ -471,10 +507,10 @@ def test_scan_history_secrets_with_history_store_and_no_new_commit() -> None:
     from checkov.secrets.scan_git_history import GitHistoryScanner
 
     with transient_settings(
-        {
-            # Only run scans with only these plugins.
-            "plugins_used": plugins_used
-        }
+            {
+                # Only run scans with only these plugins.
+                "plugins_used": plugins_used
+            }
     ) as settings:
         settings.disable_filters(*["detect_secrets.filters.common.is_invalid_file"])
         GitHistoryScanner(root_folder=root_folder, secrets=secrets, history_store=history_store).scan_history()

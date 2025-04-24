@@ -4,7 +4,10 @@ import hashlib
 import logging
 import os
 import platform
-from typing import TYPE_CHECKING, Optional, List, Tuple, Union
+import queue
+import threading
+from typing import TYPE_CHECKING, Optional, List, Tuple, Union, Generator
+from concurrent.futures import ThreadPoolExecutor
 
 from detect_secrets.core import scan
 
@@ -20,7 +23,7 @@ if TYPE_CHECKING:
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
-    from git import Repo, Tree
+    from git import Repo, Tree, Commit as GitCommit
 
     git_import_error = None
 except ImportError as e:
@@ -28,6 +31,7 @@ except ImportError as e:
 
 MIN_SPLIT = 100
 FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md', '.svg', '.png', '.jpg') + PROHIBITED_FILES
+SENTINEL = object()
 
 
 class GitHistoryScanner:
@@ -51,27 +55,34 @@ class GitHistoryScanner:
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
-        is_repo_set = self.set_repo()  # for mocking purposes in testing
-        if not is_repo_set:
+        repo = set_repo(self.root_folder)  # for mocking purposes in testing
+        if repo is None:
             logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
             return False
+
+        self.repo = repo
+
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
-            scanned = self._scan_history(last_commit_scanned)
+            if os.getenv("GIT_HISTORY_PRODUCER_CONSUMER") == "1":
+                scanned = self._scan_history_producer_consumers(last_commit_scanned)
+            else:
+                scanned = self._scan_history(last_commit_scanned)
             self._create_secret_collection()
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
             return False
         # else: everything was OK
-        return scanned
+        return
 
+    @time_it
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         commits_diff: List[Commit] = []
         if not last_commit_scanned:
-            first_commit_diff = self._get_first_commit()
+            first_commit_diff = get_first_commit(self.repo, self.root_folder)
             if first_commit_diff:
-                commits_diff.append(self._get_first_commit())
+                commits_diff.append(first_commit_diff)
         commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
@@ -86,6 +97,66 @@ class GitHistoryScanner:
 
         self._process_raw_store()
         return True
+
+    @time_it
+    def _scan_history_producer_consumers(self, last_commit_scanned: Optional[str] = '',
+                                         maxQueueSize: int = 100) -> bool:
+        commits = get_commits(self.repo, last_commit_scanned)
+        GitHistoryScanner.commits_count = len(commits)
+        commits_diff_iter = get_commits_diff_iter(self.repo, self.root_folder, commits, last_commit_scanned == '')
+        q: queue.Queue[Union[object, Commit]] = queue.Queue(maxsize=maxQueueSize)
+        lock = threading.Lock()
+
+        num_consumers: int = min((os.cpu_count() or 4) * 2, 16)
+
+        with ThreadPoolExecutor(max_workers=num_consumers) as executor:
+            # Submit consumer tasks to the thread pool
+            consumer_futures = [executor.submit(self.consumer, q, self.raw_store, lock, i) for i in
+                                range(num_consumers)]
+
+            commit_diff_count = 0
+            for commit in commits_diff_iter:
+                q.put(commit)
+                commit_diff_count += 1
+            q.put(SENTINEL)
+            q.task_done()
+
+            # Wait for the queue to be fully processed
+            q.join()
+
+            # Wait for all consumers to finish
+            for future in consumer_futures:
+                future.result()
+
+        logging.info(f"[_scan_history] got {commit_diff_count} files diffs in {self.commits_count} commits")
+
+        if not self.raw_store:  # scanned nothing
+            return False
+
+        self._process_raw_store()
+        return True
+
+    @staticmethod
+    def consumer(q: queue.Queue[Union[object, Commit]], raw_store: List[RawStore], lock: threading.Lock,
+                 id: int) -> None:
+        logging.debug(f"Consumer {id} start.")
+
+        while True:
+            commits_diff = q.get()
+            if commits_diff is SENTINEL:
+                q.put(SENTINEL)
+                q.task_done()
+                break
+
+            results, scanned_file_count = GitHistoryScanner._run_scan_one_commit(commits_diff)
+            with lock:
+                for result in results:
+                    if result:
+                        raw_store.append(result)
+
+            q.task_done()
+
+        logging.debug(f"Consumer {id} received sentinel, ending.")
 
     def _process_raw_store(self) -> None:
         for raw_res in self.raw_store:
@@ -106,19 +177,6 @@ class GitHistoryScanner:
                 key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
                 self.secrets[key].add(secret_data["potential_secret"])
         logging.info(f"Created secret collection for {len(self.history_store.secrets_by_file_value_type)} secrets")
-
-    def set_repo(self, root_folder: str | None = None) -> bool:
-        if not root_folder:
-            root_folder = self.root_folder
-        if git_import_error is not None:
-            logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
-            return False
-        try:
-            self.repo = Repo(root_folder)
-            return True
-        except Exception as e:
-            logging.error(f"Folder {root_folder} is not a GIT project {e}")
-            return False
 
     def _get_commits_diff(self, last_commit_sha: Optional[str] = None) -> List[Commit]:
         """
@@ -167,7 +225,8 @@ class GitHistoryScanner:
 
                     base_diff_format = f'diff --git {self.root_folder}/{file_diff.a_path} {self.root_folder}/{file_diff.b_path}' \
                                        f'\nindex 0000..0000 0000\n--- {self.root_folder}/{file_diff.a_path}\n+++ {self.root_folder}/{file_diff.b_path}\n'
-                    curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + self.get_decoded_diff(file_diff.diff))
+                    curr_diff.add_file(filename=file_path,
+                                       commit_diff=base_diff_format + get_decoded_diff(file_diff.diff))
                 if not curr_diff.is_empty():
                     commits_diff.append(curr_diff)
             except TimeoutException:
@@ -223,43 +282,150 @@ class GitHistoryScanner:
             scanned_file_count += 1
         return results, scanned_file_count
 
-    @time_it
-    def _get_first_commit(self) -> Commit:
-        first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
-        first_commit = self.repo.commit(first_commit_sha)
-        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())  # nosec
-        empty_tree = Tree(self.repo, empty_tree_sha)
-        git_diff = empty_tree.diff(first_commit, create_patch=True)
 
-        first_commit_diff: Commit = Commit(
-            metadata=CommitMetadata(
-                commit_hash=first_commit.hexsha,
-                committer=first_commit.committer.name or '',
-                committed_datetime=first_commit.committed_datetime.isoformat()
-            )
-        )
+def set_repo(root_folder: str) -> Optional[Repo]:
+    if root_folder == "":
+        logging.warning(f"Invalid root folder specified")
+        return None
 
-        for file_diff in git_diff:
-            file_name: str = file_diff.b_path  # type:ignore
-            if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
-                continue
-            file_path = os.path.join(self.root_folder, file_name)
-            base_diff_format = f"--- ''\n+++ {file_path}\n"
-            full_diff_format = base_diff_format + self.get_decoded_diff(file_diff.diff)
-            first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
-        return first_commit_diff
+    if git_import_error is not None:
+        logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
+        return None
 
-    @staticmethod
-    def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
-        if diff is None:
-            return ''
+    try:
+        return Repo(root_folder)
+    except Exception as e:
+        logging.error(f"Folder {root_folder} is not a GIT project {e}")
+        return None
 
-        if isinstance(diff, str):
-            return diff
 
+@time_it
+def get_commits(repo: Repo, last_commit_sha: Optional[str] = None, branch: Optional[str] = None) -> List[GitCommit]:
+    logging.info("[get_commits_hashes] started")
+    if branch is None:
+        branch = repo.active_branch
+
+    if last_commit_sha:
+        curr_rev = repo.head.commit.hexsha
+        commits = list(repo.iter_commits(f"{last_commit_sha}..{curr_rev}"))
+        if commits[0].hexsha != last_commit_sha:
+            commits.insert(0, repo.commit(last_commit_sha))
+    else:
+        commits = list(repo.iter_commits(branch))
+
+    logging.info(f"[get_commits_hashes] ended with {len(commits)} commits")
+    return commits
+
+
+def get_commits_diff_iter(repo: Repo, root_folder: str, git_commits: List[GitCommit],
+                          is_full_scan: bool = True) -> Generator[Commit, None, None]:
+    """
+    :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
+    return the commits from the revision of param to the current head
+    """
+
+    commits_count = len(git_commits)
+
+    if is_full_scan:
+        yield get_first_commit(repo, root_folder)
+
+    for previous_commit_idx in range(commits_count - 1, 0, -1):
         try:
-            decoded_diff = diff.decode('utf-8')
-        except UnicodeDecodeError as ue:
-            logging.debug(f'failed decoding file diff, {ue}')
-            decoded_diff = diff.decode('utf-8', errors='ignore')
-        return decoded_diff
+            current_commit_idx = previous_commit_idx - 1
+            current_commit = git_commits[current_commit_idx]
+            previous_commit = git_commits[previous_commit_idx]
+
+            current_commit_hash = current_commit.hexsha
+            git_diff = previous_commit.diff(current_commit_hash, create_patch=True)
+
+            if not git_diff:
+                continue
+
+            curr_diff: Commit = Commit(
+                metadata=CommitMetadata(
+                    commit_hash=current_commit_hash,
+                    committer=current_commit.committer.name or '',
+                    committed_datetime=current_commit.committed_datetime.isoformat()
+                )
+            )
+
+            for file_diff in git_diff:
+                a_path = file_diff.a_path
+                b_path = file_diff.b_path
+                file_name: str = a_path if a_path else b_path  # type:ignore
+
+                if any(file_name.endswith(ext) for ext in FILES_TO_IGNORE_IN_GIT_HISTORY):
+                    continue
+
+                file_path = os.path.join(root_folder, file_name)
+
+                if file_diff.renamed_file:
+                    rename_from = file_diff.rename_from
+                    rename_to = file_diff.rename_to
+                    logging.debug(f"File was renamed from {rename_from} to {rename_to}")
+                    curr_diff.rename_file(
+                        file_path=file_path,
+                        prev_filename=rename_from or "",
+                        new_filename=rename_to or ""
+                    )
+                    continue
+
+                elif file_diff.deleted_file:
+                    logging.debug(f"File {a_path} was deleted")
+
+                base_diff_format = f'diff --git {root_folder}/{a_path} {root_folder}/{b_path}' \
+                                   f'\nindex 0000..0000 0000\n--- {root_folder}/{a_path}\n+++ {root_folder}/{b_path}\n'
+                curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + get_decoded_diff(file_diff.diff))
+
+            if not curr_diff.is_empty():
+                yield curr_diff
+
+        except TimeoutException as e:
+            logging.error(f"stopped while getting commits diff, iteration: {previous_commit_idx}")
+            return
+        except Exception as err:
+            logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {err}")
+            continue
+
+
+@time_it
+def get_first_commit(repo: Repo, root_folder: str) -> Commit:
+    first_commit_sha = repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
+    first_commit = repo.commit(first_commit_sha)
+    empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())  # nosec
+    empty_tree = Tree(repo, empty_tree_sha)
+    git_diff = empty_tree.diff(first_commit, create_patch=True)
+
+    first_commit_diff: Commit = Commit(
+        metadata=CommitMetadata(
+            commit_hash=first_commit.hexsha,
+            committer=first_commit.committer.name or '',
+            committed_datetime=first_commit.committed_datetime.isoformat()
+        )
+    )
+
+    for file_diff in git_diff:
+        file_name: str = file_diff.b_path  # type:ignore
+        if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+            continue
+        file_path = os.path.join(root_folder, file_name)
+        base_diff_format = f"--- ''\n+++ {file_path}\n"
+        full_diff_format = base_diff_format + get_decoded_diff(file_diff.diff)
+        first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
+    return first_commit_diff
+
+
+def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
+    if diff is None:
+        return ''
+
+    if isinstance(diff, str):
+        return diff
+
+    try:
+        decoded_diff = diff.decode('utf-8')
+    except UnicodeDecodeError as ue:
+        logging.debug(f'failed decoding file diff, {ue}')
+        decoded_diff = diff.decode('utf-8', errors='ignore')
+
+    return decoded_diff
