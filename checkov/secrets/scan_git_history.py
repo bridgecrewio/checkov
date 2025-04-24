@@ -149,8 +149,7 @@ class GitHistoryScanner:
                 q.task_done()
                 break
 
-            assert isinstance(commits_diff, Commit)
-            results, scanned_file_count = GitHistoryScanner._run_scan_one_commit(commits_diff)
+            results, scanned_file_count = GitHistoryScanner._run_scan_one_commit(commits_diff)  # type:ignore[arg-type]
             with lock:
                 for result in results:
                     if result:
