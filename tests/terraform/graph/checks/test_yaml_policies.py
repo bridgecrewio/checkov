@@ -511,7 +511,7 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureSynapseWorkspaceVAisEnabled(self):
         self.go("AzureSynapseWorkspaceVAisEnabled")
 
-    def test_IBM_AppLBforVPCisPrivate(self):
+    def test_IBM_LoadBalancerforVPCisPrivate(self):
         self.go("IBM_LoadBalancerforVPCisPrivate")
 
     def test_IBM_VPCclassicAccessIsDisabled(self):
@@ -567,6 +567,15 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_Route53ZoneHasMatchingQueryLog(self):
         self.go("Route53ZoneHasMatchingQueryLog")
+
+    def test_Route53ZoneEnableDNSSECSigning(self):
+        self.go("Route53ZoneEnableDNSSECSigning")
+
+    def test_LBWeakCiphers(self):
+        self.go("LBWeakCiphers")
+
+    def test_LambdaOpenCorsPolicy(self):
+        self.go("LambdaOpenCorsPolicy")
 
 
     def test_registry_load(self):

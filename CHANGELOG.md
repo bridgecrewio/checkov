@@ -1,6 +1,69 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.396...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.408...HEAD)
+
+## [3.2.408](https://github.com/bridgecrewio/checkov/compare/3.2.407...3.2.408) - 2025-04-24
+
+### Feature
+
+- **terraform:** Over permissive Lambda Cors check (Terraform & Cloudformation) - [#7113](https://github.com/bridgecrewio/checkov/pull/7113)
+
+### Bug Fix
+
+- **general:** base_runner: Properly escape excluded directories that begin with '.' - [#7112](https://github.com/bridgecrewio/checkov/pull/7112)
+
+## [3.2.407](https://github.com/bridgecrewio/checkov/compare/3.2.406...3.2.407) - 2025-04-21
+
+### Feature
+
+- **terraform:** Add new check and update old around cipher suites - [#7108](https://github.com/bridgecrewio/checkov/pull/7108)
+
+## [3.2.406](https://github.com/bridgecrewio/checkov/compare/3.2.404...3.2.406) - 2025-04-17
+
+### Bug Fix
+
+- **kustomize:** handle kustomize file with empty resources section - [#7109](https://github.com/bridgecrewio/checkov/pull/7109)
+
+## [3.2.404](https://github.com/bridgecrewio/checkov/compare/3.2.403...3.2.404) - 2025-04-14
+
+### Bug Fix
+
+- **terraform:** Fix for multiple checks - [#7097](https://github.com/bridgecrewio/checkov/pull/7097)
+
+## [3.2.403](https://github.com/bridgecrewio/checkov/compare/3.2.402...3.2.403) - 2025-04-10
+
+### Feature
+
+- **cloudformation:** Update Lambda Runtime checks - [#7065](https://github.com/bridgecrewio/checkov/pull/7065)
+
+## [3.2.402](https://github.com/bridgecrewio/checkov/compare/3.2.400...3.2.402) - 2025-04-08
+
+### Bug Fix
+
+- **terraform:** Change to valid name - [#7089](https://github.com/bridgecrewio/checkov/pull/7089)
+- **terraform:** CKV2_IBM_1 - ignore case for load balancer of type private_path - [#7010](https://github.com/bridgecrewio/checkov/pull/7010)
+- **terraform:** rename test FunctionAppsAccessibleOverHttps  - [#7085](https://github.com/bridgecrewio/checkov/pull/7085)
+
+### Documentation
+
+- **general:** Add install for debian - [#7083](https://github.com/bridgecrewio/checkov/pull/7083)
+
+## [3.2.400](https://github.com/bridgecrewio/checkov/compare/3.2.398...3.2.400) - 2025-04-07
+
+### Bug Fix
+
+- **general:** typos discovered by codespell - [#7012](https://github.com/bridgecrewio/checkov/pull/7012)
+- **terraform:** Update FunctionAppsAccessibleOverHttps - [#7084](https://github.com/bridgecrewio/checkov/pull/7084)
+
+## [3.2.398](https://github.com/bridgecrewio/checkov/compare/3.2.397...3.2.398) - 2025-04-06
+
+### Bug Fix
+
+- **general:** handle connected_node tuple in CustomJSONEncoder for json report (#7062) - [#7063](https://github.com/bridgecrewio/checkov/pull/7063)
+
+## [3.2.397](https://github.com/bridgecrewio/checkov/compare/3.2.396...3.2.397) - 2025-04-04
+
+- no noteworthy changes
 
 ## [3.2.396](https://github.com/bridgecrewio/checkov/compare/3.2.395...3.2.396) - 2025-04-01
 

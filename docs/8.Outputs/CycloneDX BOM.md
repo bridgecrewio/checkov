@@ -312,7 +312,7 @@ SCA
 - `group`: Group name of the package (only relevant for Maven packages)
 - `name`: Name of the package
 - `version`: Version of the package
-- `purl`: Format `pkg:<package type>/<repo ID>/<file path>/<package group name>/<packge name>@<package version>`
+- `purl`: Format `pkg:<package type>/<repo ID>/<file path>/<package group name>/<package name>@<package version>`
 
 The repo ID will be automatically set depending on the environment `checkov` is invoked in, but can be adjusted by setting the flag `--repo-id`.
 
