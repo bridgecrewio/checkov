@@ -10,6 +10,7 @@ from checkov.secrets.git_types import Commit, CommitMetadata
 
 
 def mock_set_repo(self) -> bool:
+    self.repo = True
     return True
 
 
