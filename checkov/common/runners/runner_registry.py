@@ -730,7 +730,8 @@ class RunnerRegistry:
 
     @staticmethod
     def get_enriched_resources(
-        repo_roots: list[str | Path], download_external_modules: bool
+        repo_roots: list[str | Path],
+        download_external_modules: Optional[bool]
     ) -> dict[str, dict[str, Any]]:
         from checkov.terraform.modules.module_objects import TFDefinitionKey
 

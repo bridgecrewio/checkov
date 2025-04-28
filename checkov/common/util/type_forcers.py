@@ -4,7 +4,7 @@ import json
 import logging
 import typing
 from json import JSONDecodeError
-from typing import TypeVar, overload, Any, Tuple, List
+from typing import TypeVar, overload, Any, Tuple, List, Optional
 
 import yaml
 
@@ -43,6 +43,12 @@ def force_float(var: Any) -> float | None:
         return var
     except Exception:
         return None
+
+
+def convert_str_to_optional_bool(s: Optional[bool | str]) -> Optional[bool]:
+    if s is None or (isinstance(s, str) and not s):
+        return None
+    return convert_str_to_bool(s)
 
 
 def convert_str_to_bool(bool_str: bool | str) -> bool:

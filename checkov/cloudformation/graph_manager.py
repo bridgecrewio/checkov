@@ -25,7 +25,7 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
         local_graph_class: type[CloudformationLocalGraph] = CloudformationLocalGraph,
         render_variables: bool = True,
         parsing_errors: Optional[Dict[str, Exception]] = None,
-        download_external_modules: bool = False,
+        download_external_modules: Optional[bool] = False,
         excluded_paths: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Tuple[CloudformationLocalGraph, dict[str, dict[str, Any]]]:
