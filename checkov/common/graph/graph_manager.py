@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any
+from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any, Optional
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
@@ -24,9 +24,9 @@ class GraphManager(Generic[_LocalGraph, _Definitions]):
         source_dir: str,
         local_graph_class: Type[_LocalGraph],
         render_variables: bool = True,
-        parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
+        parsing_errors: Optional[dict[str, Exception]] = None,
+        download_external_modules: Optional[bool] = False,
+        excluded_paths: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[_LocalGraph | None, _Definitions]:
         pass
