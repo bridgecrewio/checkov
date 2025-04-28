@@ -30,7 +30,7 @@ Resources:
         AllowMethods:
           - GET
           - POST
-      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token" # checkov:skip=CKV_SECRET_6 test secret
 
   ValidLambdaFunctionNoCorsDefinition:
     Type: AWS::Lambda::Function
@@ -47,7 +47,7 @@ Resources:
     Type: AWS::Lambda::Url
     Properties:
       FunctionName: !Ref ValidLambdaFunctionNoCorsDefinition
-      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token" # checkov:skip=CKV_SECRET_6 test secret
 
   ValidLambdaFunctionOnlyOriginsStar:
     Type: AWS::Lambda::Function
@@ -70,7 +70,7 @@ Resources:
         AllowMethods:
           - GET
           - POST
-      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token" # checkov:skip=CKV_SECRET_6 test secret
 
   ValidLambdaFunctionOnlyMethodsStar:
     Type: AWS::Lambda::Function
@@ -92,7 +92,7 @@ Resources:
           - https://example.com
         AllowMethods:
           - "*"
-      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token" # checkov:skip=CKV_SECRET_6 test secret
 
   InvalidLambdaFunction:
     Type: AWS::Lambda::Function
@@ -114,7 +114,7 @@ Resources:
           - "*"
         AllowMethods:
           - "*"
-      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token"
+      ServiceToken: "arn:aws:lambda:us-west-2:123456789012:function:dummy-token" # checkov:skip=CKV_SECRET_6 test secret
 
   ExampleRole:
     Type: AWS::IAM::Role

@@ -47,7 +47,7 @@ class GitHistoryScanner:
         # in case we start from mid-history (git) we want to continue from where we've been
         self.history_store: GitHistorySecretStore = history_store or GitHistorySecretStore()
         self.raw_store: List[RawStore] = []
-        self.repo: Repo
+        self.repo: Repo  # Initialize repo attribute with None
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
@@ -66,13 +66,9 @@ class GitHistoryScanner:
         # else: everything was OK
         return scanned
 
+    @time_it
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        commits_diff: List[Commit] = []
-        if not last_commit_scanned:
-            first_commit_diff = self._get_first_commit()
-            if first_commit_diff:
-                commits_diff.append(self._get_first_commit())
-        commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
+        commits_diff = self.get_commits(last_commit_scanned)
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
@@ -86,6 +82,15 @@ class GitHistoryScanner:
 
         self._process_raw_store()
         return True
+
+    def get_commits(self, last_commit_scanned: Optional[str] = '') -> List[Commit]:
+        commits_diff: List[Commit] = []
+        if not last_commit_scanned:
+            first_commit_diff = get_first_commit(self.repo, self.root_folder)
+            if first_commit_diff:
+                commits_diff.append(first_commit_diff)
+        commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
+        return commits_diff
 
     def _process_raw_store(self) -> None:
         for raw_res in self.raw_store:
@@ -167,7 +172,8 @@ class GitHistoryScanner:
 
                     base_diff_format = f'diff --git {self.root_folder}/{file_diff.a_path} {self.root_folder}/{file_diff.b_path}' \
                                        f'\nindex 0000..0000 0000\n--- {self.root_folder}/{file_diff.a_path}\n+++ {self.root_folder}/{file_diff.b_path}\n'
-                    curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + self.get_decoded_diff(file_diff.diff))
+                    curr_diff.add_file(filename=file_path,
+                                       commit_diff=base_diff_format + get_decoded_diff(file_diff.diff))
                 if not curr_diff.is_empty():
                     commits_diff.append(curr_diff)
             except TimeoutException:
@@ -223,43 +229,45 @@ class GitHistoryScanner:
             scanned_file_count += 1
         return results, scanned_file_count
 
-    @time_it
-    def _get_first_commit(self) -> Commit:
-        first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
-        first_commit = self.repo.commit(first_commit_sha)
-        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())  # nosec
-        empty_tree = Tree(self.repo, empty_tree_sha)
-        git_diff = empty_tree.diff(first_commit, create_patch=True)
 
-        first_commit_diff: Commit = Commit(
-            metadata=CommitMetadata(
-                commit_hash=first_commit.hexsha,
-                committer=first_commit.committer.name or '',
-                committed_datetime=first_commit.committed_datetime.isoformat()
-            )
+@time_it
+def get_first_commit(repo: Repo, root_folder: str) -> Commit:
+    first_commit_sha = repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
+    first_commit = repo.commit(first_commit_sha)
+    empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())  # nosec
+    empty_tree = Tree(repo, empty_tree_sha)
+    git_diff = empty_tree.diff(first_commit, create_patch=True)
+
+    first_commit_diff: Commit = Commit(
+        metadata=CommitMetadata(
+            commit_hash=first_commit.hexsha,
+            committer=first_commit.committer.name or '',
+            committed_datetime=first_commit.committed_datetime.isoformat()
         )
+    )
 
-        for file_diff in git_diff:
-            file_name: str = file_diff.b_path  # type:ignore
-            if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
-                continue
-            file_path = os.path.join(self.root_folder, file_name)
-            base_diff_format = f"--- ''\n+++ {file_path}\n"
-            full_diff_format = base_diff_format + self.get_decoded_diff(file_diff.diff)
-            first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
-        return first_commit_diff
+    for file_diff in git_diff:
+        file_name: str = file_diff.b_path  # type:ignore
+        if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+            continue
+        file_path = os.path.join(root_folder, file_name)
+        base_diff_format = f"--- ''\n+++ {file_path}\n"
+        full_diff_format = base_diff_format + get_decoded_diff(file_diff.diff)
+        first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
+    return first_commit_diff
 
-    @staticmethod
-    def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
-        if diff is None:
-            return ''
 
-        if isinstance(diff, str):
-            return diff
+def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
+    if diff is None:
+        return ''
 
-        try:
-            decoded_diff = diff.decode('utf-8')
-        except UnicodeDecodeError as ue:
-            logging.debug(f'failed decoding file diff, {ue}')
-            decoded_diff = diff.decode('utf-8', errors='ignore')
-        return decoded_diff
+    if isinstance(diff, str):
+        return diff
+
+    try:
+        decoded_diff = diff.decode('utf-8')
+    except UnicodeDecodeError as ue:
+        logging.debug(f'failed decoding file diff, {ue}')
+        decoded_diff = diff.decode('utf-8', errors='ignore')
+
+    return decoded_diff
