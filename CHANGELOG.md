@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.408...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.411...HEAD)
+
+## [3.2.411](https://github.com/bridgecrewio/checkov/compare/3.2.408...3.2.411) - 2025-04-28
+
+### Feature
+
+- **secrets:** Add support in git history for producer consumer - [#7123](https://github.com/bridgecrewio/checkov/pull/7123)
+
+### Bug Fix
+
+- **general:** Make --download-external-modules Optional[bool] - [#7121](https://github.com/bridgecrewio/checkov/pull/7121)
+- **secrets:** Fix test directory tree race - [#7122](https://github.com/bridgecrewio/checkov/pull/7122)
+- **terraform:** add aws_elasticache_serverless_cache to CKV2_AWS_5 - [#7079](https://github.com/bridgecrewio/checkov/pull/7079)
 
 ## [3.2.408](https://github.com/bridgecrewio/checkov/compare/3.2.407...3.2.408) - 2025-04-24
 
