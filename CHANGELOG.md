@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.411...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.413...HEAD)
+
+## [3.2.413](https://github.com/bridgecrewio/checkov/compare/3.2.411...3.2.413) - 2025-04-29
+
+### Feature
+
+- **terraform:** Add new check for overly permissive SQS policy - [#7125](https://github.com/bridgecrewio/checkov/pull/7125)
+
+### Bug Fix
+
+- **terraform:** support CLI notation in CKV_AZURE_228 for EventHub locations - [#7124](https://github.com/bridgecrewio/checkov/pull/7124)
 
 ## [3.2.411](https://github.com/bridgecrewio/checkov/compare/3.2.408...3.2.411) - 2025-04-28
 
