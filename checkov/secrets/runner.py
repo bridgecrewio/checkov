@@ -439,16 +439,17 @@ class Runner(BaseRunner[None, None, None]):
 
     @staticmethod
     def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
-        full_file_path = os.path.join(base_path, file_path)
-        file_size = os.path.getsize(full_file_path)
-        if file_size > MAX_FILE_SIZE > 0:
-            logging.info(
-                f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
-                'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
-                f'to 0 or {file_size + 1}'
-            )
-            return file_path, []
         try:
+            full_file_path = os.path.join(base_path, file_path)
+            file_size = os.path.getsize(full_file_path)
+            if file_size > MAX_FILE_SIZE > 0:
+                logging.info(
+                    f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
+                    'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
+                    f'to 0 or {file_size + 1}'
+                )
+                return file_path, []
+
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
             logging.debug(f'file {full_file_path} results len {len(file_results)}')

@@ -19,7 +19,9 @@ class ModuleLoaderRegistry:
     module_content_cache: Dict[str, Optional[ModuleContent]] = {}  # noqa: CCE003
 
     def __init__(
-        self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
+        self,
+        download_external_modules: Optional[bool] = False,
+        external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> None:
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
