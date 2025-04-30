@@ -82,8 +82,11 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                     return CheckResult.UNKNOWN
 
         if isinstance(policy_block, dict) and 'Statement' in policy_block.keys():
-            for statement in force_list(policy_block['Statement']):
-                if statement['Effect'] == 'Deny' or 'Principal' not in statement:
+            statements = force_list(policy_block['Statement'])
+            if all('Effect' not in statement for statement in statements):
+                return CheckResult.UNKNOWN
+            for statement in statements:
+                if 'Effect' not in statement or statement['Effect'] == 'Deny' or 'Principal' not in statement:
                     continue
                 principal = statement['Principal']
                 if principal == '*':

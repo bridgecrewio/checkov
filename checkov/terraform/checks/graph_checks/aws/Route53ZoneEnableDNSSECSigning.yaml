@@ -3,28 +3,30 @@ metadata:
   id: "CKV2_AWS_38"
   category: "NETWORKING"
 definition:
- and :
-    - cond_type: filter
-      attribute: resource_type
-      value:
-      - aws_route53_zone
-      operator: within
-    - cond_type: connection
-      resource_types:
-      - aws_route53_zone
-      connected_resource_types:
-      - aws_route53_hosted_zone_dnssec
-      - aws_route53_key_signing_key
-      operator: exists
-    - or:
+  or:
+    - and:
       - cond_type: attribute
         resource_types:
           - aws_route53_zone
-        attribute: vpc
-        operator: not_exists
+        attribute: vpc  # This indicates a private zone that can't have DNSSEC enabled
+        operator: exists
+      - cond_type: attribute
+        resource_types:
+          - aws_route53_zone
+        attribute: vpc  # This indicates a private zone that can't have DNSSEC enabled
+        operator: not_equals
+        value: []
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+        - aws_route53_zone
+        operator: within
       - cond_type: connection
         resource_types:
         - aws_route53_zone
         connected_resource_types:
-        - aws_route53_zone_association
-        operator: not_exists
+        - aws_route53_hosted_zone_dnssec
+        - aws_route53_key_signing_key
+        - aws_route53_zone_association  # This indicates a private zone that can't have DNSSEC enabled
+        operator: exists

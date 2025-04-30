@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT_SECRET }}
@@ -56,13 +56,13 @@ jobs:
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/changelog-updater-action@61ce794778aa787ea8d204d9fe2928543cb2fe40  # v1
+        uses: stefanzweifel/changelog-updater-action@a938690fad7edf25368f37e43a1ed1b34303eb36  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842  # v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403  # v5
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md
@@ -90,7 +90,7 @@ jobs:
     env:
       PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -139,7 +139,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}

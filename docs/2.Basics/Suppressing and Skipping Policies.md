@@ -68,7 +68,7 @@ Resources:
 ```
 
 ### Dockerfile Example
-To suppress checks in Dockerfiles the comment can be addded to any line inside the file.
+To suppress checks in Dockerfiles the comment can be added to any line inside the file.
 
 ```dockerfile
 #checkov:skip=CKV_DOCKER_5: no need to skip python check

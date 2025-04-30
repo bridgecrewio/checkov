@@ -57,6 +57,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_CloudfrontOriginNotHTTPSOnly(self):
         self.go("CloudfrontOriginNotHTTPSOnly")
 
+    def test_LambdaOpenCorsPolicy(self):
+        self.go("LambdaOpenCorsPolicy")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

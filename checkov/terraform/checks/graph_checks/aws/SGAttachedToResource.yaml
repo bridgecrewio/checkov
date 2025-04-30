@@ -34,6 +34,7 @@ definition:
         - aws_eks_node_group
         - aws_elasticache_cluster
         - aws_elasticache_replication_group
+        - aws_elasticache_serverless_cache
         - aws_elasticsearch_domain
         - aws_elb
         - aws_emr_cluster
@@ -61,6 +62,22 @@ definition:
         - aws_transfer_server
         - aws_vpc_endpoint
         - aws_vpclattice_service_network_vpc_association
+        - aws_fsx_windows_file_system
+        - aws_fsx_ontap_file_system
+        - aws_grafana_workspace
+        - aws_apigatewayv2_vpc_link
+        - aws_fsx_lustre_file_system
+        - aws_imagebuilder_infrastructure_configuration
+        - aws_fsx_openzfs_file_system
+        - aws_fsx_file_cache
+        - aws_redshiftserverless_workgroup
+        - aws_ec2_instance_connect_endpoint
+        - aws_opensearchserverless_vpc_endpoint
+        - aws_verifiedaccess_endpoint
+        - aws_m2_environment
+        - aws_vpclattice_resource_gateway
+        - aws_spot_instance_request
+        - aws_msk_vpc_connection
       operator: exists
       attribute: networking
       cond_type: connection
