@@ -1,40 +1,17 @@
 
-resource "aws_emr_block_public_access_configuration" "fail1" {
-  block_public_access {
-    block_public_acls = false
-    ignore_public_acls = false
-    restrict_public_buckets = false
-  }
+resource "aws_emr_block_public_access_configuration" "fail" {
+  block_public_security_group_rules = false
 }
 
 resource "aws_emr_block_public_access_configuration" "pass" {
-  block_public_access {
-    block_public_acls = true
-    ignore_public_acls = true
-    restrict_public_buckets = true
+  block_public_security_group_rules = true
+  permitted_public_security_group_rule_range {
+    min_range = 22
+    max_range = 22
   }
-}
 
-resource "aws_emr_block_public_access_configuration" "fail2" {
-  block_public_access {
-    block_public_acls = false
-    ignore_public_acls = true
-    restrict_public_buckets = true
-  }
-}
-
-resource "aws_emr_block_public_access_configuration" "fail3" {
-  block_public_access {
-    block_public_acls = true
-    ignore_public_acls = false
-    restrict_public_buckets = true
-  }
-}
-
-resource "aws_emr_block_public_access_configuration" "fail4" {
-  block_public_access {
-    block_public_acls = true
-    ignore_public_acls = true
-    restrict_public_buckets = false
+  permitted_public_security_group_rule_range {
+    min_range = 100
+    max_range = 101
   }
 }

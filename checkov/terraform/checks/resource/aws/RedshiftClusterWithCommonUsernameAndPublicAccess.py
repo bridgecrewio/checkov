@@ -1,5 +1,4 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -14,10 +13,12 @@ class RedshiftClusterWithCommonUsernameAndPublicAccess(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'master_username' in conf:
-            if conf['master_username'][0] in ['awsuser','administrator','admin']:
+            if conf['master_username'][0] in ['awsuser', 'administrator', 'admin']:
                 if 'publicly_accessible' in conf:
                     if str(conf['publicly_accessible'][0]).lower() == 'true':
                         return CheckResult.FAILED
+                else:
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 

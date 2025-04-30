@@ -568,6 +568,17 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ZoneHasMatchingQueryLog(self):
         self.go("Route53ZoneHasMatchingQueryLog")
 
+    def test_S3BucketPubliclyReadableViaACL(self):
+        self.go("S3BucketPubliclyReadableViaACL")
+
+    def test_ALBWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("ALBWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_APIGatewayWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("APIGatewayWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_AppsyncWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("AppsyncWebACLConfiguredWIthLog4jVulnerability")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

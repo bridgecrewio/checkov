@@ -20,10 +20,7 @@ class TestEMRPubliclyAccessible(unittest.TestCase):
             "aws_emr_block_public_access_configuration.pass",
         }
         failing_resources = {
-            "aws_emr_block_public_access_configuration.fail1",
-            "aws_emr_block_public_access_configuration.fail2",
-            "aws_emr_block_public_access_configuration.fail3",
-            "aws_emr_block_public_access_configuration.fail4",
+            "aws_emr_block_public_access_configuration.fail"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
@@ -39,4 +36,5 @@ class TestEMRPubliclyAccessible(unittest.TestCase):
 
 
 if __name__ == "__main__":
+
     unittest.main()
