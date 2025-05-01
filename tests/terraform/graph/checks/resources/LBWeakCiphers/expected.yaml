@@ -5,3 +5,5 @@ fail:
 pass:
   - "aws_lb_listener.front_end_passing"
   - "aws_alb_listener.secure_listener"
+  - "aws_alb_listener.secure_listener2"
+  - "aws_lb_listener.tcp"
