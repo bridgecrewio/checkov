@@ -32,6 +32,7 @@ MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
 ENTROPY_KEYWORD_LIMIT = 4.8
+SKIP_EXTENSIONS = ('.md', '.css', '.storyboard', '.xib')
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
@@ -147,6 +148,10 @@ class EntropyKeywordCombinator(BasePlugin):
             raw_context: CodeSnippet | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
+        # skip some noisy file types, otherwise proceed as normal
+        if filename and filename.lower().endswith(SKIP_EXTENSIONS):
+            return set()
+
         if len(line) > self.max_line_length:
             # to keep good performance we skip long lines
             return set()
