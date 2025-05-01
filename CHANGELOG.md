@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.413...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.414...HEAD)
+
+## [3.2.414](https://github.com/bridgecrewio/checkov/compare/3.2.413...3.2.414) - 2025-05-01
+
+### Bug Fix
+
+- **terraform:** Fix protocols for CKV2_AWS_74 and fix for CKV2_K8S_5 - [#7134](https://github.com/bridgecrewio/checkov/pull/7134)
 
 ## [3.2.413](https://github.com/bridgecrewio/checkov/compare/3.2.411...3.2.413) - 2025-04-29
 
