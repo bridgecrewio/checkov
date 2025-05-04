@@ -13,7 +13,7 @@ definition:
   conditions:
     - not_pattern: |
         new $PACKAGE.aws_rds.DatabaseInstance(<ANY>, <ANY>, { <ANY>, monitoringInterval: $COUNT, <ANY> })
-    - metavariable: $COUNT # bug: should preform with not_pattern and not after BCE-33034
+    - metavariable: $COUNT # bug: should perform with not_pattern and not after BCE-33034
       comparison: $COUNT > 0
     - metavariable: $PACKAGE
       comparison: $PACKAGE == "aws-cdk-lib"

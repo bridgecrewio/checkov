@@ -63,7 +63,7 @@ resource "aws_acm_certificate" "example_fail_bad_subject" {
 
 # fail: using subject_alternative_names
 resource "aws_acm_certificate" "example_fail_bad_domain" {
-  domain_name       = "*example.com"  # Primary domain wit wildcard
+  domain_name       = "*example.com"  # Primary domain with wildcard
   validation_method = "DNS"
 
   subject_alternative_names = [

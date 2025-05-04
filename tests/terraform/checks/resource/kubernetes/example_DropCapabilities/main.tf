@@ -578,7 +578,7 @@ resource "kubernetes_deployment_v1" "fail5" {
 }
 
 
-#doesnt drop any or net_raw
+#does not drop any or net_raw
 resource "kubernetes_pod" "fail2" {
   metadata {
     name = "terraform-example"
@@ -674,7 +674,7 @@ resource "kubernetes_pod" "fail2" {
   }
 }
 
-#doesnt drop any or net_raw
+#does not drop any or net_raw
 resource "kubernetes_pod_v1" "fail2" {
   metadata {
     name = "terraform-example"
@@ -770,7 +770,7 @@ resource "kubernetes_pod_v1" "fail2" {
   }
 }
 
-#doesnt drop any or net_raw
+#does not drop any or net_raw
 resource "kubernetes_deployment" "fail2" {
   metadata {
     name = "terraform-example"

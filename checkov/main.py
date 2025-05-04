@@ -57,7 +57,7 @@ from checkov.common.util.banner import banner as checkov_banner, default_tool as
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
-from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.type_forcers import convert_str_to_bool, convert_str_to_optional_bool
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
@@ -326,7 +326,7 @@ class Checkov:
                 checks=self.config.check,
                 skip_checks=self.config.skip_check,
                 include_all_checkov_policies=self.config.include_all_checkov_policies,
-                download_external_modules=bool(convert_str_to_bool(self.config.download_external_modules)),
+                download_external_modules=convert_str_to_optional_bool(self.config.download_external_modules),
                 external_modules_download_path=self.config.external_modules_download_path,
                 evaluate_variables=bool(convert_str_to_bool(self.config.evaluate_variables)),
                 runners=checkov_runners,

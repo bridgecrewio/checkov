@@ -143,10 +143,11 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
             tf_managed=module_download.tf_managed,
         )
         if content is None or not content.loaded():
-            log_message = f'Failed to download module {module_download.address}'
-            if not ml_registry.download_external_modules:
-                log_message += ' (for external modules, the --download-external-modules flag is required)'
-            logging.warning(log_message)
+            if ml_registry.download_external_modules is not False:
+                log_message = f'Failed to download module {module_download.address}'
+                if ml_registry.download_external_modules is None:
+                    log_message += ' (for external modules, the --download-external-modules flag is required)'
+                logging.warning(log_message)
             return False
     except Exception as e:
         logging.warning(f"Unable to load module ({module_download.address}): {e}")
@@ -156,7 +157,7 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
 
 
 def replace_terraform_managed_modules(path: str, found_modules: list[ModuleDownload]) -> list[ModuleDownload]:
-    """Replaces modules by Terraform managed ones to prevent addtional downloading
+    """Replaces modules by Terraform managed ones to prevent additional downloading
 
     It can't handle nested modules yet, ex.
     {

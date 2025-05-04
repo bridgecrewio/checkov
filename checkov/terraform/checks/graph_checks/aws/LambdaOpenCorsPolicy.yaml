@@ -1,0 +1,40 @@
+metadata:
+  name: "Ensure no open CORS policy"
+  id: "CKV2_AWS_75"
+  category: "NETWORKING"
+scope:
+  provider: "aws"
+definition:
+  and:
+    - cond_type: "filter"
+      attribute: "resource_type"
+      value:
+        - "aws_lambda_function"
+      operator: "within"
+    - or:
+        - cond_type: "connection"
+          operator: "not_exists"
+          resource_types:
+            - "aws_lambda_function"
+          connected_resource_types:
+            - "aws_lambda_function_url"
+        - and:
+          - cond_type: "connection"
+            operator: "exists"
+            resource_types:
+              - "aws_lambda_function"
+            connected_resource_types:
+              - "aws_lambda_function_url"
+          - or:
+            - cond_type: "attribute"
+              resource_types:
+                - "aws_lambda_function_url"
+              attribute: "cors.allow_origins"
+              operator: "not_contains"
+              value: "*"
+            - cond_type: "attribute"
+              resource_types:
+                - "aws_lambda_function_url"
+              attribute: "cors.allow_methods"
+              operator: "not_contains"
+              value: "*"

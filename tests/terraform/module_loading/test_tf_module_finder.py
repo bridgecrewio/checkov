@@ -1,11 +1,14 @@
 import os
 import shutil
 import unittest
+import logging
 from pathlib import Path
 from unittest import mock
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.module_finder import (
+    ModuleDownload,
+    _download_module,
     find_modules,
     should_download,
     load_tf_modules,
@@ -50,6 +53,30 @@ class TestModuleFinder(unittest.TestCase):
         self.assertEqual(len(downloaded_modules), 1)
         self.assertEqual(len(distinct_roots), 1)
 
+
+def test_dem_warning(caplog):
+    """
+    Test that the --download-external-modules flag warning message is only
+    logged if the flag is not specified on the command line, and that
+    module download warnings are not logged if the flag is set to False.
+    """
+    caplog.set_level(logging.WARNING)
+    module_loader_registry.download_external_modules = None
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' in caplog.text
+    assert '--download-external-modules flag' in caplog.text
+    caplog.clear()
+
+    module_loader_registry.download_external_modules = True
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' in caplog.text
+    assert '--download-external-modules flag' not in caplog.text
+    caplog.clear()
+
+    module_loader_registry.download_external_modules = False
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' not in caplog.text
+    assert '--download-external-modules flag' not in caplog.text
 
 @mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
 def test_tf_managed_and_comment_out_modules():

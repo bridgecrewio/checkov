@@ -511,7 +511,7 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureSynapseWorkspaceVAisEnabled(self):
         self.go("AzureSynapseWorkspaceVAisEnabled")
 
-    def test_IBM_AppLBforVPCisPrivate(self):
+    def test_IBM_LoadBalancerforVPCisPrivate(self):
         self.go("IBM_LoadBalancerforVPCisPrivate")
 
     def test_IBM_VPCclassicAccessIsDisabled(self):
@@ -551,10 +551,10 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzureSpringCloudTLSDisabled")
 
     def test_GCPComputeRegionalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeRegionalForwardingRuleCheck")
 
     def test_GCPComputeGlobalForwardingRuleCheck(self):
-        self.go("AzureSpringCloudTLSDisabled")
+        self.go("GCPComputeGlobalForwardingRuleCheck")
 
     def test_AzureMySQLFlexibleServerConfigPrivEndpt(self):
         self.go("AzureMySQLFlexibleServerConfigPrivEndpt")
@@ -579,6 +579,15 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AppsyncWebACLConfiguredWIthLog4jVulnerability(self):
         self.go("AppsyncWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_Route53ZoneEnableDNSSECSigning(self):
+        self.go("Route53ZoneEnableDNSSECSigning")
+
+    def test_LBWeakCiphers(self):
+        self.go("LBWeakCiphers")
+
+    def test_LambdaOpenCorsPolicy(self):
+        self.go("LambdaOpenCorsPolicy")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
