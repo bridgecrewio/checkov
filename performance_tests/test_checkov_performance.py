@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 
@@ -65,7 +66,9 @@ def test_terraform_performance(benchmark):
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
 
+    logging.debug('terraform start benchmark')
     benchmark(run_terraform_scan)
+    logging.debug('terraform finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
 
@@ -90,7 +93,9 @@ def test_cloudformation_performance(benchmark):
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
 
+    logging.debug('cloudformation start benchmark')
     benchmark(run_cloudformation_scan)
+    logging.debug('cloudformation finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
 
 
@@ -114,6 +119,7 @@ def test_k8_performance(benchmark):
         runner_registry = RunnerRegistry(banner, runner_filter, k8_runner())
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
-
+    logging.debug('test_k8_performance start benchmark')
     benchmark(run_kubernetes_scan)
+    logging.debug('test_k8_performance finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
