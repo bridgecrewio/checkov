@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "db489745e801adf739d420209369d711519c7d8b16fcb72320be15a5d58655f1"
+            "sha256": "5d8c5869f83ba17c84a7fbd3bff5b32bc7a72bfee09d0dc6394fe182bafbeb38"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -683,6 +683,14 @@
             "markers": "python_version >= '3.8'",
             "version": "==7.2.1"
         },
+        "iniconfig": {
+            "hashes": [
+                "sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7",
+                "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==2.1.0"
+        },
         "jinja2": {
             "hashes": [
                 "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d",
@@ -1145,6 +1153,14 @@
             "markers": "python_version >= '3.7'",
             "version": "==23.2"
         },
+        "pluggy": {
+            "hashes": [
+                "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1",
+                "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==1.5.0"
+        },
         "ply": {
             "hashes": [
                 "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3",
@@ -1272,6 +1288,13 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==0.3.1"
+        },
+        "py-cpuinfo": {
+            "hashes": [
+                "sha256:3cdbbf3fac90dc6f118bfd64384f309edeadd902d7c8fb17f02ffa1fc3f49690",
+                "sha256:859625bc251f64e21f077d099d4162689c762b5d6a4c3c97553d56241c9674d5"
+            ],
+            "version": "==9.0.0"
         },
         "py-serializable": {
             "hashes": [
@@ -1540,6 +1563,23 @@
             "index": "pypi",
             "markers": "python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
             "version": "==2.3.5"
+        },
+        "pytest": {
+            "hashes": [
+                "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820",
+                "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==8.3.5"
+        },
+        "pytest-benchmark": {
+            "hashes": [
+                "sha256:922de2dfa3033c227c96da942d1878191afa135a29485fb942e85dff1c592c89",
+                "sha256:9ea661cdc292e8231f7cd4c10b0319e56a2118e2c09d9f50e1b3d150d2aca105"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==5.1.0"
         },
         "python-dateutil": {
             "hashes": [
