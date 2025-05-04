@@ -68,12 +68,10 @@ def test_terraform_performance(benchmark):
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
 
-    logging.debug('terraform start benchmark')
     logging.info('terraform start benchmark')
     print('terraform start benchmark')
     benchmark(run_terraform_scan)
-    logging.info(f'terraform finished benchmark {benchmark.stats.stats.mean}')
-    logging.debug('terraform finished benchmark')
+    logging.info('terraform finished benchmark')
     print('terraform finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
