@@ -3,26 +3,36 @@ metadata:
   name: "Ensure AWS Load Balancers use strong ciphers"
   category: "NETWORKING"
 definition:
-  and:
+  or:
     - cond_type: "attribute"
       resource_types:
         - "aws_alb_listener"
         - "aws_lb_listener"
-      attribute: "ssl_policy"
-      operator: "exists"  # The default is ELBSecurityPolicy-2016-08 which is weak
-    - cond_type: "attribute"
-      resource_types:
-      - "aws_alb_listener"
-      - "aws_lb_listener"
-      attribute: "ssl_policy"
+      attribute: "protocol"
       operator: "not_within"
       value:
-        - "ELBSecurityPolicy-2016-08"
-        - "ELBSecurityPolicy-2015-05"
-        - "ELBSecurityPolicy-TLS-1-0-2015-04"
-        - "ELBSecurityPolicy-TLS-1-1-2017-01"
-        - "ELBSecurityPolicy-2015-03"
-        - "ELBSecurityPolicy-2015-02"
-        - "ELBSecurityPolicy-2014-10"
-        - "ELBSecurityPolicy-Default"
-        - "ELBSecurityPolicy-2014-01"
+        - "HTTPS"
+        - "TLS"
+    - and:
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_alb_listener"
+          - "aws_lb_listener"
+        attribute: "ssl_policy"
+        operator: "exists"  # The default is ELBSecurityPolicy-2016-08 which is weak
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_alb_listener"
+        - "aws_lb_listener"
+        attribute: "ssl_policy"
+        operator: "not_within"
+        value:
+          - "ELBSecurityPolicy-2016-08"
+          - "ELBSecurityPolicy-2015-05"
+          - "ELBSecurityPolicy-TLS-1-0-2015-04"
+          - "ELBSecurityPolicy-TLS-1-1-2017-01"
+          - "ELBSecurityPolicy-2015-03"
+          - "ELBSecurityPolicy-2015-02"
+          - "ELBSecurityPolicy-2014-10"
+          - "ELBSecurityPolicy-Default"
+          - "ELBSecurityPolicy-2014-01"
