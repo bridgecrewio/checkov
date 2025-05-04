@@ -56,6 +56,7 @@ SYSTEM_NAME = platform.system()
 )
 def test_terraform_performance(benchmark):
     logging.info('test_terraform_performance start')
+    print('test_terraform_performance start')
     repo_name = performance_configurations['terraform']['repo_name']
     repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
 
@@ -69,9 +70,11 @@ def test_terraform_performance(benchmark):
 
     logging.debug('terraform start benchmark')
     logging.info('terraform start benchmark')
+    print('terraform start benchmark')
     benchmark(run_terraform_scan)
     logging.info(f'terraform finished benchmark {benchmark.stats.stats.mean}')
     logging.debug('terraform finished benchmark')
+    print('terraform finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
 
