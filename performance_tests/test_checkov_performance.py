@@ -11,6 +11,7 @@ from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+from setup import logger
 
 # Ensure repo_name is a cloned repository into performance_tests directory.
 # Thresholds are in ms, and are set to the current maximum duration of checkov on the repository
@@ -55,7 +56,7 @@ SYSTEM_NAME = platform.system()
     warmup=False,
 )
 def test_terraform_performance(benchmark):
-    logging.debug('test_terraform_performance start')
+    logger.info('test_terraform_performance start')
     repo_name = performance_configurations['terraform']['repo_name']
     repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
 
@@ -68,7 +69,9 @@ def test_terraform_performance(benchmark):
         assert len(reports) > 0
 
     logging.debug('terraform start benchmark')
+    logger.info('terraform start benchmark')
     benchmark(run_terraform_scan)
+    logger.info(f'terraform finished benchmark {benchmark.stats.stats.mean}')
     logging.debug('terraform finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
