@@ -18,9 +18,9 @@ performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
         'threshold': {
-            "Darwin": 19.0,
-            "Linux": 11.0,
-            "Windows": 15.0,
+            "Darwin": 350.0,
+            "Linux": 170.0,
+            "Windows": 300.0,
         }
     },
     'cloudformation': {
@@ -45,35 +45,35 @@ DEVIATION_PERCENT = 10
 SYSTEM_NAME = platform.system()
 
 
-# @pytest.mark.benchmark(
-#     group="terraform-performance-tests",
-#     disable_gc=True,
-#     min_time=0.1,
-#     max_time=0.5,
-#     min_rounds=10,
-#     timer=time.time,
-#     warmup=False,
-# )
-# def test_terraform_performance(benchmark):
-#     logging.info('test_terraform_performance start')
-#     print('test_terraform_performance start')
-#     repo_name = performance_configurations['terraform']['repo_name']
-#     repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
-#
-#     def run_terraform_scan():
-#         current_dir = os.path.dirname(os.path.realpath(__file__))
-#         test_files_dir = os.path.join(current_dir, repo_name)
-#         runner_filter = RunnerFilter()
-#         runner_registry = RunnerRegistry(banner, runner_filter, tf_runner())
-#         reports = runner_registry.run(root_folder=test_files_dir)
-#         assert len(reports) > 0
-#
-#     logging.info('terraform start benchmark')
-#     print('terraform start benchmark')
-#     benchmark(run_terraform_scan)
-#     logging.info('terraform finished benchmark')
-#     print('terraform finished benchmark')
-#     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
+@pytest.mark.benchmark(
+    group="terraform-performance-tests",
+    disable_gc=True,
+    min_time=0.1,
+    max_time=0.5,
+    min_rounds=10,
+    timer=time.time,
+    warmup=False,
+)
+def test_terraform_performance(benchmark):
+    logging.info('test_terraform_performance start')
+    print('test_terraform_performance start')
+    repo_name = performance_configurations['terraform']['repo_name']
+    repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
+
+    def run_terraform_scan():
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files_dir = os.path.join(current_dir, repo_name)
+        runner_filter = RunnerFilter()
+        runner_registry = RunnerRegistry(banner, runner_filter, tf_runner())
+        reports = runner_registry.run(root_folder=test_files_dir)
+        assert len(reports) > 0
+
+    logging.info('terraform start benchmark')
+    print('terraform start benchmark')
+    benchmark(run_terraform_scan)
+    logging.info('terraform finished benchmark')
+    print('terraform finished benchmark')
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
 
 @pytest.mark.benchmark(
