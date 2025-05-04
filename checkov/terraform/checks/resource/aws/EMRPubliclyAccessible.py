@@ -13,7 +13,7 @@ class EMRPubliclyAccessible(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'block_public_security_group_rules' in conf:
-            if conf['block_public_security_group_rules'][0].lower() == "false":
+            if str(conf['block_public_security_group_rules'][0]).lower() == "false":
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
