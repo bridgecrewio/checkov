@@ -20,6 +20,7 @@ DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 # exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
 COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
 COMPARE_OPERATORS = (" == ", " != ", " < ", " <= ", " > ", " >= ", " && ", " || ")
+REMOVE_TRAILING_COMMAS = re.compile(r',(\s*[}\]])')
 
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
@@ -102,7 +103,7 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
             except Exception:
                 try:
                     # Remove trailing commas before } or ]
-                    input_str_no_trailing = re.sub(r',(\s*[}\]])', r'\1', input_str)  # type:ignore[arg-type]
+                    input_str_no_trailing = REMOVE_TRAILING_COMMAS.sub(r'\1', input_str)  # type:ignore[arg-type]
                     return json.loads(input_str_no_trailing)
                 except Exception:
                     return input_str

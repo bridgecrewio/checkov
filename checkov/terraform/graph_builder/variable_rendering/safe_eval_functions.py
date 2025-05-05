@@ -393,5 +393,5 @@ def evaluate(input_str: str) -> Any:
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 
-def remove_unicode_null(input_str: str) -> Any:
+def remove_unicode_null(input_str: str) -> str:
     return input_str.replace("\u0000", "\\0")

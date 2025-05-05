@@ -1,6 +1,4 @@
-import codecs
 import os
-import re
 from unittest import TestCase, mock
 from datetime import datetime
 

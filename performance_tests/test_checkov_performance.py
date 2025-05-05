@@ -50,7 +50,7 @@ SYSTEM_NAME = platform.system()
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=8,
+    min_rounds=7,
     timer=time.time,
     warmup=False,
 )
