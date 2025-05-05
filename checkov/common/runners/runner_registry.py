@@ -368,7 +368,8 @@ class RunnerRegistry:
                     soft_fail = enf_rule.is_global_soft_fail()
                     logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
                 else:
-                    logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
+                    sanitized_report_type = SecretsOmitter.omit_secret(report_type)
+                    logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {sanitized_report_type}, so falling back to CLI args')
         else:
             logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 

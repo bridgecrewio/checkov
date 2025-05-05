@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.module.registry import module_registry
-
+from urllib.parse import urlparse
 
 class BaseModuleCheck(BaseCheck):
     def __init__(
@@ -48,4 +48,6 @@ class BaseModuleCheck(BaseCheck):
 
     @staticmethod
     def is_git_source(source: str) -> bool:
-        return source.startswith('git@') or source.startswith('git::') or source.startswith('github.com') or source.startswith('bitbucket.org')
+        parsed_url = urlparse(source)
+        hostname = parsed_url.hostname
+        return hostname in {"github.com", "bitbucket.org"} or source.startswith('git@') or source.startswith('git::')
