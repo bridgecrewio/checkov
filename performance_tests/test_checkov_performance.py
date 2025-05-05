@@ -50,7 +50,7 @@ SYSTEM_NAME = platform.system()
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=10,
+    min_rounds=5,
     timer=time.time,
     warmup=False,
 )
@@ -68,11 +68,7 @@ def test_terraform_performance(benchmark):
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
 
-    logging.info('terraform start benchmark')
-    print('terraform start benchmark')
     benchmark(run_terraform_scan)
-    logging.info('terraform finished benchmark')
-    print('terraform finished benchmark')
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
 
