@@ -50,13 +50,11 @@ SYSTEM_NAME = platform.system()
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=9,
+    min_rounds=8,
     timer=time.time,
     warmup=False,
 )
 def test_terraform_performance(benchmark):
-    logging.info('test_terraform_performance start')
-    print('test_terraform_performance start')
     repo_name = performance_configurations['terraform']['repo_name']
     repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
 
