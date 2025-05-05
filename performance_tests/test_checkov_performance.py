@@ -49,7 +49,7 @@ SYSTEM_NAME = platform.system()
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=5,
+    min_rounds=10,
     timer=time.time,
     warmup=False,
 )
