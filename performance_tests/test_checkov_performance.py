@@ -18,7 +18,7 @@ performance_configurations = {
         'repo_name': 'terraform-aws-components',
         'threshold': {
             "Darwin": 19.0,
-            "Linux": 14.0,
+            "Linux": 12.0,
             "Windows": 15.0,
         }
     },
@@ -49,7 +49,7 @@ SYSTEM_NAME = platform.system()
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=6,
+    min_rounds=5,
     timer=time.time,
     warmup=False,
 )
