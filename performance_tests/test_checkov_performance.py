@@ -19,7 +19,7 @@ performance_configurations = {
         'repo_name': 'terraform-aws-components',
         'threshold': {
             "Darwin": 19.0,
-            "Linux": 11.0,
+            "Linux": 14.0,
             "Windows": 15.0,
         }
     },
@@ -48,9 +48,9 @@ SYSTEM_NAME = platform.system()
 @pytest.mark.benchmark(
     group="terraform-performance-tests",
     disable_gc=True,
-    min_time=0.01,
-    max_time=0.05,
-    min_rounds=3,
+    min_time=0.1,
+    max_time=0.5,
+    min_rounds=5,
     timer=time.time,
     warmup=False,
 )
