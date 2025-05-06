@@ -37,16 +37,16 @@ class TestPlanFileParser(unittest.TestCase):
         tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         providers = tf_definition['provider']
         self.assertEqual( len(providers), 3)
-        provider_keys = []
+        provider_names = []
         provider_aliases = []
         provider_addresses = []
         for provider in providers:
             key = next(iter(provider))
-            provider_keys.append(key)
+            provider_names.append(key)
             provider_aliases.append( provider[key]['alias'][0] )
             provider_addresses.append( provider[key]['__address__'] )
         
-        self.assertEqual(provider_keys, ["aws", "aws.ohio", "aws.oregon"])
+        self.assertEqual(provider_names, ["aws", "aws", "aws"])
         self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
         self.assertEqual(provider_addresses, ["aws.default", "aws.ohio", "aws.oregon"])
 
