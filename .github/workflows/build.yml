@@ -323,15 +323,17 @@ jobs:
           pipenv --python ${{ env.PYTHON_VERSION }}
           pipenv install
       - name: Calculate version
+        env:
+          VERSION_BUMP: ${{ inputs.versionBump }}
         run: |
           git fetch --tags --force
           latest_tag="$(git tag --sort=v:refname | tail -n 1)"
           echo "latest tag: $latest_tag"
-          if [[ -z "${{ inputs.versionBump }}" ]]
+          if [[ -z "$VERSION_BUMP" ]]
           then
             version="patch"
           else
-            version="${{ inputs.versionBump }}"
+            version="$VERSION_BUMP"
           fi
           case $version in
             minor)
