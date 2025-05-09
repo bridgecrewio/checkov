@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.severities import BcSeverities, Severity
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult, ErrorStatus
-from checkov.common.output.ai import OpenAi
 from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT
@@ -288,7 +287,6 @@ class Report:
             baseline: Baseline | None = None,
             use_bc_ids: bool = False,
             summary_position: str = 'top',
-            openai_api_key: str | None = None,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -327,8 +325,6 @@ class Report:
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
-            if self.failed_checks:
-                OpenAi(api_key=openai_api_key).enhance_records(runner_type=self.check_type, records=self.failed_checks)
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
