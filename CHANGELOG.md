@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.414...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.416...HEAD)
+
+## [3.2.416](https://github.com/bridgecrewio/checkov/compare/3.2.415...3.2.416) - 2025-05-06
+
+### Bug Fix
+
+- **terraform_plan:** use provider name not resource address to fix supported_provider matching - [#7119](https://github.com/bridgecrewio/checkov/pull/7119)
+
+## [3.2.415](https://github.com/bridgecrewio/checkov/compare/3.2.414...3.2.415) - 2025-05-05
+
+### Bug Fix
+
+- **general:** using asteval instead of using eval - [#7116](https://github.com/bridgecrewio/checkov/pull/7116)
 
 ## [3.2.414](https://github.com/bridgecrewio/checkov/compare/3.2.413...3.2.414) - 2025-05-01
 
