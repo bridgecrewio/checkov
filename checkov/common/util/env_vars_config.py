@@ -46,9 +46,6 @@ class EnvVarsConfig:
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit
         self.MAX_IAC_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_IAC_FILE_SIZE", 50_000_000))  # 50 MB is default limit
         self.NO_OUTPUT = convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", False))
-        self.OPENAI_MAX_FINDINGS = force_int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
-        self.OPENAI_MAX_TOKENS = force_int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
-        self.OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
         self.OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv("CHECKOV_OUTPUT_CODE_LINE_LIMIT", 50))
         self.PARSE_ERROR_FAIL = convert_str_to_bool(os.getenv("CKV_PARSE_ERROR_FAIL", False))
         self.RENDER_ASYNC_MAX_WORKERS = force_int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
