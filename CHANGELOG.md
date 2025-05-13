@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.416...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.417...HEAD)
+
+## [3.2.417](https://github.com/bridgecrewio/checkov/compare/3.2.416...3.2.417) - 2025-05-12
+
+### Breaking Change
+
+- **general:** Remove OpenAI - [#7146](https://github.com/bridgecrewio/checkov/pull/7146)
 
 ## [3.2.416](https://github.com/bridgecrewio/checkov/compare/3.2.415...3.2.416) - 2025-05-06
 
