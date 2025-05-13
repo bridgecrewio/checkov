@@ -20,14 +20,15 @@ class TestKMSKeyWildcardPrincipal(unittest.TestCase):
             'aws_kms_key.pass_0',
             'aws_kms_key.pass_1',
             'aws_kms_key.pass_2',
-            'aws_kms_key.pass_3'
+            'aws_kms_key.pass_3',
+            'aws_kms_key.pass_4',
         }
         failing_resources = {
             'aws_kms_key.fail_0',
             'aws_kms_key.fail_1',
             'aws_kms_key.fail_2',
             'aws_kms_key.fail_3',
-            'aws_kms_key.fail_4'
+            'aws_kms_key.fail_4',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
@@ -36,7 +37,7 @@ class TestKMSKeyWildcardPrincipal(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
         
-        self.assertEqual(summary['passed'], 4)
+        self.assertEqual(summary['passed'], 5)
         self.assertEqual(summary['failed'], 5)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
