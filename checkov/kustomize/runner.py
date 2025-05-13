@@ -77,6 +77,14 @@ class K8sKustomizeRunner(K8sRunner):
     def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
         self.report_mutator_data = report_mutator_data or {}
 
+    @staticmethod
+    def get_kustomize_resource_id(realKustomizeEnvMetadata: dict[str, Any], resource_id: str) -> str:
+        if 'overlay' in realKustomizeEnvMetadata["type"]:
+            kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
+        else:
+            kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
+        return kustomizeResourceID
+
     def mutate_kubernetes_results(
         self,
         results: dict[BaseCheck, _CheckResult],
@@ -111,10 +119,7 @@ class K8sKustomizeRunner(K8sRunner):
                 continue
 
             realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[file_abs_path]]
-            if 'overlay' in realKustomizeEnvMetadata["type"]:
-                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
-            else:
-                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
+            kustomizeResourceID = self.get_kustomize_resource_id(realKustomizeEnvMetadata, resource_id)
 
             external_run_indicator = "Bc"
             file_path = realKustomizeEnvMetadata['filePath']

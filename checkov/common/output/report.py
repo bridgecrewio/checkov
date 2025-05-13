@@ -439,9 +439,14 @@ class Report:
 
     @staticmethod
     def create_test_suite_properties_block(config: argparse.Namespace) -> Dict[str, Any]:
-        """Creates a dictionary without 'None' values for the JUnit XML properties block"""
+        """Creates a dictionary without 'None' values and sensitive data for the JUnit XML properties block"""
 
-        properties = {k: v for k, v in config.__dict__.items() if v is not None}
+        # List of sensitive properties that should be excluded from outputs
+        sensitive_properties = ['bc_api_key']
+
+        properties = {k: v for k, v in config.__dict__.items()
+                      if v is not None and k not in sensitive_properties}
+
         return properties
 
     def _create_test_case_failure_output(self, record: Record) -> str:
