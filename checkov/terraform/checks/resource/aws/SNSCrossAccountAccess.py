@@ -11,7 +11,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SNSCrossAccountAccess(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure AWS SNS topic policies do not allow cross-account access"
-        id = "CKV_AWS_388"
+        id = "CKV_AWS_385"
         supported_resources = ("aws_sns_topic_policy",)
         categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -34,9 +34,6 @@ class SNSCrossAccountAccess(BaseResourceCheck):
                             has_specific_aws_iam_arn_principal = False
 
                             aws_principal_values = []
-                            t1 = statement.statement
-                            t2 = "Principal" in statement.statement
-                            t3 = "AWS" in statement.statement["Principal"]
                             if statement.statement and "Principal" in statement.statement and "AWS" in statement.statement["Principal"]:
                                 raw_aws_principals = statement.statement["Principal"]["AWS"]
                                 if isinstance(raw_aws_principals, str):
