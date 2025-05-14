@@ -42,7 +42,7 @@ from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
-from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES
+from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES, Commit
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 
@@ -159,6 +159,7 @@ class Runner(BaseRunner[None, None, None]):
             file_names: Iterable[str] | None = None,
             entropy_limit: Optional[float] = None):
         super().__init__(file_extensions, file_names)
+        self.commits_to_scan: Optional[List[Commit]] = None
         self.secrets_coordinator = SecretsCoordinator()
         self.history_secret_store = GitHistorySecretStore()
         self.entropy_limit = entropy_limit or float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
@@ -260,7 +261,7 @@ class Runner(BaseRunner[None, None, None]):
                     git_history_scanner = GitHistoryScanner(
                         root_folder, secrets, self.history_secret_store, runner_filter.git_history_timeout)
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-                    git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned)
+                    git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned, commits_to_scan=self.commits_to_scan)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     files_to_scan += _find_files_from_root_folder(root_folder, runner_filter)
