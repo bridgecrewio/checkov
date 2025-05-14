@@ -113,7 +113,7 @@ class TestJunitReport(unittest.TestCase):
         config = argparse.Namespace(
             file="fixtures/main.tf",
             framework=["terraform"],
-            bc_api_key="secret_api_key_123",  # This should be excluded
+            bc_api_key="secret_api_key_123",  # checkov:skip=CKV_SECRET_6 test secret # This should be excluded
             non_sensitive_prop="regular_value"  # This should be included
         )
 
