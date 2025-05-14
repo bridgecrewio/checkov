@@ -1,5 +1,5 @@
 from typing import Optional, Any, Dict
-from collections.abc import Sized
+from collections.abc import Collection
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -11,8 +11,7 @@ class IsEmptyAttributeSolver(BaseAttributeSolver):
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
 
-        if isinstance(attr, (list, Sized)):
-            if len(attr) == 0 or (len(attr) == 2 and START_LINE in attr and END_LINE in attr):
-                return True
+        if isinstance(attr, (list, Collection)):
+            return len(attr) == 0 or (len(attr) == 2 and START_LINE in attr and END_LINE in attr)
 
         return False
