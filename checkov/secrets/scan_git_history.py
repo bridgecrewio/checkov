@@ -49,7 +49,7 @@ class GitHistoryScanner:
         self.raw_store: List[RawStore] = []
         self.repo: Repo  # Initialize repo attribute with None
 
-    def scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan:Optional[List[Commit]] = None) -> bool:
+    def scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan: Optional[List[Commit]] = None) -> bool:
         """return true if the scan finished without timeout"""
         is_repo_set = self.set_repo()  # for mocking purposes in testing
         if not is_repo_set:
@@ -67,7 +67,7 @@ class GitHistoryScanner:
         return scanned
 
     @time_it
-    def _scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan:Optional[List[Commit]] = None) -> bool:
+    def _scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan: Optional[List[Commit]] = None) -> bool:
         commits_diff = self.get_commits(last_commit_scanned) if not commits_to_scan else commits_to_scan
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:

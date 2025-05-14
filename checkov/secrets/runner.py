@@ -42,7 +42,7 @@ from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
-from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES
+from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES, Commit
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 
@@ -159,7 +159,7 @@ class Runner(BaseRunner[None, None, None]):
             file_names: Iterable[str] | None = None,
             entropy_limit: Optional[float] = None):
         super().__init__(file_extensions, file_names)
-        self.commits_to_scan = []
+        self.commits_to_scan: Optional[List[Commit]] = None
         self.secrets_coordinator = SecretsCoordinator()
         self.history_secret_store = GitHistorySecretStore()
         self.entropy_limit = entropy_limit or float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
