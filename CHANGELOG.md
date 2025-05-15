@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.420...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.422...HEAD)
+
+## [3.2.422](https://github.com/bridgecrewio/checkov/compare/3.2.420...3.2.422) - 2025-05-14
+
+### Feature
+
+- **secrets:** git-history allow scan by commits list - [#7155](https://github.com/bridgecrewio/checkov/pull/7155)
+
+### Bug Fix
+
+- **general:** exclude **start_line** and **end_line** from is empty solver - [#7156](https://github.com/bridgecrewio/checkov/pull/7156)
 
 ## [3.2.420](https://github.com/bridgecrewio/checkov/compare/3.2.417...3.2.420) - 2025-05-13
 
