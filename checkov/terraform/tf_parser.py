@@ -17,7 +17,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MO
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
 from checkov.common.util.env_vars_config import env_vars_config
-from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout
+from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, ProcessTimeout
 from checkov.common.util.stopit.utils import BaseTimeout
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
@@ -742,20 +742,35 @@ def load_or_die_quietly(
 
 # if we are not running in a thread, run the hcl2.load function with a timeout, to prevent from getting stuck in parsing.
 def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
+    """Parse files with a timeout mechanism.
+
+    Attempts to use SignalTimeout for Unix systems on the main thread,
+    ThreadingTimeout for Windows, and ProcessTimeout
+    as a fallback for non-main threads and blocking operations.
+    """
     # setting up timeout class
     timeout_class: Optional[Type[BaseTimeout]] = None
     if platform.system() == 'Windows':
         timeout_class = ThreadingTimeout
     elif threading.current_thread() is threading.main_thread():
         timeout_class = SignalTimeout
+    else:
+        timeout_class = ProcessTimeout
 
-    # if we're not running on the main thread, don't use timeout
     parsing_timeout = env_vars_config.HCL_PARSE_TIMEOUT_SEC or 0
-    if not timeout_class or not parsing_timeout:
+    if not parsing_timeout:
         return hcl2.load(f)
 
-    with timeout_class(parsing_timeout) as to_ctx_mgr:
-        raw_data = hcl2.load(f)
+    to_ctx_mgr = timeout_class(parsing_timeout)
+    if isinstance(to_ctx_mgr, ProcessTimeout):
+        to_ctx_mgr.set_block(hcl2.loads, f.read())
+
+    with to_ctx_mgr:
+        if isinstance(to_ctx_mgr, ProcessTimeout):
+            raw_data = to_ctx_mgr.get_result()
+        else:
+            raw_data = hcl2.load(f)
+
     if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
         logging.debug(f"reached timeout when parsing file {f} using hcl2")
         raise Exception(f"file took more than {parsing_timeout} seconds to parse")
