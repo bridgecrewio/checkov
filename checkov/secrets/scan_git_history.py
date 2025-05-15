@@ -51,10 +51,11 @@ class GitHistoryScanner:
 
     def scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan: Optional[List[Commit]] = None) -> bool:
         """return true if the scan finished without timeout"""
-        is_repo_set = self.set_repo()  # for mocking purposes in testing
-        if not is_repo_set:
-            logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
-            return False
+        if not commits_to_scan:
+            is_repo_set = self.set_repo()  # for mocking purposes in testing
+            if not is_repo_set:
+                logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
+                return False
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
