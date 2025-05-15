@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class EMRPubliclyAccessible(BaseResourceCheck):
+class EMRPubliclyAccessible(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure AWS EMR block public access setting is enabled"
@@ -11,11 +11,8 @@ class EMRPubliclyAccessible(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if 'block_public_security_group_rules' in conf:
-            if str(conf['block_public_security_group_rules'][0]).lower() == "false":
-                return CheckResult.FAILED
-        return CheckResult.PASSED
+    def get_inspected_key(self):
+        return "block_public_security_group_rules"
 
 
 check = EMRPubliclyAccessible()
