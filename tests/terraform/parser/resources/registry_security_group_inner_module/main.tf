@@ -1,5 +1,5 @@
 module "web_server_sg" {
-  source  = "terraform-aws-modules/security-group/aws//modules/http-80"
+  source  = "git::git@github.aig.net:terraform-modules/aws-cloudfront//s3-cdn?ref=develop"
   version = "4.0.0"
 
   name        = "web-server"
