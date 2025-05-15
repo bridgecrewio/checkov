@@ -18,6 +18,7 @@ class TestBackupVaultEncrypted(unittest.TestCase):
         passing_resources = {
             "aws_sns_topic_policy.sns_tp1",
             "aws_sns_topic_policy.sns_tp6",
+            "aws_sns_topic_policy.sns_pass_condition",
         }
         failing_resources = {
             "aws_sns_topic_policy.sns_tp2",
@@ -29,7 +30,7 @@ class TestBackupVaultEncrypted(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["passed"], 3)
         self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
