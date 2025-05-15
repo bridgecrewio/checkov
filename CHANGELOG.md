@@ -1,6 +1,27 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.417...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.422...HEAD)
+
+## [3.2.422](https://github.com/bridgecrewio/checkov/compare/3.2.420...3.2.422) - 2025-05-14
+
+### Feature
+
+- **secrets:** git-history allow scan by commits list - [#7155](https://github.com/bridgecrewio/checkov/pull/7155)
+
+### Bug Fix
+
+- **general:** exclude **start_line** and **end_line** from is empty solver - [#7156](https://github.com/bridgecrewio/checkov/pull/7156)
+
+## [3.2.420](https://github.com/bridgecrewio/checkov/compare/3.2.417...3.2.420) - 2025-05-13
+
+### Feature
+
+- **kustomize:** export get kustomize resource id to a function - [#7153](https://github.com/bridgecrewio/checkov/pull/7153)
+
+### Bug Fix
+
+- **general:** Skip bc_api_key in output - [#7148](https://github.com/bridgecrewio/checkov/pull/7148)
+- **terraform:** Fixed crash when using variable rendering inside a list of len > 1 - [#7151](https://github.com/bridgecrewio/checkov/pull/7151)
 
 ## [3.2.417](https://github.com/bridgecrewio/checkov/compare/3.2.416...3.2.417) - 2025-05-12
 
