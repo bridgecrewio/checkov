@@ -7,9 +7,9 @@ import re
 from pathlib import Path
 from typing import List, Callable, TYPE_CHECKING
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.file_utils import read_file_with_any_encoding
-from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.terraform.module_loading.registry import module_loader_registry
 
 if TYPE_CHECKING:
@@ -35,6 +35,22 @@ class ModuleDownload:
 
 def find_modules(path: str) -> List[ModuleDownload]:
     modules_found: list[ModuleDownload] = []
+
+    # Leverage modules.json to better inform discovery. If we have this,
+    # there should be no need to walk and gather modules
+    if env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
+        tf_modules_file = Path(path) / '.terraform' / 'modules' / 'modules.json'
+        if tf_modules_file.exists():
+            for mod in json.loads(tf_modules_file.read_bytes())['Modules']:
+                if mod['Key']:
+                    md = ModuleDownload(path)
+                    md.module_name = mod['Key']
+                    md.module_link = mod['Dir']
+                    md.version = mod['Version'] if 'Version' in mod else 'latest'
+                    md.address = f"{mod['Source']}:{md.version}"
+                    md.tf_managed = True
+                    modules_found.append(md)
+            return modules_found
 
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
@@ -110,11 +126,8 @@ def load_tf_modules(
     if not modules_to_load:
         modules_to_load = find_modules(path)
 
-    # load terraform managed modules first, before pulling out distinct modules, as address attribute changes
-    replaced_modules = replace_terraform_managed_modules(path=path, found_modules=modules_to_load)
-
     # To avoid duplicate work, we need to get the distinct module sources
-    distinct_modules = list({m.address: m for m in replaced_modules}.values())
+    distinct_modules = list({m.address: m for m in modules_to_load}.values())
 
     downloadable_modules = [
         (module_loader_registry, m)
@@ -124,7 +137,7 @@ def load_tf_modules(
     if run_parallel:
         list(parallel_runner.run_function(_download_module, downloadable_modules))
     else:
-        logging.info(f"Starting download of modules of length {len(replaced_modules)}")
+        logging.info(f"Starting download of modules of length {len(downloadable_modules)}")
         for m in downloadable_modules:
             success = _download_module(*m)
             if not success and stop_on_failure:
@@ -154,48 +167,3 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
         return False
 
     return True
-
-
-def replace_terraform_managed_modules(path: str, found_modules: list[ModuleDownload]) -> list[ModuleDownload]:
-    """Replaces modules by Terraform managed ones to prevent additional downloading
-
-    It can't handle nested modules yet, ex.
-    {
-      "Key": "parent_module.child_module",
-      "Source": "./child_module",
-      "Dir": "parent_module/child_module"
-    }
-    """
-
-    if not convert_str_to_bool(os.getenv("CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES", False)):
-        return found_modules
-
-    # file used by Terraform internally to map modules to the downloaded path
-    tf_modules_file = Path(path) / ".terraform/modules/modules.json"
-    if not tf_modules_file.exists():
-        return found_modules
-
-    # create Key (module name) to module detail map for faster querying
-    tf_modules = {
-        module["Key"]: module
-        for module in json.loads(tf_modules_file.read_bytes())["Modules"]
-    }
-
-    replaced_modules: list[ModuleDownload] = []
-    for module in found_modules:
-        if module.module_name in tf_modules:
-            tf_module = tf_modules[module.module_name]
-
-            module_new = ModuleDownload(source_dir=path)
-            # if version is 'None' then set it to latest in the address, so it can be mapped properly later on
-            module_new.address = f"{module.module_link}:latest" if module.version is None else module.address
-            module_new.module_link = tf_module["Dir"]
-            module_new.module_name = module.module_name
-            module_new.tf_managed = True
-            module_new.version = module.version
-
-            replaced_modules.append(module_new)
-        else:
-            replaced_modules.append(module)
-
-    return replaced_modules

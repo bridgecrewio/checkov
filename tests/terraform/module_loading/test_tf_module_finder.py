@@ -5,14 +5,14 @@ import logging
 from pathlib import Path
 from unittest import mock
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.module_finder import (
     ModuleDownload,
     _download_module,
     find_modules,
     should_download,
-    load_tf_modules,
-    replace_terraform_managed_modules,
+    load_tf_modules
 )
 from checkov.terraform.module_loading.registry import module_loader_registry
 
@@ -78,21 +78,26 @@ def test_dem_warning(caplog):
     assert 'Failed to download module' not in caplog.text
     assert '--download-external-modules flag' not in caplog.text
 
-@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
+@mock.patch.object(env_vars_config, "CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES", True)
 def test_tf_managed_and_comment_out_modules():
-    # this test leverages the modules, which Terraform downloads on its own
-
-    # given
-    src_path = Path(__file__).parent / "data/tf_managed_modules"
+    src_path = Path(__file__).parent / 'data' / 'tf_managed_modules'
     modules = find_modules(str(src_path))
 
-    # when
-    replaced_modules = replace_terraform_managed_modules(path=str(src_path), found_modules=modules)
+    assert len(modules) == 1
+    assert modules[0].tf_managed is True
+    assert modules[0].address == "registry.terraform.io/terraform-aws-modules/cloudwatch/aws//modules/log-group:4.1.0"
+    assert modules[0].module_link == ".terraform/modules/log_group/modules/log-group"
 
-    tf_managed_modules = [module for module in replaced_modules if module.tf_managed]
-    assert len(replaced_modules) == 2
-    assert len(tf_managed_modules) == 1
+@mock.patch.object(env_vars_config, "CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES", True)
+def test_tf_managed_submodules():
+    modules = find_modules(Path(__file__).parent / 'data' / 'tf_managed_submodules')
+    assert len(modules) == 2
+    assert modules[0].tf_managed is True
+    assert modules[0].address == 'somewhere/a:0'
+    assert modules[0].module_name == 'a'
+    assert modules[0].module_link == '.terraform/modules/a'
+    assert modules[1].tf_managed is True
+    assert modules[1].address == 'somewhere/b:1'
+    assert modules[1].module_name == 'a.b'
+    assert modules[1].module_link == '.terraform/modules/a.b'
 
-    assert tf_managed_modules[0].tf_managed is True
-    assert tf_managed_modules[0].address == "terraform-aws-modules/cloudwatch/aws//modules/log-group:latest"
-    assert tf_managed_modules[0].module_link == ".terraform/modules/log_group/modules/log-group"
