@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.422...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.424...HEAD)
+
+## [3.2.424](https://github.com/bridgecrewio/checkov/compare/3.2.422...3.2.424) - 2025-05-15
+
+### Feature
+
+- **terraform:** Add SNS check and modify some - [#7154](https://github.com/bridgecrewio/checkov/pull/7154)
+
+### Bug Fix
+
+- **secrets:** Fix for git-history scan by commits - [#7160](https://github.com/bridgecrewio/checkov/pull/7160)
 
 ## [3.2.422](https://github.com/bridgecrewio/checkov/compare/3.2.420...3.2.422) - 2025-05-14
 
