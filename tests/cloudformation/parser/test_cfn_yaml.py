@@ -1,10 +1,12 @@
 import os
 import unittest
 
+from pathlib import Path
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.runner import Runner
+from checkov.cloudformation.parser import parse, cfn_yaml
 from checkov.runner_filter import RunnerFilter
-from checkov.cloudformation.parser import parse
+from checkov.serverless.parsers.parser import parse as serverless_parse
 
 
 class TestCfnYaml(unittest.TestCase):
@@ -20,6 +22,20 @@ class TestCfnYaml(unittest.TestCase):
         self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 1)
         self.assertEqual(summary['parsing_errors'], 0)
+
+    def test_file_inclusion(self):
+        file = Path(__file__).resolve().parent / 'cfn_file.yaml'
+        data, _ = serverless_parse(file)
+        assert isinstance(data['resources'], list)
+        assert len(data['resources']) == 1
+        assert isinstance(data['resources'][0], dict)
+        assert 'Resources' in data['resources'][0]
+        assert isinstance(data['resources'][0]['Resources'], dict)
+
+    def test_file_circular_inclusion(self):
+        file = Path(__file__).resolve().parent / 'cfn_file_circular.yaml'
+        with self.assertRaises(cfn_yaml.CfnParseError):
+            cfn_yaml.load(file, cfn_yaml.ContentType.SLS)
 
     def test_code_line_extraction(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
