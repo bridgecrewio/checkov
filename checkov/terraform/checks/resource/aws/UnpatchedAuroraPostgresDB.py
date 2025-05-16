@@ -14,6 +14,7 @@ class UnpatchedAuroraPostgresDB(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'engine' in conf and 'aurora-postgresql' in conf['engine']:
             if 'engine_version' in conf and conf['engine_version'][0] in ['10.11', '10.12', '10.13', '11.6', '11.7', '11.8']:
+                self.evaluated_keys = ['engine','engine-version']
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

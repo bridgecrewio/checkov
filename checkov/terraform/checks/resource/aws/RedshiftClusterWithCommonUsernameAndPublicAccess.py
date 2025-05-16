@@ -14,6 +14,7 @@ class RedshiftClusterWithCommonUsernameAndPublicAccess(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'master_username' in conf:
             if conf['master_username'][0] in ['awsuser', 'administrator', 'admin']:
+                self.evaluated_keys = ['master_username']
                 if 'publicly_accessible' in conf:
                     if str(conf['publicly_accessible'][0]).lower() == 'true':
                         return CheckResult.FAILED

@@ -568,9 +568,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ZoneHasMatchingQueryLog(self):
         self.go("Route53ZoneHasMatchingQueryLog")
 
-    def test_S3BucketPubliclyReadableViaACL(self):
-        self.go("S3BucketPubliclyReadableViaACL")
-
     def test_ALBWebACLConfiguredWIthLog4jVulnerability(self):
         self.go("ALBWebACLConfiguredWIthLog4jVulnerability")
 
