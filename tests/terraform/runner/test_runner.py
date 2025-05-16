@@ -400,6 +400,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_188':
                 # CKV_AWS_188 was deleted because it duplicated CKV_AWS_142
                 continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_384':
+                # CKV_AWS_384 is CFN only
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(

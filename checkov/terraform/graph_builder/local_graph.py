@@ -895,7 +895,7 @@ def update_list_attribute(
         # happens when we can't correctly evaluate something, because of strange defaults or 'for_each' blocks
         return config
 
-    if len(key_parts) == 1:
+    if len(key_parts) == 1 and len(config) == 1:
         idx = force_int(key_parts[0])
         # Avoid changing the config and cause side effects
         inner_config = pickle_deepcopy(config[0])

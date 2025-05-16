@@ -49,16 +49,17 @@ class GitHistoryScanner:
         self.raw_store: List[RawStore] = []
         self.repo: Repo  # Initialize repo attribute with None
 
-    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
+    def scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan: Optional[List[Commit]] = None) -> bool:
         """return true if the scan finished without timeout"""
-        is_repo_set = self.set_repo()  # for mocking purposes in testing
-        if not is_repo_set:
-            logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
-            return False
+        if not commits_to_scan:
+            is_repo_set = self.set_repo()  # for mocking purposes in testing
+            if not is_repo_set:
+                logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
+                return False
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
-            scanned = self._scan_history(last_commit_scanned)
+            scanned = self._scan_history(last_commit_scanned, commits_to_scan)
             self._create_secret_collection()
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
@@ -67,8 +68,8 @@ class GitHistoryScanner:
         return scanned
 
     @time_it
-    def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        commits_diff = self.get_commits(last_commit_scanned)
+    def _scan_history(self, last_commit_scanned: Optional[str] = '', commits_to_scan: Optional[List[Commit]] = None) -> bool:
+        commits_diff = self.get_commits(last_commit_scanned) if not commits_to_scan else commits_to_scan
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")

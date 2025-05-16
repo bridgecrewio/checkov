@@ -104,6 +104,42 @@ class TestJunitReport(unittest.TestCase):
             ).toprettyxml()
         )
 
+    def test_sensitive_properties_excluded_from_junit_xml(self):
+        # given
+        test_file = Path(__file__).parent / "fixtures/main.tf"
+        checks = ["CKV_AWS_18"]  # Just need one check for this test
+
+        # Create config with a sensitive property (bc_api_key)
+        config = argparse.Namespace(
+            file="fixtures/main.tf",
+            framework=["terraform"],
+            bc_api_key="secret_api_key_123",  # checkov:skip=CKV_SECRET_6 test secret # This should be excluded
+            non_sensitive_prop="regular_value"  # This should be included
+        )
+
+        report = TerrafomrRunner().run(
+            root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
+        )
+
+        properties = Report.create_test_suite_properties_block(config=config)
+        test_suite = report.get_test_suite(properties=properties)
+        xml_string = Report.get_junit_xml_string([test_suite])
+        root = ET.fromstring(xml_string)
+        testsuite = root.find('testsuite')
+        props = testsuite.find('properties')
+
+        # Check that sensitive properties are not included
+        property_names = [prop.attrib['name'] for prop in props.findall('property')]
+        self.assertIn('file', property_names, "Expected 'file' property to be present")
+        self.assertIn('framework', property_names, "Expected 'framework' property to be present")
+        self.assertIn('non_sensitive_prop', property_names, "Expected 'non_sensitive_prop' property to be present")
+
+        # Most important assertions - check that sensitive properties are excluded
+        self.assertNotIn('bc_api_key', property_names, "Sensitive property 'bc_api_key' should be excluded")
+
+        # Double check the XML string itself doesn't contain the sensitive values
+        self.assertNotIn('secret_api_key_123', xml_string, "API key value should not appear in XML")
+
 
 if __name__ == "__main__":
     unittest.main()

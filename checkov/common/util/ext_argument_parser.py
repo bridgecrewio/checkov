@@ -552,14 +552,6 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="maximum time to stop the scan "
         )
         self.add(
-            "--openai-api-key",
-            env_var="CKV_OPENAI_API_KEY",
-            sanitize=True,
-            help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
-                 "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
-                 "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
-        )
-        self.add(
             "--custom-tool-name",
             default="Checkov",
             help="Add a tool name if you want your output to be tagged with a specific tool name,"
