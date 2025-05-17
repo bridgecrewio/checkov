@@ -7,6 +7,6 @@ check1['some_key_1235#$@'] = check2.get('some_value_1235')
 
 
 access_key = "AKIAIOSFODNN7EXAMPLE"
-secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPL3KEY"
 if __name__ == '__main__':
     print('secrets')

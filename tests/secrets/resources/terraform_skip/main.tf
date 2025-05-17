@@ -26,7 +26,7 @@ resource "aws_lambda_function" "wrong_skip" {
 
   environment {
     variables = {
-      access_key = "AKIAIOS3F6KN7EXAMPLE" #checkov:skip=CKV_SECRET_5:wrong check id
+      access_key = "AKIAIOS3F6KN7EXAMPL3" #checkov:skip=CKV_SECRET_5:wrong check id
       secret_key = ""
     }
   }

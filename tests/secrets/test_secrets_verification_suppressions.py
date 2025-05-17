@@ -12,7 +12,7 @@ def test_runner_verify_secrets_skip_invalid_suppressed(mock_bc_integration, mock
     valid_dir_path = current_dir + "/resources/cfn"
 
     rel_resource_path = '/secret.yml'
-    resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
+    resource_id = '3472e46be802575792c8ddc3fcea5399a73078f1'
     verified_report = [
         {
             "violationId": "BC_GIT_2",
@@ -53,8 +53,8 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
     valid_dir_path = current_dir + "/resources/cfn"
 
     rel_resource_path = '/secret.yml'
-    resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
-    second_resource_id = 'd70eab08607a4d05faa2d0d6647206599e9abc65'
+    resource_id = '3472e46be802575792c8ddc3fcea5399a73078f1'
+    second_resource_id = 'a8a2f5d0efa444d71973792b14df2e05c00458c4'
     verified_report = [
         {
             "violationId": "BC_GIT_2",
