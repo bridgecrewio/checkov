@@ -18,7 +18,7 @@ performance_configurations = {
         'repo_name': 'terraform-aws-components',
         'threshold': {
             "Darwin": 19.0,
-            "Linux": 13.0,
+            "Linux": 11.0,
             "Windows": 15.0,
         }
     },
@@ -114,5 +114,6 @@ def test_k8_performance(benchmark):
         runner_registry = RunnerRegistry(banner, runner_filter, k8_runner())
         reports = runner_registry.run(root_folder=test_files_dir)
         assert len(reports) > 0
+
     benchmark(run_kubernetes_scan)
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
