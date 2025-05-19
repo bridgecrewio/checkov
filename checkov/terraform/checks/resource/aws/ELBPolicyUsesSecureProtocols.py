@@ -21,7 +21,10 @@ class ELBPolicyUsesSecureProtocols(BaseResourceCheck):
                     return CheckResult.FAILED
             if name == "Reference-Security-Policy":
                 value = policy.get("value")[0]
-                if value in ("ELBSecurityPolicy-2016-08", "ELBSecurityPolicy-TLS-1-1-2017-01", "ELBSecurityPolicy-2015-05", "ELBSecurityPolicy-2015-03", "ELBSecurityPolicy-2015-02"):
+                if value in ("ELBSecurityPolicy-2016-08", "ELBSecurityPolicy-TLS-1-1-2017-01",
+                             "ELBSecurityPolicy-2015-05", "ELBSecurityPolicy-2015-03", "ELBSecurityPolicy-2015-02",
+                             "ELBSecurityPolicy-TLS-1-0-2015-04", "ELBSecurityPolicy-2014-10",
+                             "ELBSecurityPolicy-Default", "ELBSecurityPolicy-2014-01"):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

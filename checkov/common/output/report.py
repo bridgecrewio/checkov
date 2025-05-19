@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.severities import BcSeverities, Severity
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult, ErrorStatus
-from checkov.common.output.ai import OpenAi
 from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT
@@ -288,7 +287,6 @@ class Report:
             baseline: Baseline | None = None,
             use_bc_ids: bool = False,
             summary_position: str = 'top',
-            openai_api_key: str | None = None,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -327,8 +325,6 @@ class Report:
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
-            if self.failed_checks:
-                OpenAi(api_key=openai_api_key).enhance_records(runner_type=self.check_type, records=self.failed_checks)
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
@@ -337,7 +333,7 @@ class Report:
 
         if not is_quiet:
             for file in self.parsing_errors:
-                output_data += colored(f"Error parsing file {file}ֿ\n", "red")
+                output_data += colored(f"Error parsing file {file}\n", "red")
 
         if created_baseline_path:
             output_data += colored(
@@ -443,9 +439,14 @@ class Report:
 
     @staticmethod
     def create_test_suite_properties_block(config: argparse.Namespace) -> Dict[str, Any]:
-        """Creates a dictionary without 'None' values for the JUnit XML properties block"""
+        """Creates a dictionary without 'None' values and sensitive data for the JUnit XML properties block"""
 
-        properties = {k: v for k, v in config.__dict__.items() if v is not None}
+        # List of sensitive properties that should be excluded from outputs
+        sensitive_properties = ['bc_api_key']
+
+        properties = {k: v for k, v in config.__dict__.items()
+                      if v is not None and k not in sensitive_properties}
+
         return properties
 
     def _create_test_case_failure_output(self, record: Record) -> str:

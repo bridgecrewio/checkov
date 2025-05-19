@@ -1,0 +1,8 @@
+Resources:
+  ECSCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: 'MyCluster'
+      ClusterSettings:
+        - Name: 'containerInsights'
+          Value: 'enhanced'

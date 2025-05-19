@@ -27,7 +27,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v3
       - name: Build with Jekyll
@@ -48,4 +48,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@87c3283f01cd6fe19a0ab93a23b2f6fcba5a8e42  # v2
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v2

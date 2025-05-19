@@ -32,7 +32,7 @@ class FunctionAppsAccessibleOverHttps(BaseResourceCheck):
             auth_settings_v2 = conf['auth_settings_v2'][0]
 
             # default=true for require_https
-            if 'require_https' not in auth_settings_v2.keys():
+            if 'require_https' not in auth_settings_v2:
                 return CheckResult.PASSED
 
             require_https = auth_settings_v2.get('require_https')[0]

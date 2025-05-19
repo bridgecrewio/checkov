@@ -10,6 +10,7 @@ from typing_extensions import Literal
 from checkov import main
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.util.type_forcers import convert_str_to_optional_bool
 from checkov.main import DEFAULT_RUNNERS, Checkov
 from checkov.runner_filter import RunnerFilter
 
@@ -176,3 +177,15 @@ def test_run_without_custom_severity():
     for report in ckv.scan_reports:
         assert report.failed_checks[0].check_id == "CUSTOM_WITHOUT_SEVERITY"
         assert not report.failed_checks[0].severity
+
+def test_optional_download_external_modules():
+    args=[
+        ['-d', '.', '--framework', 'all'],
+        ['-d', '.', '--framework', 'all', '--download-external-modules', 'true'],
+        ['-d', '.', '--framework', 'all', '--download-external-modules', 'false']
+    ]
+
+    assert convert_str_to_optional_bool(Checkov(argv=args[0]).config.download_external_modules) is None
+    assert convert_str_to_optional_bool(Checkov(argv=args[1]).config.download_external_modules) is True
+    assert convert_str_to_optional_bool(Checkov(argv=args[2]).config.download_external_modules) is False
+

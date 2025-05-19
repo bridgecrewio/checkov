@@ -28,7 +28,7 @@ class ECSClusterContainerInsights(BaseResourceCheck):
             if settings and isinstance(settings, list):
                 self.evaluated_keys = ["Properties/ClusterSettings"]
                 for setting in settings:
-                    if setting["Name"] == "containerInsights" and setting["Value"] == "enabled":
+                    if setting["Name"] == "containerInsights" and setting["Value"] in ["enhanced", "enabled"]:
                         return CheckResult.PASSED
         return CheckResult.FAILED
 

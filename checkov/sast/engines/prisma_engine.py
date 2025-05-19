@@ -147,7 +147,7 @@ class PrismaEngine(SastEngine):
             os_type = platform.system().lower()
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
-            headers["X-Required-Sast-Version"] = "latest"  # or ant version seperated with _
+            headers["X-Required-Sast-Version"] = "latest"  # or ant version separated with _
 
             # don't use the 'should_call_raise_for_status' parameter for now, because it logs errors messages
             response = request_wrapper(

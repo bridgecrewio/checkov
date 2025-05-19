@@ -39,18 +39,18 @@ def add_resource_to_definitions_context(definitions_context: dict[str, dict[str,
     if resource_key in LINE_FIELD_NAMES:
         return
 
-    if isinstance(resource_attributes, dict):
-        start_line = resource_attributes[START_LINE] - 1
-        end_line = resource_attributes[END_LINE] - 1
-
-    elif isinstance(resource_attributes, ListNode):
-        start_line = resource_attributes.start_mark.line
-        end_line = resource_attributes.end_mark.line
-
-    elif isinstance(resource_attributes, StrNode):
-        start_line = resource_attributes.start_mark.line + 1
-        end_line = resource_attributes.end_mark.line + 1
-
+    if resource_attributes:
+        if isinstance(resource_attributes, dict):
+            start_line = resource_attributes[START_LINE] - 1
+            end_line = resource_attributes[END_LINE] - 1
+        elif isinstance(resource_attributes, ListNode):
+            start_line = resource_attributes.start_mark.line
+            end_line = resource_attributes.end_mark.line
+        elif isinstance(resource_attributes, StrNode):
+            start_line = resource_attributes.start_mark.line + 1
+            end_line = resource_attributes.end_mark.line + 1
+        else:
+            return
     else:
         return
 

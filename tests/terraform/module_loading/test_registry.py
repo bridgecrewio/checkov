@@ -243,7 +243,7 @@ def test_load_github(
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
 
-# TODO: create a dummy repo in bitbucket for more consitent tests
+# TODO: create a dummy repo in bitbucket for more consistent tests
 @pytest.mark.parametrize(
     "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
     [

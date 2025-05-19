@@ -20,7 +20,7 @@ Full list of github organization and repository settings related checks can be f
 | GITHUB_TOKEN   |                           | GitHub personal access token to be used to fetch GitHub configuration                                                                         |
 | GITHUB_REF | refs/heads/master                    | Github branch for which to fetch branch protection rules configuration                                                                        |
  | GITHUB_ORG   |                           | Github organization                                                                                                                           |
- | GITHUB_REPOSITORY |                      | Github repositry for which to fetch repository configuration info                                                                             |
+ | GITHUB_REPOSITORY |                      | Github repository for which to fetch repository configuration info                                                                             |
  | GITHUB_REPO_OWNER |                           | The owner of the repository. This could be either Github repository owner user name or the organization name, in which the user is the owner. |
 
 ### Example organization security configuration

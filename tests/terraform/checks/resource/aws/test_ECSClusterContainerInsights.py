@@ -20,6 +20,22 @@ class TestECSClusterContainerInsights(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_explicit_disable(self):
+        hcl_res = hcl2.loads(
+            """
+            resource "aws_ecs_cluster" "my_cluster" {
+                name = "white-hart"
+                setting {
+                    name = "containerInsights"
+                    value = "disabled"
+                }
+            }
+            """
+        )
+        resource_conf = hcl_res['resource'][0]['aws_ecs_cluster']['my_cluster']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
     def test_success(self):
         hcl_res = hcl2.loads(
             """
@@ -28,6 +44,22 @@ class TestECSClusterContainerInsights(unittest.TestCase):
                 setting {
                     name = "containerInsights"
                     value = "enabled"
+                }
+            }
+            """
+        )
+        resource_conf = hcl_res['resource'][0]['aws_ecs_cluster']['my_cluster']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_enhanced(self):
+        hcl_res = hcl2.loads(
+            """
+            resource "aws_ecs_cluster" "my_cluster" {
+                name = "white-hart"
+                setting {
+                    name = "containerInsights"
+                    value = "enhanced"
                 }
             }
             """

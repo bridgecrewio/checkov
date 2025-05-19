@@ -45,7 +45,7 @@ Each testsuite stores the results of one `checkov` runner.
 ```
 
 - `name`: Name of the runner
-- `tests`: Amount of runned checks (passed + failed + skipped)
+- `tests`: Amount of checks ran (passed + failed + skipped)
 - `failures`: Amount of failed checks
 - `skipped`: Amount of skipped checks
 - `time`: Currently not used - At some point it will store the time the runner needed to execute all checks
@@ -75,7 +75,7 @@ IaC
 ```
 
 - `name`: Format `[<severity>][<check ID>] <check name>`
-- `classname`: Format `<fiel path>.<resource ID>`
+- `classname`: Format `<file path>.<resource ID>`
 - `file`: Used by Gitlab - File path of the scanned file
 
 SCA
@@ -84,7 +84,7 @@ SCA
 ```
 
 - `name`: Format `[<severity>][<CVE ID>] <package name>: <package version>`
-- `classname`: Format `<fiel path>.<package name>`
+- `classname`: Format `<file path>.<package name>`
 - `file`: Used by Gitlab - File path of the scanned file
 
 NOTE: For none API token user severity will be `[NONE]`

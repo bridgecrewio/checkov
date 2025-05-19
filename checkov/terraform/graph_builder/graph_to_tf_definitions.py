@@ -17,7 +17,7 @@ def convert_graph_vertices_to_tf_definitions(
     for vertex in vertices:
         block_path = vertex.path
         if not os.path.isfile(block_path):
-            print(f"tried to convert vertex to tf_definitions but its path doesnt exist: {vertex}")
+            print(f"tried to convert vertex to tf_definitions but its path does not exist: {vertex}")
             continue
         block_type = vertex.block_type
         if block_type == BlockType.TF_VARIABLE:
