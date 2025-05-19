@@ -87,4 +87,4 @@ pydantic = ">=2.0.0,<3.0.0"
 asteval = "==1.0.5"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
