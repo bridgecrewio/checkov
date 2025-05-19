@@ -19,7 +19,8 @@ class TestMSSQLServerMinTLSVersion(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Sql/servers.pass"
+            "Microsoft.Sql/servers.pass",
+            "Microsoft.Sql/servers.pass2"
         }
 
         failing_resources = {

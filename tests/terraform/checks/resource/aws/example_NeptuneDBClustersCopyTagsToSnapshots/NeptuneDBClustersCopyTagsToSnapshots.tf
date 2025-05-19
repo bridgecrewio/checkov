@@ -3,7 +3,7 @@ resource "aws_neptune_cluster" "ckv_unittest_pass" {
   copy_tags_to_snapshot = true
 }
 
-## SHOULD FAIL: doens't have copy_tags_to_snapshot
+## SHOULD FAIL: doesn't have copy_tags_to_snapshot
 resource "aws_neptune_cluster" "ckv_unittest_fail" {
   copy_tags_to_snapshot = false
 }

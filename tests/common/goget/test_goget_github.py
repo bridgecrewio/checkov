@@ -50,7 +50,7 @@ class TestGitGetter(unittest.TestCase):
         url = "my-git.com/repository-name//sub/path"
         getter = GitGetter(url)
         git_url, subdir = getter._source_subdir()
-        self.assertEqual("my-git.com/repository-name", git_url, "Parsed source url should contain hostname ane path")
+        self.assertEqual("my-git.com/repository-name", git_url, "Parsed source url should contain hostname and path")
         self.assertEqual("/sub/path", subdir, "Parsed source subdirectory should contain absolute (sub)path")
 
     def test_parse_source_with_query_without_scheme(self):

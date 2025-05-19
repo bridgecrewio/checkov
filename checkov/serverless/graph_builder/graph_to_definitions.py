@@ -21,7 +21,7 @@ def convert_graph_vertices_to_definitions(vertices: list[ServerlessBlock], root_
         if vertex.block_type == ServerlessElements.PLUGINS:
             serverless_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, []).append(element_name)
 
-        # If there is a ket named 'value' in the config it means that
+        # If there is a key named 'value' in the config it means that
         # this vertex's config contains only a single string
         elif 'value' in vertex.config:
             # If the vertex is provider or service and it only contains a string the section should look like:

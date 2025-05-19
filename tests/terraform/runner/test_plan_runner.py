@@ -276,7 +276,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 108)
+        self.assertEqual(report.get_summary()["failed"], 107)
 
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -398,7 +398,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
-        # Often 'data' does not even appear in the *_modules[x].resouces field within planned_values and is not scanned as expected
+        # Often 'data' does not even appear in the *_modules[x].resources field within planned_values and is not scanned as expected
         # It can occur when tf module B depends on tf module A
         # And tf module A creates a resource that is used in a data block in tf module B
         # So some values can be known but other are not at plan time
@@ -932,6 +932,30 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_plan_with_providers(self):
+        """
+        Ensure AWS providers are parsed correctly and the credentials check runs against
+        providers with aliases, too.
+        """
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_with_providers/tfplan.json"
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ["CKV_AWS_41"]
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+
+        for record in report.failed_checks:
+            self.assertIn(record.check_id, checks_allowlist)
+        self.assertEqual(report.get_summary()["failed"], 1)
+        self.assertEqual(report.get_summary()["passed"], 2)
 
     def tearDown(self) -> None:
         resource_registry.checks = deepcopy(self.orig_checks)

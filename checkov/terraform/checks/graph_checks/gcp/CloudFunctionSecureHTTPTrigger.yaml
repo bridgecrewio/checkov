@@ -3,9 +3,18 @@ metadata:
   name: "Ensure GCP Cloud Function HTTP trigger is secured"
   category: "NETWORKING"
 definition:
-  cond_type: "attribute"
-  resource_types:
-  - "google_cloudfunctions_function"
-  attribute: "https_trigger_security_level"
-  operator: "equals"
-  value: "SECURE_ALWAYS"
+  or:
+    # Pass if cloud function is not http triggered
+    - cond_type: "attribute"
+      resource_types:
+      - "google_cloudfunctions_function"
+      attribute: "trigger_http"
+      operator: "not_equals"
+      value: true
+    # If trigger_http is true. Evaluate security_level.
+    - cond_type: "attribute"
+      resource_types:
+      - "google_cloudfunctions_function"
+      attribute: "https_trigger_security_level"
+      operator: "equals"
+      value: "SECURE_ALWAYS"

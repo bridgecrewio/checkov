@@ -25,7 +25,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 if variables and isinstance(variables, dict):
                     for var_name, value in variables.items():
                         if isinstance(value, dict):
-                            # if it is a resolved instrinsic function like !Ref: xyz, then it can't be a secret
+                            # if it is a resolved intrinsic function like !Ref: xyz, then it can't be a secret
                             continue
 
                         # Skip checking if the value starts with 'handler.'

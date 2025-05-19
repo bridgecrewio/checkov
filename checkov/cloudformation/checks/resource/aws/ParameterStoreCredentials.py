@@ -31,7 +31,7 @@ class ParameterStoreCredentials(BaseResourceCheck):
         properties = conf.get("Properties")
         if isinstance(properties, dict):
             name = properties.get("Name")
-            if name and re.match("(?i).*secret.*|.*api_?key.*", name):
+            if name and re.match("(?i).*secret.*|.*api_?key.*", str(name)):
                 value = properties.get("Value")
                 if value:
                     # If unresolved variable, then pass

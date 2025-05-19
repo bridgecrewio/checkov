@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: failing-selector-deployment
+spec:
+  replicas: 2
+  # Intentionally leaving matchLabels empty
+  selector:
+    matchLabels: {}
+  template:
+    metadata:
+      labels:
+        app: my-failing-selector-app
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80

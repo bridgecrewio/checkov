@@ -98,7 +98,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.licensing_integration = licensing_integration  # can be manipulated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
@@ -476,7 +476,6 @@ class RunnerRegistry:
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
                     summary_position=config.summary_position,
-                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(
@@ -488,7 +487,7 @@ class RunnerRegistry:
             )
 
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
             sarif = Sarif(reports=sarif_reports, tool=self.tool)
@@ -730,7 +729,8 @@ class RunnerRegistry:
 
     @staticmethod
     def get_enriched_resources(
-        repo_roots: list[str | Path], download_external_modules: bool
+        repo_roots: list[str | Path],
+        download_external_modules: Optional[bool]
     ) -> dict[str, dict[str, Any]]:
         from checkov.terraform.modules.module_objects import TFDefinitionKey
 

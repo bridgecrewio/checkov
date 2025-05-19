@@ -78,7 +78,7 @@ def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> Dict[st
     export_default_match = re.search(EXPORT_DEFAULT_PATTERN, file_content, re.DOTALL)
     if export_default_match:
         export_default_str = export_default_match.group(1)
-        # for having for all the keys and values doube quotes and removing spaces
+        # for having for all the keys and values double quotes and removing spaces
         export_default_str = re.sub(r'\s+', '', re.sub(r'([{\s,])(\w+):', r'\1"\2":', export_default_str)
                                     .replace("'", "\""))
 

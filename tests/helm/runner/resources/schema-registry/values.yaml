@@ -126,7 +126,7 @@ log4j: {}
 ## NOTE: When it's set the log4j is ignored
 ##
 existingLog4jConfigMap: ""
-## Authentication parameteres
+## Authentication parameters
 ## https://github.com/bitnami/bitnami-docker-kafka#security
 ##
 auth:
@@ -440,7 +440,7 @@ autoscaling:
   targetMemory: ""
 
 ## @section Exposure Parameters
-## Schema Registry Service paramaters.
+## Schema Registry Service parameters.
 ##
 service:
   ## @param service.type Kubernetes service type

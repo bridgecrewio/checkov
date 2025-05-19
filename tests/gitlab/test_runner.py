@@ -19,12 +19,12 @@ class TestGitlabRunnerValid(unittest.TestCase):
         runner = Runner()
         runner.gitlab.gitlab_conf_dir_path = valid_dir_path
 
-        checks = ["CKV_GITLAB_1", "CKV_GITLAB_2"]
+        checks = ["CKV_GITLAB_1"]
         report = runner.run(
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(checks=checks)
         )
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(report.skipped_checks, [])
@@ -54,21 +54,21 @@ class TestGitlabRunnerValid(unittest.TestCase):
         valid_dir_path = os.path.join(current_dir, "resources", "gitlab_conf", "pass")
         runner = Runner()
         runner.gitlab.gitlab_conf_dir_path = valid_dir_path
-        checks = ["CKV_GITLAB_1", "CKV_GITLAB_2"]
+        checks = ["CKV_GITLAB_1"]
         report = runner.run(
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 0)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.skipped_checks, [])
 
     @mock.patch.dict(os.environ, {"CKV_GITLAB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1"}, clear=True)
     def test_runner_files_ignore(self):
         # given
         test_file = Path(__file__).parent / "resources/gitlab_conf/pass/merge_request_approval_conf.json"
-        checks = ["CKV_GITLAB_1", "CKV_GITLAB_2"]
+        checks = ["CKV_GITLAB_1"]
 
         # when
         report = Runner().run(

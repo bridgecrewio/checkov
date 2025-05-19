@@ -53,3 +53,11 @@ definition:
               attribute: "ssl_mode"
               operator: "not_equals"
               value: "none"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_dms_endpoint"
+      attribute: "endpoint_type"
+      operator: "not_within"
+      value:
+        - "source"
+        - "target"
