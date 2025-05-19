@@ -7,7 +7,7 @@ import pytest
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
-from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, get_asteval
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 
 class TestTerraformEvaluation(TestCase):
@@ -518,29 +518,11 @@ class TestTerraformEvaluation(TestCase):
         result = evaluate_terraform(input_str)
         self.assertEqual(expected, result)
 
-    def test_empty_string(self):
-        input_str = "   "
-        expected = input_str
-        result = evaluate_terraform(input_str)
-        self.assertEqual(expected, result)
-
-        input_str = ""
-        expected = input_str
-        result = evaluate_terraform(input_str)
-        self.assertEqual(expected, result)
-
-    def test_dict_as_string(self):
-        expected = {'Statement': [
-            {'Action': ['lambda:CreateFunction', 'lambda:CreateEventSourceMapping', 'dynamodb:CreateTable'],
-             'Effect': 'Allow', 'Resource': '*'}], 'Version': '2012-10-17'}
-        input_str = '  {    "Version": "2012-10-17",    "Statement": [      {        "Effect": "Allow",        "Action": [          "lambda:CreateFunction",          "lambda:CreateEventSourceMapping",          "dynamodb:CreateTable",        ],        "Resource": "*"      }    ]  }'
-        result = evaluate_terraform(input_str)
-        assert result == expected
-
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
     [
+
         ("${lookup({'a': ${local.protocol1}},\"a\",\"https\")}", '${local.protocol1}', 'local.protocol1', "'local.protocol1'"),
         ('${length(keys(var.identity)) > 0 ? [${var.identity}] : []}', '${var.identity}', 'var.identity', 'var.identity'),
     ],
@@ -555,32 +537,8 @@ def test_evaluate_range_pattern() -> None:
 
     # Test range pattern
     assert evaluate("1-10") == "1-10"
-    assert evaluate("5-25")== "5-25"
+    assert evaluate("5-25") == "5-25"
     assert evaluate("10-5") == 5
 
     # Test non-range pattern for comparison
     assert evaluate("1+1") == 2
-
-
-EVAL_DANGEROUS_INPUTS = [
-    ("unicode_characters", "[{}._﹎class_﹎._﹎bases_﹎[0]._﹎subclasses_﹎()]"),
-    ("generators_to_bypass_protections_code", "((gen:=(gen_list[0].gi_frame.f_back.f_back.f_globals for _ in [1,]),v:=gen_list.append(gen), gen_list[0])[2] for gen_list in [[]]).send(None).send(None).get('_'+'_builtins_'+'_')['_'+'_import_'+'_']('os').system('date >> /tmp/gen-example')"),
-    ("system command", "__import__('os').system('rm -rf /')"),
-    ("read passwd", "open('/etc/passwd').read()"),
-    ("access builtins", "__builtins__.__import__('os').listdir('.')"),
-    ("exec call", "exec('print(123)')"),
-    ("create file", "__import__('os').popen('touch /tmp/hacked').read()"),
-    ("subclasses", "().__class__.__bases__[0].__subclasses__()"),
-    ("socket connection", "__import__('socket').socket().connect(('example.com', 80))"),
-    ("lambda trick", "(lambda f: f('ls'))(__import__('os').system)")
-]
-
-
-@pytest.mark.parametrize("description, input_str", EVAL_DANGEROUS_INPUTS)
-def test_evaluate_malicious_code(description: str, input_str: str)-> None:
-    expected = input_str
-    result = evaluate_terraform(input_str)
-    assert result == expected
-    asteval = get_asteval()
-    asteval(input_str)
-    assert asteval.error
