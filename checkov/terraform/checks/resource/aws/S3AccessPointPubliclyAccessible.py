@@ -6,7 +6,7 @@ class S3AccessPointPubliclyAccessible(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure AWS S3 access point block public access setting is enabled"
-        id = "CKV_AWS_387"
+        id = "CKV_AWS_392"
         supported_resources = ['aws_s3_access_point']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
