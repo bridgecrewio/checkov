@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.424...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.426...HEAD)
+
+## [3.2.426](https://github.com/bridgecrewio/checkov/compare/3.2.424...3.2.426) - 2025-05-19
+
+### Feature
+
+- **secrets:** Bump detect secrets - [#7158](https://github.com/bridgecrewio/checkov/pull/7158)
+- **terraform:** 7 new policies - [#7056](https://github.com/bridgecrewio/checkov/pull/7056)
 
 ## [3.2.424](https://github.com/bridgecrewio/checkov/compare/3.2.422...3.2.424) - 2025-05-15
 
