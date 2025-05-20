@@ -381,10 +381,10 @@ def evaluate(input_str: str) -> Any:
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     asteval = get_asteval()
     if RANGE_PATTERN.match(input_str):
-        temp_eval = asteval(input_str)
+        temp_eval = asteval(input_str, show_errors=False)
         evaluated = input_str if temp_eval < 0 else temp_eval
     else:
-        evaluated = asteval(input_str)
+        evaluated = asteval(input_str, show_errors=False)
 
     if asteval.error:
         error_messages = [err.get_error() for err in asteval.error]
