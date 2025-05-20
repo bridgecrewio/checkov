@@ -69,9 +69,6 @@ class GitGetter(BaseGetter):
         clone_dir = self.temp_dir + "/clone/" if self.create_clone_and_res_dirs else self.temp_dir
         self._clone(git_url, clone_dir)
 
-        if internal_dir:
-            clone_dir = clone_dir + internal_dir
-
         if self.create_clone_and_res_dirs:
             result_dir = self.temp_dir + "/result/"
             shutil.copytree(clone_dir, result_dir)
