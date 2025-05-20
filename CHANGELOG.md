@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.426...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.427...HEAD)
+
+## [3.2.427](https://github.com/bridgecrewio/checkov/compare/3.2.426...3.2.427) - 2025-05-20
+
+### Feature
+
+- **secrets:** Revert - Bump detect secrets - [#7171](https://github.com/bridgecrewio/checkov/pull/7171)
+
+### Bug Fix
+
+- **terraform:** dont move clone to internal dir - [#7159](https://github.com/bridgecrewio/checkov/pull/7159)
 
 ## [3.2.426](https://github.com/bridgecrewio/checkov/compare/3.2.424...3.2.426) - 2025-05-19
 
