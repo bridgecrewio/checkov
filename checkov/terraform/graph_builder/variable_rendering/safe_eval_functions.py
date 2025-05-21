@@ -381,7 +381,7 @@ def evaluate(input_str: str) -> Any:
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     asteval = get_asteval()
-    log_level = os.getenv("LOG_LEVEL", "WARNING")
+    log_level = os.getenv("LOG_LEVEL")
     should_log_asteval_errors = log_level == "DEBUG"
     if RANGE_PATTERN.match(input_str):
         temp_eval = asteval(input_str, show_errors=should_log_asteval_errors)
