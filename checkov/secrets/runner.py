@@ -274,7 +274,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.initiate(len(files_to_scan))
                 self._scan_files(files_to_scan, secrets, self.pbar)
                 self.pbar.close()
-        
+
         history_store = None
         if runner_filter.enable_git_history_secret_scan and git_history_scanner is not None:
             history_store = git_history_scanner.history_store
