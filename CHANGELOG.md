@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.429...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.432...HEAD)
+
+## [3.2.432](https://github.com/bridgecrewio/checkov/compare/3.2.429...3.2.432) - 2025-05-22
+
+### Bug Fix
+
+- **terraform:** Multiple fixes - [#7178](https://github.com/bridgecrewio/checkov/pull/7178)
 
 ## [3.2.429](https://github.com/bridgecrewio/checkov/compare/3.2.427...3.2.429) - 2025-05-21
 
