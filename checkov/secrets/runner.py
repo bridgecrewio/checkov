@@ -243,7 +243,7 @@ class Runner(BaseRunner[None, None, None]):
 
         plugins_used, cleanupFn = self._get_plugins_used()
         secret_suppressions_ids = _get_secret_suppressions_ids()
-        report = Report(self.check_type)
+        
 
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -273,7 +273,11 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.initiate(len(files_to_scan))
                 self._scan_files(files_to_scan, secrets, self.pbar)
                 self.pbar.close()
+        return self.get_report(secrets=secrets, runner_filter=runner_filter, history_store=git_history_scanner.history_store,
+                               root_folder=root_folder, secret_suppressions_ids=secret_suppressions_ids, cleanupFn=cleanupFn)
 
+    def get_report(self, secrets, runner_filter, history_store, root_folder, secret_suppressions_ids, cleanupFn):
+        report = Report(self.check_type)
         secret_records: dict[str, SecretsRecord] = {}
         secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
@@ -311,8 +315,7 @@ class Runner(BaseRunner[None, None, None]):
             # secret history
             added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
             if runner_filter.enable_git_history_secret_scan:
-                enriched_potential_secret = git_history_scanner. \
-                    history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
+                enriched_potential_secret = history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
                 added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
                 removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
                 code_line = enriched_potential_secret.get('code_line') or ''
