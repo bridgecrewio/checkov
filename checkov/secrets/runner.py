@@ -278,6 +278,7 @@ class Runner(BaseRunner[None, None, None]):
 
     def get_report(self, secrets, runner_filter, history_store, root_folder, secret_suppressions_ids, cleanupFn):
         report = Report(self.check_type)
+
         secret_records: dict[str, SecretsRecord] = {}
         secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
