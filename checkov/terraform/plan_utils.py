@@ -124,8 +124,7 @@ def get_entity_context(
             entity_context['start_line'] = resource_type_dict['start_line'][0]
             entity_context['end_line'] = resource_type_dict['end_line'][0]
             entity_context["code_lines"] = definitions_raw[full_file_path][
-                                           entity_context["start_line"]: entity_context["end_line"]
-                                           ]
+                                           entity_context["start_line"]: entity_context["end_line"]]
             entity_context['address'] = resource_type_dict[TF_PLAN_RESOURCE_ADDRESS]
             return entity_context
         elif resource_definition and resource_definition.get(TF_PLAN_RESOURCE_ADDRESS) == entity_id:
