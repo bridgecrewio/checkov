@@ -251,7 +251,8 @@ class Runner(BaseRunner[None, None, None]):
         files_to_scan = files or []
         self._add_custom_detectors_to_metadata_integration()
 
-        git_history_scanner = GitHistoryScanner(str(root_folder), secrets, self.history_secret_store, runner_filter.git_history_timeout)
+        timeout = runner_filter.git_history_timeout if runner_filter else 0
+        git_history_scanner = GitHistoryScanner(str(root_folder), secrets, self.history_secret_store, timeout)
 
         with transient_settings({
             # Only run scans with only these plugins.
