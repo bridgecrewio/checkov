@@ -303,7 +303,11 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             resource_type = definition_path[0]
             resource_name = definition_path[1]
             resource_type_dict = entity.get(resource_type, {})
-            entity_id = resource_type_dict.get(resource_name, resource_type_dict).get(TF_PLAN_RESOURCE_ADDRESS)
+            resource_dict = resource_type_dict.get(resource_name, resource_type_dict)
+            if isinstance(resource_dict, dict):
+                entity_id = resource_dict.get(TF_PLAN_RESOURCE_ADDRESS)
+            else:
+                entity_id = resource_type_dict.get(TF_PLAN_RESOURCE_ADDRESS)
         else:
             entity_id = definition_path[0]
         return cast("dict[str, Any]", self.context.get(full_file_path, {}).get(entity_id, {}))
