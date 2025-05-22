@@ -251,7 +251,7 @@ class Runner(BaseRunner[None, None, None]):
         files_to_scan = files or []
         self._add_custom_detectors_to_metadata_integration()
 
-        git_history_scanner = GitHistoryScanner(root_folder, secrets, self.history_secret_store, runner_filter.git_history_timeout)
+        git_history_scanner = GitHistoryScanner(str(root_folder), secrets, self.history_secret_store, runner_filter.git_history_timeout)
 
         with transient_settings({
             # Only run scans with only these plugins.
@@ -275,7 +275,7 @@ class Runner(BaseRunner[None, None, None]):
         return self.get_report(secrets=secrets, runner_filter=runner_filter, history_store=git_history_scanner.history_store,
                                root_folder=root_folder, secret_suppressions_ids=secret_suppressions_ids, cleanupFn=cleanupFn)
 
-    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter, history_store: GitHistorySecretStore, root_folder: str, secret_suppressions_ids: List[str], cleanupFn: Any) -> Report:
+    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter, history_store: GitHistorySecretStore, root_folder: Optional[str], secret_suppressions_ids: List[str], cleanupFn: Any) -> Report:
         report = Report(self.check_type)
 
         secret_records: dict[str, SecretsRecord] = {}
