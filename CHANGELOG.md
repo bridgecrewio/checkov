@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.427...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.429...HEAD)
+
+## [3.2.429](https://github.com/bridgecrewio/checkov/compare/3.2.427...3.2.429) - 2025-05-21
+
+### Bug Fix
+
+- **general:** Fix support for git external module syntax 'git::git@' - [#7175](https://github.com/bridgecrewio/checkov/pull/7175)
+- **general:** Remove asteval syntax error logs - [#7172](https://github.com/bridgecrewio/checkov/pull/7172)
 
 ## [3.2.427](https://github.com/bridgecrewio/checkov/compare/3.2.426...3.2.427) - 2025-05-20
 
