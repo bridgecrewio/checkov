@@ -260,7 +260,7 @@ class Runner(BaseRunner[None, None, None]):
             'plugins_used': plugins_used
         }) as settings:
             if root_folder:
-                if runner_filter.enable_git_history_secret_scan:
+                if runner_filter.enable_git_history_secret_scan and git_history_scanner is not None:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned, commits_to_scan=self.commits_to_scan)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
@@ -276,7 +276,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
         
         history_store = None
-        if runner_filter.enable_git_history_secret_scan:
+        if runner_filter.enable_git_history_secret_scan and git_history_scanner is not None:
             history_store = git_history_scanner.history_store
 
         return self.get_report(secrets=secrets, runner_filter=runner_filter, history_store=history_store,
@@ -321,7 +321,7 @@ class Runner(BaseRunner[None, None, None]):
             secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
             # secret history
             added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
-            if runner_filter.enable_git_history_secret_scan:
+            if runner_filter.enable_git_history_secret_scan and history_store is not None:
                 enriched_potential_secret = history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
                 added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
                 removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
