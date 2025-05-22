@@ -243,7 +243,6 @@ class Runner(BaseRunner[None, None, None]):
 
         plugins_used, cleanupFn = self._get_plugins_used()
         secret_suppressions_ids = _get_secret_suppressions_ids()
-        
 
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
