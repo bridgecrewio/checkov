@@ -81,7 +81,7 @@ class GitHistoryScanner:
         if not self.raw_store:  # scanned nothing
             return False
 
-        self._process_raw_store()
+        self.process_raw_store()
         return True
 
     def get_commits(self, last_commit_scanned: Optional[str] = '') -> List[Commit]:
@@ -93,7 +93,7 @@ class GitHistoryScanner:
         commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
         return commits_diff
 
-    def _process_raw_store(self) -> None:
+    def process_raw_store(self) -> None:
         for raw_res in self.raw_store:
             res_type = raw_res.get('type')
             if res_type == FILE_RESULTS_STR:
