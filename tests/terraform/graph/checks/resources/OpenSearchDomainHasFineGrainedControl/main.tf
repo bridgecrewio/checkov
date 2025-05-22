@@ -1,4 +1,4 @@
-resource "aws_opensearch_domain" "os_fail_1" {
+resource "aws_opensearch_domain" "os_pass1" {
   domain_name    = "ggkitty"
   engine_version = "Elasticsearch_7.1"
 
@@ -44,7 +44,7 @@ resource "aws_opensearch_domain" "os_fail_2" {
   }
 
   advanced_security_options {
-    enabled                        = true
+    enabled                        = false
     anonymous_auth_enabled         = true
     internal_user_database_enabled = false
     master_user_options {
@@ -118,7 +118,7 @@ resource "aws_elasticsearch_domain" "es_fail_1" {
   }
 
   advanced_security_options {
-    enabled                        = true
+    enabled                        = false
     anonymous_auth_enabled         = true
     internal_user_database_enabled = false
     master_user_options {
@@ -164,7 +164,7 @@ resource "aws_elasticsearch_domain" "es_pass" {
   }
 
   advanced_security_options {
-    enabled                        = true
+    enabled                        = false
     anonymous_auth_enabled         = true
     internal_user_database_enabled = true
     master_user_options {
