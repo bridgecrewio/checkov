@@ -416,7 +416,8 @@ class Runner(BaseRunner[None, None, None]):
             self.verify_secrets(report, enriched_secrets_s3_path)
         logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-        cleanupFn()
+        if cleanupFn is not None:
+            cleanupFn()
         if runner_filter.skip_invalid_secrets:
             self._modify_invalid_secrets_check_result_to_skipped(report)
         return report
