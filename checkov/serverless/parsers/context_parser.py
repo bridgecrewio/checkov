@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
     ENVIRONMENT_TOKEN, STACK_TAGS_TOKEN, TAGS_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser, STARTLINE, ENDLINE
+from checkov.common.util.file_utils import read_file_with_any_encoding
 
 
 class ContextParser(object):
@@ -30,6 +32,11 @@ class ContextParser(object):
         self.functions_conf = sls_template.get(FUNCTIONS_TOKEN) or {}
         self.provider_type = self._infer_provider_type()
 
+    def file(self, content: dict[str, Any]) -> str:
+        if isinstance(content, dict):
+            return str(content.get('__file__', self.sls_file))
+        return self.sls_file
+
     def extract_code_lines(
         self, content: dict[str, Any]
     ) -> tuple[list[int], list[tuple[int, str]]] | tuple[None, None]:
@@ -40,7 +47,14 @@ class ContextParser(object):
 
             entity_lines_range = [start_line, end_line - 1]
 
-            entity_code_lines = self.sls_template_lines[start_line - 1: end_line - 1]
+            fname = self.file(content)
+            lines = self.sls_template_lines
+            if fname != self.sls_file:
+                lines = []
+                text = read_file_with_any_encoding(Path(self.sls_file).parent / fname)
+                for i, ln in enumerate(text.splitlines(True)):
+                    lines.append((i + 1, ln))
+            entity_code_lines = lines[start_line - 1: end_line - 1]
             return entity_lines_range, entity_code_lines
         return None, None
 
