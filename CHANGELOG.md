@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.424...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.432...HEAD)
+
+## [3.2.432](https://github.com/bridgecrewio/checkov/compare/3.2.429...3.2.432) - 2025-05-22
+
+### Bug Fix
+
+- **terraform:** Multiple fixes - [#7178](https://github.com/bridgecrewio/checkov/pull/7178)
+
+## [3.2.429](https://github.com/bridgecrewio/checkov/compare/3.2.427...3.2.429) - 2025-05-21
+
+### Bug Fix
+
+- **general:** Fix support for git external module syntax 'git::git@' - [#7175](https://github.com/bridgecrewio/checkov/pull/7175)
+- **general:** Remove asteval syntax error logs - [#7172](https://github.com/bridgecrewio/checkov/pull/7172)
+
+## [3.2.427](https://github.com/bridgecrewio/checkov/compare/3.2.426...3.2.427) - 2025-05-20
+
+### Feature
+
+- **secrets:** Revert - Bump detect secrets - [#7171](https://github.com/bridgecrewio/checkov/pull/7171)
+
+### Bug Fix
+
+- **terraform:** dont move clone to internal dir - [#7159](https://github.com/bridgecrewio/checkov/pull/7159)
+
+## [3.2.426](https://github.com/bridgecrewio/checkov/compare/3.2.424...3.2.426) - 2025-05-19
+
+### Feature
+
+- **secrets:** Bump detect secrets - [#7158](https://github.com/bridgecrewio/checkov/pull/7158)
+- **terraform:** 7 new policies - [#7056](https://github.com/bridgecrewio/checkov/pull/7056)
 
 ## [3.2.424](https://github.com/bridgecrewio/checkov/compare/3.2.422...3.2.424) - 2025-05-15
 
