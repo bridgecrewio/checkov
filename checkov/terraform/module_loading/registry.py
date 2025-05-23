@@ -7,6 +7,7 @@ from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
 
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 class ModuleLoaderRegistry:
     loaders: List["ModuleLoader"] = []  # noqa: CCE003
     module_content_cache: Dict[str, Optional[ModuleContent]] = {}  # noqa: CCE003
+    module_latest: Dict[str, str] = {}  # noqa: CCE003
 
     def __init__(
         self,
@@ -55,9 +57,20 @@ information, see `loader.ModuleLoader.load`.
         if module_address in self.module_content_cache:
             logging.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
-        else:
-            logging.debug(f'Cache miss for {module_address}')
 
+        # If we have tf managed modules, we likely have whatever :latest is in the cache
+        if env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
+            if source_version == 'latest':
+                if source in self.module_latest:
+                    logging.debug(f'Used the cache for module {module_address}')
+                    return self.module_content_cache[f'{source}:{self.module_latest[source]}']
+
+                reg = f'registry.terraform.io/{source}'
+                if reg in self.module_latest:
+                    logging.debug(f'Used the cache for module (from tf registry) {module_address}')
+                    return self.module_content_cache[f'{reg}:{self.module_latest[reg]}']
+
+        logging.debug(f'Cache miss for {module_address}')
         if os.name == 'nt':
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
             # https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
@@ -110,12 +123,18 @@ information, see `loader.ModuleLoader.load`.
                     self.module_content_cache[module_address] = ModuleContent(None)
                     continue
                 else:
+                    v = module_address.rsplit(':', 1)
+                    if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
+                        self.module_latest[v[0]] = v[1]
                     self.module_content_cache[module_address] = content
                     return content
 
         if last_exception is not None:
             raise last_exception
 
+        v = module_address.rsplit(':', 1)
+        if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
+            self.module_latest[v[0]] = v[1]
         self.module_content_cache[module_address] = content
         return content
 
@@ -125,6 +144,7 @@ information, see `loader.ModuleLoader.load`.
 
     def reset_module_content_cache(self) -> None:
         self.module_content_cache = {}
+        self.module_latest = {}
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()
