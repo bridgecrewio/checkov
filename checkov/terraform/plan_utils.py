@@ -6,7 +6,6 @@ import logging
 import os
 from typing import Dict, List, Tuple, Any
 from charset_normalizer import from_fp
-from markdown_it.rules_inline import entity
 
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
