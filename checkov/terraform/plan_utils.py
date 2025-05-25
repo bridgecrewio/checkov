@@ -93,6 +93,7 @@ def build_definitions_context(
                 definitions_context[full_file_path][entity_id] = entity_context
     return definitions_context
 
+
 def get_entity_id(resource_type_dict: dict[str, Any], resource_name: str) -> str:
     resource_dict = resource_type_dict.get(resource_name, resource_type_dict)
     if isinstance(resource_dict, dict):
@@ -102,6 +103,7 @@ def get_entity_id(resource_type_dict: dict[str, Any], resource_name: str) -> str
     if not entity_id:
         raise Exception(f'Failed get_entity_id: {resource_name} does not have {TF_PLAN_RESOURCE_ADDRESS}')
     return str(entity_id)
+
 
 def get_entity_context(
     definitions: dict[str, dict[str, list[dict[str, Any]]]],
