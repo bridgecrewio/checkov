@@ -129,15 +129,11 @@ def get_entity_context(
         resource_definition = resource_type_dict.get(resource_name, resource_type_dict)
         if not isinstance(resource_definition, dict):
             entity_context = build_entity_context(resource_type_dict)
-            entity_context["code_lines"] = definitions_raw[full_file_path][
-                                           entity_context["start_line"]: entity_context["end_line"]
-                                           ]
+            entity_context["code_lines"] = definitions_raw[full_file_path][entity_context["start_line"]: entity_context["end_line"]]
             return entity_context
         elif resource_definition and resource_definition.get(TF_PLAN_RESOURCE_ADDRESS) == entity_id:
             entity_context = build_entity_context(resource_definition)
-            entity_context["code_lines"] = definitions_raw[full_file_path][
-                                           entity_context["start_line"]: entity_context["end_line"]
-                                           ]
+            entity_context["code_lines"] = definitions_raw[full_file_path][entity_context["start_line"]: entity_context["end_line"]]
             return entity_context
     return entity_context
 
@@ -148,6 +144,7 @@ def build_entity_context(resource_dict: dict[str, Any]) -> dict[str, Any]:
     entity_context['end_line'] = resource_dict['end_line'][0]
     entity_context['address'] = resource_dict[TF_PLAN_RESOURCE_ADDRESS]
     return entity_context
+
 
 def get_resource_id_without_nested_modules(address: str) -> str:
     """
