@@ -6,6 +6,7 @@ import logging
 import os
 from typing import Dict, List, Tuple, Any
 from charset_normalizer import from_fp
+from markdown_it.rules_inline import entity
 
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
@@ -128,23 +129,26 @@ def get_entity_context(
         resource_name = definition_path[1]
         resource_definition = resource_type_dict.get(resource_name, resource_type_dict)
         if not isinstance(resource_definition, dict):
-            entity_context['start_line'] = resource_type_dict['start_line'][0]
-            entity_context['end_line'] = resource_type_dict['end_line'][0]
+            entity_context = build_entity_context(resource_type_dict)
             entity_context["code_lines"] = definitions_raw[full_file_path][
-                entity_context["start_line"]: entity_context["end_line"]
-            ]
-            entity_context['address'] = resource_type_dict[TF_PLAN_RESOURCE_ADDRESS]
+                                           entity_context["start_line"]: entity_context["end_line"]
+                                           ]
             return entity_context
         elif resource_definition and resource_definition.get(TF_PLAN_RESOURCE_ADDRESS) == entity_id:
-            entity_context['start_line'] = resource_definition['start_line'][0]
-            entity_context['end_line'] = resource_definition['end_line'][0]
+            entity_context = build_entity_context(resource_definition)
             entity_context["code_lines"] = definitions_raw[full_file_path][
-                entity_context["start_line"] : entity_context["end_line"]
-            ]
-            entity_context['address'] = resource_definition[TF_PLAN_RESOURCE_ADDRESS]
+                                           entity_context["start_line"]: entity_context["end_line"]
+                                           ]
             return entity_context
     return entity_context
 
+
+def build_entity_context(resource_dict: dict[str, Any]) -> dict[str, Any]:
+    entity_context: dict[str, Any] = {}
+    entity_context['start_line'] = resource_dict['start_line'][0]
+    entity_context['end_line'] = resource_dict['end_line'][0]
+    entity_context['address'] = resource_dict[TF_PLAN_RESOURCE_ADDRESS]
+    return entity_context
 
 def get_resource_id_without_nested_modules(address: str) -> str:
     """
