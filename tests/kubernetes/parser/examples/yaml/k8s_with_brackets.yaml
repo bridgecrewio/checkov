@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-name
+  namespace: test-namespace
+  labels:
+    app: o
+    chart: o.1
+    release: rel
+    heritage: Helm
+data:
+  config.yaml: |
+    a:
+      base_message: <p class='message'>{{CONTENT}}</p>

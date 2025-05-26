@@ -68,6 +68,19 @@ class TestScannerRegistry(unittest.TestCase):
         assert template[0]["kind"] == "Pod"
         assert len(file_lines) == 28
 
+    def test_load_brackets(self):
+        # given
+        file_path = EXAMPLES_DIR / "yaml/k8s_with_brackets.yaml"
+
+        # when
+        template, file_lines = load(file_path)
+
+        # then
+        assert len(template) == 1
+        assert template[0]["apiVersion"] == "v1"
+        assert template[0]["kind"] == "ConfigMap"
+        assert len(file_lines) == 14
+
 
 if __name__ == '__main__':
     unittest.main()
