@@ -40,7 +40,7 @@ def add_resource_to_definitions_context(definitions_context: dict[str, dict[str,
         return
 
     if resource_attributes:
-        if isinstance(resource_attributes, dict):
+        if isinstance(resource_attributes, dict) and START_LINE in resource_attributes and END_LINE in resource_attributes:
             start_line = resource_attributes[START_LINE] - 1
             end_line = resource_attributes[END_LINE] - 1
         elif isinstance(resource_attributes, ListNode):
