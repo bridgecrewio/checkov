@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.432...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.433...HEAD)
+
+## [3.2.433](https://github.com/bridgecrewio/checkov/compare/3.2.432...3.2.433) - 2025-05-26
+
+### Bug Fix
+
+- **terraform_plan:** add a check to avoid doing get on a none dict object in tfplan scan - [#7180](https://github.com/bridgecrewio/checkov/pull/7180)
 
 ## [3.2.432](https://github.com/bridgecrewio/checkov/compare/3.2.429...3.2.432) - 2025-05-22
 
