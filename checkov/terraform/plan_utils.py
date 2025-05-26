@@ -77,7 +77,11 @@ def build_definitions_context(
                     resource_type = definition_path[0]
                     resource_name = definition_path[1]
                     resource_type_dict = entity.get(resource_type, {})
-                    entity_id = get_entity_id(resource_type_dict, resource_name)
+                    try:
+                        entity_id = get_entity_id(resource_type_dict, resource_name)
+                    except Exception as e:
+                        logging.error(str(e))
+                        continue
                 else:
                     entity_id = definition_path[0]
 
