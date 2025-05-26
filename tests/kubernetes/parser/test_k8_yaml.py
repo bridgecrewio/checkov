@@ -81,5 +81,6 @@ class TestScannerRegistry(unittest.TestCase):
         assert template[0]["kind"] == "ConfigMap"
         assert len(file_lines) == 8
 
+
 if __name__ == '__main__':
     unittest.main()
