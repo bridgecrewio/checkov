@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.433...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.435...HEAD)
+
+## [3.2.435](https://github.com/bridgecrewio/checkov/compare/3.2.433...3.2.435) - 2025-05-27
+
+### Bug Fix
+
+- **kubernetes:** Only filter out files that contain Helm built-in variables and functions  - [#6922](https://github.com/bridgecrewio/checkov/pull/6922)
+- **serverless:** check if start and end line in serverless definitions context - [#7189](https://github.com/bridgecrewio/checkov/pull/7189)
 
 ## [3.2.433](https://github.com/bridgecrewio/checkov/compare/3.2.432...3.2.433) - 2025-05-26
 
