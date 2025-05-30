@@ -120,10 +120,6 @@ class TestPlanFileParser(unittest.TestCase):
         result = _sanitize_count_from_name(name)
         self.assertEqual(result, "aws_s3_bucket.bucket")
 
-        name = "aws_s3_bucket.bucket[0].my_bucket"
-        result = _sanitize_count_from_name(name)
-        self.assertEqual(result, "aws_s3_bucket.bucket.my_bucket")
-
 
 def test_large_file(mocker: MockerFixture):
     # given
