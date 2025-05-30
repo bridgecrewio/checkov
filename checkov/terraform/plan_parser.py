@@ -326,8 +326,11 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
         if module_name == "module":
             # module names are always prefixed with 'module.', therefore skip it
             continue
-        sanitized_module_name = _sanitize_count_from_name(module_name)
-        root_module_conf = root_module_conf.get("module_calls", {}).get(sanitized_module_name, {}).get("module", {})
+        found_root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+        if not found_root_module_conf:
+            sanitized_module_name = _sanitize_count_from_name(module_name)
+            found_root_module_conf = root_module_conf.get("module_calls", {}).get(sanitized_module_name, {}).get("module", {})
+        root_module_conf = found_root_module_conf
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
 
