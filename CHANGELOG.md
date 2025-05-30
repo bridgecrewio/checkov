@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.435...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.436...HEAD)
+
+## [3.2.436](https://github.com/bridgecrewio/checkov/compare/3.2.435...3.2.436) - 2025-05-30
+
+### Bug Fix
+
+- **terraform_plan:** Support count in terraform plan files - [#7195](https://github.com/bridgecrewio/checkov/pull/7195)
 
 ## [3.2.435](https://github.com/bridgecrewio/checkov/compare/3.2.433...3.2.435) - 2025-05-27
 
