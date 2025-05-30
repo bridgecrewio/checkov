@@ -1,3 +1,4 @@
+from checkov.terraform.plan_parser import _sanitize_count_from_name
 from checkov.terraform_json.parser import hclify, prepare_definition
 
 
@@ -60,3 +61,25 @@ def test_prepare_definition_locals():
             }
         ]
     }
+
+
+def test__sanitize_count_from_name_with_count():
+    # given
+    name = "aws_s3_bucket.bucket[0]"
+
+    # when
+    result = _sanitize_count_from_name(name)
+
+    # then
+    assert result == "aws_s3_bucket.bucket"
+
+
+def test__sanitize_count_from_name_with_no_count():
+    # given
+    name = "aws_s3_bucket.bucket"
+
+    # when
+    result = _sanitize_count_from_name(name)
+
+    # then
+    assert result == "aws_s3_bucket.bucket"
