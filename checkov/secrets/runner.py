@@ -52,7 +52,6 @@ if TYPE_CHECKING:
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
 SECRET_TYPE_TO_ID = {
-    'Artifactory Credentials': 'CKV_SECRET_1',
     'AWS Access Key': 'CKV_SECRET_2',
     'Azure Storage Account access key': 'CKV_SECRET_3',
     'Basic Auth Credentials': 'CKV_SECRET_4',
@@ -183,7 +182,6 @@ class Runner(BaseRunner[None, None, None]):
         current_dir = Path(__file__).parent
         plugins_used: List[Dict[str, Any]] = [
             {'name': 'AWSKeyDetector'},
-            {'name': 'ArtifactoryDetector'},
             {'name': 'AzureStorageKeyDetector'},
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
