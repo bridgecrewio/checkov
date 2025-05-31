@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 from typing import List, Dict, Any, Tuple
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -15,20 +16,18 @@ def convert_graph_vertices_to_tf_definitions(
     tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
     for vertex in vertices:
-        block_path = vertex.path
-        if not os.path.isfile(block_path):
-            print(f"tried to convert vertex to tf_definitions but its path does not exist: {vertex}")
-            continue
-        block_type = vertex.block_type
-        if block_type == BlockType.TF_VARIABLE:
+        if vertex.block_type == BlockType.TF_VARIABLE:
             continue
 
-        tf_path = TFDefinitionKey(file_path=block_path)
+        if not os.path.isfile(vertex.path):
+            logging.debug(f'tried to convert vertex to tf_definitions but its path does not exist: {vertex}')
+            continue
+
+        tf_path = TFDefinitionKey(file_path=vertex.path)
         if vertex.source_module_object:
-            tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
-        tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
-        relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
-        add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
+            tf_path = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
+        tf_definitions.setdefault(tf_path, {}).setdefault(vertex.block_type, []).append(vertex.config)
+        add_breadcrumbs(vertex, breadcrumbs, f'/{os.path.relpath(vertex.path, root_folder)}')
     return tf_definitions, breadcrumbs
 
 
