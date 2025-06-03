@@ -170,11 +170,11 @@ class Runner(BaseRunner[None, None, None]):
     def get_history_secret_store(self) -> Dict[str, List[EnrichedPotentialSecret]]:
         return self.history_secret_store.secrets_by_file_value_type
 
-    def _get_plugins_used(self) -> Tuple[List[Dict[str, Any]], Callable[[], None]]:
+    def _get_plugins_used(self, should_delete_temp: bool = True) -> Tuple[List[Dict[str, Any]], Callable[[], None]]:
         work_dir_obj = None
         work_path_optional = os.getenv('WORKDIR')
         if work_path_optional is None:
-            work_dir_obj = tempfile.TemporaryDirectory()
+            work_dir_obj = tempfile.TemporaryDirectory(delete=should_delete_temp)
             work_path = work_dir_obj.name
         else:
             work_path = work_path_optional
