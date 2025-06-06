@@ -75,6 +75,8 @@ class TestCloudformationGraphManager(TestCase):
                 self.assertIn(v.name, expected_resources_by_file[v.path])
 
         sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
+        del sqs_queue_vertex.attributes['QueueName']['__file__']
+        del sqs_queue_vertex.attributes['QueueName']['Fn::Join'][1][0]['__file__']
         self.assertDictEqual({'Fn::Join': ['', [{'Ref': 'ResourceNamePrefix', '__startline__': 650, '__endline__': 652}, '-acmecws']], '__startline__': 646, '__endline__': 656}, sqs_queue_vertex.attributes["QueueName"])
 
     def test_build_graph_from_source_directory_with_rendering(self):
@@ -83,6 +85,7 @@ class TestCloudformationGraphManager(TestCase):
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=True)
 
         sqs_queue_vertex = local_graph.vertices[local_graph.vertices_block_name_map[BlockType.RESOURCE]["AWS::SQS::Queue.acmeCWSQueue"][0]]
+        del sqs_queue_vertex.config['QueueName']['__file__']
         expected_node = {'Fn::Join': ['', ['acme', '-acmecws']], '__startline__': 646, '__endline__': 656}
         self.assertDictEqual(expected_node, sqs_queue_vertex.config["QueueName"])
         found = False

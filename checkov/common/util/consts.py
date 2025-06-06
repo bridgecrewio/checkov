@@ -4,7 +4,8 @@ DEFAULT_EXTERNAL_MODULES_DIR = ".external_modules"
 RESOLVED_MODULE_ENTRY_NAME = "__resolved__"
 START_LINE = '__startline__'
 END_LINE = '__endline__'
-LINE_FIELD_NAMES = {START_LINE, END_LINE}
+FILE = '__file__'
+LINE_FIELD_NAMES = {START_LINE, END_LINE, FILE}
 TRUE_AFTER_UNKNOWN = 'true_after_unknown'
 
 DEV_API_GET_HEADERS = {
