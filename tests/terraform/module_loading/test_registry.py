@@ -140,6 +140,14 @@ def test_load_terraform_registry(
             "git::ssh://git@github.com/bridgecrewio/terragoat",
             "modules/s3-encrypted",
         ),
+        (
+            "git::git@github.com/bridgecrewio/terragoat//modules/s3-encrypted",
+            "git@github.com/bridgecrewio/terragoat/HEAD/modules/s3-encrypted",
+            "ssh://git@github.com/bridgecrewio/terragoat",
+            "git@github.com/bridgecrewio/terragoat/HEAD",
+            "git::ssh://git@github.com/bridgecrewio/terragoat",
+            "modules/s3-encrypted",
+        ),
     ],
     ids=[
         "module",
@@ -151,6 +159,7 @@ def test_load_terraform_registry(
         "module_over_ssh_without_protocol",
         "module_over_ssh_without_protocol_with_version",
         "git_username",
+        "git::git@ syntax"
     ],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)

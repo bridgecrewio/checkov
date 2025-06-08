@@ -6,7 +6,7 @@ from unittest import mock
 from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
-from checkov.terraform.plan_parser import parse_tf_plan
+from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name
 from checkov.common.parsers.node import StrNode
 
 class TestPlanFileParser(unittest.TestCase):
@@ -110,6 +110,16 @@ class TestPlanFileParser(unittest.TestCase):
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
         self.assertEqual(resource_attributes['logging_config'][0]["bucket"], [TRUE_AFTER_UNKNOWN])
+
+    def test___sanitize_count_from_name_with_count(self):
+        name = "aws_s3_bucket.bucket[0]"
+        result = _sanitize_count_from_name(name)
+        self.assertEqual(result, "aws_s3_bucket.bucket")
+
+        name = "aws_s3_bucket.bucket"
+        result = _sanitize_count_from_name(name)
+        self.assertEqual(result, "aws_s3_bucket.bucket")
+
 
 def test_large_file(mocker: MockerFixture):
     # given
