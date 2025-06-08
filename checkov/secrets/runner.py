@@ -376,7 +376,7 @@ class Runner(BaseRunner[None, None, None]):
             ) or result
 
             relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
-            if not os.path.exists(relative_file_path):
+            if not os.path.exists(f'{root_folder}{relative_file_path}'):
                 relative_file_path = f'/{secret.filename}'
 
             resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
