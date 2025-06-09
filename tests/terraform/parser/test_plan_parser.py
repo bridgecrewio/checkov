@@ -20,7 +20,7 @@ class TestPlanFileParser(unittest.TestCase):
         resource_attributes = next(iter(resource_definition.values()))
         resource_tags = resource_attributes['tags'][0]
         for tag_key, tag_value in resource_tags.items():
-            if tag_key not in ['__startline__', '__endline__', 'start_line', 'end_line']:
+            if tag_key not in ['__startline__', '__endline__', '__file__', 'start_line', 'end_line']:
                 self.assertIsInstance(tag_value, StrNode)
 
     def test_provider_is_included(self):
@@ -30,7 +30,7 @@ class TestPlanFileParser(unittest.TestCase):
         file_provider_definition = tf_definition['provider']
         self.assertTrue(file_provider_definition)  # assert a provider exists
         assert file_provider_definition[0].get('aws', {}).get('region', None) == ['us-west-2']
-    
+
     def test_plan_multiple_providers(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
@@ -45,7 +45,7 @@ class TestPlanFileParser(unittest.TestCase):
             provider_names.append(key)
             provider_aliases.append( provider[key]['alias'][0] )
             provider_addresses.append( provider[key]['__address__'] )
-        
+
         self.assertEqual(provider_names, ["aws", "aws", "aws"])
         self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
         self.assertEqual(provider_addresses, ["aws.default", "aws.ohio", "aws.oregon"])
