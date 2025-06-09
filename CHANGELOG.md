@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.437...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.439...HEAD)
+
+## [3.2.439](https://github.com/bridgecrewio/checkov/compare/3.2.437...3.2.439) - 2025-06-09
+
+### Bug Fix
+
+- **serverless:** Enhance yaml parsing, better support for file expansion - [#7115](https://github.com/bridgecrewio/checkov/pull/7115)
+- **terraform:** Better utilization of managed modules (if enabled) - [#7111](https://github.com/bridgecrewio/checkov/pull/7111)
 
 ## [3.2.437](https://github.com/bridgecrewio/checkov/compare/3.2.436...3.2.437) - 2025-06-05
 
