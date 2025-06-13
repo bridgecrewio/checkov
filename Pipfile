@@ -88,4 +88,4 @@ bc-detect-secrets = "==1.5.44"
 urllib3 = "==1.26.20"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
