@@ -301,6 +301,23 @@ class TestRunnerValid(unittest.TestCase):
         assert len(report.skipped_checks) == 0
         assert len(report.parsing_errors) == 0
 
+    def test_runner_revision_hash(self):
+        # given
+        file_path = Path(__file__).parent / "gha/.github/workflows/revision_hash.yaml"
+        file_dir = [str(file_path)]
+        checks = ["CKV_GHA_8"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert len(report.failed_checks) == 2
+        assert len(report.passed_checks) == 2
+        assert len(report.skipped_checks) == 2
+        assert len(report.parsing_errors) == 0
+
 
 if __name__ == "__main__":
     unittest.main()
