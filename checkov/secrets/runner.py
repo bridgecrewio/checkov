@@ -284,7 +284,7 @@ class Runner(BaseRunner[None, None, None]):
 
     def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter,
                    history_store: Optional[GitHistorySecretStore], root_folder: Optional[str], 
-                    secret_suppressions_ids: List[str], cleanupFn: Any, use_secret_filename: bool = False) -> Report:
+                   secret_suppressions_ids: List[str], cleanupFn: Any, use_secret_filename: bool = False) -> Report:
         report = Report(self.check_type)
 
         secret_records: dict[str, SecretsRecord] = {}
