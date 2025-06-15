@@ -282,7 +282,9 @@ class Runner(BaseRunner[None, None, None]):
         return self.get_report(secrets=secrets, runner_filter=runner_filter, history_store=history_store,
                                root_folder=root_folder, secret_suppressions_ids=secret_suppressions_ids, cleanupFn=cleanupFn)
 
-    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter, history_store: Optional[GitHistorySecretStore], root_folder: Optional[str], secret_suppressions_ids: List[str], cleanupFn: Any) -> Report:
+    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter,
+                   history_store: Optional[GitHistorySecretStore], root_folder: Optional[str],
+                   secret_suppressions_ids: List[str], cleanupFn: Any, use_secret_filename: Optional[bool] = False) -> Report:
         report = Report(self.check_type)
 
         secret_records: dict[str, SecretsRecord] = {}
@@ -374,7 +376,11 @@ class Runner(BaseRunner[None, None, None]):
                 runner_filter=runner_filter,
                 root_folder=root_folder
             ) or result
+
             relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+            if use_secret_filename:
+                relative_file_path = f'/{secret.filename}'
+
             resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
             report.add_resource(resource)
             # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
