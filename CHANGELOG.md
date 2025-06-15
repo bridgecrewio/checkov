@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.440...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.442...HEAD)
+
+## [3.2.442](https://github.com/bridgecrewio/checkov/compare/3.2.440...3.2.442) - 2025-06-15
+
+### Bug Fix
+
+- **secrets:** fix relative path secrets - [#7211](https://github.com/bridgecrewio/checkov/pull/7211)
 
 ## [3.2.440](https://github.com/bridgecrewio/checkov/compare/3.2.439...3.2.440) - 2025-06-11
 
