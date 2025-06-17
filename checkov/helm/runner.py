@@ -426,6 +426,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
         report: The report containing checks with file paths to fix
         tmp_dir: The temporary directory containing the rendered K8s manifests
         template_mapping: Mapping of temporary paths to original template paths
+        original_root_folder: The original Helm chart folder
     """
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         # First remove the tmp_dir prefix

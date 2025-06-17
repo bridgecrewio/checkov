@@ -34,7 +34,7 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             self.assertIn(record.repo_file_path, record.file_path)
         for resource in report.resources:
-            self.assertIn('/helm-tiller/pwnchart/templates', resource)
+            self.assertIn('helm-tiller/pwnchart/templates', resource)
 
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_honors_enforcement_rules(self):
