@@ -211,7 +211,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
                 if os.path.exists(original_template):
                     # Store mapping: temp file path (without prefix) -> original template path
-                    relative_temp_path = os.path.join(target_dir, source).replace(target_dir, '', 1).lstrip('/')
+                    relative_temp_path = os.path.join(target_dir, source).replace(target_dir, '', 1)
                     template_mapping[relative_temp_path] = original_template
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
@@ -430,12 +430,12 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
     """
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         # First remove the tmp_dir prefix
-        tmp_path = check.repo_file_path.replace(tmp_dir, '', 1).lstrip('/')
+        tmp_path = check.repo_file_path.replace(tmp_dir, '', 1)
 
         # Then check if we have a mapping to the original template file
         if tmp_path in template_mapping:
             file_abs_path = template_mapping[tmp_path]
-            repo_file_path = file_abs_path.replace(original_root_folder, '', 1).lstrip('/')
+            repo_file_path = file_abs_path.replace(original_root_folder, '', 1)
             check.repo_file_path = repo_file_path
             check.file_path = repo_file_path
             check.file_abs_path = file_abs_path
@@ -445,7 +445,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
     # Update resources in the report
     new_resources = set()
     for resource in report.resources:
-        tmp_path = resource.replace(tmp_dir, '', 1).lstrip('/')
+        tmp_path = resource.replace(tmp_dir, '', 1)
         resource_file_path = tmp_path.split(':')[0]
         resource_id = tmp_path.split(':')[1]
         if resource_file_path in template_mapping:
