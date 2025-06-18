@@ -1,0 +1,4 @@
+apiVersion: v2
+name: multiple-resources
+description: A test Helm chart
+version: 0.1.0

@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: one
+data:
+  key: "value"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: two
