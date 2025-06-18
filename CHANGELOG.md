@@ -1,6 +1,80 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.424...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.442...HEAD)
+
+## [3.2.442](https://github.com/bridgecrewio/checkov/compare/3.2.440...3.2.442) - 2025-06-15
+
+### Bug Fix
+
+- **secrets:** fix relative path secrets - [#7211](https://github.com/bridgecrewio/checkov/pull/7211)
+
+## [3.2.440](https://github.com/bridgecrewio/checkov/compare/3.2.439...3.2.440) - 2025-06-11
+
+### Feature
+
+- **secrets:** Bump detect secrets - [#7203](https://github.com/bridgecrewio/checkov/pull/7203)
+
+## [3.2.439](https://github.com/bridgecrewio/checkov/compare/3.2.437...3.2.439) - 2025-06-09
+
+### Bug Fix
+
+- **serverless:** Enhance yaml parsing, better support for file expansion - [#7115](https://github.com/bridgecrewio/checkov/pull/7115)
+- **terraform:** Better utilization of managed modules (if enabled) - [#7111](https://github.com/bridgecrewio/checkov/pull/7111)
+
+## [3.2.437](https://github.com/bridgecrewio/checkov/compare/3.2.436...3.2.437) - 2025-06-05
+
+### Bug Fix
+
+- **terraform:** Handle explicitly-specified tfvars explicitly - [#7107](https://github.com/bridgecrewio/checkov/pull/7107)
+
+## [3.2.436](https://github.com/bridgecrewio/checkov/compare/3.2.435...3.2.436) - 2025-05-30
+
+### Bug Fix
+
+- **terraform_plan:** Support count in terraform plan files - [#7195](https://github.com/bridgecrewio/checkov/pull/7195)
+
+## [3.2.435](https://github.com/bridgecrewio/checkov/compare/3.2.433...3.2.435) - 2025-05-27
+
+### Bug Fix
+
+- **kubernetes:** Only filter out files that contain Helm built-in variables and functions  - [#6922](https://github.com/bridgecrewio/checkov/pull/6922)
+- **serverless:** check if start and end line in serverless definitions context - [#7189](https://github.com/bridgecrewio/checkov/pull/7189)
+
+## [3.2.433](https://github.com/bridgecrewio/checkov/compare/3.2.432...3.2.433) - 2025-05-26
+
+### Bug Fix
+
+- **terraform_plan:** add a check to avoid doing get on a none dict object in tfplan scan - [#7180](https://github.com/bridgecrewio/checkov/pull/7180)
+
+## [3.2.432](https://github.com/bridgecrewio/checkov/compare/3.2.429...3.2.432) - 2025-05-22
+
+### Bug Fix
+
+- **terraform:** Multiple fixes - [#7178](https://github.com/bridgecrewio/checkov/pull/7178)
+
+## [3.2.429](https://github.com/bridgecrewio/checkov/compare/3.2.427...3.2.429) - 2025-05-21
+
+### Bug Fix
+
+- **general:** Fix support for git external module syntax 'git::git@' - [#7175](https://github.com/bridgecrewio/checkov/pull/7175)
+- **general:** Remove asteval syntax error logs - [#7172](https://github.com/bridgecrewio/checkov/pull/7172)
+
+## [3.2.427](https://github.com/bridgecrewio/checkov/compare/3.2.426...3.2.427) - 2025-05-20
+
+### Feature
+
+- **secrets:** Revert - Bump detect secrets - [#7171](https://github.com/bridgecrewio/checkov/pull/7171)
+
+### Bug Fix
+
+- **terraform:** dont move clone to internal dir - [#7159](https://github.com/bridgecrewio/checkov/pull/7159)
+
+## [3.2.426](https://github.com/bridgecrewio/checkov/compare/3.2.424...3.2.426) - 2025-05-19
+
+### Feature
+
+- **secrets:** Bump detect secrets - [#7158](https://github.com/bridgecrewio/checkov/pull/7158)
+- **terraform:** 7 new policies - [#7056](https://github.com/bridgecrewio/checkov/pull/7056)
 
 ## [3.2.424](https://github.com/bridgecrewio/checkov/compare/3.2.422...3.2.424) - 2025-05-15
 

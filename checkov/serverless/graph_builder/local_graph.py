@@ -43,7 +43,20 @@ class ServerlessLocalGraph(LocalGraph[ServerlessBlock]):
                        element_type: ServerlessElements) -> None:
         if not definition:
             return
+
         resources = definition.get(element_type)
+
+        # resources -> Resources
+        if element_type == ServerlessElements.RESOURCES and resources is None:
+            resources = definition.get('Resources')
+
+        if isinstance(resources, list) and len(resources) > 0 and \
+           isinstance(resources[0], dict) and resources[0]['__file__'] != file_path:
+            for r in resources:
+                if isinstance(r, dict):
+                    self._create_vertex(file_path, {element_type: r}, element_type)
+            return
+
         if not resources:
             return
 
