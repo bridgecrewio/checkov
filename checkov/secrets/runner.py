@@ -394,7 +394,7 @@ class Runner(BaseRunner[None, None, None]):
             for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
                 secret_value = cast(str, sec.secret_value)
                 if secret_value:
-                    secret_value = secret_value.strip(',";\'')  # We should always strip quotes from matches before we search for them in the line (because of this line quoted_mm = f"'{mm}'" in custom_regex_detector.py)
+                    secret_value = secret_value.strip('"\'')  # We should always strip quotes from matches before we search for them in the line (because of this line quoted_mm = f"'{mm}'" in custom_regex_detector.py)
                 line_text_censored = omit_secret_value_from_line(secret_value, line_text_censored)
 
             secret_records[secret_key] = SecretsRecord(
