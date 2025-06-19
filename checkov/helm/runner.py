@@ -202,8 +202,8 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                     cur_writer = open(os.path.join(target_dir, source), 'a')
 
                 # Now extract the original template path from the source comment
-                # Format is typically: "chartname/templates/deployment.yaml"
-                # We need to extract just the "templates/deployment.yaml" part
+                # Format is typically: "/chartname/templates/deployment.yaml"
+                # We need to extract just the "/templates/deployment.yaml" part
                 template_path = source.split('/', 1)[1] if '/' in source else source
 
                 # Construct the path to the original template file
@@ -211,8 +211,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
                 if os.path.exists(original_template):
                     # Store mapping: temp file path (without prefix) -> original template path
-                    relative_temp_path = os.path.join(target_dir, source).replace(target_dir, '', 1)
-                    template_mapping[relative_temp_path] = original_template
+                    template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
+                else:
+                    raise Exception(f'Original template {original_template} not found')
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
                     cur_writer.write(s + os.linesep)
@@ -430,7 +431,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
     """
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         # First remove the tmp_dir prefix
-        tmp_path = check.repo_file_path.replace(tmp_dir, '', 1)
+        tmp_path = check.repo_file_path
 
         # Then check if we have a mapping to the original template file
         if tmp_path in template_mapping:
@@ -440,18 +441,17 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
             check.file_path = repo_file_path
             check.file_abs_path = file_abs_path
         else:
-            check.repo_file_path = tmp_path
+            raise Exception(f'Temp file path {tmp_path} not in template mapping: {template_mapping}')
 
     # Update resources in the report
     new_resources = set()
     for resource in report.resources:
-        tmp_path = resource.replace(tmp_dir, '', 1)
-        resource_file_path = tmp_path.split(':')[0]
-        resource_id = tmp_path.split(':')[1]
+        resource_file_path = resource.split(':')[0]
+        resource_id = resource.split(':')[1]
         if resource_file_path in template_mapping:
             new_resources.add(f'{template_mapping[resource_file_path]}:{resource_id}')
         else:
-            new_resources.add(tmp_path)
+            raise Exception(f'Temp file path {resource} not in template mapping: {template_mapping}')
 
     report.resources = new_resources
 

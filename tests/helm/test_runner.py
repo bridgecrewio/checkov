@@ -98,8 +98,9 @@ class TestRunnerValid(unittest.TestCase):
 
         # Create template mapping
         template_mapping = {
-            "/manifest1.yaml": "/original/root/chart/templates/manifest1.yaml",
-            "/manifest2.yaml": "/original/root/chart/templates/manifest2.yaml"
+            "/tmp/helm_test/manifest1.yaml": "/original/root/chart/templates/manifest1.yaml",
+            "/tmp/helm_test/manifest2.yaml": "/original/root/chart/templates/manifest2.yaml",
+            "/tmp/helm_test/unknown.yaml": "/original/root/chart/templates/unknown.yaml",
         }
 
         # Create some test records
@@ -169,12 +170,12 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(passed_check1.file_abs_path, "/original/root/chart/templates/manifest2.yaml")
 
         # Unknown path should just have the temp dir prefix removed
-        self.assertEqual(unknown_check.repo_file_path, "/unknown.yaml")
+        self.assertEqual(unknown_check.repo_file_path, "/chart/templates/unknown.yaml")
 
         # Check that resources are also updated
         self.assertIn("/original/root/chart/templates/manifest1.yaml:resource1", report.resources)
         self.assertIn("/original/root/chart/templates/manifest2.yaml:resource2", report.resources)
-        self.assertIn("/unknown.yaml:resource3", report.resources)
+        self.assertIn("/original/root/chart/templates/unknown.yaml:resource3", report.resources)
 
     def test_parse_output(self):
         # Create a temp directory for the test
@@ -203,8 +204,8 @@ class TestRunnerValid(unittest.TestCase):
 
                 # Check template mapping was populated correctly
                 expected_mapping = {
-                    '/mychart/templates/service.yaml': os.path.join(chart_dir, "templates/service.yaml"),
-                    '/mychart/templates/deployment.yaml': os.path.join(chart_dir, "templates/deployment.yaml")
+                    f'{target_dir}/mychart/templates/service.yaml': os.path.join(chart_dir, "templates/service.yaml"),
+                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir, "templates/deployment.yaml")
                 }
 
                 # Compare the mappings - normalize paths for comparison
