@@ -211,7 +211,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
                 if os.path.exists(original_template):
                     # Store mapping: temp file path (without prefix) -> original template path
-                    template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
+                    template_mapping[os.path.join(target_dir, source)] = original_template
                 else:
                     raise Exception(f'Original template {original_template} not found')
                 if cur_writer:
@@ -237,7 +237,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
     def _get_target_dir(chart_item: tuple[str, dict[str, Any]], root_folder: str, target_folder_path: str) -> str | None:
         (chart_dir, chart_meta) = chart_item
         target_dir = chart_dir.replace(root_folder, f'{target_folder_path}/')
-        target_dir.replace("//", "/")
+        target_dir = target_dir.replace("//", "/")
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         if not chart_name:
             logging.info(
