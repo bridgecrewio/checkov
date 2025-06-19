@@ -212,8 +212,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 if os.path.exists(original_template):
                     # Store mapping: temp file path (without prefix) -> original template path
                     template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
-                else:
-                    raise Exception(f'Original template {original_template} not found')
+
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
                     cur_writer.write(s + os.linesep)
@@ -441,7 +440,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
             check.file_path = repo_file_path
             check.file_abs_path = file_abs_path
         else:
-            raise Exception(f'Temp file path {tmp_path} not in template mapping: {template_mapping}')
+            check.repo_file_path = tmp_path
 
     # Update resources in the report
     new_resources = set()
@@ -451,7 +450,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
         if resource_file_path in template_mapping:
             new_resources.add(f'{template_mapping[resource_file_path]}:{resource_id}')
         else:
-            raise Exception(f'Temp file path {resource} not in template mapping: {template_mapping}')
+            new_resources.add(tmp_path)
 
     report.resources = new_resources
 
