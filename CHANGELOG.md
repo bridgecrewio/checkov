@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.442...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.443...HEAD)
+
+## [3.2.443](https://github.com/bridgecrewio/checkov/compare/3.2.442...3.2.443) - 2025-06-19
+
+### Bug Fix
+
+- **secrets:** fix omit and masking - [#7213](https://github.com/bridgecrewio/checkov/pull/7213)
 
 ## [3.2.442](https://github.com/bridgecrewio/checkov/compare/3.2.440...3.2.442) - 2025-06-15
 
