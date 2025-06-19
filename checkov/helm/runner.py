@@ -202,8 +202,8 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                     cur_writer = open(os.path.join(target_dir, source), 'a')
 
                 # Now extract the original template path from the source comment
-                # Format is typically: "/chartname/templates/deployment.yaml"
-                # We need to extract just the "/templates/deployment.yaml" part
+                # Format is typically: "chartname/templates/deployment.yaml"
+                # We need to extract just the "templates/deployment.yaml" part
                 template_path = source.split('/', 1)[1] if '/' in source else source
 
                 # Construct the path to the original template file
