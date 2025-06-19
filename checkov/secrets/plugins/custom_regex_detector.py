@@ -172,11 +172,10 @@ class CustomRegexDetector(RegexBasedDetector):
                 for mm in multiline_matches:
                     mm = self._extract_real_regex_match(mm)
                     line_num = find_line_number(file_content, mm, line_number)
-                    quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
                         filename=filename,
-                        secret=quoted_mm,
+                        secret=mm,
                         line_number=line_num,
                         is_verified=is_verified,
                         is_added=is_added,
