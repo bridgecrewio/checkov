@@ -171,48 +171,39 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
     @staticmethod
     def _parse_output(target_dir: str, output: bytes) -> None:
+        # Helm output is a series of YAML documents separated by '---' (document start marker).
+        # Each template starts with a comment line that indicates the source file, but a template
+        # may contain multiple documents (and can itself start with a marker).
         output_str = str(output, 'utf-8')
         reader = io.StringIO(output_str)
         cur_source_file = None
         cur_writer = None
         last_line_dashes = False
-        line_num = 1
         for s in reader:
             s = s.rstrip()
             if s == '---':
                 last_line_dashes = True
-                continue
 
-            if last_line_dashes:
-                # The next line should contain a "Source" comment saying the name of the file it came from
-                # So we will close the old file, open a new file, and write the dashes from last iteration plus this line
+            elif last_line_dashes:
+                if s.startswith('# Source: '):
+                    source = s[10:]
+                    if source != cur_source_file:
+                        if cur_writer:
+                            cur_writer.close()
+                        file_path = os.path.join(target_dir, source)
+                        parent = os.path.dirname(file_path)
+                        os.makedirs(parent, exist_ok=True)
+                        cur_source_file = source
+                        cur_writer = open(os.path.join(target_dir, source), 'a')
 
-                if not s.startswith('# Source: '):
-                    raise Exception(f'Line {line_num}: Expected line to start with # Source: {s}')
-                source = s[10:]
-                if source != cur_source_file:
-                    if cur_writer:
-                        cur_writer.close()
-                    file_path = os.path.join(target_dir, source)
-                    parent = os.path.dirname(file_path)
-                    os.makedirs(parent, exist_ok=True)
-                    cur_source_file = source
-                    cur_writer = open(os.path.join(target_dir, source), 'a')
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
                     cur_writer.write(s + os.linesep)
 
                 last_line_dashes = False
-            else:
-                if s.startswith('# Source: '):
-                    raise Exception(f'Line {line_num}: Unexpected line starting with # Source: {s}')
 
-                if not cur_writer:
-                    continue
-                else:
-                    cur_writer.write(s + os.linesep)
-
-            line_num += 1
+            elif cur_writer:
+                cur_writer.write(s + os.linesep)
 
         if cur_writer:
             cur_writer.close()
