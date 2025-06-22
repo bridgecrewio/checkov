@@ -29,8 +29,9 @@ FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str]
+        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str] = []
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
+    include_hidden = include_hidden or []
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths, include_hidden)

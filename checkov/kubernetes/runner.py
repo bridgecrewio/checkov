@@ -88,8 +88,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
-        print("run run run run run")
-        print(f"runner_filter: {runner_filter}")
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
