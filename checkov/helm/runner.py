@@ -440,7 +440,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
             check.file_path = repo_file_path
             check.file_abs_path = file_abs_path
         else:
-            check.repo_file_path = tmp_path
+            check.repo_file_path = tmp_path.replace(tmp_dir, '', 1)
 
     # Update resources in the report
     new_resources = set()
@@ -450,7 +450,7 @@ def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, s
         if resource_file_path in template_mapping:
             new_resources.add(f'{template_mapping[resource_file_path]}:{resource_id}')
         else:
-            new_resources.add(tmp_path)
+            new_resources.add(resource.replace(tmp_dir, '', 1))
 
     report.resources = new_resources
 
