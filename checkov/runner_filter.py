@@ -60,7 +60,9 @@ class RunnerFilter(object):
             report_sast_imports: bool = False,
             remove_default_sast_policies: bool = False,
             report_sast_reachability: bool = False,
+            include_hidden: Optional[List[str]] = []
     ) -> None:
+        self.include_hidden = include_hidden
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
