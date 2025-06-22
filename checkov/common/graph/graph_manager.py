@@ -27,6 +27,7 @@ class GraphManager(Generic[_LocalGraph, _Definitions]):
         parsing_errors: Optional[dict[str, Exception]] = None,
         download_external_modules: Optional[bool] = False,
         excluded_paths: Optional[list[str]] = None,
+        include_hidden: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[_LocalGraph | None, _Definitions]:
         pass
