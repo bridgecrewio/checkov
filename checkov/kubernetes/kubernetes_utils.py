@@ -29,7 +29,7 @@ FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str] = []
+        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str] | None
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     include_hidden = include_hidden or []
     files_list = []
@@ -110,6 +110,7 @@ def create_definitions(
     runner_filter = runner_filter or RunnerFilter()
     definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
+    runner_filter.include_hidden = runner_filter.include_hidden or []
     if files:
         definitions, definitions_raw = get_files_definitions(files)
 
