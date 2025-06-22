@@ -557,3 +557,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="Add a tool name if you want your output to be tagged with a specific tool name,"
                  "this is useful when integrating with other tools such as uploading SARIF files to github code scanning"
         )
+        self.add(
+            '--include-hidden',
+            nargs='*',
+            help='Include hidden directories (e.g., .terraform, .git) during scanning'
+        )

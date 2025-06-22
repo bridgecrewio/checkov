@@ -88,12 +88,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
+        print("rugnerkjnfnvfkdjnvjkdfnvkjfdvn")
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
+        print(f"reportreportreportreport {report}")
         if self.context is None or self.definitions is None:
+            print(f"is none")
             if files or root_folder:
                 self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
             else:
@@ -109,9 +112,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
             self.spread_list_items()
 
             if self.graph_manager:
-                logging.info("creating Kubernetes graph")
+                print("creating Kubernetes graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
-                logging.info("Successfully created Kubernetes graph")
+                print("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)

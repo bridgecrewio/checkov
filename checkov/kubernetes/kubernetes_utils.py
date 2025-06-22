@@ -29,18 +29,18 @@ FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: list[str] | None
+        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str]
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
-        filter_ignored_paths(root, d_names, excluded_paths)
-        filter_ignored_paths(root, f_names, excluded_paths)
+        filter_ignored_paths(root, d_names, excluded_paths, include_hidden)
+        filter_ignored_paths(root, f_names, excluded_paths, include_hidden)
 
         for file in f_names:
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if "/." not in full_path and file not in EXCLUDED_FILE_NAMES:
+                if ("/." not in full_path or any(inc in full_path for inc in include_hidden)) and file not in EXCLUDED_FILE_NAMES:
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
@@ -109,11 +109,14 @@ def create_definitions(
     runner_filter = runner_filter or RunnerFilter()
     definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
+    print(f"filesfilesfilesfilesfilesfilesfiles {files}")
     if files:
         definitions, definitions_raw = get_files_definitions(files)
+        print(f"definitions, definitions_raw {definitions, definitions_raw}")
 
     if root_folder:
-        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, runner_filter.include_hidden)
+        print(f"2: definitions, definitions_raw {definitions, definitions_raw}")
 
     return definitions, definitions_raw
 

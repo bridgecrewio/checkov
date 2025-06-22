@@ -344,7 +344,8 @@ class Checkov:
                 enable_git_history_secret_scan=self.config.scan_secrets_history,
                 git_history_timeout=self.config.secrets_history_timeout,
                 report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))),
-                report_sast_reachability=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False)))
+                report_sast_reachability=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False))),
+                include_hidden=args.include_hidden
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
