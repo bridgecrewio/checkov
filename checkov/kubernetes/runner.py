@@ -88,6 +88,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
+        print("run run run run run")
+        print(f"runner_filter: {runner_filter}")
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -109,9 +111,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
             self.spread_list_items()
 
             if self.graph_manager:
-                print("creating Kubernetes graph")
+                logging.info("creating Kubernetes graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
-                print("Successfully created Kubernetes graph")
+                logging.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
