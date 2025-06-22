@@ -109,14 +109,11 @@ def create_definitions(
     runner_filter = runner_filter or RunnerFilter()
     definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
-    print(f"filesfilesfilesfilesfilesfilesfiles {files}")
     if files:
         definitions, definitions_raw = get_files_definitions(files)
-        print(f"definitions, definitions_raw {definitions, definitions_raw}")
 
     if root_folder:
         definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, runner_filter.include_hidden)
-        print(f"2: definitions, definitions_raw {definitions, definitions_raw}")
 
     return definitions, definitions_raw
 
