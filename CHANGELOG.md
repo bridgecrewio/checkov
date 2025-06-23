@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.443...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.445...HEAD)
+
+## [3.2.445](https://github.com/bridgecrewio/checkov/compare/3.2.443...3.2.445) - 2025-06-22
+
+### Bug Fix
+
+- **helm:** fix file paths to point to original files and not generated ones - [#7212](https://github.com/bridgecrewio/checkov/pull/7212)
+- **secrets:** fix omitting and masking - [#7218](https://github.com/bridgecrewio/checkov/pull/7218)
 
 ## [3.2.443](https://github.com/bridgecrewio/checkov/compare/3.2.442...3.2.443) - 2025-06-19
 
