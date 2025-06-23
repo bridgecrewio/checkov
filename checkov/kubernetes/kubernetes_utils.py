@@ -6,13 +6,14 @@ from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.consts import LINE_FIELD_NAMES, START_LINE, END_LINE
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
@@ -26,7 +27,6 @@ SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet",
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
-IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 
 def get_folder_definitions(
@@ -41,7 +41,7 @@ def get_folder_definitions(
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if ("/." not in full_path or not IGNORE_HIDDEN_DIRECTORY_ENV) and file not in EXCLUDED_FILE_NAMES:
+                if ("/." not in full_path or not env_vars_config.IGNORE_HIDDEN_DIRECTORY_ENV) and file not in EXCLUDED_FILE_NAMES:
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
