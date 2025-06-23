@@ -41,7 +41,7 @@ def get_folder_definitions(
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if ("/." not in full_path or not env_vars_config.IGNORE_HIDDEN_DIRECTORY_ENV) and file not in EXCLUDED_FILE_NAMES:
+                if ("/." not in full_path or not env_vars_config.IGNORE_HIDDEN_DIRECTORIES) and file not in EXCLUDED_FILE_NAMES:
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
