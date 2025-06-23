@@ -12,7 +12,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
@@ -26,22 +26,23 @@ SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet",
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
+IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: list[str] | None, include_hidden: list[str] | None
+        root_folder: str, excluded_paths: list[str] | None
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
-    include_hidden = include_hidden or []
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
-        filter_ignored_paths(root, d_names, excluded_paths, include_hidden)
-        filter_ignored_paths(root, f_names, excluded_paths, include_hidden)
+        filter_ignored_paths(root, d_names, excluded_paths)
+        filter_ignored_paths(root, f_names, excluded_paths)
+        
 
         for file in f_names:
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if ("/." not in full_path or any(inc in full_path for inc in include_hidden)) and file not in EXCLUDED_FILE_NAMES:
+                if ("/." not in full_path or not IGNORE_HIDDEN_DIRECTORY_ENV) and file not in EXCLUDED_FILE_NAMES:
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
@@ -110,12 +111,11 @@ def create_definitions(
     runner_filter = runner_filter or RunnerFilter()
     definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
-    runner_filter.include_hidden = runner_filter.include_hidden or []
     if files:
         definitions, definitions_raw = get_files_definitions(files)
 
     if root_folder:
-        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, runner_filter.include_hidden)
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
 
     return definitions, definitions_raw
 

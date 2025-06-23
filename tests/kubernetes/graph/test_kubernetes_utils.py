@@ -29,9 +29,9 @@ class TestKubernetesUtilsZ(TestGraph):
         self.assertEqual(result, "Pod.namespace.deployment_name.default")
     
     def test_get_folder_definitions_with_hidden(self) -> None:
-        include_hidden = [".hidden"]
+        os.environ["IGNORE_HIDDEN_DIRECTORY_ENV"] = "False"
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[], include_hidden=include_hidden)
+        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
         file_list = list(definitions.keys())
         
         self.assertIn(file_list, FILE_UNDER_HIDDEN_FOLDER)
@@ -39,7 +39,7 @@ class TestKubernetesUtilsZ(TestGraph):
     
     def test_get_folder_definitions_without_hidden(self) -> None:
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        definitions, _ = get_folder_definitions(test_root_dir, [], [])
+        definitions, _ = get_folder_definitions(test_root_dir, [])
         file_list = list(definitions.keys())
 
         self.assertNotIn(file_list, FILE_UNDER_HIDDEN_FOLDER)
