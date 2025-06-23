@@ -1,14 +1,12 @@
 import os
-from pathlib import Path
 
-from checkov.common.util.env_vars_config import env_vars_config
 from tests.kubernetes.graph.base_graph_tests import TestGraph
-from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME
+from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME, should_include_path
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 RELATIVE_PATH = os.path.join("resources", "definitions")
-FILE_UNDER_HIDDEN_FOLDER = '/home/runner/work/checkov/checkov/tests/kubernetes/graph/resources/definitions/.hidden/graph_check.yaml'
-FILE_NOT_HIDDEN = '/home/runner/work/checkov/checkov/tests/kubernetes/graph/resources/definitions/custom_resource.yaml'
+PATH_HIDDEN = "/Users/mblonder/dev/checkov/tests/kubernetes/graph/resources/definitions/.hidden/graph_check.yaml"
+PATH_NOT_HIDDEN = "/Users/mblonder/dev/checkov/tests/kubernetes/graph/resources/definitions/not_hidden/graph_check.yaml"
 
 
 class TestKubernetesUtilsZ(TestGraph):
@@ -28,26 +26,22 @@ class TestKubernetesUtilsZ(TestGraph):
         result = build_resource_id_from_labels(resource_type, namespace, labels, resource)
         self.assertEqual(result, "Pod.namespace.deployment_name.default")
     
-    def test_get_folder_definitions_ignore_hidden(self) -> None:
-        os.environ["CKV_IGNORE_HIDDEN_DIRECTORIES"] = "False"
-        test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        
-        from checkov.kubernetes.kubernetes_utils import get_folder_definitions
-        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
-        file_list = list(definitions.keys())
-        
-        self.assertNotIn(FILE_UNDER_HIDDEN_FOLDER, file_list)
-        self.assertIn(FILE_NOT_HIDDEN, file_list)
+    def test_should_include_path_include_hidden(self) -> None:
+        ignore_hidden_dir = False
+
+        should_include_hidden = should_include_path(PATH_HIDDEN, ignore_hidden_dir)
+        should_include_not_hidden = should_include_path(PATH_NOT_HIDDEN, ignore_hidden_dir)
+
+        self.assertEqual(should_include_hidden, True)
+        self.assertEqual(should_include_not_hidden, True)
     
-    def test_get_folder_definitions_do_not_ignore_hidden(self) -> None:
-        os.environ["CKV_IGNORE_HIDDEN_DIRECTORIES"] = "True"
-        test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        
-        from checkov.kubernetes.kubernetes_utils import get_folder_definitions
-        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
-        file_list = list(definitions.keys())
-        
-        self.assertIn(FILE_UNDER_HIDDEN_FOLDER, file_list)
-        self.assertIn(FILE_NOT_HIDDEN, file_list)
+    def test_should_include_path_not_include_hidden(self) -> None:
+        ignore_hidden_dir = True
+
+        should_include_hidden = should_include_path(PATH_HIDDEN, ignore_hidden_dir)
+        should_include_not_hidden = should_include_path(PATH_NOT_HIDDEN, ignore_hidden_dir)
+
+        self.assertEqual(should_include_hidden, False)
+        self.assertEqual(should_include_not_hidden, True)
 
 
