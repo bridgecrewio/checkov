@@ -6,7 +6,7 @@ from tests.kubernetes.graph.base_graph_tests import TestGraph
 from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME, get_folder_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
-RELATIVE_PATH = "resources" / "definitions"
+RELATIVE_PATH = os.path.join("resources", "definitions")
 
 
 class TestKubernetesUtilsZ(TestGraph):
