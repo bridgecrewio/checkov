@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
-os.environ["CKV_IGNORE_HIDDEN_DIRECTORIES"] = "False"
-
+import os, importlib, checkov.kubernetes.kubernetes_utils as k8s_utils
 
 from tests.kubernetes.graph.base_graph_tests import TestGraph
 from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME, get_folder_definitions
@@ -29,8 +28,17 @@ class TestKubernetesUtilsZ(TestGraph):
         result = build_resource_id_from_labels(resource_type, namespace, labels, resource)
         self.assertEqual(result, "Pod.namespace.deployment_name.default")
     
-    def test_get_folder_definitions_with_hidden(self) -> None:
-        from checkov.kubernetes.kubernetes_utils import get_folder_definitions
+    def test_get_folder_definitions_ignore_hidden(self) -> None:
+        test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
+        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
+        file_list = list(definitions.keys())
+        
+        self.assertNotIn(FILE_UNDER_HIDDEN_FOLDER, file_list)
+        self.assertIn(FILE_NOT_HIDDEN, file_list)
+    
+    def test_get_folder_definitions_do_not_ignore_hidden(self) -> None:
+        os.environ["CKV_IGNORE_HIDDEN_DIRECTORIES"] = "False"
+        importlib.reload(k8s_utils)
         
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
         definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
@@ -38,4 +46,5 @@ class TestKubernetesUtilsZ(TestGraph):
         
         self.assertIn(FILE_UNDER_HIDDEN_FOLDER, file_list)
         self.assertIn(FILE_NOT_HIDDEN, file_list)
+
 
