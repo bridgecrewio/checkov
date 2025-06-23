@@ -7,6 +7,8 @@ from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, P
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 RELATIVE_PATH = os.path.join("resources", "definitions")
+FILE_UNDER_HIDDEN_FOLDER = '/home/runner/work/checkov/checkov/tests/kubernetes/graph/resources/definitions/.hidden/graph_check.yaml'
+FILE_NOT_HIDDEN = '/home/runner/work/checkov/checkov/tests/kubernetes/graph/resources/definitions/custom_resource.yaml'
 
 
 class TestKubernetesUtilsZ(TestGraph):
@@ -29,16 +31,16 @@ class TestKubernetesUtilsZ(TestGraph):
     def test_get_folder_definitions_with_hidden(self) -> None:
         include_hidden = [".hidden"]
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        definitions, definitions_raw = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[], include_hidden=include_hidden)
-        print(definitions)
-        print(definitions_raw)
-        self.assertEqual(definitions, "Pod.namespace.deployment_name.default")
-        self.assertEqual(definitions_raw, "Pod.namespace.deployment_name.default")
+        definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[], include_hidden=include_hidden)
+        file_list = list(definitions.keys())
+        
+        self.assertIn(file_list, FILE_UNDER_HIDDEN_FOLDER)
+        self.assertIn(file_list, FILE_NOT_HIDDEN)
     
     def test_get_folder_definitions_without_hidden(self) -> None:
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-        definitions, definitions_raw = get_folder_definitions(test_root_dir)
-        print(definitions)
-        print(definitions_raw)
-        self.assertEqual(definitions, "Pod.namespace.deployment_name.default")
-        self.assertEqual(definitions_raw, "Pod.namespace.deployment_name.default")
+        definitions, _ = get_folder_definitions(test_root_dir, [], [])
+        file_list = list(definitions.keys())
+
+        self.assertNotIn(file_list, FILE_UNDER_HIDDEN_FOLDER)
+        self.assertIn(file_list, FILE_NOT_HIDDEN)
