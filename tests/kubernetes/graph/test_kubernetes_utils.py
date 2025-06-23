@@ -3,7 +3,7 @@ from pathlib import Path
 
 from checkov.common.util.env_vars_config import env_vars_config
 from tests.kubernetes.graph.base_graph_tests import TestGraph
-from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME, get_folder_definitions
+from checkov.kubernetes.kubernetes_utils import build_resource_id_from_labels, PARENT_RESOURCE_KEY_NAME
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 RELATIVE_PATH = os.path.join("resources", "definitions")
@@ -31,6 +31,8 @@ class TestKubernetesUtilsZ(TestGraph):
     def test_get_folder_definitions_ignore_hidden(self) -> None:
         env_vars_config.IGNORE_HIDDEN_DIRECTORIES = "False"
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
+        
+        from checkov.kubernetes.kubernetes_utils import get_folder_definitions
         definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
         file_list = list(definitions.keys())
         
@@ -40,6 +42,8 @@ class TestKubernetesUtilsZ(TestGraph):
     def test_get_folder_definitions_do_not_ignore_hidden(self) -> None:
         env_vars_config.IGNORE_HIDDEN_DIRECTORIES = "True"
         test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
+        
+        from checkov.kubernetes.kubernetes_utils import get_folder_definitions
         definitions, _ = get_folder_definitions(root_folder=test_root_dir, excluded_paths=[])
         file_list = list(definitions.keys())
         
