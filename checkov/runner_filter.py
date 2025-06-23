@@ -61,6 +61,7 @@ class RunnerFilter(object):
             remove_default_sast_policies: bool = False,
             report_sast_reachability: bool = False
     ) -> None:
+
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
