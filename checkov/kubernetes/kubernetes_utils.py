@@ -36,7 +36,6 @@ def get_folder_definitions(
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
         filter_ignored_paths(root, f_names, excluded_paths)
-        
 
         for file in f_names:
             file_ending = os.path.splitext(file)[1]
