@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.445...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.446...HEAD)
+
+## [3.2.446](https://github.com/bridgecrewio/checkov/compare/3.2.445...3.2.446) - 2025-06-24
+
+### Feature
+
+- **kubernetes:** include hidden folders in scan - [#7219](https://github.com/bridgecrewio/checkov/pull/7219)
 
 ## [3.2.445](https://github.com/bridgecrewio/checkov/compare/3.2.443...3.2.445) - 2025-06-22
 
