@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.446...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.447...HEAD)
+
+## [3.2.447](https://github.com/bridgecrewio/checkov/compare/3.2.446...3.2.447) - 2025-06-26
+
+### Bug Fix
+
+- **terraform:** Added support in restricting to a specific GitHub organization for GithubActionsOIDCTrustPolicy - [#7221](https://github.com/bridgecrewio/checkov/pull/7221)
 
 ## [3.2.446](https://github.com/bridgecrewio/checkov/compare/3.2.445...3.2.446) - 2025-06-24
 
