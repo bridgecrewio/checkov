@@ -11,3 +11,4 @@ Constants:
 """
 gh_repo_regex = re.compile(r"(\$\{)?[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*(\})?/[^/]+")
 gh_abusable_claims = ["workflow", "environment", "ref", "context", "head_ref", "base_ref"]
+gh_sub_condition = re.compile(r"^token\.actions\.githubusercontent\.com(?:/[a-zA-Z0-9_-]+)?:sub$")

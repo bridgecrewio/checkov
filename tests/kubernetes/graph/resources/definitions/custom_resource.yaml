@@ -1,0 +1,209 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollout-pairs-admin
+  annotations:
+    notifications.argoproj.io/subscribe.on-rollout-completed.slack: pairs-deploy-prod
+    notifications.argoproj.io/subscribe.on-rollout-aborted.slack: pairs-deploy-prod
+spec:
+  strategy:
+    blueGreen:
+      # Name of the service that the rollout modifies as the active service.
+      activeService: service-pairs-admin-stable
+      # Name of the service that the rollout modifies as the preview service. +optional
+      # previewService: service-pairs-admin-stable
+
+      # The number of replicas to run under the preview service before the switchover. Once the rollout is resumed the new replicaset will be full scaled up before the switch occurs +optional
+      previewReplicaCount: 1
+      # Indicates if the rollout should automatically promote the new ReplicaSet to the active service or enter a paused state. If not specified, the default value is true. +optional
+      autoPromotionEnabled: true
+      # Adds a delay before scaling down the previous replicaset. If omitted, the Rollout waits 30 seconds before scaling down the previous ReplicaSet. A minimum of 30 seconds is recommended to ensure IP table propagation across the nodes in a cluster. See https://github.com/argoproj/argo-rollouts/issues/19#issuecomment-476329960 for more information
+      scaleDownDelaySeconds: 120
+  progressDeadlineSeconds: 600
+  progressDeadlineAbort: true
+  selector:
+    matchLabels:
+      app: prod-pairs-tw-admin
+  template:
+    metadata:
+      labels:
+        name: prod-pairs-tw-admin
+        app: prod-pairs-tw-admin
+    spec:
+      # https://aws.github.io/aws-eks-best-practices/reliability/docs/application/#schedule-replicas-across-nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - prod-pairs-tw-admin
+                topologyKey: topology.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: name
+                      operator: In
+                      values:
+                        - prod-pairs-tw-admin
+                topologyKey: kubernetes.io/hostname
+              weight: 99
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: eks.amazonaws.com/nodegroup
+                    operator: In
+                    values:
+                      - prod-ceres-v124-ondemand-nodes-20221212
+                      - prod-ceres-v124-spot-nodes-20221212
+      terminationGracePeriodSeconds: 50
+      containers:
+        - name: app-container
+          image: 953576779582.dkr.ecr.ap-northeast-1.amazonaws.com/pairs-fs/prod-tw-admin:34dfbb8b0c01b8db904b945a3790a371244839ef
+          ports:
+            - name: app
+              containerPort: 80
+          resources:
+            requests:
+              cpu: "800m"
+              memory: "1000M"
+            limits:
+              cpu: "800m"
+              memory: "1000M"
+          readinessProbe:
+            httpGet:
+              path: /health_check
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /health_check
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 30"]
+          volumeMounts:
+            - name: log
+              mountPath: /log/
+          envFrom:
+            - configMapRef:
+                name: pairs-tw-admin-envs
+            - secretRef:
+                name: pairs-tw-admin-secrets
+        - name: td-agent
+          image: 953576779582.dkr.ecr.ap-northeast-1.amazonaws.com/td-agent:20221121073136master
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: td-agent
+              containerPort: 20224
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "700M"
+            limits:
+              cpu: "200m"
+              memory: "700M"
+          readinessProbe:
+            tcpSocket:
+              port: 20224
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 20224
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 30"]
+          volumeMounts:
+            - name: log
+              mountPath: /log/
+              readOnly: true
+          env:
+            - name: ENV_TD_AGENT_MODE
+              value: pairs
+            - name: ENV_TD_CUSTOMS
+              value: pairs_access
+            - name: RUN_ENV
+              value: prod
+            - name: RUN_REGION
+              value: tw
+            - name: RUN_SERVICE
+              value: admin
+            - name: METIS_PROJECT_ID
+              value: eure-metis
+          envFrom:
+            - secretRef:
+                name: pairs-admin-tdagent-secrets
+        - name: datadog-agent
+          image: 953576779582.dkr.ecr.ap-northeast-1.amazonaws.com/datadog-agent:20220530102433master
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: datadog
+              containerPort: 8126
+          resources:
+            requests:
+              cpu: "75m"
+              memory: "300M"
+            limits:
+              cpu: "75m"
+              memory: "300M"
+          readinessProbe:
+            tcpSocket:
+              port: 8126
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: 8126
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            failureThreshold: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 30"]
+          env:
+            - name: DD_DOCKER_LABELS_AS_TAGS
+              value: '{\"role\":\"role\"}'
+            - name: DD_HOSTNAME
+              value: pairsadmin-eks-prod-tw
+            - name: DD_TAGS
+              value: 'region:tw service:pairs-admin role:admin env:prod'
+            - name: ENV_DD_REGION
+              value: tw
+            - name: ENV_DD_SERVICE
+              value: pairs-admin
+            - name: ENV_DD_ENV
+              value: prod
+            - name: ENV_DD_ROLE
+              value: admin
+            - name: ENV_DD_ENABLED_OPTS
+              value: 'nginx'
+            - name: KUBERNETES
+              value: 'yes'
+            - name: DD_LOGS_ENABLED
+              value: 'true'
+            - name: DD_APM_ENABLED
+              value: 'true'
+            - name: DD_APM_ENV
+              value: prod
+          envFrom:
+            - secretRef:
+                name: pairs-admin-datadog-secrets
