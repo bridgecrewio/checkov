@@ -73,43 +73,56 @@ def find_modules(path: str) -> List[ModuleDownload]:
                     # if there is no "module " ref in the whole file, then no need to search line by line
                     continue
 
-                curr_md = None
-                comment_out = re.findall(r'/\*.*?\*/', content, re.DOTALL)
-                for line in content.splitlines():
-                    if not curr_md:
-                        if line.startswith('module'):
-                            in_comment_out = [line for a in comment_out if line in a]
-                            if in_comment_out:
-                                # if the "module " ref in the comment out part
-                                continue
-                            curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
+                curr_md: ModuleDownload | None = None
+                nesting_level = 0
+                # we can't use splitlines() because it removes line endings, which we need for the comment regex
+                lines = content.split('\n')
+                # a file can contain multiple module blocks
+                for line in lines:
+                    stripped_line = line.strip()
+                    if not stripped_line or stripped_line.startswith('#') or stripped_line.startswith('//'):
+                        continue
 
-                            # also extract the name for easier mapping against the TF modules.json file
-                            match = re.match(MODULE_NAME_PATTERN, line)
+                    if '/*' in stripped_line:
+                        # Naive comment handling for block comments
+                        if '*/' not in stripped_line:
+                            # multi-line comment, not handling this for now
+                            continue
+                    
+                    if curr_md is None:
+                        if stripped_line.startswith('module '):
+                            # found a module block
+                            curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
+                            match = re.match(MODULE_NAME_PATTERN, stripped_line)
                             if match:
                                 curr_md.module_name = match.group("name")
-
-                            continue
+                            nesting_level = line.count('{') - line.count('}')
                     else:
-                        if line.startswith('}'):
+                        # we are inside a module block
+                        nesting_level += line.count('{')
+                        nesting_level -= line.count('}')
+
+                        if nesting_level > 0:
+                            # still inside the module block
+                            if nesting_level == 1:
+                                # direct attributes of the module
+                                if "source" in stripped_line:
+                                    match = re.match(MODULE_SOURCE_PATTERN, stripped_line)
+                                    if match:
+                                        curr_md.module_link = match.group('link')
+                                elif "version" in stripped_line:
+                                    match = re.match(MODULE_VERSION_PATTERN, stripped_line)
+                                    if match:
+                                        curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
+                        else:
+                            # end of the module block
                             if curr_md.module_link is None:
                                 logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
                             else:
                                 curr_md.address = f"{curr_md.module_link}:{curr_md.version}"
                                 modules_found.append(curr_md)
                             curr_md = None
-                            continue
-
-                        if "source" in line:
-                            match = re.match(MODULE_SOURCE_PATTERN, line)
-                            if match:
-                                curr_md.module_link = match.group('link')
-                                continue
-
-                        if "version" in line:
-                            match = re.match(MODULE_VERSION_PATTERN, line)
-                            if match:
-                                curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
+                            nesting_level = 0
             except (UnicodeDecodeError, FileNotFoundError) as e:
                 logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
                 continue
