@@ -68,25 +68,25 @@ def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None,
                 continue
             file_path = os.path.join(root, file_name)
             data = load_or_die_quietly(file_path, parsing_errors)
-            if data:
-                loaded_files_cache[file_path] = data
-                if "module" in data:
-                    for module in data["module"]:
-                        for module_name, module_data in module.items():
-                            md = ModuleDownload(os.path.dirname(file_path))
-                            md.module_name = module_name
-                            if "source" in module_data:
-                                md.module_link = module_data["source"][0]
-                            if "version" in module_data:
-                                md.version = module_data["version"][0]
-                            if md.module_link:
-                                md.address = f"{md.module_link}:{md.version}"
-                                modules_found.append(md)
+            if not data:
+                continue
+            
+            loaded_files_cache[file_path] = data
+            if "module" not in data:
+                continue
+            for module in data["module"]:
+                for module_name, module_data in module.items():
+                    md = ModuleDownload(os.path.dirname(file_path))
+                    md.module_name = module_name
+                    md.module_link = module_data.get("source", [None])[0]
+                    md.version = module_data.get("version", [None])[0]
+                    if md.module_link and md.version:
+                        md.address = f"{md.module_link}:{md.version}"
+                        modules_found.append(md)
     return modules_found
 
 
 def should_download(path: str | None) -> bool:
-
     return path is not None and not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
 
 
