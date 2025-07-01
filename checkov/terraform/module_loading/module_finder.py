@@ -3,16 +3,14 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
 from pathlib import Path
 from typing import List, Callable, TYPE_CHECKING, Any
-
-import hcl2
 
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.module_loading.registry import module_loader_registry
+from checkov.terraform.parser_utils import load_or_die_quietly
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
@@ -54,10 +52,13 @@ def find_tf_managed_modules(path: str) -> List[ModuleDownload]:
     return modules_found
 
 
-def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None) -> list[ModuleDownload]:
+def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None,
+                 parsing_errors: dict[str, Exception] | None = None) -> list[ModuleDownload]:
     modules_found: list[ModuleDownload] = []
     if loaded_files_cache is None:
         loaded_files_cache = {}
+    if parsing_errors is None:
+        parsing_errors = {}
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith(".tf"):
@@ -66,24 +67,21 @@ def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None) ->
                 # don't scan the modules folder used by Terraform
                 continue
             file_path = os.path.join(root, file_name)
-            try:
-                with open(file_path, "r") as f:
-                    data = hcl2.load(f)
-                    loaded_files_cache[file_path] = data
-                    if "module" in data:
-                        for module in data["module"]:
-                            for module_name, module_data in module.items():
-                                md = ModuleDownload(os.path.dirname(file_path))
-                                md.module_name = module_name
-                                if "source" in module_data:
-                                    md.module_link = module_data["source"][0]
-                                if "version" in module_data:
-                                    md.version = module_data["version"][0]
-                                if md.module_link:
-                                    md.address = f"{md.module_link}:{md.version}"
-                                    modules_found.append(md)
-            except Exception as e:
-                logging.warning(f"Failed to parse {file_path}: {e}")
+            data = load_or_die_quietly(file_path, parsing_errors)
+            if data:
+                loaded_files_cache[file_path] = data
+                if "module" in data:
+                    for module in data["module"]:
+                        for module_name, module_data in module.items():
+                            md = ModuleDownload(os.path.dirname(file_path))
+                            md.module_name = module_name
+                            if "source" in module_data:
+                                md.module_link = module_data["source"][0]
+                            if "version" in module_data:
+                                md.version = module_data["version"][0]
+                            if md.module_link:
+                                md.address = f"{md.module_link}:{md.version}"
+                                modules_found.append(md)
     return modules_found
 
 
@@ -99,12 +97,13 @@ def load_tf_modules(
     modules_to_load: List[ModuleDownload] | None = None,
     stop_on_failure: bool = False,
     loaded_files_cache: dict[str, Any] | None = None,
+    parsing_errors: dict[str, Exception] | None = None,
 ) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load and env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
         modules_to_load = find_tf_managed_modules(path)
     if not modules_to_load:
-        modules_to_load = find_modules(path, loaded_files_cache=loaded_files_cache)
+        modules_to_load = find_modules(path, loaded_files_cache=loaded_files_cache, parsing_errors=parsing_errors)
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
