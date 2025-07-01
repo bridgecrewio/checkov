@@ -3,17 +3,13 @@ from __future__ import annotations
 import logging
 import os
 from collections import defaultdict
-from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO, Type
-
-import hcl2
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
-from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -24,8 +20,7 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.common.util.parser_utils import is_acceptable_module_param
 from checkov.terraform.modules.module_utils import safe_index, \
-    remove_module_dependency_from_path, \
-    clean_parser_types, serialize_definitions, _Hcl2Payload
+    remove_module_dependency_from_path, clean_parser_types, serialize_definitions
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 from checkov.terraform.parser_utils import load_or_die_quietly
 

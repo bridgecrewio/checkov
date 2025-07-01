@@ -8,7 +8,6 @@ from typing import List, Callable, TYPE_CHECKING, Any
 
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.module_loading.registry import module_loader_registry
 from checkov.terraform.parser_utils import load_or_die_quietly
 
@@ -70,7 +69,7 @@ def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None,
             data = load_or_die_quietly(file_path, parsing_errors)
             if not data:
                 continue
-            
+
             loaded_files_cache[file_path] = data
             if "module" not in data:
                 continue
