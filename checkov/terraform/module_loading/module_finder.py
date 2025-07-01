@@ -5,7 +5,9 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import List, Callable, TYPE_CHECKING
+from typing import List, Callable, TYPE_CHECKING, Any
+
+import hcl2
 
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -14,10 +16,6 @@ from checkov.terraform.module_loading.registry import module_loader_registry
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
-
-MODULE_NAME_PATTERN = re.compile(r'[^#]*\bmodule\s*"(?P<name>.*)"')
-MODULE_SOURCE_PATTERN = re.compile(r'[^#]*\bsource\s*=\s*"(?P<link>.*)"')
-MODULE_VERSION_PATTERN = re.compile(r'[^#]*\bversion\s*=\s*"(?P<operator>=|!=|>=|>|<=|<|~>\s*)?(?P<version>[\d.]+-?\w*)"')
 
 
 class ModuleDownload:
@@ -56,77 +54,36 @@ def find_tf_managed_modules(path: str) -> List[ModuleDownload]:
     return modules_found
 
 
-def find_modules(path: str) -> List[ModuleDownload]:
+def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None) -> list[ModuleDownload]:
     modules_found: list[ModuleDownload] = []
-
+    if loaded_files_cache is None:
+        loaded_files_cache = {}
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
-            if not file_name.endswith('.tf'):
+            if not file_name.endswith(".tf"):
                 continue
             if root.startswith(os.path.join(path, ".terraform", "modules")):
                 # don't scan the modules folder used by Terraform
                 continue
-
+            file_path = os.path.join(root, file_name)
             try:
-                content = read_file_with_any_encoding(file_path=os.path.join(path, root, file_name))
-                if "module " not in content:
-                    # if there is no "module " ref in the whole file, then no need to search line by line
-                    continue
-
-                curr_md: ModuleDownload | None = None
-                nesting_level = 0
-                # we can't use splitlines() because it removes line endings, which we need for the comment regex
-                lines = content.split('\n')
-                # a file can contain multiple module blocks
-                for line in lines:
-                    stripped_line = line.strip()
-                    if not stripped_line or stripped_line.startswith('#') or stripped_line.startswith('//'):
-                        continue
-
-                    if '/*' in stripped_line:
-                        # Naive comment handling for block comments
-                        if '*/' not in stripped_line:
-                            # multi-line comment, not handling this for now
-                            continue
-                    
-                    if curr_md is None:
-                        if stripped_line.startswith('module '):
-                            # found a module block
-                            curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
-                            match = re.match(MODULE_NAME_PATTERN, stripped_line)
-                            if match:
-                                curr_md.module_name = match.group("name")
-                            nesting_level = line.count('{') - line.count('}')
-                    else:
-                        # we are inside a module block
-                        nesting_level += line.count('{')
-                        nesting_level -= line.count('}')
-
-                        if nesting_level > 0:
-                            # still inside the module block
-                            if nesting_level == 1:
-                                # direct attributes of the module
-                                if "source" in stripped_line:
-                                    match = re.match(MODULE_SOURCE_PATTERN, stripped_line)
-                                    if match:
-                                        curr_md.module_link = match.group('link')
-                                elif "version" in stripped_line:
-                                    match = re.match(MODULE_VERSION_PATTERN, stripped_line)
-                                    if match:
-                                        curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
-                        else:
-                            # end of the module block
-                            if curr_md.module_link is None:
-                                logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
-                            else:
-                                curr_md.address = f"{curr_md.module_link}:{curr_md.version}"
-                                modules_found.append(curr_md)
-                            curr_md = None
-                            nesting_level = 0
-            except (UnicodeDecodeError, FileNotFoundError) as e:
-                logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
-                continue
-
+                with open(file_path, "r") as f:
+                    data = hcl2.load(f)
+                    loaded_files_cache[file_path] = data
+                    if "module" in data:
+                        for module in data["module"]:
+                            for module_name, module_data in module.items():
+                                md = ModuleDownload(os.path.dirname(file_path))
+                                md.module_name = module_name
+                                if "source" in module_data:
+                                    md.module_link = module_data["source"][0]
+                                if "version" in module_data:
+                                    md.version = module_data["version"][0]
+                                if md.module_link:
+                                    md.address = f"{md.module_link}:{md.version}"
+                                    modules_found.append(md)
+            except Exception as e:
+                logging.warning(f"Failed to parse {file_path}: {e}")
     return modules_found
 
 
@@ -140,13 +97,14 @@ def load_tf_modules(
     should_download_module: Callable[[str | None], bool] = should_download,
     run_parallel: bool = False,
     modules_to_load: List[ModuleDownload] | None = None,
-    stop_on_failure: bool = False
+    stop_on_failure: bool = False,
+    loaded_files_cache: dict[str, Any] | None = None,
 ) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load and env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
         modules_to_load = find_tf_managed_modules(path)
     if not modules_to_load:
-        modules_to_load = find_modules(path)
+        modules_to_load = find_modules(path, loaded_files_cache=loaded_files_cache)
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
