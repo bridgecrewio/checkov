@@ -79,9 +79,9 @@ def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None,
                     md.module_name = module_name
                     md.module_link = module_data.get("source", [None])[0]
                     md.version = module_data.get("version", [None])[0]
-                    if md.module_link and md.version:
-                        md.address = f"{md.module_link}:{md.version}"
-                        modules_found.append(md)
+                    if md.module_link:
+                        md.address = f"{md.module_link}:{md.version}" if md.version else md.module_link
+                    modules_found.append(md)
     return modules_found
 
 
