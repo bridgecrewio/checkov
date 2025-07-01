@@ -24,12 +24,14 @@ from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
+from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.common.util.parser_utils import is_acceptable_module_param
 from checkov.terraform.modules.module_utils import safe_index, \
     remove_module_dependency_from_path, \
     clean_parser_types, serialize_definitions, _Hcl2Payload
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 from checkov.terraform.parser_utils import load_or_die_quietly
+
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -102,7 +104,6 @@ class TFParser:
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
-        from checkov.terraform.module_loading.module_finder import load_tf_modules
         load_tf_modules(directory, loaded_files_cache=self.loaded_files_map, parsing_errors=self.out_parsing_errors)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
         self._update_resolved_modules()
