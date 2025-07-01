@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-import platform
-import threading
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO, Type
