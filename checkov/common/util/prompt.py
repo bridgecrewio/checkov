@@ -15,7 +15,7 @@ TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
 class Prompt():
     ACTIONS = ["add"]
     CHECK_CLASS = ["terraform"]
-    CATEGORIES = ["application_security", "backup_and_recovery" "convention", "encryption",
+    CATEGORIES = ["application_security", "backup_and_recovery", "convention", "encryption",
                   "general_security", "iam", "kubernetes", "logging", "networking", "secrets"]
     TERRAFORM_OBJECT_TYPE = ["data", "provider", "resource"]
     PROVIDERS = ["azure", "aws", "gcp"]
