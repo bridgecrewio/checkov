@@ -9,6 +9,7 @@ import platform
 import shutil
 import subprocess  # nosec
 import tempfile
+from multiprocessing.pool import Pool
 
 import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
@@ -702,24 +703,22 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
 
-        jobs = []
-        for filePath in self.kustomizeProcessedFolderAndMeta:
-            p = multiprocessing.Process(
-                target=self._run_kustomize_parser,
-                args=(
-                    filePath,
-                    shared_kustomize_file_mappings,
-                    self.kustomizeProcessedFolderAndMeta,
-                    self.templateRendererCommand,
-                    self.target_folder_path
-                )
+        # Use 'spawn' context for multiprocessing to avoid issues with subprocess and fork on some OS (e.g., macOS)
+        ctx = multiprocessing.get_context("spawn")
+        with ctx.Pool() as pool:
+            pool.starmap(
+                self._run_kustomize_parser,
+                [
+                    (
+                        filePath,
+                        shared_kustomize_file_mappings,
+                        self.kustomizeProcessedFolderAndMeta,
+                        self.templateRendererCommand,
+                        self.target_folder_path,
+                    )
+                    for filePath in self.kustomizeProcessedFolderAndMeta
+                ],
             )
-            jobs.append(p)
-            p.start()
-
-        for proc in jobs:
-            proc.join()
-
         self.kustomizeFileMappings = dict(shared_kustomize_file_mappings)
 
     def run(
