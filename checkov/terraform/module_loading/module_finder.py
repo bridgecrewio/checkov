@@ -69,7 +69,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
                 # don't scan the modules folder used by Terraform
                 continue
             file_path = os.path.join(root, file_name)
-            if excluded_paths and excluded_paths_regex.search(file_path):
+            if excluded_paths_regex and excluded_paths_regex.search(file_path):
                 continue
 
             data = load_or_die_quietly(file_path, parsing_errors)
