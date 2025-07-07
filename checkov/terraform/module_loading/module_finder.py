@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import List, Callable, TYPE_CHECKING, Any, Optional, Dict
 
@@ -58,6 +59,8 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
         loaded_files_cache = {}
     if parsing_errors is None:
         parsing_errors = {}
+
+    excluded_paths_regex = re.compile('|'.join(excluded_paths)) if excluded_paths else None
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith(".tf"):
@@ -66,7 +69,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
                 # don't scan the modules folder used by Terraform
                 continue
             file_path = os.path.join(root, file_name)
-            if any(file_path.endswith(excluded_path) for excluded_path in excluded_paths):
+            if excluded_paths_regex and excluded_paths_regex.match(file_path):
                 continue
 
             data = load_or_die_quietly(file_path, parsing_errors)
