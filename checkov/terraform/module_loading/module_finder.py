@@ -66,7 +66,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
                 # don't scan the modules folder used by Terraform
                 continue
             file_path = os.path.join(root, file_name)
-            if file_path in excluded_paths:
+            if any(file_path.endswith(excluded_path) for excluded_path in excluded_paths):
                 continue
 
             data = load_or_die_quietly(file_path, parsing_errors)
@@ -100,7 +100,7 @@ def load_tf_modules(
     stop_on_failure: bool = False,
     loaded_files_cache: dict[str, Any] | None = None,
     parsing_errors: dict[str, Exception] | None = None,
-    excluded_paths: dict[str, Exception] | None = None,
+    excluded_paths: List[str] | None = None,
 ) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load and env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
