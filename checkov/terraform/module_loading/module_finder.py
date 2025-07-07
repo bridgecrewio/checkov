@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Callable, TYPE_CHECKING, Any
+from typing import List, Callable, TYPE_CHECKING, Any, Optional, Dict
 
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -51,8 +51,8 @@ def find_tf_managed_modules(path: str) -> List[ModuleDownload]:
     return modules_found
 
 
-def find_modules(path: str, loaded_files_cache: dict[str, Any] | None = None,
-                 parsing_errors: dict[str, Exception] | None = None) -> list[ModuleDownload]:
+def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
+                 parsing_errors: Optional[Dict[str, Exception]] = None, excluded_paths: Optional[list[str]] = None) -> list[ModuleDownload]:
     modules_found: list[ModuleDownload] = []
     if loaded_files_cache is None:
         loaded_files_cache = {}
@@ -97,12 +97,13 @@ def load_tf_modules(
     stop_on_failure: bool = False,
     loaded_files_cache: dict[str, Any] | None = None,
     parsing_errors: dict[str, Exception] | None = None,
+    excluded_paths: dict[str, Exception] | None = None,
 ) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load and env_vars_config.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES:
         modules_to_load = find_tf_managed_modules(path)
     if not modules_to_load:
-        modules_to_load = find_modules(path, loaded_files_cache=loaded_files_cache, parsing_errors=parsing_errors)
+        modules_to_load = find_modules(path, loaded_files_cache=loaded_files_cache, parsing_errors=parsing_errors, excluded_paths=excluded_paths)
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
