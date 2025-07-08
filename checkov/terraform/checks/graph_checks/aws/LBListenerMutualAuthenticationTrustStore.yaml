@@ -1,0 +1,30 @@
+metadata:
+  id: "CKV2_AWS_81"
+  name: "Ensure aws_lb_listener with mutual_authentication mode verify has trust_store_arn defined"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_lb_listener
+      operator: within
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - aws_lb_listener
+          attribute: mutual_authentication.mode
+          operator: not_equals
+          value: verify
+        - and:
+            - cond_type: attribute
+              resource_types:
+                - aws_lb_listener
+              attribute: mutual_authentication.mode
+              operator: equals
+              value: verify
+            - cond_type: attribute
+              resource_types:
+                - aws_lb_listener
+              attribute: mutual_authentication.trust_store_arn
+              operator: exists

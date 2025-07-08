@@ -586,6 +586,18 @@ class TestYamlPolicies(unittest.TestCase):
     def test_LambdaOpenCorsPolicy(self):
         self.go("LambdaOpenCorsPolicy")
 
+    def test_AMIDoesNotAllowUnsafeFilter(self):
+        self.go("AMIDoesNotAllowUnsafeFilter")
+
+    def test_GuardDutyDetectorFindingPublishingFrequency(self):
+        self.go("GuardDutyDetectorFindingPublishingFrequency")
+
+    def test_LBListenerMutualAuthenticationTrustStore(self):
+        self.go("LBListenerMutualAuthenticationTrustStore")
+
+    def test_SecurityLakeSubscriberExternalId(self):
+        self.go("SecurityLakeSubscriberExternalId")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

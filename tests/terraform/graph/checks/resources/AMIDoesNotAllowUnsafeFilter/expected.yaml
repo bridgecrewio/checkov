@@ -1,0 +1,4 @@
+pass:
+  - aws_ami.example_pass
+fail:
+  - aws_ami.example_fail

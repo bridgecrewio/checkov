@@ -1,0 +1,6 @@
+pass:
+  - aws_guardduty_detector.pass
+  - aws_guardduty_detector.pass2
+fail:
+  - aws_guardduty_detector.fail
+  - aws_guardduty_detector.fail2

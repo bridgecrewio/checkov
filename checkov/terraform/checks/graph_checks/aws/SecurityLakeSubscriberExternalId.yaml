@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV2_AWS_82"
+  name: "Ensure aws_securitylake_subscriber has a properly defined subscriber_identity.external_id"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_securitylake_subscriber
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - aws_securitylake_subscriber
+      attribute: subscriber_identity.external_id
+      operator: exists

@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_AWS_80"
+  name: "Ensure GuardDuty detector has a secure finding_publishing_frequency"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_guardduty_detector
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - aws_guardduty_detector
+      attribute: finding_publishing_frequency
+      operator: within
+      value:
+        - FIFTEEN_MINUTES
+        - ONE_HOUR

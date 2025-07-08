@@ -1,0 +1,4 @@
+pass:
+  - aws_securitylake_subscriber.pass
+fail:
+  - aws_securitylake_subscriber.fail

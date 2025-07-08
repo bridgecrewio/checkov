@@ -1,0 +1,23 @@
+metadata:
+  id: "CKV2_AWS_79"
+  name: "Ensure aws_ami data sources do not use allow_unsafe_filter"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_ami
+      operator: within
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - aws_ami
+          attribute: allow_unsafe_filter
+          operator: not_exists
+        - cond_type: attribute
+          resource_types:
+            - aws_ami
+          attribute: allow_unsafe_filter
+          operator: equals
+          value: false
