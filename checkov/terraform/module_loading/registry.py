@@ -50,7 +50,7 @@ information, see `loader.ModuleLoader.load`.
         """
         We should treat git::git@github.com:... the same as git@github.com:... for all git based loaders
         """
-        source = source.replace("git::git@", "git@")
+        # source = source.replace("git::git@", "git@")
 
         if module_address is None:
             module_address = f'{source}:{source_version}'

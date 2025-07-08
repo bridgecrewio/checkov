@@ -21,6 +21,11 @@ class GithubLoader(GenericGitLoader):
             source = module_params.module_source.replace(":", "/")
             module_params.module_source = f"git::ssh://{source}"
             return True
+        if module_params.module_source.startswith(f"git::git@{self.module_source_prefix}"):
+            source = module_params.module_source.replace("git::", "")
+            source = source.replace(":", "/")
+            module_params.module_source = f"git::ssh://{source}"
+            return True
         return False
 
 
