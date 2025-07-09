@@ -126,7 +126,7 @@ def clean_file_path(file_path: Path) -> Path:
 
 def filter_failed_checks_with_unrendered_resources(report: Report) -> Report:
     """Returns a new report with filtered checks instead of modifying the original"""
-    arm_function_patterns = ['concat(', 'toLower(', 'trim(', 'join(', 'split(', 'substring(']
+    arm_function_patterns = ['toLower(', 'trim(', 'join(', 'split(', 'substring(']
 
     filtered_report = pickle_deepcopy(report)
     filtered_report.failed_checks = [
