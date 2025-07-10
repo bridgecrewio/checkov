@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.449...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.450...HEAD)
+
+## [3.2.450](https://github.com/bridgecrewio/checkov/compare/3.2.449...3.2.450) - 2025-07-10
+
+### Bug Fix
+
+- **arm:** filter out failed checks with resource names containing un-rendered functions - [#7231](https://github.com/bridgecrewio/checkov/pull/7231)
 
 ## [3.2.449](https://github.com/bridgecrewio/checkov/compare/3.2.447...3.2.449) - 2025-07-09
 
