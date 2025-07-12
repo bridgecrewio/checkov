@@ -169,6 +169,16 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.label', 'xyz'), ('policy.enabled', 'true')]), [('policy.label', 'xyz'), ('policy.enabled', 'true'), ('policy.subtype', 'build')])
         self.assertListEqual(BcPlatformIntegration.add_static_policy_filters([('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')]), [('policy.enabled', 'true'), ('policy.label', 'xyz'), ('policy.subtype', 'build')])
 
+    def test_proxy_without_scheme(self):
+        current_proxy = os.environ['https_proxy']
+        try:
+            os.environ['https_proxy'] = "127.0.0.1"
+            instance = BcPlatformIntegration()
+            instance.api_url = 'https://www.bridgecrew.cloud/v1'
+            instance.setup_http_manager()
+        finally:
+            os.environ['https_proxy'] = current_proxy
+
     def test_setup_on_prem(self):
         instance = BcPlatformIntegration()
 
