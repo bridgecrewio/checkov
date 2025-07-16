@@ -77,6 +77,21 @@ To install pip follow the official [docs](https://pip.pypa.io/en/stable/cli/pip_
 pip3 install checkov
 ```
 
+Certain environments (e.g., Debian 12) may require you to install Checkov in a virtual environment
+
+```sh
+# Create and activate a virtual environment
+python3 -m venv /path/to/venv/checkov
+cd /path/to/venv/checkov
+source ./bin/activate
+
+# Install Checkov with pip
+pip install checkov
+
+# Optional: Create a symlink for easy access
+sudo ln -s /path/to/venv/checkov/bin/checkov /usr/local/bin/checkov
+```
+
 or with [Homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
 ```sh

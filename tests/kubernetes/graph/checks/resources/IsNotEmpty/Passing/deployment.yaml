@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passing-selector-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-passing-selector-app
+  template:
+    metadata:
+      labels:
+        app: my-passing-selector-app
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80

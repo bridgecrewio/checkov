@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an SSM Parameter for holding the DynamoDb Table Name.
+
+Parameters:
+  TableName:
+    Type: String
+    Description: The name of the DynamoDB table
+
+Resources:
+  AccountInfoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  DynamoDbParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /AccountInfoService/${AWS::StackName}/TableName
+      Type: String
+      Value: !Ref AccountInfoTable
+      Description: SSM Parameter for holding the DynamoDb Table Name.
+
+Outputs:
+  DynamoDbParameterOutput:
+    Description: SSM Parameter for holding the DynamoDb Table Name.
+    Value: !Ref DynamoDbParameter

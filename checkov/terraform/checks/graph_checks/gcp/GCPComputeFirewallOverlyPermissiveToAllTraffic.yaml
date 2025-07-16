@@ -25,8 +25,14 @@ definition:
     - cond_type: "attribute"
       resource_types:
         - "google_compute_firewall"
+      attribute: "deny.protocol"
+      operator: "equals"
+      value: "all"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
       attribute: "source_ranges"
-      operator: "within"
+      operator: "not_intersects"
       value:
         - "::/0"
         - "::0"

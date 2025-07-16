@@ -1,0 +1,12 @@
+metadata:
+  name: "Missing or empty containers in K8S Deployment"
+  id: "NOT_EMPTY_01"
+  category: "KUBERNETES"
+scope:
+  provider: kubernetes
+  definition:
+    cond_type: "attribute"
+    resource_types:
+      - "Deployment"
+    attribute: "spec.selector.matchLabels"
+    operator: "is_not_empty"

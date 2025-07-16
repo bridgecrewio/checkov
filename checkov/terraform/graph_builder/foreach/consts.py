@@ -12,3 +12,4 @@ FOR_EACH_BLOCK_TYPE: TypeAlias = "dict[int, Optional[list[str] | dict[str, Any] 
 COUNT_KEY = 'count.index'
 EACH_KEY = 'each.key'
 EACH_VALUE = 'each.value'
+VIRTUAL_RESOURCE = 'virtual_resource'

@@ -90,7 +90,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         for vertex_index, vertex in enumerate(self.vertices):
             for edge_builder in self.edge_builders:
                 if edge_builder.should_search_for_edges(vertex):
-                    # Needs to be handled separately as it requires an isntance rather than a static method
+                    # Needs to be handled separately as it requires an instance rather than a static method
                     if isinstance(edge_builder, ServiceAccountEdgeBuilder):
                         current_vertex_connections = edge_builder.find_connections_for_instance(vertex, self.vertices)
                     else:

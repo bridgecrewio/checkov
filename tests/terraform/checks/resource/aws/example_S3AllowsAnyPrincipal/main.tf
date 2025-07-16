@@ -484,3 +484,16 @@ resource "aws_s3_bucket" "pass_w_condition6" {
 }
 POLICY
 }
+
+# Handle error
+resource "aws_s3_bucket_policy" "logs" {
+  bucket = aws_s3_bucket.logs.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      jsondecode(data.aws_iam_policy_document.logs-cloudtrail-policy-acl-check.json).Statement,
+      jsondecode(data.aws_iam_policy_document.s3-logs-cloudtrail-policy-write.json).Statement,
+      jsondecode(data.aws_iam_policy_document.s3-logs-vpc-flow-logs-policy.json).Statement,
+    )
+  })
+}

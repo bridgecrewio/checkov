@@ -17,3 +17,11 @@ resource "ibm_is_lb" "fail" {
   subnets = [var.pud-subnet]
   profile = "network-fixed"
 }
+
+# Case 3: Pass: type = "private"
+
+resource "ibm_is_lb" "pass_private_path" {
+  name    = "pud-load-balancer"
+  subnets = [var.pud-subnet]
+  type = "private_path"
+}

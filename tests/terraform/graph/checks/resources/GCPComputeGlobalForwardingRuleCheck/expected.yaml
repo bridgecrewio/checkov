@@ -1,6 +1,6 @@
 pass:
-  - "google_compute_global_forwarding_rule.pass"
+  - "google_compute_global_forwarding_rule.pass_nothttp"
+  - "google_compute_global_forwarding_rule.pass_not_external"
 fail:
   - "google_compute_global_forwarding_rule.fail"
   - "google_compute_global_forwarding_rule.fail_missing_lbscheme"
-  - "google_compute_global_forwarding_rule.fail2"

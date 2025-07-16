@@ -21,7 +21,7 @@ Globals:
     Tracing: Active
     Environment:
       Variables:
-        QUEUE_URL: !If [ IsStageEnvironment, !Ref SomeQueue, unkown ]
+        QUEUE_URL: !If [ IsStageEnvironment, !Ref SomeQueue, unknown ]
         STAGE: Production
         TABLE_NAME: global-table
     VpcConfig:

@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_postgresql_flexible_server.pass"
+fail:
+  - "azurerm_postgresql_flexible_server.fail"

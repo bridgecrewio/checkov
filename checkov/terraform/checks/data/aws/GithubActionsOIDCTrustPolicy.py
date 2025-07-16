@@ -2,7 +2,7 @@ from typing import Dict, List, Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.data.base_check import BaseDataCheck
-from checkov.common.util.oidc_utils import gh_abusable_claims, gh_repo_regex
+from checkov.common.util.oidc_utils import gh_abusable_claims, gh_repo_regex, gh_sub_condition
 
 
 class GithubActionsOIDCTrustPolicy(BaseDataCheck):
@@ -56,7 +56,7 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                     condition_values = condition.get("values")
                     if isinstance(condition_variables, list):
                         for condition_variable in condition_variables:
-                            if condition_variable == "token.actions.githubusercontent.com:sub":
+                            if gh_sub_condition.match(condition_variable):
                                 found_sub_condition_variable = True
                                 break
 

@@ -110,14 +110,7 @@ class TestParserInternals(unittest.TestCase):
         assert out_definitions[main_key]['module'][1]['mod2']['__resolved__'] == [key_idx_1]
 
         assert parser.external_modules_source_map == {(os.path.join(directory, 'module'), 'latest'): os.path.join(directory, 'module')}
-        assert parser.external_variables_data == [
-            ('versioning', True, 'manual specification'),
-            ('__start_line__', 1, 'manual specification'),
-            ('__end_line__', 4, 'manual specification'),
-            ('versioning', False, 'manual specification'),
-            ('__start_line__', 6, 'manual specification'),
-            ('__end_line__', 9, 'manual specification')
-        ]
+        assert parser.external_vars == {}
         assert parser.keys_to_remove == {TFDefinitionKey(file_path=module_path)}
         assert parser._parsed_directories == {
             directory,

@@ -8,6 +8,15 @@ resource "aws_route53_query_log" "pass" {
   zone_id                  = aws_route53_zone.pass.zone_id
 }
 
+#pass - private
+resource "aws_route53_zone" "pass_private" {
+  name = "example.com"
+
+  vpc {
+    vpc_id = aws_vpc.example.id
+  }
+}
+
 #fail
 resource "aws_route53_zone" "fail" {
   name = "fail"
