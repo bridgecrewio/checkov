@@ -8,7 +8,9 @@ from collections.abc import Collection
 from pathlib import Path
 
 from checkov.arm.parser.parser import parse
+from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.runner_filter import RunnerFilter
 
 ARM_POSSIBLE_ENDINGS = [".json"]
@@ -120,3 +122,16 @@ def clean_file_path(file_path: Path) -> Path:
     path_parts = [part for part in file_path.parts if part not in (".", "..")]
 
     return Path(*path_parts)
+
+
+def filter_failed_checks_with_unrendered_resources(report: Report) -> Report:
+    """Returns a new report with filtered checks instead of modifying the original"""
+    arm_function_patterns = ['toLower(', 'trim(', 'join(', 'split(', 'substring(']
+
+    filtered_report = pickle_deepcopy(report)
+    filtered_report.failed_checks = [
+        check for check in report.failed_checks
+        if not any(func in str(check.resource) for func in arm_function_patterns)
+    ]
+
+    return filtered_report

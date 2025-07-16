@@ -41,6 +41,13 @@ class TestModuleFinder(unittest.TestCase):
             self.assertIn(m, ["terraform-aws-modules/s3-bucket/aws",
                               "../../../../../../../platform/src/stacks/accountStack"])
 
+    def test_module_finder_nested_blocks(self):
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        src_dir = os.path.join(cur_dir, 'data', 'nested_modules')
+        modules = find_modules(src_dir)
+        self.assertEqual(1, len(modules))
+        self.assertEqual("3.14.0", modules[0].version)
+
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
 
@@ -98,4 +105,3 @@ def test_tf_managed_submodules():
     assert modules[1].address == 'somewhere/b:1'
     assert modules[1].module_name == 'a.b'
     assert modules[1].module_link == '.terraform/modules/a.b'
-

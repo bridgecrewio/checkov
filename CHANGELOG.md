@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.447...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.451...HEAD)
+
+## [3.2.451](https://github.com/bridgecrewio/checkov/compare/3.2.450...3.2.451) - 2025-07-14
+
+### Feature
+
+- **terraform:** Support parsing of provider functions - [#7237](https://github.com/bridgecrewio/checkov/pull/7237)
+
+## [3.2.450](https://github.com/bridgecrewio/checkov/compare/3.2.449...3.2.450) - 2025-07-10
+
+### Bug Fix
+
+- **arm:** filter out failed checks with resource names containing un-rendered functions - [#7231](https://github.com/bridgecrewio/checkov/pull/7231)
+
+## [3.2.449](https://github.com/bridgecrewio/checkov/compare/3.2.447...3.2.449) - 2025-07-09
+
+### Bug Fix
+
+- **terraform:** fix cloning external modules from private regsitries - [#7229](https://github.com/bridgecrewio/checkov/pull/7229)
+- **terraform:** fix issue 7216 module version parsing issue - [#7224](https://github.com/bridgecrewio/checkov/pull/7224)
 
 ## [3.2.447](https://github.com/bridgecrewio/checkov/compare/3.2.446...3.2.447) - 2025-06-26
 
