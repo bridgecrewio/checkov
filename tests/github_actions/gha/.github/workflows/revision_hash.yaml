@@ -1,0 +1,32 @@
+name: Checkov
+on:
+  push:
+    branches:
+      - master
+
+permissions: {}
+
+jobs:
+  checkov-job:
+    runs-on: ubuntu-latest
+    name: checkov-action
+    steps:
+      - name: Checkout with master version of action
+        uses: actions/checkout@master
+
+      - name: Checkout with tagged version
+        uses: actions/checkout@v3
+
+      - name: Checkout with hash
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Checkout with hash and comment on the same line
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Run Checkov action
+        id: checkov
+        # checkov:skip=CKV_GHA_8:Trust our own stuff?
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          framework: terraform
