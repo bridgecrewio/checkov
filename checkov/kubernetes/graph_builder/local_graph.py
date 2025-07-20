@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any, List, Dict
 from collections import defaultdict
 
@@ -30,9 +31,16 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         if graph_flags is None:
             graph_flags = K8sGraphFlags()
 
+        logging.info(f"[k8s-local-graph][build_graph] building vertices START")
+        start = time.time()
         self._create_vertices(create_complex_vertices=graph_flags.create_complex_vertices)
+        logging.info(f"[k8s-local-graph][build_graph] building vertices END; {time.time() - start:.2f} seconds")
         if graph_flags.create_edges:
+            logging.info(f"[k8s-local-graph][build_graph] building edges START")
+            start = time.time()
             self._create_edges()
+            logging.info(f"[k8s-local-graph][build_graph] building edges END; {time.time() - start:.2f} seconds")
+        logging.info(f"[k8s-local-graph][build_graph] after build graph num of vertices: {len(self.vertices)} num of edges: {len(self.edges)}")
 
     def _create_vertices(self, create_complex_vertices: bool) -> None:
         for file_path, file_conf in self.definitions.items():

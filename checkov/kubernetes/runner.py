@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from typing import Type, Any, TYPE_CHECKING
 
+from networkx.generators.classic import star_graph
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -110,26 +112,47 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
 
             if self.graph_manager:
                 logging.info("creating Kubernetes graph")
+                logging.info("creating Kubernetes graph START")
+                start = time.time()
                 local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
-                logging.info("Successfully created Kubernetes graph")
+                logging.info(f"creating Kubernetes graph END; took {time.time() - start:.2f} seconds")
+                logging.info(f"Successfully created Kubernetes graph")
 
+                logging.info(f"adding vertices to report START")
+                start = time.time()
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
                     report.add_resource(f'{file_abs_path}:{vertex.id}')
+                logging.info(f"adding vertices to report END; took {time.time() - start:.2f} seconds")
+                logging.info(f"saving k8s graph START")
+                start = time.time()
                 self.graph_manager.save_graph(local_graph)
+                logging.info(f"saving k8s graph END; took {time.time() - start:.2f} seconds")
         self.pbar.initiate(len(self.definitions))
+        logging.info(f"check_definitions START")
+        start = time.time()
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
+        logging.info(f"check_definitions END; took {time.time() - start:.2f} seconds")
 
         if self.graph_manager:
+            logging.info("get_graph_checks_report START")
+            start = time.time()
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            logging.info(f"get_graph_checks_report END; took {time.time() - start:.2f} seconds")
+            logging.info(f"saving merge_reports START")
+            start = time.time()
             merge_reports(report, graph_report)
+            logging.info(f"saving merge_reports END; took {time.time() - start:.2f} seconds")
 
             if runner_filter.run_image_referencer:
                 if files:
                     # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
 
+                logging.info(f"get_image_report START")
+                start = time.time()
                 image_report = self.get_image_report(root_folder, runner_filter)
+                logging.info(f"get_image_report END; took {time.time() - start:.2f} seconds")
 
                 if image_report:
                     # due too many tests failing only return a list, if there is an image report
