@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import logging
 import os
 import platform
+import time
 from abc import abstractmethod
 from typing import Dict, Optional, Any, Set, TYPE_CHECKING, TypeVar, Generic
 
@@ -9,6 +11,7 @@ import dpath
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -128,75 +131,122 @@ class BaseTerraformRunner(
         connected_node_data["resource_address"] = connected_entity_context.get("address")
         return connected_node_data
 
+    @staticmethod
+    def _handle_skipped_check(check_result: dict[str, Any], entity_context: dict[str, Any], check: BaseGraphCheck) -> dict[
+        str, Any]:
+        skipped_checks = entity_context.get("skipped_checks", [])
+        if not skipped_checks:
+            return check_result
+
+        logging.info(f"[tf_base_runner] [get_graph_checks_report] deepcopy START")
+        start = time.time()
+        copy_result = pickle_deepcopy(check_result)
+        logging.info(f"[tf_base_runner] [get_graph_checks_report] deepcopy END. Took {time.time() - start:.2f} seconds")
+
+        for skipped_check in skipped_checks:
+            if skipped_check["id"] == check.id:
+                copy_result["result"] = CheckResult.SKIPPED
+                copy_result["suppress_comment"] = skipped_check["suppress_comment"]
+                break
+        return copy_result
+
+    @staticmethod
+    def _get_entity_file_path(entity: dict[str, Any], root_folder: str) -> tuple[str, str]:
+        full_file_path = entity[CustomAttributes.FILE_PATH]
+        if platform.system() == "Windows":
+            root_folder = os.path.split(full_file_path)[0]
+        rel_file_path = os.path.join(os.sep, os.path.relpath(full_file_path, root_folder))
+        return full_file_path, rel_file_path
+
+    @staticmethod
+    def _get_resource_id(entity_context: dict[str, Any], entity: dict[str, Any]) -> str:
+        default_id = ".".join(entity_context["definition_path"])
+        return entity.get(CustomAttributes.TF_RESOURCE_ADDRESS, default_id)
+
+    def _get_entity_config_with_log(self, entity: dict[str, Any]) -> dict[str, Any]:
+        config = self.get_graph_resource_entity_config(entity)
+        return config
+
+    @staticmethod
+    def _get_censored_code_lines(check: BaseGraphCheck, check_result: dict[str, Any], entity_context: dict[str, Any],
+                                 entity_config: dict[str, Any], runner_filter) -> list:
+        lines = omit_secret_value_from_graph_checks(
+            check=check,
+            check_result=check_result,
+            entity_code_lines=entity_context.get("code_lines", []),
+            entity_config=entity_config,
+            resource_attributes_to_omit=runner_filter.resource_attr_to_omit,
+        )
+        return lines
+
     def get_graph_checks_report(
         self, root_folder: str, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
     ) -> Report:
         report = Report(self.check_type)
+        logging.info(f"[tf_base_runner] [get_graph_checks_report] run_graph_checks_results START")
+        start = time.time()
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)
+        logging.info(f"[tf_base_runner] [get_graph_checks_report] run_graph_checks_results END. Took {time.time() - start:.2f} seconds")
+
+        logging.info("[tf_base_runner] [get_graph_checks_report] checks result parse START")
+        start = time.time()
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_context = self.get_entity_context_and_evaluations(entity)
-                if entity_context:
-                    full_file_path = entity[CustomAttributes.FILE_PATH]
-                    copy_of_check_result = pickle_deepcopy(check_result)
-                    for skipped_check in entity_context.get("skipped_checks", []):
-                        if skipped_check["id"] == check.id:
-                            copy_of_check_result["result"] = CheckResult.SKIPPED
-                            copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
-                            break
-                    copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
-                                                                        root_folder)
-                    if platform.system() == "Windows":
-                        root_folder = os.path.split(full_file_path)[0]
-                    resource_id = ".".join(entity_context["definition_path"])
-                    resource = resource_id
-                    definition_context_file_path = full_file_path
-                    if (
-                        entity.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id
-                    ):
-                        # for plan resources
-                        resource = entity[CustomAttributes.TF_RESOURCE_ADDRESS]
-                    entity_config = self.get_graph_resource_entity_config(entity)
-                    censored_code_lines = omit_secret_value_from_graph_checks(
-                        check=check,
-                        check_result=check_result,
-                        entity_code_lines=entity_context.get("code_lines", []),
-                        entity_config=entity_config,
-                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit,
-                    )
-                    record = Record(
-                        check_id=check.id,
-                        bc_check_id=check.bc_id,
-                        check_name=check.name,
-                        check_result=copy_of_check_result,
-                        code_block=censored_code_lines,
-                        file_path=f"{os.sep}{os.path.relpath(full_file_path, root_folder)}",
-                        file_line_range=[
-                            entity_context.get("start_line", 1),
-                            entity_context.get("end_line", 1),
-                        ],
-                        resource=resource,
-                        entity_tags=entity.get("tags", {}),
-                        evaluations=None,
-                        check_class=check.__class__.__module__,
-                        file_abs_path=os.path.abspath(full_file_path),
-                        resource_address=entity_context.get("address"),
-                        severity=check.severity,
-                        bc_category=check.bc_category,
-                        benchmarks=check.benchmarks,
-                        connected_node=connected_node_data,
-                        definition_context_file_path=definition_context_file_path,
-                    )
-                    if self.breadcrumbs:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
-                        if breadcrumb:
-                            record = GraphRecord(record, breadcrumb)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
+                if not entity_context:
+                    continue
+
+                full_file_path, rel_file_path = self._get_entity_file_path(entity, root_folder)
+                copy_of_check_result = self._handle_skipped_check(check_result, entity_context, check)
+                copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
+
+                connected_node_data = self._get_connected_node_data(
+                    entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
+                    root_folder,
+                )
+
+                resource = self._get_resource_id(entity_context, entity)
+                entity_config = self._get_entity_config_with_log(entity)
+                censored_code_lines = self._get_censored_code_lines(
+                    check, copy_of_check_result, entity_context, entity_config, runner_filter
+                )
+
+                record = Record(
+                    check_id=check.id,
+                    bc_check_id=check.bc_id,
+                    check_name=check.name,
+                    check_result=copy_of_check_result,
+                    code_block=censored_code_lines,
+                    file_path=rel_file_path,
+                    file_line_range=[
+                        entity_context.get("start_line", 1),
+                        entity_context.get("end_line", 1),
+                    ],
+                    resource=resource,
+                    entity_tags=entity.get("tags", {}),
+                    evaluations=None,
+                    check_class=check.__class__.__module__,
+                    file_abs_path=os.path.abspath(full_file_path),
+                    resource_address=entity_context.get("address"),
+                    severity=check.severity,
+                    bc_category=check.bc_category,
+                    benchmarks=check.benchmarks,
+                    connected_node=connected_node_data,
+                    definition_context_file_path=full_file_path,
+                )
+
+                if self.breadcrumbs:
+                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
+                    if breadcrumb:
+                        record = GraphRecord(record, breadcrumb)
+
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
+
+        logging.info(
+            f"[tf_base_runner] [get_graph_checks_report] checks result parse END. Took {time.time() - start:.2f} seconds")
         return report
 
     @abstractmethod

@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 import os
+import time
 from typing import Any, TYPE_CHECKING, Optional
 
 from typing_extensions import TypeAlias  # noqa[TC002]
@@ -131,26 +132,47 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 raise Exception("Root directory was not specified")
 
         self.pbar.initiate(len(self.definitions))
+        logging.info(f"[terraform_runner] check_tf_definition START")
+        start = time.time()
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
+        logging.info(f"[terraform_runner] check_tf_definition END; took {time.time() - start:.2f} seconds")
 
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.all_graphs:
             for single_graph, _ in self.all_graphs:  # type: ignore  # Due to issue with rustworkx typing
+                logging.info(f"[terraform_runner][single_graph] get_graph_checks_report START")
+                start = time.time()
                 graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=single_graph)
+                logging.info(f"[terraform_runner][single_graph] get_graph_checks_report END; took {time.time() - start:.2f} seconds")
+                logging.info(f"[terraform_runner][single_graph] merge_reports START")
+                start = time.time()
                 merge_reports(report, graph_report)
+                logging.info(f"[terraform_runner][single_graph] merge_reports END; took {time.time() - start:.2f} seconds")
         else:
+            logging.info(f"[terraform_runner] get_graph_checks_report START")
+            start = time.time()
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            logging.info(f"[terraform_runner] get_graph_checks_report END; took {time.time() - start:.2f} seconds")
+            logging.info(f"[terraform_runner] merge_reports START")
+            start = time.time()
             merge_reports(report, graph_report)
+            logging.info(f"[terraform_runner] merge_reports END; took {time.time() - start:.2f} seconds")
 
+        logging.info("[terraform_runner] remove_duplicate_results START")
+        start = time.time()
         report = remove_duplicate_results(report)
+        logging.info(f"[terraform_runner] remove_duplicate_results END; took {time.time() - start:.2f} seconds")
 
         if runner_filter.run_image_referencer:
+            logging.info("[terraform_runner] check_container_image_references START")
+            start = time.time()
             image_report = self.check_container_image_references(
                 graph_connector=self.graph_manager.get_reader_endpoint(),
                 root_path=root_folder,
                 runner_filter=runner_filter,
             )
+            logging.info(f"[terraform_runner] check_container_image_references END; took {time.time() - start:.2f} seconds")
 
             if image_report:
                 # due too many tests failing only return a list, if there is an image report

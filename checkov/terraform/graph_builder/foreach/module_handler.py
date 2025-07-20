@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import itertools
+import logging
+import time
 import typing
 from collections import defaultdict
 from typing import Any
@@ -34,9 +36,16 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         modules_to_render = main_module_modules
 
         while modules_to_render:
+            logging.info(f"[module_handler] in while loop, Rendering {len(modules_to_render)} modules names: {list(map(lambda idx: self.local_graph.vertices[idx].name, modules_to_render))}")
+            logging.info(f"[module_handler] in while loop, _render_foreach_modules_by_levels START")
+            start = time.time()
             modules_to_render = self._render_foreach_modules_by_levels(modules_blocks, modules_to_render, current_level)
+            logging.info(f"[module_handler] in while loop, _render_foreach_modules_by_levels END; took {time.time() - start:.2f} seconds")
+            logging.info(f"[module_handler] in while loop, _arrange_graph_data & _build_edge START, num of vertices is {len(self.local_graph.vertices)} num of edges is {len(self.local_graph.edges)}")
+            start = time.time()
             self.local_graph._arrange_graph_data()
             self.local_graph._build_edges()
+            logging.info(f"[module_handler] in while loop, _arrange_graph_data & _build_edge END; took {time.time() - start:.2f} seconds")
 
     def _render_foreach_modules_by_levels(self, modules_blocks: list[int], modules_to_render: list[int],
                                           current_level: list[TFModule | None]) -> list[int]:
@@ -53,8 +62,17 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Second level -> inner_s3_module and inner_s3_module2 (Copying the module and all his dependencies)
         This will generate a graph with 20 modules and 16 resources.
         """
+        logging.info(f"[_render_foreach_modules_by_levels]")
+        logging.info(f"[_render_foreach_modules_by_levels] build sub graph START")
+        start = time.time()
         sub_graph = self._build_sub_graph(modules_blocks)
+        logging.info(f"[_render_foreach_modules_by_levels] build sub graph END ; took {time.time() - start:.2f} seconds")
+        logging.info(f"[_render_foreach_modules_by_levels] render sub graph START")
+        start = time.time()
         self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+        logging.info(f"[_render_foreach_modules_by_levels] render sub graph END ; took {time.time() - start:.2f} seconds")
+        logging.info(f"[_render_foreach_modules_by_levels] handling foreach and count for each module START")
+        start = time.time()
         for module_idx in modules_to_render:
             module_block = self.local_graph.vertices[module_idx]
             for_each = module_block.attributes.get(FOREACH_STRING)
@@ -69,6 +87,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 if not count or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_count(module_idx, count)
+        logging.info(f"[_render_foreach_modules_by_levels] handling foreach and count for each module END; took {time.time() - start:.2f} seconds")
         return self._get_modules_to_render(current_level)
 
     def _duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:

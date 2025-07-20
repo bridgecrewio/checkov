@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Dict, Any, Iterable, TypeVar, Generic
@@ -37,20 +38,19 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         self._render_variables_from_vertices()
 
     def _render_variables_from_edges(self) -> None:
-        # find vertices with out-degree = 0 and in-degree > 0
-        end_vertices_indexes = self.local_graph.get_vertices_with_degrees_conditions(
-            out_degree_cond=lambda degree: degree == 0, in_degree_cond=lambda degree: degree > 0
-        )
-
-        # all the edges entering `end_vertices`
+        end_vertices_indexes = self._get_initial_end_vertices()
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
+
+        logging.info(f"_render_variables_from_edges; vertices_index_to_render? : {self.vertices_index_to_render}")
+
         if self.vertices_index_to_render:
             edges_to_render = self._remove_unrelated_edges(edges_to_render)
 
-        end_vertices_indexes = set()
-        loops = 0
         evaluated_edges_cache: list[list[Edge]] = [[], []]
         duplicates_count = 0
+        end_vertices_indexes = set()
+        loops = 0
+
         while edges_to_render:
             evaluated_edges_two_iter_ago = evaluated_edges_cache[-2]
             intersection_edges = set(edges_to_render).intersection(evaluated_edges_two_iter_ago)
@@ -58,49 +58,93 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             if match_percent > self.duplicate_percent:
                 duplicates_count += 1
             if duplicates_count > self.duplicate_iter_count:
-                logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
+                logging.info(
+                    f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
+
             evaluated_edges_cache.append(edges_to_render)
+            logging.debug(f"evaluating {len(edges_to_render)} edges; loops={loops}")
 
-            logging.debug(f"evaluating {len(edges_to_render)} edges")
-            # group edges that have the same origin and label together
+            logging.debug(f"[variable_rendering/renderer] group_edges_by_origin_and_label START")
+            start = time.time()
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
-            if self.run_async:
-                run_function_multithreaded(
-                    func=self._edge_evaluation_task,
-                    data=edges_groups,
-                    max_group_size=1,
-                    num_of_workers=self.max_workers,
-                )
-            else:
-                for edge_group in edges_groups:
-                    self._edge_evaluation_task([edge_group])
-            for edge in edges_to_render:
-                origin = edge.origin
-                self.done_edges_by_origin_vertex.setdefault(origin, []).append(edge)
+            logging.debug(f"[variable_rendering/renderer] group_edges_by_origin_and_label END; took {time.time() - start:.2f} seconds")
+            logging.debug(f"[variable_rendering/renderer] _evaluate_edge_groups START")
+            start = time.time()
+            self._evaluate_edge_groups(edges_groups)
+            logging.debug(f"[variable_rendering/renderer] _evaluate_edge_groups END; took {time.time() - start:.2f} seconds")
 
-            for edge in edges_to_render:
-                origin_vertex_index = edge.origin
-                out_edges = set(self.local_graph.out_edges.get(origin_vertex_index, []))
-                done_edges_for_origin = self.done_edges_by_origin_vertex.get(origin_vertex_index, [])
-                if out_edges.issubset(done_edges_for_origin):
-                    end_vertices_indexes.add(origin_vertex_index)
+            logging.debug(
+                f"[variable_rendering/renderer] _mark_edges_done START")
+            start = time.time()
+            self._mark_edges_done(edges_to_render)
+            logging.debug(
+                f"[variable_rendering/renderer] _mark_edges_done END; took {time.time() - start:.2f} seconds")
+            logging.debug(
+                f"[variable_rendering/renderer] _update_end_vertices_indexes START")
+            start = time.time()
+            self._update_end_vertices_indexes(edges_to_render, end_vertices_indexes)
+            logging.debug(
+                f"[variable_rendering/renderer] _update_end_vertices_indexes END; took {time.time() - start:.2f} seconds")
+
+            logging.debug(f"[variable_rendering/renderer] get_in_edges_deduped START")
+            start = time.time()
             new_edges_to_render = self.local_graph.get_in_edges_deduped(end_vertices_indexes)
+            logging.debug(f"[variable_rendering/renderer] get_in_edges_deduped END; took {time.time() - start:.2f} seconds")
             edges_to_render = self.local_graph.sort_edged_by_dest_out_degree(
                 new_edges_to_render - set(edges_to_render)
             )
 
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
-                logging.warning("Reached 50 graph edge iterations, breaking.")
+                logging.warning("Reached max graph edge evaluation loops, breaking.")
                 break
 
-        if self.vertices_index_to_render:
-            return
-        self.local_graph.update_vertices_configs()
-        logging.debug("done evaluating edges")
-        self.evaluate_non_rendered_values()
-        logging.debug("done evaluate_non_rendered_values")
+        if not self.vertices_index_to_render:
+            self.local_graph.update_vertices_configs()
+            logging.debug("done evaluating edges")
+            self.evaluate_non_rendered_values()
+            logging.debug("Done evaluating non-rendered values")
+
+    def _get_initial_end_vertices(self) -> set[int]:
+        return self.local_graph.get_vertices_with_degrees_conditions(
+            out_degree_cond=lambda d: d == 0,
+            in_degree_cond=lambda d: d > 0,
+        )
+
+    def _evaluate_edge_groups(self, edges_groups: list[list[Edge]]) -> None:
+        if self.run_async:
+            run_function_multithreaded(
+                func=self._edge_evaluation_task,
+                data=edges_groups,
+                max_group_size=1,
+                num_of_workers=self.max_workers,
+            )
+        else:
+            for edge_group in edges_groups:
+                self._edge_evaluation_task([edge_group])
+
+    def _mark_edges_done(self, edges_to_render: list[Edge]) -> None:
+        for edge in edges_to_render:
+            origin = edge.origin
+            self.done_edges_by_origin_vertex.setdefault(origin, []).append(edge)
+
+    def _update_end_vertices_indexes(self, edges_to_render: list[Edge], end_vertices_indexes: set[int]) -> None:
+        already_checked: set[int] = set()
+
+        for edge in edges_to_render:
+            origin_vertex_index = edge.origin
+
+            # Only check each origin once
+            if origin_vertex_index in already_checked:
+                continue
+            already_checked.add(origin_vertex_index)
+
+            out_edges = set(self.local_graph.out_edges.get(origin_vertex_index, []))
+            done_edges_for_origin = set(self.done_edges_by_origin_vertex.get(origin_vertex_index, []))
+
+            if out_edges.issubset(done_edges_for_origin):
+                end_vertices_indexes.add(origin_vertex_index)
 
     @abstractmethod
     def _render_variables_from_vertices(self) -> None:

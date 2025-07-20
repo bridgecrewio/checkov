@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
@@ -14,6 +15,7 @@ from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
+from checkov.common.parallelizer.parallel_runner import parallel_runner, ParallelRunner
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -79,17 +81,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
+        logging.info(f"[TerraformLocalGraph] build_edges START")
+        start = time.time()
         self._build_edges()
+        logging.info(f"[TerraformLocalGraph] build_edges END; took {time.time() - start:.2f} seconds")
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
                 and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE] or self.foreach_blocks[BlockType.DATA]):
             try:
                 logging.info('[TerraformLocalGraph] start handling foreach')
+                start = time.time()
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)
                 self._arrange_graph_data()
                 self._build_edges()
-                logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
+                logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges; took {time.time() - start:.2f} seconds")
             except Exception as e:
                 logging.info(f'Failed to process foreach handling, error: {str(e)}')
 
@@ -97,6 +103,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._connect_module_provider()
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
+            logging.info(f"Rendering variables START")
+            start = time.time()
             renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_fields()
@@ -111,6 +119,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             edges_count = len(self.edges)
             self._build_s3_name_reference_edges()
             logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
+            logging.info(f"Rendering variables END; took {time.time() - start:.2f} seconds")
         else:
             self.update_vertices_fields()
 
@@ -274,6 +283,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        logging.info(
+        f"get_module_vertices_mapping module blocks len: {len(self.vertices_by_block_type[BlockType.MODULE])} START")
+        start = time.time()
+        adds = 0
         for vertex in self.vertices:
             if not vertex.source_module_object:
                 continue
@@ -287,17 +300,64 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
                     continue
                 vertex.source_module.add(idx)
+                logging.info(f"** ADDING IDX {idx} vertex.source_module_object is {repr(vertex.source_module_object)}")
+                adds += 1
                 break
+        logging.info(f"get_module_vertices_mapping END adds = {adds}; took {time.time() - start:.2f} seconds")
+        return
+
+    def get_module_vertices_mapping_optimized(self) -> None:
+        """
+        For each vertex, if it's originated in a module import, add to the vertex the index of the
+        matching module vertex as 'source_module'
+        """
+        logging.info(f"get_module_vertices_mapping_optimized module blocks len: {len(self.vertices_by_block_type[BlockType.MODULE])} START")
+        start = time.time()
+        module_lookup = {}
+        adds = 0
+        for idx in self.vertices_by_block_type[BlockType.MODULE]:
+            v = self.vertices[idx]
+            # if not v.source_module_object:
+            #     continue
+            key = (
+                v.name,
+                v.path,
+                v.source_module_object,
+                v.for_each_index,
+            )
+            logging.info(f"** MODULE_LOOKUP assigning to {repr(key)} idx {idx}")
+            module_lookup[key] = idx
+
+        # Match vertices using the lookup
+        for vertex in self.vertices:
+            smo = vertex.source_module_object
+            if not smo:
+                continue
+            key = (
+                smo.name,
+                smo.path,
+                smo.nested_tf_module,
+                smo.foreach_idx,
+            )
+            logging.info(f"** VERTEX_LOOP looking for key {repr(key)}")
+            idx = module_lookup.get(key)
+            if idx is not None:
+                vertex.source_module.add(idx)
+                adds += 1
+
+        logging.info(f"get_module_vertices_mapping_optimized END adds = {adds}; took {time.time() - start:.2f} seconds")
         return
 
     def _build_edges(self) -> None:
         logging.info("Creating edges")
-        self.get_module_vertices_mapping()
+        start = time.time()
+        self.get_module_vertices_mapping_optimized()
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
             self._build_virtual_resources_edges(origin_node_index, vertex)
+        logging.info(f"Finished Creating edges, len of vertices: {len(self.vertices)}, len of edges {len(self.edges)}, took {time.time() - start:.2f}")
 
     def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, str]],
                                 resources_types: List[str], cross_variable_edges: bool = False,
