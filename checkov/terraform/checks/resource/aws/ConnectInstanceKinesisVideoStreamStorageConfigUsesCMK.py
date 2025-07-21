@@ -1,4 +1,6 @@
-from checkov.common.models.enums import CheckCategories
+from typing import Dict, List, Any
+
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.consts import ANY_VALUE
 
@@ -16,6 +18,16 @@ class ConnectInstanceKinesisVideoStreamStorageConfigUsesCMK(BaseResourceValueChe
 
     def get_expected_value(self):
         return ANY_VALUE
+
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        """
+        Looks for encryption key_id in kinesis_video_stream_config
+        """
+        storage_config = conf.get("storage_config")
+        if storage_config and isinstance(storage_config, list):
+            if "kinesis_video_stream_config" in storage_config[0]:
+                return super().scan_resource_conf(conf)
+        return CheckResult.UNKNOWN
 
 
 check = ConnectInstanceKinesisVideoStreamStorageConfigUsesCMK()
