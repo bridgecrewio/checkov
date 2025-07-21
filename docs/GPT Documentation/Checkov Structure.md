@@ -1,0 +1,7 @@
+Checkov is separated to different directories based on IAC FRAMEWORKS it supports.
+This is shown under the "checkov" directory, where the "common" directory is responsible for shared code across all frameworks, and all other directories (like "terraform" or "cloudformation") describe the code related to each framework.
+The main objects defined per framework are:
+1. `Parser` - responsible for parsing the different code files related to the specific framework (for example `.tf` files in `terraform`) to python objects. 
+2. `Graph` - A graph representation being built from the python objects the `Parser` created. Each object being created is a represented as a graph vertex using the corresponding `Block` class implementation for the framework. Edges in the graph are being created based on the framework internal rules, for example in `terraform` we can connect 2 resources by referencing their `terraform-id` (`<resource_type>.<resource_name>`) in other resources. Each framework has other rules and not all of the rules are implemented in checkov yet. The code for the `Graph` usually sits under `checkov\<framework>\graph`.
+3. `Checks` - all of the checks which were defined for the framework.
+4. `Runner` - responsible for running the `Parser` and then build a `Graph` based on the result of the parser. After this process, it also scans the graph using the defined `Checks` and creates a report of all of the violations we have found. This is the main class of each framework and defines how it is being run.
