@@ -27,6 +27,7 @@ class TestElasticsearchDomainHA(unittest.TestCase):
             "aws_elasticsearch_domain.fail2",
             "aws_opensearch_domain.fail",
             "aws_opensearch_domain.fail2",
+            "aws_opensearch_domain.fail3",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

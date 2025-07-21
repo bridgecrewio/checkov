@@ -16,6 +16,7 @@ resource "aws_opensearch_domain" "pass" {
   engine_version = "Elasticsearch_7.10"
 
   cluster_config {
+    dedicated_master_enabled = true
     dedicated_master_count = 3
     instance_type = "r4.large.search"
     zone_awareness_enabled = true
@@ -43,6 +44,18 @@ resource "aws_opensearch_domain" "fail2" {
   cluster_config {
     instance_type = "r4.large.search"
     dedicated_master_count = 3
+  }
+}
+
+resource "aws_opensearch_domain" "fail3" {
+  domain_name    = "example"
+  engine_version = "Elasticsearch_7.10"
+
+  cluster_config {
+    dedicated_master_enabled = false
+    dedicated_master_count   = 3
+    instance_type            = "r4.large.search"
+    zone_awareness_enabled   = true
   }
 
   tags = {

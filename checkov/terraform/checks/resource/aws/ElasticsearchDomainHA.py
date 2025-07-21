@@ -21,6 +21,10 @@ class ElasticsearchDomainHA(BaseResourceCheck):
         self.evaluated_keys = ["cluster_config"]
         config = conf.get("cluster_config")
         if config and isinstance(config, list):
+            master_enabled = config[0].get("dedicated_master_enabled")
+            if not master_enabled or not isinstance(master_enabled, list) or not master_enabled[0]:
+                return CheckResult.FAILED
+
             master_count = config[0].get("dedicated_master_count")
             if (
                 master_count
