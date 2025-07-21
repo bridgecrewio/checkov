@@ -36,3 +36,15 @@ Resources:
       DefaultActions:
         - Type: forward
           TargetGroupArn: default-target-group
+  ListenerHTTPSPASS14:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-3-FIPS-2023-04
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
