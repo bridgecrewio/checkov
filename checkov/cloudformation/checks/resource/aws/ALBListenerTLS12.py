@@ -12,7 +12,7 @@ supported_policy_prefixes = {
     'HTTPS': ("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2", "ELBSecurityPolicy-TLS13-1-2",
               "ELBSecurityPolicy-TLS13-1-3"),
     # NLBs support TLS v1.2 and 1.3
-    'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2",
+    'TLS': ("ELBSecurityPolicy-TLS13-1-3", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2",
             "ELBSecurityPolicy-TLS-1-2")
 }
 
