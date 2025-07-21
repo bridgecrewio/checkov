@@ -29,3 +29,11 @@ The graph checks are usually written under the `checks` directory of the relevan
 All graph checks's ids start with `CKV2_` (as opposed to `CKV_` for python checks).
 We define a connection for graph checks between 2 entities by the existence of an edge between the 2 objects which represent those resources.
 The implementation of all operators which are available for graph checks are under the directory `checkov/common/graph/checks_infra/solvers`.
+
+## Adding Tests
+Each check added to `checkov` should have a test with a passing and a failing example to make sure the check is both valid and stays updated over time.
+The tests for a check of framework `X` should be located under the same folder structure as the check location but under the `tests` directory. For example, the tests for the check under `checkov/terraform/checks/resource/aws/check.py` should be under `tests/terraform/checks/resource/aws/test_check.py`.
+Each such test is expected to have:
+- An IAC file (or multiple files under the same directory) of the same framework which contains examples of both passing and failing resources. If there are multiple use-cases to check, then we expect an example for each of them. The resources names should contain both a description of the example and wether they are a passing or failing resource. For example - `passing_example_1_with_variable_rendering`. It's also possible to separate the examples to files of failing/passing examples and remove the prefix of `passing/failing` from the names.
+- If an `expected.yaml` file exists in the same folder as the examples, it should contain all passing enities' ids under the `pass` group and all failing ones under the `fail`. In that case, the test should parse this file to decide which entities should pass or fail and check it in the test.
+- The test itself should try to run the matching framework's `Runner` only on the tested check and validate the results against the expected results from `expected.yaml`. An example to how we can do it is using `runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))` when `runner` is the relevant `Runner` object for the framework, and the `check` is the relevant instance of the check that we want to test.
