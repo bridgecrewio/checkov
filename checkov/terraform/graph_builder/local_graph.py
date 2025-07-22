@@ -275,30 +275,30 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         matching module vertex as 'source_module'
         """
         module_lookup = {}
-        for idx in self.vertices_by_block_type[BlockType.MODULE]:
-            v = self.vertices[idx]
-            key = (
-                v.name,
-                v.path,
-                v.source_module_object,
-                v.for_each_index,
+        for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
+            module_vertex = self.vertices[module_idx]
+            composed_key = (
+                module_vertex.name,
+                module_vertex.path,
+                module_vertex.source_module_object,
+                module_vertex.for_each_index,
             )
-            module_lookup[key] = idx
+            module_lookup[composed_key] = module_idx
 
         # Match vertices using the lookup
         for vertex in self.vertices:
             smo = vertex.source_module_object
             if not smo:
                 continue
-            key = (
+            composed_key = (
                 smo.name,
                 smo.path,
                 smo.nested_tf_module,
                 smo.foreach_idx,
             )
-            idx = module_lookup.get(key)
-            if idx is not None:
-                vertex.source_module.add(idx)
+            module_vertice_idx = module_lookup.get(composed_key)
+            if module_vertice_idx is not None:
+                vertex.source_module.add(module_vertice_idx)
                 break
         return
 
