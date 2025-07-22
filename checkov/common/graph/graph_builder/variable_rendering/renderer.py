@@ -75,7 +75,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
 
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
-                logging.warning("Reached max graph edge evaluation loops, breaking.")
+                logging.warning(f"Reached max ({self.MAX_NUMBER_OF_LOOPS}) graph edge evaluation loops, breaking.")
                 break
 
         if self.vertices_index_to_render:
