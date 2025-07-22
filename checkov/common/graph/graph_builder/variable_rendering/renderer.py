@@ -78,11 +78,12 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
                 logging.warning("Reached max graph edge evaluation loops, breaking.")
                 break
 
-        if not self.vertices_index_to_render:
-            self.local_graph.update_vertices_configs()
-            logging.debug("done evaluating edges")
-            self.evaluate_non_rendered_values()
-            logging.debug("Done evaluating non-rendered values")
+        if self.vertices_index_to_render:
+            return
+        self.local_graph.update_vertices_configs()
+        logging.debug("done evaluating edges")
+        self.evaluate_non_rendered_values()
+        logging.debug("done evaluate_non_rendered_values")
 
     def _get_initial_end_vertices(self) -> set[int]:
         return self.local_graph.get_vertices_with_degrees_conditions(
