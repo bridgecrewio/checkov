@@ -42,10 +42,10 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         if self.vertices_index_to_render:
             edges_to_render = self._remove_unrelated_edges(edges_to_render)
 
-        evaluated_edges_cache: list[list[Edge]] = [[], []]
-        duplicates_count = 0
         end_vertices_indexes = set()
         loops = 0
+        evaluated_edges_cache: list[list[Edge]] = [[], []]
+        duplicates_count = 0
 
         while edges_to_render:
             evaluated_edges_two_iter_ago = evaluated_edges_cache[-2]
@@ -57,7 +57,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
                 logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
             evaluated_edges_cache.append(edges_to_render)
-            logging.debug(f"evaluating {len(edges_to_render)} edges; loops={loops}")
+            logging.debug(f"evaluating {len(edges_to_render)} edges; loop_num={loops}")
 
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
 
