@@ -274,18 +274,30 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        module_lookup = {}
+        for idx in self.vertices_by_block_type[BlockType.MODULE]:
+            v = self.vertices[idx]
+            key = (
+                v.name,
+                v.path,
+                v.source_module_object,
+                v.for_each_index,
+            )
+            module_lookup[key] = idx
+
+        # Match vertices using the lookup
         for vertex in self.vertices:
-            if not vertex.source_module_object:
+            smo = vertex.source_module_object
+            if not smo:
                 continue
-            for idx in self.vertices_by_block_type[BlockType.MODULE]:
-                if vertex.source_module_object.name != self.vertices[idx].name:
-                    continue
-                if vertex.source_module_object.path != self.vertices[idx].path:
-                    continue
-                if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
-                    continue
-                if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
-                    continue
+            key = (
+                smo.name,
+                smo.path,
+                smo.nested_tf_module,
+                smo.foreach_idx,
+            )
+            idx = module_lookup.get(key)
+            if idx is not None:
                 vertex.source_module.add(idx)
                 break
         return
