@@ -336,7 +336,8 @@ class TestRunnerValid(unittest.TestCase):
                                                                 (26, '      Properties:\n'),
                                                                 (27, '        Description: "User"\n'),
                                                                 (28, '        Name: /username\n'),
-                                                                (29, '        Type: String\n')]
+                                                                (29, '        Type: String\n'),
+                                                                (30, '        Value: "user"')]
 
 
     def tearDown(self):
