@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.451...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.452...HEAD)
+
+## [3.2.452](https://github.com/bridgecrewio/checkov/compare/3.2.451...3.2.452) - 2025-07-23
+
+### Feature
+
+- **general:** Support Py 3.13 on build workflow - [#7222](https://github.com/bridgecrewio/checkov/pull/7222)
 
 ## [3.2.451](https://github.com/bridgecrewio/checkov/compare/3.2.450...3.2.451) - 2025-07-14
 
