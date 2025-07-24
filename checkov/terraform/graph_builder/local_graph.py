@@ -287,14 +287,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         # Match vertices using the lookup
         for vertex in self.vertices:
-            smo = vertex.source_module_object
-            if not smo or not smo.name:
+            source_module_object = vertex.source_module_object
+            if not source_module_object or not source_module_object.name:
                 continue
             composed_key = (
-                smo.name,
-                smo.path,
-                smo.nested_tf_module,
-                smo.foreach_idx,
+                source_module_object.name,
+                source_module_object.path,
+                source_module_object.nested_tf_module,
+                source_module_object.foreach_idx,
             )
             module_vertice_idx = module_lookup.get(composed_key)
             if module_vertice_idx is not None:
