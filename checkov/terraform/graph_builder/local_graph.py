@@ -288,7 +288,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         # Match vertices using the lookup
         for vertex in self.vertices:
             smo = vertex.source_module_object
-            if not smo:
+            if not smo or not smo.name:
                 continue
             composed_key = (
                 smo.name,
