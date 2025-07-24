@@ -299,7 +299,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_vertice_idx = module_lookup.get(composed_key)
             if module_vertice_idx is not None:
                 vertex.source_module.add(module_vertice_idx)
-                break
         return
 
     def _build_edges(self) -> None:
