@@ -24,7 +24,7 @@ from checkov.common.sca.commons import (
     get_registry_url, get_package_lines,
     get_record_file_line_range, get_license_policy_and_package_alias
 )
-from checkov.common.util.http_utils import request_wrapper
+from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.common import format_licenses_to_string
 
@@ -686,9 +686,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
     return []
 
 
-async def get_license_statuses_async(
-    session: ClientSession, packages: list[dict[str, Any]], image_name: str
-) -> _ImageReferencerLicenseStatus:
+async def get_license_statuses_async(packages: list[dict[str, Any]], image_name: str) -> _ImageReferencerLicenseStatus:
     """
     This is an async implementation of `get_license_statuses`. The only change is we're getting a session
     as an input, and the asyncio behavior is managed in the calling method.
@@ -698,9 +696,8 @@ async def get_license_statuses_async(
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
-        async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
-                                   json={"packages": requests_input}) as resp:
-            response_json = await resp.json()
+        _, response_json = await aiohttp_client_session_wrapper("POST", url, headers=bc_integration.get_default_headers("POST"),
+                                       payload={"packages": requests_input})
 
         license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}

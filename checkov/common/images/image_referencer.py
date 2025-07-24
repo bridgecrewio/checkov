@@ -6,8 +6,6 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Generic, TypeVar
-
-import aiohttp
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
@@ -185,12 +183,11 @@ class ImageReferencerMixin(Generic[_Definitions]):
         This is an async implementation of `_fetch_image_results`. The only change is we're getting a session
         as an input, and the asyncio behavior is managed in the calling method.
         """
-        async with aiohttp.ClientSession() as session:
-            results: list[dict[str, Any]] = await asyncio.gather(*[
-                image_scanner.get_scan_results_from_cache_async(session, f"image:{i}")
-                for i in image_names_to_query
-            ])
-        return results
+        return await asyncio.gather(*[
+            image_scanner.get_scan_results_from_cache_async(f"image:{i}")
+            for i in image_names_to_query
+        ])
+
 
     def _add_image_records(
         self,
