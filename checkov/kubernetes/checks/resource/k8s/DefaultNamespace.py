@@ -37,11 +37,13 @@ class DefaultNamespace(BaseK8Check):
         if metadata:
             if "namespace" in metadata and metadata["namespace"] != "default":
                 return CheckResult.PASSED
-
-            # If namespace not defined it is default -> Ignore default Service account and kubernetes service
-            if conf["kind"] == "ServiceAccount" and metadata["name"] == "default":
+            name = metadata.get("name")
+            if not name:
                 return CheckResult.PASSED
-            if conf["kind"] == "Service" and metadata["name"] == "kubernetes":
+            # If namespace not defined it is default -> Ignore default Service account and kubernetes service
+            if conf["kind"] == "ServiceAccount" and name == "default":
+                return CheckResult.PASSED
+            if conf["kind"] == "Service" and name == "kubernetes":
                 return CheckResult.PASSED
             return CheckResult.FAILED
         return CheckResult.FAILED
