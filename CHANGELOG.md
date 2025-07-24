@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.452...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.454...HEAD)
+
+## [3.2.454](https://github.com/bridgecrewio/checkov/compare/3.2.452...3.2.454) - 2025-07-24
+
+### Bug Fix
+
+- **serverless:** Fixed extraction of code lines for serverless resources - [#7259](https://github.com/bridgecrewio/checkov/pull/7259)
 
 ## [3.2.452](https://github.com/bridgecrewio/checkov/compare/3.2.451...3.2.452) - 2025-07-23
 
