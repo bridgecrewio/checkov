@@ -214,7 +214,7 @@ async def aiohttp_client_session_wrapper(
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver()), trust_env=True) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")

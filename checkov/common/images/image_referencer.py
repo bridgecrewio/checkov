@@ -185,11 +185,22 @@ class ImageReferencerMixin(Generic[_Definitions]):
         This is an async implementation of `_fetch_image_results`. The only change is we're getting a session
         as an input, and the asyncio behavior is managed in the calling method.
         """
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             results: list[dict[str, Any]] = await asyncio.gather(*[
                 image_scanner.get_scan_results_from_cache_async(session, f"image:{i}")
                 for i in image_names_to_query
             ])
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
+        try:
+            logging.debug(session)
+            logging.debug("trust_env " + session.trust_env)
+            logging.debug("headers " + session.headers)
+            logging.debug("_default_proxy " + session._default_proxy)
+            logging.debug("_default_proxy_auth " + session._default_proxy_auth)
+        except Exception as e:
+            logging.debug("Extra logging causing more errors")
+            logging.debug(e)
         return results
 
     def _add_image_records(
@@ -320,7 +331,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
     async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             license_results = await asyncio.gather(*[
                 get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
                 for i, result in enumerate(image_results)
