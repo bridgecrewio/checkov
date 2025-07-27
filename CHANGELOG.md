@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.454...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.456...HEAD)
+
+## [3.2.456](https://github.com/bridgecrewio/checkov/compare/3.2.454...3.2.456) - 2025-07-27
+
+### Bug Fix
+
+- **terraform:** Parse continue as a string rather as a python object - [#7261](https://github.com/bridgecrewio/checkov/pull/7261)
 
 ## [3.2.454](https://github.com/bridgecrewio/checkov/compare/3.2.452...3.2.454) - 2025-07-24
 
