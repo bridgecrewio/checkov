@@ -188,7 +188,6 @@ class ImageReferencerMixin(Generic[_Definitions]):
             for i in image_names_to_query
         ])
 
-
     def _add_image_records(
         self,
         report: Report,

@@ -4,7 +4,6 @@ import json
 import ssl
 import uuid
 from urllib.parse import urlparse
-from aiohttp.typedefs import StrOrURL
 import requests
 import logging
 import time
@@ -26,6 +25,7 @@ from checkov.version import version as checkov_version
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
+    from aiohttp.typedefs import StrOrURL
 
 # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
 REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1

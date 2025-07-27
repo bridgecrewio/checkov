@@ -29,7 +29,6 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.output.common import format_licenses_to_string
 
 if TYPE_CHECKING:
-    from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
     from checkov.common.typing import (
@@ -144,7 +143,8 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
 
 
 def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package: dict[str, Any] | None = None,
-                             root_package_cve: dict[str, Any] | None = None) -> tuple[dict[str, Any] | None, str | None]:
+                             root_package_cve: dict[str, Any] | None = None) -> tuple[
+    dict[str, Any] | None, str | None]:
     if root_package_cve:
         return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
 
@@ -155,7 +155,8 @@ def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package
     return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
 
 
-def get_package_lines_numbers(package: dict[str, Any], root_package: dict[str, Any] | None = None, file_line_range: list[int] | None = None) -> list[int]:
+def get_package_lines_numbers(package: dict[str, Any], root_package: dict[str, Any] | None = None,
+                              file_line_range: list[int] | None = None) -> list[int]:
     if root_package:
         return get_record_file_line_range(root_package, file_line_range)
     return get_record_file_line_range(package, file_line_range)
@@ -187,8 +188,9 @@ def create_report_cve_record(
     if severity == "moderate":
         severity = "medium"
     if severity.upper() not in Severities:
-        logging.warning(f"unknown severity - severity '{severity}' is unknown. using the DEFAULT_SEVERITY: '{DEFAULT_SEVERITY}' instead. "
-                        f"vulnerabilities-details: {vulnerability_details}")
+        logging.warning(
+            f"unknown severity - severity '{severity}' is unknown. using the DEFAULT_SEVERITY: '{DEFAULT_SEVERITY}' instead. "
+            f"vulnerabilities-details: {vulnerability_details}")
         severity = DEFAULT_SEVERITY
 
     description = vulnerability_details.get("description")
@@ -696,8 +698,9 @@ async def get_license_statuses_async(packages: list[dict[str, Any]], image_name:
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
-        _, response_json = await aiohttp_client_session_wrapper("POST", url, headers=bc_integration.get_default_headers("POST"),
-                                       payload={"packages": requests_input})
+        _, response_json = await aiohttp_client_session_wrapper("POST", url,
+                                                                headers=bc_integration.get_default_headers("POST"),
+                                                                payload={"packages": requests_input})
 
         license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}
