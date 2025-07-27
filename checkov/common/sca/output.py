@@ -144,7 +144,7 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
 
 def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package: dict[str, Any] | None = None,
                              root_package_cve: dict[str, Any] | None = None) -> tuple[
-    dict[str, Any] | None, str | None]:
+                             dict[str, Any] | None, str | None]:
     if root_package_cve:
         return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
 
