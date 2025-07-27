@@ -12,8 +12,6 @@ import aiohttp
 import asyncio
 from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
-from aiohttp import ClientResponse
-
 from checkov.common.util import env_vars_config
 from urllib3.response import HTTPResponse
 from urllib3.util import parse_url
@@ -29,6 +27,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
     from aiohttp.typedefs import StrOrURL
+    from aiohttp import ClientResponse
 
 # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
 REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1
