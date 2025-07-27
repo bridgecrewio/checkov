@@ -228,7 +228,7 @@ async def aiohttp_client_session_wrapper(
         logger.info(f"Loading custom CA bundle from: {ca_bundle_path}")
         # Create a new SSL context
         ssl_context = ssl.create_default_context(cafile=ca_bundle_path)
-    connector = aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), ssl=ssl_context)
+    connector = aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), ssl_context=ssl_context)
 
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server

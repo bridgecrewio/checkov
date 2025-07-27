@@ -317,11 +317,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
     async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
-        async with aiohttp.ClientSession() as session:
-            license_results = await asyncio.gather(*[
-                get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
-                for i, result in enumerate(image_results)
-                if "results" in result and result["results"]
-            ])
+        license_results = await asyncio.gather(*[
+            get_license_statuses_async(result['results'][0].get('packages') or [], image_names[i])
+            for i, result in enumerate(image_results)
+            if "results" in result and result["results"]
+        ])
         merged_result.update({r['image_name']: r['licenses'] for r in license_results})
         return merged_result
