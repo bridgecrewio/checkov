@@ -537,6 +537,11 @@ class TestTerraformEvaluation(TestCase):
         result = evaluate_terraform(input_str)
         assert result == expected
 
+    def test_continue_stays_the_same(self):
+        expected = "continue"
+        result = evaluate_terraform("continue")
+        self.assertEqual(expected, result)
+
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
