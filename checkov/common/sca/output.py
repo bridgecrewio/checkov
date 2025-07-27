@@ -698,9 +698,10 @@ async def get_license_statuses_async(packages: list[dict[str, Any]], image_name:
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
-        _, response_json = await aiohttp_client_session_wrapper("POST", url,
-                                                                headers=bc_integration.get_default_headers("POST"),
-                                                                payload={"packages": requests_input})
+        response = await aiohttp_client_session_wrapper("POST", url,
+                                                        headers=bc_integration.get_default_headers("POST"),
+                                                        payload={"packages": requests_input})
+        response_json = await response.json()
 
         license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}

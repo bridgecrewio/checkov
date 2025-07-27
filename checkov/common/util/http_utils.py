@@ -12,6 +12,9 @@ import aiohttp
 import asyncio
 from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
+from aiohttp import ClientResponse
+
+from checkov.common.util import env_vars_config
 from urllib3.response import HTTPResponse
 from urllib3.util import parse_url
 
@@ -210,19 +213,19 @@ async def aiohttp_client_session_wrapper(
         url: StrOrURL,
         headers: dict[str, Any],
         payload: dict[str, Any] | None = None,
-) -> tuple[int, Any]:
+) -> ClientResponse:
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
     # 1. Read proxy URL (may include user:pass for authentication)
-    proxy_url = os.environ.get("HTTPS_PROXY", os.environ.get("HTTP_PROXY"))
+    proxy_url = env_vars_config.env_vars_config.HTTPS_PROXY
     proxy_auth = None
     if proxy_url:
         parsed_proxy_url = urlparse(proxy_url)
         if parsed_proxy_url.username and parsed_proxy_url.password:
             proxy_auth = aiohttp.BasicAuth(login=parsed_proxy_url.username, password=parsed_proxy_url.password)
     # 2. Read path to custom certificate bundle
-    ca_bundle_path = os.getenv('BC_CA_BUNDLE')
+    ca_bundle_path = env_vars_config.env_vars_config.BC_CA_BUNDLE
     ssl_context = None
     if ca_bundle_path:
         logger.info(f"Loading custom CA bundle from: {ca_bundle_path}")
@@ -242,10 +245,9 @@ async def aiohttp_client_session_wrapper(
                         method=method, url=url, headers=headers, json=payload, proxy=proxy_url, proxy_auth=proxy_auth
                 ) as response:
                     content = await response.text()
-                    response_json = await response.json()
                 if response.ok:
                     logging.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
-                    return 0, response_json
+                    return response
                 elif i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))
                     continue
@@ -253,7 +255,7 @@ async def aiohttp_client_session_wrapper(
                     logging.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
                                   f"url \'{url}\'")
                     logging.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
-                    return 1, None
+                    return response
             except aiohttp.ClientOSError:
                 if i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))

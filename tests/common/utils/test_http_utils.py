@@ -140,10 +140,10 @@ async def test_aiohttp_client_session_wrapper_with_one_handled_exception(mocker:
         m.post(report_url, exception=aiohttp.ClientOSError())
         m.post(report_url, status=200, repeat=True)
 
-        status, _ = await aiohttp_client_session_wrapper("POST", get_report_url(), {}, {})
+        response = await aiohttp_client_session_wrapper("POST", get_report_url(), {}, {})
 
     # then
-    assert status == 0
+    assert response.ok
 
 
 @pytest.mark.asyncio
