@@ -274,20 +274,31 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        module_lookup = {}
+        for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
+            module_vertex = self.vertices[module_idx]
+            composed_key = (
+                module_vertex.name,
+                module_vertex.path,
+                module_vertex.source_module_object,
+                module_vertex.for_each_index,
+            )
+            module_lookup[composed_key] = module_idx
+
+        # Match vertices using the lookup
         for vertex in self.vertices:
-            if not vertex.source_module_object:
+            source_module_object = vertex.source_module_object
+            if not source_module_object or not source_module_object.name:
                 continue
-            for idx in self.vertices_by_block_type[BlockType.MODULE]:
-                if vertex.source_module_object.name != self.vertices[idx].name:
-                    continue
-                if vertex.source_module_object.path != self.vertices[idx].path:
-                    continue
-                if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
-                    continue
-                if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
-                    continue
-                vertex.source_module.add(idx)
-                break
+            composed_key = (
+                source_module_object.name,
+                source_module_object.path,
+                source_module_object.nested_tf_module,
+                source_module_object.foreach_idx,
+            )
+            module_vertice_idx = module_lookup.get(composed_key)
+            if module_vertice_idx is not None:
+                vertex.source_module.add(module_vertice_idx)
         return
 
     def _build_edges(self) -> None:
