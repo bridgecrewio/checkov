@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.456...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.457...HEAD)
+
+## [3.2.457](https://github.com/bridgecrewio/checkov/compare/3.2.456...3.2.457) - 2025-07-28
+
+### Bug Fix
+
+- **dockerfile:** Use proxy env vars in aiohttp client requests - [#7260](https://github.com/bridgecrewio/checkov/pull/7260)
 
 ## [3.2.456](https://github.com/bridgecrewio/checkov/compare/3.2.454...3.2.456) - 2025-07-27
 
