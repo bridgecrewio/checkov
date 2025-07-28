@@ -4,7 +4,7 @@ import asyncio
 import sys
 
 
-def mock_get_empty_license_statuses_async(session, packages, image_name: str):
+def mock_get_empty_license_statuses_async(packages, image_name: str):
     result = {'image_name': image_name, 'licenses': []}
 
     if sys.version_info < (3, 8):
@@ -15,7 +15,7 @@ def mock_get_empty_license_statuses_async(session, packages, image_name: str):
     return result
 
 
-def mock_get_license_statuses_async(session, packages, image_name: str) -> dict[str, str | list[dict[str, str]]]:
+def mock_get_license_statuses_async(packages, image_name: str) -> dict[str, str | list[dict[str, str]]]:
     result = {
         "image_name": image_name,
         "licenses": [
@@ -44,7 +44,7 @@ def mock_get_license_statuses_async(session, packages, image_name: str) -> dict[
     return result
 
 
-def mock_get_image_cached_result_async(session, image_id: str):
+def mock_get_image_cached_result_async(image_id: str):
     result = {
         "results": [
             {
