@@ -80,7 +80,7 @@ jobs:
           allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -133,7 +133,7 @@ jobs:
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -188,7 +188,7 @@ jobs:
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -420,7 +420,7 @@ jobs:
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -474,7 +474,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
