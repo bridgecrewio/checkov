@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 def parse(filename: str | Path) -> tuple[dict[str, list[_Instruction]], list[str]]:
-    with open(filename) as dockerfile:
+    with open(filename, "r", encoding="utf-8-sig") as dockerfile:
         dfp = DockerfileParser(fileobj=dockerfile)
         return dfp_group_by_instructions(dfp)
 
