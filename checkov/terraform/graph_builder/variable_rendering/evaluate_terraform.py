@@ -591,7 +591,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         for i in range(start, len(input_str)):
             char = input_str[i]
             if char == separator:
-                if not stack or stack in end_stack:
+                if not stack or stack == end_stack:
                     return i
                 if update_end_stack:
                     end_stack.extend(stack)
