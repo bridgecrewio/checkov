@@ -24,8 +24,7 @@ if TYPE_CHECKING:
     from bc_jsonpath_ng import JSONPath
     from checkov.common.typing import LibraryGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE,
-                         TerraformBlockType.PROVIDER}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
@@ -35,13 +34,17 @@ class BaseAttributeSolver(BaseSolver):
     jsonpath_parsed_statement_cache: "dict[str, JSONPath]" = {}  # noqa: CCE003  # global cache
 
     def __init__(
-            self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+        self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
     ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
         self.attribute = attribute if attribute not in reserved_attributes_to_scan else wrap_reserved_attributes(attribute)
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
+
+
+    def get_resource_types(self) -> List[str]:
+        return self.resource_types
 
     def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()

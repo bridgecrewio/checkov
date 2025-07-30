@@ -17,16 +17,16 @@ class OrSolver(BaseComplexSolver):
         return reduce(or_, args)
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
-        has_unrendered_attribute = False
+        # found flag indicates if at least one solver tested the vertex
         found = False
         for solver in self.solvers:
             resource_types = solver.get_resource_types()
+            # In case that current solver's resource types aren't compatible with vertex, this operation should be
+            # skipped
             if resource_types and not self.resource_type_pred(vertex, resource_types):
                 continue
             found = True
             operation = solver.get_operation(vertex)
             if operation:
                 return True
-            if operation is None:
-                has_unrendered_attribute = True
-        return None if (has_unrendered_attribute or not found) else False
+        return None if not found else False
