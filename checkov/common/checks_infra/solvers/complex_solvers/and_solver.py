@@ -18,9 +18,12 @@ class AndSolver(BaseComplexSolver):
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         has_unrendered_attribute = False
+        # found flag indicates if at least one solver tested the vertex
         found = False
         for solver in self.solvers:
             resource_types = solver.get_resource_types()
+            # In case that current solver's resource types aren't compatible with vertex, this operation should be
+            # skipped
             if resource_types and not self.resource_type_pred(vertex, resource_types):
                 continue
             found = True
