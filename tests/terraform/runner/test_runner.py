@@ -1321,7 +1321,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
 
         self.assertEqual(len(report.passed_checks), 0)
-        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 0)
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(

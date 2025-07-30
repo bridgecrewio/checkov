@@ -44,6 +44,14 @@ class BaseAttributeSolver(BaseSolver):
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
 
+    def get_resource_types(self) -> List[str]:
+        """
+        Returns the list of resource types supported by this solver.
+
+        :return: List of resource types
+        """
+        return self.resource_types
+
     def run(self, graph_connector: LibraryGraph) -> Tuple[
         List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -121,21 +129,18 @@ class BaseAttributeSolver(BaseSolver):
                     )
 
                 return result
-        if self.resource_type_pred(vertex, self.resource_types):
-            result = self._get_operation(
-                vertex=vertex, attribute=self.attribute
+        result = self._get_operation(vertex=vertex, attribute=self.attribute)
+        if result is not None:
+            debug.attribute_block(
+                resource_types=self.resource_types,
+                attribute=self.attribute,
+                operator=self.operator,
+                value=self.value,
+                resource=vertex,
+                status="passed" if result is True else "failed",
             )
-            if result is not None:
-                debug.attribute_block(
-                    resource_types=self.resource_types,
-                    attribute=self.attribute,
-                    operator=self.operator,
-                    value=self.value,
-                    resource=vertex,
-                    status="passed" if result is True else "failed",
-                )
 
-                return result
+            return result
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError

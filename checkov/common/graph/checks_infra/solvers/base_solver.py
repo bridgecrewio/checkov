@@ -35,6 +35,15 @@ class BaseSolver:
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError()
 
+    def get_resource_types(self) -> List[str]:
+        """
+        Returns the list of resource types supported by this solver.
+
+        :return: List of resource types
+        """
+        return []
+
+
     def resource_type_pred(self, v: Dict[str, Any], resource_types: List[str]) -> bool:
         resource_type = CustomAttributes.RESOURCE_TYPE
         if env_vars_config.CKV_SUPPORT_ALL_RESOURCE_TYPE:

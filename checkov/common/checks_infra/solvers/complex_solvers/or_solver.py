@@ -18,10 +18,15 @@ class OrSolver(BaseComplexSolver):
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         has_unrendered_attribute = False
+        found = False
         for solver in self.solvers:
+            resource_types = solver.get_resource_types()
+            if resource_types and not self.resource_type_pred(vertex, resource_types):
+                continue
+            found = True
             operation = solver.get_operation(vertex)
             if operation:
                 return True
             if operation is None:
                 has_unrendered_attribute = True
-        return None if has_unrendered_attribute else False
+        return None if (has_unrendered_attribute or not found) else False
