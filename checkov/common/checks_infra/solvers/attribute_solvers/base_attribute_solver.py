@@ -39,21 +39,11 @@ class BaseAttributeSolver(BaseSolver):
     ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
-        self.attribute = attribute if attribute not in reserved_attributes_to_scan else wrap_reserved_attributes(
-            attribute)
+        self.attribute = attribute if attribute not in reserved_attributes_to_scan else wrap_reserved_attributes(attribute)
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
 
-    def get_resource_types(self) -> List[str]:
-        """
-        Returns the list of resource types supported by this solver.
-
-        :return: List of resource types
-        """
-        return self.resource_types
-
-    def run(self, graph_connector: LibraryGraph) -> Tuple[
-        List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices: List[Dict[str, Any]] = []
@@ -71,8 +61,7 @@ class BaseAttributeSolver(BaseSolver):
             return passed_vertices, failed_vertices, unknown_vertices
 
         for _, data in graph_connector.nodes():
-            if self.resource_type_pred(data, self.resource_types) and data.get(
-                    CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+            if self.resource_type_pred(data, self.resource_types) and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(
                     self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
@@ -85,8 +74,7 @@ class BaseAttributeSolver(BaseSolver):
         # handle edge cases in some policies that explicitly look for blank values
         # we also need to check the attribute stack - e.g., if they are looking for tags.component, but tags = local.tags,
         # then we actually need to see if tags is variable dependent as well
-        attr_parts = self.attribute.split(
-            '.')  # type:ignore[union-attr]  # due to attribute can be None (but not really)
+        attr_parts = self.attribute.split('.')  # type:ignore[union-attr]  # due to attribute can be None (but not really)
         attr_to_check = None
         for attr in attr_parts:
             attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
@@ -146,7 +134,7 @@ class BaseAttributeSolver(BaseSolver):
         raise NotImplementedError
 
     def _process_node(
-            self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]],
+        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]],
             unknown_vertices: List[Dict[str, Any]]
     ) -> None:
         if not self.resource_type_pred(data, self.resource_types):
@@ -165,17 +153,17 @@ class BaseAttributeSolver(BaseSolver):
         return self.is_jsonpath_check
 
     def _evaluate_attribute_matches(
-            self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
+        self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
     ) -> bool | None:
         if self.should_check_all_condition():
             if self.resource_type_pred(vertex, self.resource_types) and all(
-                    self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+                self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
             ):
                 return True if len(attribute_matches) == len(filtered_attribute_matches) else None
             return False
 
         if self.resource_type_pred(vertex, self.resource_types) and any(
-                self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
         ):
             return True
         return False if len(attribute_matches) == len(filtered_attribute_matches) else None

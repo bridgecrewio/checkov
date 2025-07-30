@@ -43,7 +43,6 @@ class BaseSolver:
         """
         return []
 
-
     def resource_type_pred(self, v: Dict[str, Any], resource_types: List[str]) -> bool:
         resource_type = CustomAttributes.RESOURCE_TYPE
         if env_vars_config.CKV_SUPPORT_ALL_RESOURCE_TYPE:
