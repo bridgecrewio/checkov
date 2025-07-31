@@ -11,6 +11,8 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
 
+NOT_FOUND = "NOT_FOUND"
+
 
 class BaseComplexSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute

@@ -2,7 +2,7 @@ from typing import List, Any, Dict, Optional, Union
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver, NOT_FOUND
 from functools import reduce
 from operator import and_
 
@@ -30,12 +30,12 @@ class AndSolver(BaseComplexSolver):
             operation = solver.get_operation(vertex)
             if operation is None:
                 has_unrendered_attribute = True
-            elif operation == "not found":
+            elif operation == NOT_FOUND:
                 continue
             elif not operation:
                 return False
         if not found:
-            return "not found"
+            return NOT_FOUND
         elif has_unrendered_attribute:
             return None
         return True
