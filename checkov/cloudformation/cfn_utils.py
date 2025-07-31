@@ -260,6 +260,9 @@ def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str
 
         # Iterate over the resources in the template copy
         for _resource_name, resource_details in new_template.get('Resources', {}).items():
+            if _resource_name == '__file__':
+                continue
+
             resource_type = resource_details.get('Type', '')
             if (resource_type not in supported_types_and_globals):
                 continue

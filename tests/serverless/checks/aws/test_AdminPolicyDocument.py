@@ -26,6 +26,7 @@ class TestAdminPolicyDocument(unittest.TestCase):
         self.assertEqual(summary['parsing_errors'], 0)
 
         for failed_check in report.failed_checks:
+            del failed_check.entity_tags['__file__']
             self.assertEqual(dict(sorted(failed_check.entity_tags.items())), {"RESOURCE": "lambda", "PUBLIC": "False"})
 
 

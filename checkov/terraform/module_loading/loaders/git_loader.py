@@ -56,7 +56,7 @@ class GenericGitLoader(ModuleLoader):
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"
             return True
         # https://www.terraform.io/docs/modules/sources.html#generic-git-repository
-        return module_params.module_source.startswith("git::")
+        return module_params.module_source.startswith("git::") and not module_params.module_source.startswith("git::git@github.com")
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:

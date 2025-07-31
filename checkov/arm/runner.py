@@ -13,7 +13,7 @@ from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.utils import get_scannable_file_paths, get_files_definitions, ARM_POSSIBLE_ENDINGS, ArmElements, \
-    clean_file_path
+    clean_file_path, filter_failed_checks_with_unrendered_resources
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -119,6 +119,10 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         # run graph checks
         if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
+
+        # Filter failed checks on resources with unrendered string functions
+        # Remove if we ever implement full variable rendering for arm
+        report = filter_failed_checks_with_unrendered_resources(report)
 
         return report
 
