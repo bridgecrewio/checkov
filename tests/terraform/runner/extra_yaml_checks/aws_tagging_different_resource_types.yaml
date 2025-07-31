@@ -1,5 +1,5 @@
 metadata:
- id: "AWS_TAGGING_TF_000yy"
+ id: "CUSTOM_AWS_TAGGING_POLICY"
  name: "HF_all_Policy"
  guidelines: "Tagging needs to be done correctly."
  category: "General"

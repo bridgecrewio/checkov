@@ -172,6 +172,23 @@ class TestRunnerValid(unittest.TestCase):
         assert 'module.simple[0].aws_s3_bucket_object.this_file' in failed_resources
         assert 'module.simple[1].aws_s3_bucket_object.this_file' in failed_resources
 
+
+    def test_and_with_different_resource_types(self):
+        runner = Runner(db_connector=self.db_connector())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "and_with_different_resource_types")
+        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
+
+        report = runner.run(root_folder=resources_path, external_checks_dir=extra_checks_dir_path,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=["CUSTOM_AWS_TAGGING_POLICY"]))
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
+                                           "CUSTOM" not in check.id]
+
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1209,7 +1226,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 5)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 6)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1218,14 +1235,15 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 6)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 6)
 
         graph_checks = [x.id for x in runner.graph_registry.checks]
         self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
         self.assertIn('CUSTOM_GRAPH_AWS_2', graph_checks)
         self.assertIn('CKV2_CUSTOM_1', graph_checks)
+        self.assertIn('CUSTOM_AWS_TAGGING_POLICY', graph_checks)
         runner.graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
@@ -1386,19 +1404,6 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
-
-    def test_and_with_different_resource_types(self):
-        runner = Runner(db_connector=self.db_connector())
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        resources_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "resources", "and_with_different_resource_types")
-        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
-        runner.load_external_checks(extra_checks_dir_path)
-
-        report = runner.run(root_folder=resources_path, external_checks_dir=extra_checks_dir_path,
-                            runner_filter=RunnerFilter(framework=["terraform"], checks=["AWS_TAGGING_TF_000yy"]))
-        self.assertEqual(len(report.passed_checks), 1)
-        self.assertEqual(len(report.failed_checks), 0)
 
     def test_unrendered_simple_var(self):
         resources_dir = os.path.join(

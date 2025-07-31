@@ -1,4 +1,4 @@
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional, Union
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -16,7 +16,8 @@ class OrSolver(BaseComplexSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(or_, args)
 
-    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+    def get_operation(self, vertex: Dict[str, Any]) -> Union[Optional[bool], str]:
+        has_unrendered_attribute = False
         # found flag indicates if at least one solver tested the vertex
         found = False
         for solver in self.solvers:
@@ -27,6 +28,14 @@ class OrSolver(BaseComplexSolver):
                 continue
             found = True
             operation = solver.get_operation(vertex)
+            if operation is None:
+                has_unrendered_attribute = True
+            elif operation == "not found":
+                continue
             if operation:
                 return True
-        return None if not found else False
+        if not found:
+            return "not found"
+        elif has_unrendered_attribute:
+            return None
+        return False

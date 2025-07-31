@@ -4,7 +4,7 @@ import concurrent.futures
 import logging
 import re
 import json
-from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING, Union
 
 from bc_jsonpath_ng.ext import parse
 from networkx import DiGraph
@@ -70,7 +70,7 @@ class BaseAttributeSolver(BaseSolver):
         concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices, unknown_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+    def get_operation(self, vertex: Dict[str, Any]) -> Union[Optional[bool], str]:
         # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
         # handle edge cases in some policies that explicitly look for blank values
