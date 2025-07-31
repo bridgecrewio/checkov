@@ -318,7 +318,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 15)
+        self.assertEqual(report.get_summary()["failed"], 18)
         self.assertEqual(report.get_summary()["passed"], 3)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -327,7 +327,8 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CUSTOM_GRAPH_AWS_1"
+            "CUSTOM_GRAPH_AWS_1",
+            "CUSTOM_AWS_TAGGING_POLICY",
         }
 
         assert failed_check_ids == expected_failed_check_ids

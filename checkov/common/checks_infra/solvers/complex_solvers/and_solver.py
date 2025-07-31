@@ -1,8 +1,8 @@
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional, Union
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver, NOT_FOUND
 from functools import reduce
 from operator import and_
 
@@ -16,12 +16,26 @@ class AndSolver(BaseComplexSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(and_, args)
 
-    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+    def get_operation(self, vertex: Dict[str, Any]) -> Union[Optional[bool], str]:
         has_unrendered_attribute = False
+        # found flag indicates if at least one solver tested the vertex
+        found = False
         for solver in self.solvers:
+            resource_types = solver.get_resource_types()
+            # In case that current solver's resource types aren't compatible with vertex, this operation should be
+            # skipped
+            if resource_types and not self.resource_type_pred(vertex, resource_types):
+                continue
+            found = True
             operation = solver.get_operation(vertex)
             if operation is None:
                 has_unrendered_attribute = True
+            elif operation == NOT_FOUND:
+                continue
             elif not operation:
                 return False
-        return None if has_unrendered_attribute else True
+        if not found:
+            return NOT_FOUND
+        elif has_unrendered_attribute:
+            return None
+        return True

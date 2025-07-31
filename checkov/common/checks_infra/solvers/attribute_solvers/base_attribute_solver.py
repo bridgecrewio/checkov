@@ -4,7 +4,7 @@ import concurrent.futures
 import logging
 import re
 import json
-from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING, Union
 
 from bc_jsonpath_ng.ext import parse
 from networkx import DiGraph
@@ -42,6 +42,9 @@ class BaseAttributeSolver(BaseSolver):
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
 
+    def get_resource_types(self) -> List[str]:
+        return self.resource_types
+
     def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
@@ -67,7 +70,7 @@ class BaseAttributeSolver(BaseSolver):
         concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices, unknown_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+    def get_operation(self, vertex: Dict[str, Any]) -> Union[Optional[bool], str]:
         # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
         # handle edge cases in some policies that explicitly look for blank values
@@ -116,21 +119,18 @@ class BaseAttributeSolver(BaseSolver):
                     )
 
                 return result
+        result = self._get_operation(vertex=vertex, attribute=self.attribute)
+        if result is not None:
+            debug.attribute_block(
+                resource_types=self.resource_types,
+                attribute=self.attribute,
+                operator=self.operator,
+                value=self.value,
+                resource=vertex,
+                status="passed" if result is True else "failed",
+            )
 
-        result = self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
-            vertex=vertex, attribute=self.attribute
-        )
-
-        debug.attribute_block(
-            resource_types=self.resource_types,
-            attribute=self.attribute,
-            operator=self.operator,
-            value=self.value,
-            resource=vertex,
-            status="passed" if result is True else "failed",
-        )
-
-        return result
+            return result
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
