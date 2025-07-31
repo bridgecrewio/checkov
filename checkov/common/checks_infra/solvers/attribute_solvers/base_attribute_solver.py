@@ -42,7 +42,6 @@ class BaseAttributeSolver(BaseSolver):
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
 
-
     def get_resource_types(self) -> List[str]:
         return self.resource_types
 
