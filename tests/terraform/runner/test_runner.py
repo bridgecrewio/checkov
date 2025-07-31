@@ -1387,6 +1387,19 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
+    def test_and_with_different_resource_types(self):
+        runner = Runner(db_connector=self.db_connector())
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "and_with_different_resource_types")
+        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
+        runner.load_external_checks(extra_checks_dir_path)
+
+        report = runner.run(root_folder=resources_path, external_checks_dir=extra_checks_dir_path,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=["AWS_TAGGING_TF_000yy"]))
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 0)
+
     def test_unrendered_simple_var(self):
         resources_dir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")

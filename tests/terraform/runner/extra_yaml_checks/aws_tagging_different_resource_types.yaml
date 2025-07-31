@@ -1,0 +1,38 @@
+metadata:
+ id: "AWS_TAGGING_TF_000yy"
+ name: "HF_all_Policy"
+ guidelines: "Tagging needs to be done correctly."
+ category: "General"
+ severity: "critical"
+scope:
+ provider: "aws"
+definition:
+ and:
+  - cond_type: attribute
+    resource_types:
+      - aws_organizations_account
+      - aws_elasticache_cluster
+      - aws_db_instance
+    attribute: "tags.AccountType"
+    operator: regex_match
+    value: "^Lab$|^Sandbox$|^NonProd$|^Prod$|^PublicProd$|^PublicNonProd$"
+  - cond_type: attribute
+    resource_types:
+      - aws_db_instance #
+      - aws_organizations_account #
+      - aws_vpc
+      - aws_route53_zone
+      - aws_elasticache_cluster
+      - aws_lambda_function
+      - aws_ecs_cluster
+      - aws_instance
+      - aws_dynamodb_table
+      - aws_ebs_volume
+      - aws_efs_file_system
+      - aws_eks_cluster
+      - aws_fsx_windows_file_system
+      - aws_docdb_cluster
+      - aws_s3_bucket
+    attribute: "tags.Billing"
+    operator: regex_match
+    value: "APP-\\d{4}$|d{4}$" # Accepts APP-1234 or 4-digit dept codes
