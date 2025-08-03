@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+import typing
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.env_vars_config import env_vars_config
@@ -577,7 +578,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack: list[tuple[str, int]] = []
+    end_stack = []
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
@@ -593,7 +594,9 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
             char = input_str[i]
             if char == separator:
                 if env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST:
-                    if not stack or stack == end_stack:
+                    # Remove env var after verifying fix works and set the type at declaration instead of here
+                    typed_end_stack = typing.cast(list[tuple[str, int]], end_stack)
+                    if not stack or stack == typed_end_stack:
                         return i
                 else:
                     if not stack or stack in end_stack:
