@@ -578,7 +578,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack = []
+    end_stack = [] # type: ignore
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
@@ -594,9 +594,8 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
             char = input_str[i]
             if char == separator:
                 if env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST:
-                    # Remove env var after verifying fix works and set the type at declaration instead of here
-                    typed_end_stack = typing.cast(list[tuple[str, int]], end_stack)
-                    if not stack or stack == typed_end_stack:
+                    # Remove env var after verifying fix works and set the type at declaration
+                    if not stack or stack == end_stack:
                         return i
                 else:
                     if not stack or stack in end_stack:
