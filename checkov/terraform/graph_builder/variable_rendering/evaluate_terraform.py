@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import re
-import typing
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.env_vars_config import env_vars_config
@@ -578,7 +577,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack = [] # type: ignore
+    end_stack = []  # type: ignore
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
