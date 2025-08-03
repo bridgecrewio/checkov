@@ -7,6 +7,7 @@ import os
 import re
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
 import checkov.terraform.graph_builder.variable_rendering.renderer as renderer
@@ -576,7 +577,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack = []
+    end_stack: list[tuple[str, int]] = []
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
@@ -591,8 +592,12 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         for i in range(start, len(input_str)):
             char = input_str[i]
             if char == separator:
-                if not stack or stack == end_stack:
-                    return i
+                if env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST:
+                    if not stack or stack == end_stack:
+                        return i
+                else:
+                    if not stack or stack in end_stack:
+                        return i
                 if update_end_stack:
                     end_stack.extend(stack)
                     return i
