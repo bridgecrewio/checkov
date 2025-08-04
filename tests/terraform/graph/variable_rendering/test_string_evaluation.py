@@ -53,7 +53,6 @@ class TestTerraformEvaluation(TestCase):
         self.assertEqual(expected, evaluate_terraform(input_str))
 
     def test_nested_conditional_expression(self):
-        env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST = True
         input_str = "{for resource in concat(true ? [{'name'='test'}] : [], false ? [] : [{'name'='test2'}]) : resource.name => resource}"
         value = evaluate_terraform(input_str)
         self.assertEqual(value, {'test': {'name': 'test'}, 'test2': {'name': 'test2'}})

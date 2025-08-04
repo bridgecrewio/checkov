@@ -328,8 +328,7 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     try:
         evaluated_object_to_run_on: list[dict[str, Any]] = ast.literal_eval(object_to_run_on.replace(' ', ''))
     except (ValueError, SyntaxError):
-        # return None
-        evaluated_object_to_run_on: list[dict[str, Any]] = ast.literal_eval(object_to_run_on[1:].replace(' ', ''))
+        return None
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
     if len(split_expression) != 2:
@@ -581,7 +580,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack = []  # type: ignore
+    end_stack: list[tuple[str, int]] = []
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
@@ -596,13 +595,8 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         for i in range(start, len(input_str)):
             char = input_str[i]
             if char == separator:
-                if env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST:
-                    # Remove env var after verifying fix works and set the type at declaration
-                    if not stack or stack == end_stack:
-                        return i
-                else:
-                    if not stack or stack in end_stack:
-                        return i
+                if not stack or stack == end_stack:
+                    return i
                 if update_end_stack:
                     end_stack.extend(stack)
                     return i
