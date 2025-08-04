@@ -4,7 +4,6 @@ from datetime import datetime
 
 import pytest
 
-from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
