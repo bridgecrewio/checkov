@@ -290,6 +290,9 @@ def handle_for_loop(input_str: Union[str, int, bool]) -> str | int | bool:
         input_str = _handle_literal(input_str)
         if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
             input_str = _remove_variable_formatting(input_str)
+            iterable_start_idx = input_str.find('in') + 2
+            iterable_end_idx = input_str.find(renderer.KEY_VALUE_SEPERATOR)
+            input_str = input_str[0:iterable_start_idx+1] + str(_try_evaluate(input_str[iterable_start_idx: iterable_end_idx].strip())) + input_str[iterable_end_idx:]
             start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
             end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
             if start_bracket_idx == -1 or end_bracket_idx == -1:
@@ -325,7 +328,8 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     try:
         evaluated_object_to_run_on: list[dict[str, Any]] = ast.literal_eval(object_to_run_on.replace(' ', ''))
     except (ValueError, SyntaxError):
-        return None
+        # return None
+        evaluated_object_to_run_on: list[dict[str, Any]] = ast.literal_eval(object_to_run_on[1:].replace(' ', ''))
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
     if len(split_expression) != 2:
@@ -611,7 +615,12 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     if first_separator is None:
         return None
     start = 0 if not stack else stack[-1][1]
-    groups.append(input_str[start:first_separator])
+    comma_seperator = _find_separator_index(',', input_str, start+1)
+    if comma_seperator and start < comma_seperator < first_separator:
+        start = comma_seperator + 1
+    if input_str[start] == '(':
+        start = start + 1
+    groups.append(input_str[start:first_separator].strip())
 
     # find second separator
     second_separator = _find_separator_index(':', input_str, first_separator)
@@ -623,10 +632,13 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         groups.append(input_str[second_separator + 1:])
         return groups, 0, len(input_str)
 
-    start = stack[-1][1]
+    start = max(start, stack[-1][1])
     end = len(input_str)
     for i in range(second_separator + 1, len(input_str)):
         char = input_str[i]
+        if char == ',' and stack == end_stack:
+            end = i
+            break
         _update_stack_if_needed(char, i)
         if not stack:
             end = i + 1

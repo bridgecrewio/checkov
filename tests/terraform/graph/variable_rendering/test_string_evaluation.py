@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pytest
 
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
@@ -50,6 +51,13 @@ class TestTerraformEvaluation(TestCase):
         input_str = 'False != "false" ? True : False'
         expected = False
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_nested_conditional_expression(self):
+        env_vars_config.TF_CONDITIONAL_EXPRESSION_TEST = True
+        input_str = "{for resource in concat(true ? [{'name'='test'}] : [], false ? [] : [{'name'='test2'}]) : resource.name => resource}"
+        value = evaluate_terraform(input_str)
+        self.assertEqual(value, {'test': {'name': 'test'}, 'test2': {'name': 'test2'}})
+
 
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
