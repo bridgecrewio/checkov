@@ -7,7 +7,6 @@ import os
 import re
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
-from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
 import checkov.terraform.graph_builder.variable_rendering.renderer as renderer
@@ -292,7 +291,7 @@ def handle_for_loop(input_str: Union[str, int, bool]) -> str | int | bool:
             input_str = _remove_variable_formatting(input_str)
             iterable_start_idx = input_str.find('in') + 2
             iterable_end_idx = input_str.find(renderer.KEY_VALUE_SEPERATOR)
-            input_str = input_str[0:iterable_start_idx+1] + str(_try_evaluate(input_str[iterable_start_idx: iterable_end_idx].strip())) + input_str[iterable_end_idx:]
+            input_str = input_str[0:iterable_start_idx + 1] + str(_try_evaluate(input_str[iterable_start_idx: iterable_end_idx].strip())) + input_str[iterable_end_idx:]
             start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
             end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
             if start_bracket_idx == -1 or end_bracket_idx == -1:
