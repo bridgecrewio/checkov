@@ -27,7 +27,7 @@ class ReferenceLatestTag(BaseDockerfileCheck):
             base_image = content["value"]
             if " as " in base_image.lower():
                 # do an initial lookup before using the regex
-                multi_stage = re.search(MULTI_STAGE_PATTERN, base_image)
+                multi_stage = re.match(MULTI_STAGE_PATTERN, base_image)
                 if multi_stage:
                     base_image = multi_stage[1]
                     stages.append(multi_stage[2])
