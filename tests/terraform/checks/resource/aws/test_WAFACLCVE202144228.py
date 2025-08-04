@@ -20,6 +20,7 @@ class TestWafHasAnyRules(unittest.TestCase):
         passing_resources = {
             "aws_wafv2_web_acl.pass",
             "aws_wafv2_web_acl.multi_rules",
+            "aws_wafv2_web_acl.pass_dynamic"
         }
 
         failing_resources = {
