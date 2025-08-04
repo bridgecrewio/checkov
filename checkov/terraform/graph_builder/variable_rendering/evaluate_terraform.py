@@ -615,11 +615,11 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     if first_separator is None:
         return None
     start = 0 if not stack else stack[-1][1]
-    comma_seperator = _find_separator_index(',', input_str, start+1)
-    if comma_seperator and start < comma_seperator < first_separator:
-        start = comma_seperator + 1
     if input_str[start] == '(':
         start = start + 1
+    comma_seperator = _find_separator_index(',', input_str, start)
+    if comma_seperator and start < comma_seperator < first_separator:
+        start = comma_seperator + 1
     groups.append(input_str[start:first_separator].strip())
 
     # find second separator
