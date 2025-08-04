@@ -9,7 +9,7 @@ from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 if TYPE_CHECKING:
     from dockerfile_parse.parser import _Instruction
 
-MULTI_STAGE_PATTERN = re.compile(r"(\S+)\s+as\s+(\S+)", re.IGNORECASE)
+MULTI_STAGE_PATTERN = re.compile(r"(?:--platform=\S+\s+)?(\S+)\s+as\s+(\S+)", re.IGNORECASE)
 
 
 class ReferenceLatestTag(BaseDockerfileCheck):
@@ -29,9 +29,8 @@ class ReferenceLatestTag(BaseDockerfileCheck):
                 # do an initial lookup before using the regex
                 multi_stage = re.search(MULTI_STAGE_PATTERN, base_image)
                 if multi_stage:
-                    groups = multi_stage.groups()
-                    base_image = groups[0]
-                    stages.append(groups[1])
+                    base_image = multi_stage[1]
+                    stages.append(multi_stage[2])
             
 
             if ":" not in base_image and base_image not in stages and base_image != "scratch":
