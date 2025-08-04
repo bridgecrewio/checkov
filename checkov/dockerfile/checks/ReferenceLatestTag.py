@@ -9,7 +9,7 @@ from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 if TYPE_CHECKING:
     from dockerfile_parse.parser import _Instruction
 
-MULTI_STAGE_PATTERN = re.compile(r"(\S+)\s+as\s+(\S+)", re.IGNORECASE)
+MULTI_STAGE_PATTERN = re.compile(r"(?:--platform=\S+\s+)?(\S+)\s+as\s+(\S+)", re.IGNORECASE)
 
 
 class ReferenceLatestTag(BaseDockerfileCheck):
