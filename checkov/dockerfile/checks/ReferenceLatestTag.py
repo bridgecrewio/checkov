@@ -30,8 +30,7 @@ class ReferenceLatestTag(BaseDockerfileCheck):
                 multi_stage = re.search(MULTI_STAGE_PATTERN, base_image)
                 if multi_stage:
                     base_image = multi_stage[1]
-                    stages.append(multi_stage[2])
-            
+                    stages.append(multi_stage[2])         
 
             if ":" not in base_image and base_image not in stages and base_image != "scratch":
                 return CheckResult.FAILED, [content]
