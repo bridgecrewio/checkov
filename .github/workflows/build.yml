@@ -49,7 +49,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v3
@@ -102,7 +102,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v3
@@ -152,7 +152,7 @@ jobs:
       PYTHON_VERSION: "3.8"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install pipenv
@@ -186,7 +186,7 @@ jobs:
     continue-on-error: true # for now it is ok to fail
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
@@ -226,7 +226,7 @@ jobs:
     continue-on-error: true # for now it is ok to fail
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
@@ -264,7 +264,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
@@ -310,7 +310,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install pipenv
