@@ -51,6 +51,12 @@ class TestTerraformEvaluation(TestCase):
         expected = False
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_nested_conditional_expression(self):
+        input_str = "{for resource in concat(true ? [{'name'='test'}] : [], false ? [] : [{'name'='test2'}]) : resource.name => resource}"
+        value = evaluate_terraform(input_str)
+        self.assertEqual(value, {'test': {'name': 'test'}, 'test2': {'name': 'test2'}})
+
+
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
         expected = 'Hello, Ander!'
