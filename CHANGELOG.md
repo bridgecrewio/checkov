@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.457...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.458...HEAD)
+
+## [3.2.458](https://github.com/bridgecrewio/checkov/compare/3.2.457...3.2.458) - 2025-08-06
+
+### Bug Fix
+
+- **terraform:** Fix conditional expression evaluation - [#7265](https://github.com/bridgecrewio/checkov/pull/7265)
+- **terraform:** Update FunctionAppsAccessibleOverHttps - [#7078](https://github.com/bridgecrewio/checkov/pull/7078)
 
 ## [3.2.457](https://github.com/bridgecrewio/checkov/compare/3.2.456...3.2.457) - 2025-07-28
 
