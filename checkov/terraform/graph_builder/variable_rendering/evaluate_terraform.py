@@ -282,10 +282,12 @@ def _handle_literal(input_str: str) -> Any:
 def _remove_variable_formatting(input_str: str) -> str:
     return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
 
+
 def _evaluate_iterable(input_str: str, iterable_start_idx: int, iterable_end_idx: int) -> str:
     input_str = input_str[0:iterable_start_idx + 1] + str(
         _try_evaluate(input_str[iterable_start_idx: iterable_end_idx].strip())) + input_str[iterable_end_idx:]
     return input_str
+
 
 def handle_for_loop(input_str: Union[str, int, bool]) -> str | int | bool:
     if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
