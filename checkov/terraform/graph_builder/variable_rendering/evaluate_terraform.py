@@ -617,7 +617,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     # Advance start index by 1 if the first character is a left parenthesis from the function call
     if input_str[start] == renderer.LEFT_PARENTHESIS:
         start = start + 1
-    comma_seperator = _find_separator_index(',', input_str, start)
+    comma_seperator = _find_separator_index(renderer.COMMA, input_str, start)
     if comma_seperator and start < comma_seperator < first_separator:
         start = comma_seperator + 1
     groups.append(input_str[start:first_separator].strip())
