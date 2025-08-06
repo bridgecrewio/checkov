@@ -283,12 +283,21 @@ def _remove_variable_formatting(input_str: str) -> str:
     return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
 
 
+def _evaluate_iterable(input_str: str, iterable_start_idx: int, iterable_end_idx: int) -> str:
+    input_str = input_str[0:iterable_start_idx + 1] + str(
+        _try_evaluate(input_str[iterable_start_idx: iterable_end_idx].strip())) + input_str[iterable_end_idx:]
+    return input_str
+
+
 def handle_for_loop(input_str: Union[str, int, bool]) -> str | int | bool:
     if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         input_str = _handle_literal(input_str)
         if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
             input_str = _remove_variable_formatting(input_str)
+            iterable_start_idx = input_str.find('in') + 2
+            iterable_end_idx = input_str.find(renderer.KEY_VALUE_SEPERATOR)
+            input_str = _evaluate_iterable(input_str, iterable_start_idx, iterable_end_idx)
             start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
             end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
             if start_bracket_idx == -1 or end_bracket_idx == -1:
@@ -576,7 +585,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     stack: list[tuple[str, int]] = []
     groups = []
-    end_stack = []
+    end_stack: list[tuple[str, int]] = []
 
     def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
@@ -591,7 +600,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         for i in range(start, len(input_str)):
             char = input_str[i]
             if char == separator:
-                if not stack or stack in end_stack:
+                if not stack or stack == end_stack:
                     return i
                 if update_end_stack:
                     end_stack.extend(stack)
@@ -605,7 +614,13 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     if first_separator is None:
         return None
     start = 0 if not stack else stack[-1][1]
-    groups.append(input_str[start:first_separator])
+    # Advance start index by 1 if the first character is a left parenthesis from the function call
+    if input_str[start] == renderer.LEFT_PARENTHESIS:
+        start = start + 1
+    comma_seperator = _find_separator_index(renderer.COMMA, input_str, start)
+    if comma_seperator and start < comma_seperator < first_separator:
+        start = comma_seperator + 1
+    groups.append(input_str[start:first_separator].strip())
 
     # find second separator
     second_separator = _find_separator_index(':', input_str, first_separator)
@@ -617,10 +632,13 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         groups.append(input_str[second_separator + 1:])
         return groups, 0, len(input_str)
 
-    start = stack[-1][1]
+    start = max(start, stack[-1][1])
     end = len(input_str)
     for i in range(second_separator + 1, len(input_str)):
         char = input_str[i]
+        if char == renderer.COMMA and stack == end_stack:
+            end = i
+            break
         _update_stack_if_needed(char, i)
         if not stack:
             end = i + 1

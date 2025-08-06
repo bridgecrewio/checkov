@@ -54,7 +54,7 @@ class ContextParser(object):
                 text = read_file_with_any_encoding(Path(self.sls_file).parent / fname)
                 for i, ln in enumerate(text.splitlines(True)):
                     lines.append((i + 1, ln))
-            entity_code_lines = lines[start_line - 1: end_line - 1]
+            entity_code_lines = lines[start_line - 1: end_line]
             return entity_lines_range, entity_code_lines
         return None, None
 

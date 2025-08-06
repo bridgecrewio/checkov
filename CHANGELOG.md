@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.451...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.457...HEAD)
+
+## [3.2.457](https://github.com/bridgecrewio/checkov/compare/3.2.456...3.2.457) - 2025-07-28
+
+### Bug Fix
+
+- **dockerfile:** Use proxy env vars in aiohttp client requests - [#7260](https://github.com/bridgecrewio/checkov/pull/7260)
+
+## [3.2.456](https://github.com/bridgecrewio/checkov/compare/3.2.454...3.2.456) - 2025-07-27
+
+### Bug Fix
+
+- **terraform:** Parse continue as a string rather as a python object - [#7261](https://github.com/bridgecrewio/checkov/pull/7261)
+
+## [3.2.454](https://github.com/bridgecrewio/checkov/compare/3.2.452...3.2.454) - 2025-07-24
+
+### Bug Fix
+
+- **serverless:** Fixed extraction of code lines for serverless resources - [#7259](https://github.com/bridgecrewio/checkov/pull/7259)
+
+## [3.2.452](https://github.com/bridgecrewio/checkov/compare/3.2.451...3.2.452) - 2025-07-23
+
+### Feature
+
+- **general:** Support Py 3.13 on build workflow - [#7222](https://github.com/bridgecrewio/checkov/pull/7222)
 
 ## [3.2.451](https://github.com/bridgecrewio/checkov/compare/3.2.450...3.2.451) - 2025-07-14
 
