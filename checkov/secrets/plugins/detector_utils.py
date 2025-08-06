@@ -195,7 +195,7 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str,
         # found a function name at the end of the line
         if processed_line and FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(processed_line):
             secrets_to_remove.add(detected_secret)
-        # secret value is substring of keywork
+        # secret value is substring of keyword
         if is_code_file and FOLLOWED_BY_EQUAL_VALUE_KEYWORD_REGEX.search(processed_line):
             key, value = line.split("=", 1)
             if detected_secret.secret_value in key and detected_secret.secret_value in value:

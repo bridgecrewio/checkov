@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import itertools
 import logging
+import os
 import re
 from datetime import datetime, timedelta
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
+from asteval import Interpreter
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
+RANGE_PATTERN = re.compile(r'^\d+-\d+$')
 
 """
 This file contains a custom implementation of the builtin `eval` function.
@@ -277,7 +280,6 @@ def terraform_try(*args: Any) -> Any:
 SAFE_EVAL_FUNCTIONS: List[str] = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
 
-
 # type conversion functions
 TRY_STR_REPLACEMENT = "__terraform_try__"
 SAFE_EVAL_DICT[TRY_STR_REPLACEMENT] = terraform_try
@@ -354,13 +356,21 @@ SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
+def get_asteval() -> Interpreter:
+    # asteval provides a safer environment for evaluating expressions by restricting the operations to a secure subset, significantly reducing the risk of executing malicious code.
+    return Interpreter(
+        symtable=SAFE_EVAL_DICT,
+        use_numpy=False,
+        minimal=True
+    )
+
+
 def evaluate(input_str: str) -> Any:
-    count_underscores = input_str.count("__")
-    # We are operating under the assumption that the function name will start and end with "__", ensuring that we have at least two of them
-    if count_underscores >= 2:
-        logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
-        return input_str
-    if input_str == "...":
+    """
+    Safely evaluate a Terraform-like function expression using a predefined function map.
+    Falls back gracefully if evaluation fails.
+    """
+    if not input_str or input_str == "...":
         # don't create an Ellipsis object
         return input_str
     if input_str.startswith("try"):
@@ -369,7 +379,21 @@ def evaluate(input_str: str) -> Any:
 
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
-    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    if input_str == "continue":
+        return input_str
+    asteval = get_asteval()
+    log_level = os.getenv("LOG_LEVEL")
+    should_log_asteval_errors = log_level == "DEBUG"
+    if RANGE_PATTERN.match(input_str):
+        temp_eval = asteval(input_str, show_errors=should_log_asteval_errors)
+        evaluated = input_str if temp_eval < 0 else temp_eval
+    else:
+        evaluated = asteval(input_str, show_errors=should_log_asteval_errors)
+
+    if asteval.error:
+        error_messages = [err.get_error() for err in asteval.error]
+        raise ValueError(f"Safe evaluation error: {error_messages}")
+
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 

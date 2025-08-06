@@ -19,6 +19,7 @@ from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.consts import VIRTUAL_RESOURCE
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -273,20 +274,31 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        module_lookup = {}
+        for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
+            module_vertex = self.vertices[module_idx]
+            composed_key = (
+                module_vertex.name,
+                module_vertex.path,
+                module_vertex.source_module_object,
+                module_vertex.for_each_index,
+            )
+            module_lookup[composed_key] = module_idx
+
+        # Match vertices using the lookup
         for vertex in self.vertices:
-            if not vertex.source_module_object:
+            source_module_object = vertex.source_module_object
+            if not source_module_object or not source_module_object.name:
                 continue
-            for idx in self.vertices_by_block_type[BlockType.MODULE]:
-                if vertex.source_module_object.name != self.vertices[idx].name:
-                    continue
-                if vertex.source_module_object.path != self.vertices[idx].path:
-                    continue
-                if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
-                    continue
-                if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
-                    continue
-                vertex.source_module.add(idx)
-                break
+            composed_key = (
+                source_module_object.name,
+                source_module_object.path,
+                source_module_object.nested_tf_module,
+                source_module_object.foreach_idx,
+            )
+            module_vertice_idx = module_lookup.get(composed_key)
+            if module_vertice_idx is not None:
+                vertex.source_module.add(module_vertice_idx)
         return
 
     def _build_edges(self) -> None:
@@ -296,6 +308,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
+            self._build_virtual_resources_edges(origin_node_index, vertex)
 
     def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, str]],
                                 resources_types: List[str], cross_variable_edges: bool = False,
@@ -368,14 +381,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if target_variable is not None:
                     self.create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
         elif vertex.block_type == BlockType.TF_VARIABLE:
-            # Assuming the tfvars file is in the same directory as the variables file (best practice)
-            target_variable = 0
-            for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, []):
-                if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path):
-                    target_variable = index
-                    break
-            if target_variable:
-                self.create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
+            # Match tfvars based on the directory for which they were loaded
+            target_variable = None
+            ldir = vertex.attributes.get('load_dir', None)
+            if ldir:
+                for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, []):
+                    if self.get_dirname(self.vertices[index].path) == ldir:
+                        target_variable = index
+                        break
+
+                if target_variable is not None:
+                    self.create_edge(target_variable, origin_node_index, 'default', cross_variable_edges)
+            return
 
     def _create_edge_from_reference(self, attribute_key: Any, origin_node_index: int, dest_node_index: int,
                                     sub_values: List[Any], vertex_reference: TerraformVertexReference,
@@ -815,6 +832,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
         )
 
+    def _build_virtual_resources_edges(self, origin_node_index: int, vertex: TerraformBlock) -> None:
+        if CustomAttributes.VIRTUAL_RESOURCES in vertex.config:
+            for i, v in enumerate(self.vertices):
+                if v.name in vertex.config[CustomAttributes.VIRTUAL_RESOURCES]:
+                    self.create_edge(i, origin_node_index, VIRTUAL_RESOURCE)
+
 
 def to_list(data: Any) -> list[Any] | dict[str, Any]:
     if isinstance(data, list) and len(data) == 1 and (isinstance(data[0], str) or isinstance(data[0], int)):
@@ -887,7 +910,7 @@ def update_list_attribute(
         # happens when we can't correctly evaluate something, because of strange defaults or 'for_each' blocks
         return config
 
-    if len(key_parts) == 1:
+    if len(key_parts) == 1 and len(config) == 1:
         idx = force_int(key_parts[0])
         # Avoid changing the config and cause side effects
         inner_config = pickle_deepcopy(config[0])

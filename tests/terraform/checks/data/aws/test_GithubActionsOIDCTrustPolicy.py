@@ -21,6 +21,7 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "aws_iam_policy_document.pass3",
             "aws_iam_policy_document.pass-org-only",
             "aws_iam_policy_document.pass_aud_first",
+            "aws_iam_policy_document.pass-gh-org",
         }
         failing_resources = {
             "aws_iam_policy_document.fail1",

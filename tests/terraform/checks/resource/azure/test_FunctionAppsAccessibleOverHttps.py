@@ -45,6 +45,14 @@ class TestFunctionAppsAccessibleOverHttps(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+    def test_tf_plan(self):
+        test_files_dir = Path(__file__).parent / "example_FunctionAppAccessibleOverHttps_tfplan"
+
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(report.failed_checks[0].check_id, 'CKV_AZURE_70')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 from unittest import mock
 
@@ -21,6 +22,7 @@ RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
 
 @pytest.mark.xfail(reason="This is probably connected to the OS + kustomize version")
+@pytest.mark.skipif((3, 9) <= sys.version_info < (3, 11), reason="fails on python 3.9 and 3.10 due to path.resolve issues.")
 @pytest.mark.skipif(os.name == "nt" or not kustomize_exists(), reason="kustomize not installed or Windows OS")
 @pytest.mark.parametrize("allow_kustomize_file_edits, code_lines", [
     (True, "18-34"),

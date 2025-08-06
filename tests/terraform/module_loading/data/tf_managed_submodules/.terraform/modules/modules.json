@@ -1,0 +1,23 @@
+{
+	"Modules": [
+		{
+			"Key": "",
+			"Source": "",
+			"Dir": "."
+		},
+
+		{
+			"Key": "a",
+			"Source": "somewhere/a",
+			"Version": "0",
+			"Dir": ".terraform/modules/a"
+		},
+
+		{
+			"Key": "a.b",
+			"Source": "somewhere/b",
+			"Version": "1",
+			"Dir": ".terraform/modules/a.b"
+		}
+	]
+}

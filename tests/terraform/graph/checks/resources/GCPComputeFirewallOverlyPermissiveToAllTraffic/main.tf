@@ -3,7 +3,7 @@ resource "google_compute_network" "example" {
   auto_create_subnetworks = false
 }
 
-#case1 - PASS
+#case1 - PASS - deny protocol
 resource "google_compute_firewall" "compute-firewall-ok-1" {
   name    = "compute-firewall-ok-1"
   network = google_compute_network.example.name
@@ -15,7 +15,7 @@ resource "google_compute_firewall" "compute-firewall-ok-1" {
   disabled = false
 }
 
-#case2 - PASS
+#case2 - PASS because disabled
 resource "google_compute_firewall" "compute-firewall-ok-2" {
   name    = "compute-firewall-ok-2"
   network = google_compute_network.example.name
@@ -86,4 +86,41 @@ resource "google_compute_firewall" "compute-firewall-not-ok-4" {
   }
   source_ranges = ["::0"]
   disabled = false
+}
+
+# pass - source_ranges is ok
+resource "google_compute_firewall" "pass_source_ranges" {
+  name        = "pass_source_ranges"
+  network     = "foo"
+  project     = "foo"
+  direction   = "INGRESS"
+  disabled    = false
+  description = "foo"
+  priority    = 0
+  allow {
+    protocol = "all"
+  }
+  source_ranges = [
+    "10.10.10.10/24",
+    "10.11.10.10/24"
+  ]
+}
+
+# fail - source_ranges is not ok
+resource "google_compute_firewall" "fail_source_ranges" {
+  name        = "pass_source_ranges"
+  network     = "foo"
+  project     = "foo"
+  direction   = "INGRESS"
+  disabled    = false
+  description = "foo"
+  priority    = 0
+  allow {
+    protocol = "all"
+  }
+  source_ranges = [
+    "10.10.10.10/24",
+    "10.11.10.10/24",
+    "0.0.0.0/0"
+  ]
 }

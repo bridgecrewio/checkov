@@ -49,6 +49,8 @@ LOOKUP = 'lookup'
 DOT_SEPERATOR = '.'
 LEFT_BRACKET_WITH_QUOTATION = '["'
 RIGHT_BRACKET_WITH_QUOTATION = '"]'
+LEFT_PARENTHESIS = '('
+COMMA = ','
 LEFT_BRACKET = '['
 RIGHT_BRACKET = ']'
 LEFT_CURLY = '{'
@@ -118,11 +120,9 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
-                # evaluate the last specified variable based on .tfvars precedence
-                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
-                    changed_attribute_value=destination_vertex.attributes["default"],
+                    changed_attribute_value=destination_vertex.attributes['default'],
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
@@ -214,7 +214,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     if isinstance(default_val_eval, dict):
                         value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
-                    logging.debug(f"cant evaluate this rendered value: {default_val}")
+                    logging.debug(f"cannot evaluate this rendered value: {default_val}")
             return default_val if value is None else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")

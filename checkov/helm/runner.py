@@ -47,6 +47,7 @@ class K8sHelmRunner(k8_runner):
         self.pbar.turn_off_progress_bar()
         self.original_root_dir = ''
         self.tmp_root_dir = ''
+        self.template_mapping: dict[str, str] = {}
 
     def run(
         self,
@@ -79,7 +80,7 @@ class K8sHelmRunner(k8_runner):
                 sca_image_report = None
 
             if root_folder is not None:
-                fix_report_paths(report=helm_report, tmp_dir=root_folder)
+                fix_report_paths(report=helm_report, tmp_dir=root_folder, template_mapping=self.template_mapping, original_root_folder=self.original_root_dir)
                 if self.original_root_dir:
                     fix_related_resource_ids(report=sca_image_report, tmp_dir=self.original_root_dir)
                 else:
@@ -135,6 +136,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         self.target_folder_path = ''
         self.root_folder = ''
         self.runner_filter: "RunnerFilter | None" = None
+        self.template_mapping: dict[str, str] = {}
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -150,9 +152,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return chart_path, chart_meta
 
     def check_system_deps(self) -> str | None:
-        # Ensure local system dependancies are available and of the correct version.
+        # Ensure local system dependencies are available and of the correct version.
         # Returns framework names to skip if deps fail.
-        logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
+        logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
         try:
             proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
@@ -160,7 +162,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             if "Version:" in oString:
                 helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
                 if "v3" in helmVersionOutput:
-                    logging.info(f"Found working version of {self.check_type} dependancies: {helmVersionOutput}")
+                    logging.info(f"Found working version of {self.check_type} dependencies: {helmVersionOutput}")
                     return None
             else:
                 return self.check_type
@@ -170,7 +172,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return self.check_type
 
     @staticmethod
-    def _parse_output(target_dir: str, output: bytes) -> None:
+    def _parse_output(target_dir: str, output: bytes, chart_dir: str, template_mapping: dict[str, str]) -> None:
         output_str = str(output, 'utf-8')
         reader = io.StringIO(output_str)
         cur_source_file = None
@@ -198,6 +200,19 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                     os.makedirs(parent, exist_ok=True)
                     cur_source_file = source
                     cur_writer = open(os.path.join(target_dir, source), 'a')
+
+                # Now extract the original template path from the source comment
+                # Format is typically: "chartname/templates/deployment.yaml"
+                # We need to extract just the "templates/deployment.yaml" part
+                template_path = source.split('/', 1)[1] if '/' in source else source
+
+                # Construct the path to the original template file
+                original_template = os.path.join(chart_dir, template_path)
+
+                if os.path.exists(original_template):
+                    # Store mapping: temp file path (without prefix) -> original template path
+                    template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
+
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
                     cur_writer.write(s + os.linesep)
@@ -267,10 +282,10 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         if e:
             if "Warning: Dependencies" in str(e, 'utf-8'):
                 logging.warning(
-                    f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"V1 API chart without Chart.yaml dependencies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             else:
                 logging.warning(
-                    f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
         helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
         if runner_filter.var_files:
@@ -318,6 +333,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         target_folder_path: str,
         helm_command: str,
         runner_filter: RunnerFilter,
+        template_mapping: dict[str, str]
     ) -> None:
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         if not target_dir:
@@ -328,7 +344,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             return
 
         try:
-            Runner._parse_output(target_dir, o)
+            # chart_dir is the directory containing the Chart.yaml file
+            chart_dir = chart_item[0]  # This is the full path to the chart directory
+            Runner._parse_output(target_dir, o, chart_dir, template_mapping)
         except Exception:
             (chart_dir, chart_meta) = chart_item
             chart_name = chart_meta.get('name', chart_meta.get('Name'))
@@ -364,7 +382,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         self.target_folder_path = tempfile.mkdtemp()
         chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, runner_filter)
         chart_items = [
-            (chart_item, self.root_folder, self.target_folder_path, self.helm_command, runner_filter)
+            (chart_item, self.root_folder, self.target_folder_path, self.helm_command, runner_filter, self.template_mapping)
             for chart_item in chart_dir_and_meta
         ]
 
@@ -391,6 +409,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
+        k8s_runner.template_mapping = self.template_mapping
         k8s_runner.original_root_dir = str(root_folder)
         k8s_runner.tmp_root_dir = self.get_k8s_target_folder_path()
         report = k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
@@ -399,10 +418,41 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return report
 
 
-def fix_report_paths(report: Report, tmp_dir: str) -> None:
+def fix_report_paths(report: Report, tmp_dir: str, template_mapping: dict[str, str], original_root_folder: str) -> None:
+    """
+    Fix file paths in the report to point to original Helm template files instead of temporary K8s manifests.
+
+    Args:
+        report: The report containing checks with file paths to fix
+        tmp_dir: The temporary directory containing the rendered K8s manifests
+        template_mapping: Mapping of temporary paths to original template paths
+        original_root_folder: The original Helm chart folder
+    """
     for check in itertools.chain(report.failed_checks, report.passed_checks):
-        check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
-    report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
+        # First remove the tmp_dir prefix
+        tmp_path = check.repo_file_path
+
+        # Then check if we have a mapping to the original template file
+        if tmp_path in template_mapping:
+            file_abs_path = template_mapping[tmp_path]
+            repo_file_path = file_abs_path.replace(original_root_folder, '', 1)
+            check.repo_file_path = repo_file_path
+            check.file_path = repo_file_path
+            check.file_abs_path = file_abs_path
+        else:
+            check.repo_file_path = tmp_path.replace(tmp_dir, '', 1)
+
+    # Update resources in the report
+    new_resources = set()
+    for resource in report.resources:
+        resource_file_path = resource.split(':')[0]
+        resource_id = resource.split(':')[1]
+        if resource_file_path in template_mapping:
+            new_resources.add(f'{template_mapping[resource_file_path]}:{resource_id}')
+        else:
+            new_resources.add(resource.replace(tmp_dir, '', 1))
+
+    report.resources = new_resources
 
 
 def get_skipped_checks(entity_conf: dict[str, Any]) -> list[dict[str, str]]:

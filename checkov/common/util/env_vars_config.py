@@ -22,6 +22,7 @@ class EnvVarsConfig:
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
         self.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING = os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False')
+        self.CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES = convert_str_to_bool(os.getenv('CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', False))
         self.CREATE_EDGES = convert_str_to_bool(os.getenv("CREATE_EDGES", True))
         self.CREATE_MARKDOWN_HYPERLINKS = convert_str_to_bool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", False))
         self.CREATE_SCA_IMAGE_REPORTS_FOR_IR = convert_str_to_bool(
@@ -46,9 +47,6 @@ class EnvVarsConfig:
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit
         self.MAX_IAC_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_IAC_FILE_SIZE", 50_000_000))  # 50 MB is default limit
         self.NO_OUTPUT = convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", False))
-        self.OPENAI_MAX_FINDINGS = force_int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
-        self.OPENAI_MAX_TOKENS = force_int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
-        self.OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
         self.OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv("CHECKOV_OUTPUT_CODE_LINE_LIMIT", 50))
         self.PARSE_ERROR_FAIL = convert_str_to_bool(os.getenv("CKV_PARSE_ERROR_FAIL", False))
         self.RENDER_ASYNC_MAX_WORKERS = force_int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
@@ -85,6 +83,8 @@ class EnvVarsConfig:
         self.PROXY_HEADER_VALUE = os.getenv('PROXY_HEADER_VALUE', None)
         self.PROXY_HEADER_KEY = os.getenv('PROXY_HEADER_KEY', None)
         self.ENABLE_CONFIG_FILE_VALIDATION = convert_str_to_bool(os.getenv("ENABLE_CONFIG_FILE_VALIDATION", False))
+        self.RAW_TF_IN_GRAPH_ENV = convert_str_to_bool(os.getenv("RAW_TF_IN_GRAPH", "False"))
+        self.HTTPS_PROXY = os.getenv('HTTPS_PROXY')
 
 
 env_vars_config = EnvVarsConfig()

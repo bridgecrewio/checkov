@@ -191,6 +191,8 @@ class TestRunnerValid(unittest.TestCase):
         resource = definitions['Resources'][resource_name]
         entity = {resource_name: resource}
         entity_tags = cfn_utils.get_resource_tags(entity)
+        if '__file__' in entity_tags:
+            del entity_tags['__file__']
 
         self.assertDictEqual(
             entity_tags,
@@ -204,6 +206,8 @@ class TestRunnerValid(unittest.TestCase):
         resource = definitions['Resources'][resource_name]
         entity = {resource_name: resource}
         entity_tags = cfn_utils.get_resource_tags(entity)
+        if '__file__' in entity_tags:
+            del entity_tags['__file__']
 
         self.assertDictEqual(
             entity_tags,

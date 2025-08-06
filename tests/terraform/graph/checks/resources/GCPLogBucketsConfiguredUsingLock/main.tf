@@ -54,7 +54,7 @@ resource "google_logging_project_sink" "project_sink_bad_2" {
 
 resource "google_logging_organization_sink" "org_sink_bad_1" {
   name   = "my-sink"
-  description = "some explaination on what this is"
+  description = "some explanation on what this is"
   org_id = "123456789"
 
   destination = google_storage_bucket.log_bucket_bad_1.name
@@ -62,7 +62,7 @@ resource "google_logging_organization_sink" "org_sink_bad_1" {
 
 resource "google_logging_organization_sink" "org_sink_bad_2" {
   name   = "my-sink"
-  description = "some explaination on what this is"
+  description = "some explanation on what this is"
   org_id = "123456789"
 
   destination = google_storage_bucket.log_bucket_bad_2.name

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
@@ -18,6 +18,9 @@ class AppServiceMinTLSVersion(BaseResourceValueCheck):
 
     def get_expected_value(self) -> Any:
         return "1.2"
+
+    def get_expected_values(self) -> List[Any]:
+        return ["1.2", 1.2, "1.3", 1.3]
 
 
 check = AppServiceMinTLSVersion()
