@@ -1,0 +1,20 @@
+metadata:
+ id: "CUSTOM_AWS_TAGGING_POLICY"
+ name: "HF_all_Policy"
+ category: "General"
+scope:
+ provider: "aws"
+definition:
+ and:
+  - cond_type: attribute
+    resource_types:
+      - aws_s3_bucket
+    attribute: "tags.Name"
+    operator: regex_match
+    value: "^bucket-[a-zA-Z0-9-]+$"
+  - cond_type: attribute
+    resource_types:
+      - aws_dynamodb_table
+    attribute: "tags.Billing"
+    operator: regex_match
+    value: "APP-\\d{4}$|d{4}$" # Accepts APP-1234 or 4-digit dept codes
