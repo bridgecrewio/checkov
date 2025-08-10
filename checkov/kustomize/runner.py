@@ -13,6 +13,8 @@ import tempfile
 import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
+from checkov.common.parallelizer.parallel_runner import parallel_runner
+
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -77,6 +79,14 @@ class K8sKustomizeRunner(K8sRunner):
     def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
         self.report_mutator_data = report_mutator_data or {}
 
+    @staticmethod
+    def get_kustomize_resource_id(realKustomizeEnvMetadata: dict[str, Any], resource_id: str) -> str:
+        if 'overlay' in realKustomizeEnvMetadata["type"]:
+            kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
+        else:
+            kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
+        return kustomizeResourceID
+
     def mutate_kubernetes_results(
         self,
         results: dict[BaseCheck, _CheckResult],
@@ -111,10 +121,7 @@ class K8sKustomizeRunner(K8sRunner):
                 continue
 
             realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[file_abs_path]]
-            if 'overlay' in realKustomizeEnvMetadata["type"]:
-                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
-            else:
-                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
+            kustomizeResourceID = self.get_kustomize_resource_id(realKustomizeEnvMetadata, resource_id)
 
             external_run_indicator = "Bc"
             file_path = realKustomizeEnvMetadata['filePath']
@@ -408,7 +415,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             if not isinstance(file_content, dict):
                 return {}
 
-            if 'resources' in file_content:
+            if 'resources' in file_content and file_content['resources'] is not None:
                 resources = file_content['resources']
 
                 # We can differentiate between "overlays" and "bases" based on if the `resources` refers to a directory,
@@ -697,23 +704,17 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
 
-        jobs = []
-        for filePath in self.kustomizeProcessedFolderAndMeta:
-            p = multiprocessing.Process(
-                target=self._run_kustomize_parser,
-                args=(
-                    filePath,
-                    shared_kustomize_file_mappings,
-                    self.kustomizeProcessedFolderAndMeta,
-                    self.templateRendererCommand,
-                    self.target_folder_path
-                )
+        items = [
+            (
+                filePath,
+                shared_kustomize_file_mappings,
+                self.kustomizeProcessedFolderAndMeta,
+                self.templateRendererCommand,
+                self.target_folder_path,
             )
-            jobs.append(p)
-            p.start()
-
-        for proc in jobs:
-            proc.join()
+            for filePath in self.kustomizeProcessedFolderAndMeta
+        ]
+        list(parallel_runner.run_function(self._run_kustomize_parser, items))
 
         self.kustomizeFileMappings = dict(shared_kustomize_file_mappings)
 

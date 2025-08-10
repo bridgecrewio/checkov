@@ -476,7 +476,6 @@ class RunnerRegistry:
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
                     summary_position=config.summary_position,
-                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(
@@ -730,7 +729,8 @@ class RunnerRegistry:
 
     @staticmethod
     def get_enriched_resources(
-        repo_roots: list[str | Path], download_external_modules: bool
+        repo_roots: list[str | Path],
+        download_external_modules: Optional[bool]
     ) -> dict[str, dict[str, Any]]:
         from checkov.terraform.modules.module_objects import TFDefinitionKey
 

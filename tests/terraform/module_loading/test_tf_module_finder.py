@@ -1,15 +1,18 @@
 import os
 import shutil
 import unittest
+import logging
 from pathlib import Path
 from unittest import mock
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.module_finder import (
+    ModuleDownload,
+    _download_module,
     find_modules,
+    find_tf_managed_modules,
     should_download,
-    load_tf_modules,
-    replace_terraform_managed_modules,
+    load_tf_modules
 )
 from checkov.terraform.module_loading.registry import module_loader_registry
 
@@ -38,6 +41,13 @@ class TestModuleFinder(unittest.TestCase):
             self.assertIn(m, ["terraform-aws-modules/s3-bucket/aws",
                               "../../../../../../../platform/src/stacks/accountStack"])
 
+    def test_module_finder_nested_blocks(self):
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        src_dir = os.path.join(cur_dir, 'data', 'nested_modules')
+        modules = find_modules(src_dir)
+        self.assertEqual(1, len(modules))
+        self.assertEqual("3.14.0", modules[0].version)
+
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
 
@@ -51,21 +61,47 @@ class TestModuleFinder(unittest.TestCase):
         self.assertEqual(len(distinct_roots), 1)
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
+def test_dem_warning(caplog):
+    """
+    Test that the --download-external-modules flag warning message is only
+    logged if the flag is not specified on the command line, and that
+    module download warnings are not logged if the flag is set to False.
+    """
+    caplog.set_level(logging.WARNING)
+    module_loader_registry.download_external_modules = None
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' in caplog.text
+    assert '--download-external-modules flag' in caplog.text
+    caplog.clear()
+
+    module_loader_registry.download_external_modules = True
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' in caplog.text
+    assert '--download-external-modules flag' not in caplog.text
+    caplog.clear()
+
+    module_loader_registry.download_external_modules = False
+    _download_module(module_loader_registry, ModuleDownload('xxx'))
+    assert 'Failed to download module' not in caplog.text
+    assert '--download-external-modules flag' not in caplog.text
+
 def test_tf_managed_and_comment_out_modules():
-    # this test leverages the modules, which Terraform downloads on its own
+    src_path = Path(__file__).parent / 'data' / 'tf_managed_modules'
+    modules = find_tf_managed_modules(str(src_path))
 
-    # given
-    src_path = Path(__file__).parent / "data/tf_managed_modules"
-    modules = find_modules(str(src_path))
+    assert len(modules) == 1
+    assert modules[0].tf_managed is True
+    assert modules[0].address == "registry.terraform.io/terraform-aws-modules/cloudwatch/aws//modules/log-group:4.1.0"
+    assert modules[0].module_link == ".terraform/modules/log_group/modules/log-group"
 
-    # when
-    replaced_modules = replace_terraform_managed_modules(path=str(src_path), found_modules=modules)
-
-    tf_managed_modules = [module for module in replaced_modules if module.tf_managed]
-    assert len(replaced_modules) == 2
-    assert len(tf_managed_modules) == 1
-
-    assert tf_managed_modules[0].tf_managed is True
-    assert tf_managed_modules[0].address == "terraform-aws-modules/cloudwatch/aws//modules/log-group:latest"
-    assert tf_managed_modules[0].module_link == ".terraform/modules/log_group/modules/log-group"
+def test_tf_managed_submodules():
+    modules = find_tf_managed_modules(Path(__file__).parent / 'data' / 'tf_managed_submodules')
+    assert len(modules) == 2
+    assert modules[0].tf_managed is True
+    assert modules[0].address == 'somewhere/a:0'
+    assert modules[0].module_name == 'a'
+    assert modules[0].module_link == '.terraform/modules/a'
+    assert modules[1].tf_managed is True
+    assert modules[1].address == 'somewhere/b:1'
+    assert modules[1].module_name == 'a.b'
+    assert modules[1].module_link == '.terraform/modules/a.b'

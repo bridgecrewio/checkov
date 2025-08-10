@@ -323,6 +323,17 @@ class TestRenderer(TestCase):
             ["10.0.0.0/16", "0.0.0.0/0"],
         )
 
+        multiple_ingress_vertex = (
+            next(v for v in local_graph.vertices if v.id == 'aws_security_group.multiple_ingress_sg'))
+
+        ingress_field = multiple_ingress_vertex.config["aws_security_group"]["multiple_ingress_sg"]["ingress"]
+        self.assertEqual(len(ingress_field), 3)
+
+        # TODO - make var rendering correctly evaluate inner vars in list
+        self.assertEqual(ingress_field[0],[[]])
+        self.assertEqual(ingress_field[1], {'cidr_blocks': ['${var.cidr_sg}'], 'from_port': 23, 'protocol': 'TCP', 'to_port': 23})
+        self.assertEqual(ingress_field[2],'var.empty_ingress')
+
     @mock.patch.dict(os.environ, {"CHECKOV_RENDER_DYNAMIC_MODULES": "False"})
     def test_dynamic_with_env_var_false(self):
         graph_manager = TerraformGraphManager('m', ['m'])

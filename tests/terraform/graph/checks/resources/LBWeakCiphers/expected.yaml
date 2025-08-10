@@ -1,0 +1,9 @@
+fail:
+  - "aws_lb_listener.front_end_failing"
+  - "aws_alb_listener.insecure_listener"
+  - "aws_lb_listener.insecure_no_policy"
+pass:
+  - "aws_lb_listener.front_end_passing"
+  - "aws_alb_listener.secure_listener"
+  - "aws_alb_listener.secure_listener2"
+  - "aws_lb_listener.tcp"

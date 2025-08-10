@@ -400,6 +400,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_188':
                 # CKV_AWS_188 was deleted because it duplicated CKV_AWS_142
                 continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_384':
+                # CKV_AWS_384 is CFN only
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(
@@ -471,7 +474,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 3):
+        for i in range(1, len(aws_checks) + 2):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue

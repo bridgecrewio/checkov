@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.bicep.parser import Parser
 from checkov.bicep.utils import get_scannable_file_paths
@@ -23,9 +23,9 @@ class BicepGraphManager(GraphManager[BicepLocalGraph, "dict[Path, BicepJson]"]):
         source_dir: str,
         local_graph_class: type[BicepLocalGraph] = BicepLocalGraph,
         render_variables: bool = True,
-        parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
+        parsing_errors: Optional[dict[str, Exception]] = None,
+        download_external_modules: Optional[bool] = False,
+        excluded_paths: Optional[list[str]] = None,
         **kwargs: Any,
     ) -> tuple[BicepLocalGraph, dict[Path, BicepJson]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir)

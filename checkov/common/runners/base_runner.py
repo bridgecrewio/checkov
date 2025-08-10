@@ -238,7 +238,7 @@ def filter_ignored_paths(
         compiled = []
         for p in excluded_paths:
             try:
-                compiled.append(re.compile(p.replace(".terraform", r"\.terraform")))
+                compiled.append(re.compile(re.escape(p) if re.match(r'^\.[^\.]', p) else p))
             except re.error:
                 # do not add compiled paths that aren't regexes
                 continue

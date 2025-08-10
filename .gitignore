@@ -171,7 +171,8 @@ fabric.properties
 
 # test assets that get created locally (20* refers to the start of a date, so this covers us for 78 years)
 tests/20*
-# vim 
+# vim
+.*.sw?
 .vim/
 .vimspector.json
 !tests/terraform/graph/variable_rendering/test_resources/tfvar_module_variables/modules/instance

@@ -323,3 +323,10 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
             'instances': ["${flatten(aws_instance.ubuntu[*].id)}"]
         }
         self.go(tf, expect)
+
+    def test_provider_function(self):
+        tf = "name2 = provider::test2::test(\"a\")"
+        expect = {
+            "name2": ["${provider::test2::test(\"a\")}"],
+        }
+        self.go(tf, expect)

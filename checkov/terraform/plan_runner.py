@@ -30,7 +30,7 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
-from checkov.terraform.plan_utils import create_definitions, build_definitions_context
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context, get_entity_id
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
 _TerraformPlanContext: TypeAlias = "dict[str, dict[str, Any]]"
@@ -303,7 +303,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             resource_type = definition_path[0]
             resource_name = definition_path[1]
             resource_type_dict = entity.get(resource_type, {})
-            entity_id = resource_type_dict.get(resource_name, resource_type_dict).get(TF_PLAN_RESOURCE_ADDRESS)
+            entity_id = get_entity_id(resource_type_dict, resource_name)
         else:
             entity_id = definition_path[0]
         return cast("dict[str, Any]", self.context.get(full_file_path, {}).get(entity_id, {}))
