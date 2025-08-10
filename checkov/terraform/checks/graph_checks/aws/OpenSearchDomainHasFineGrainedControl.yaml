@@ -3,7 +3,7 @@ metadata:
   name: "Ensure AWS ElasticSearch/OpenSearch Fine-grained access control is enabled"
   category: "IAM"
 definition:
-  and:
+  or:
     - cond_type: "attribute"
       resource_types:
       - "aws_opensearch_domain"

@@ -20,6 +20,7 @@ class TestWafHasAnyRules(unittest.TestCase):
         passing_resources = {
             "aws_wafv2_web_acl.pass",
             "aws_wafv2_web_acl.multi_rules",
+            "aws_wafv2_web_acl.pass_dynamic"
         }
 
         failing_resources = {
@@ -32,7 +33,7 @@ class TestWafHasAnyRules(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["passed"], 3)
         self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

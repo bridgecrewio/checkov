@@ -18,6 +18,22 @@ resource "azurerm_eventhub_namespace" "pass" {
   }
 }
 
+resource "azurerm_resource_group" "pass2" {
+  name     = "pass2-resources"
+  location = "australiaeast"
+}
+
+resource "azurerm_eventhub_namespace" "pass2" {
+  name                = "pass2-eventhubns"
+  location            = azurerm_resource_group.pass2.location
+  resource_group_name = azurerm_resource_group.pass2.name
+  sku                 = "Standard"
+  capacity            = 2
+  tags = {
+    environment = "Production"
+  }
+}
+
 resource "azurerm_eventhub_namespace" "unknown" {
   name                = "unknown-eventhubns"
   location            = azurerm_resource_group.foo.location

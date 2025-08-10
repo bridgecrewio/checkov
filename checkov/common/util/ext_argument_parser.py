@@ -378,7 +378,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--download-external-modules",
             help="download external terraform modules from public git repositories and terraform registry",
-            default=False,
+            default=None,
             env_var="DOWNLOAD_EXTERNAL_MODULES",
         )
         self.add(
@@ -550,14 +550,6 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="store",
             default='12h',
             help="maximum time to stop the scan "
-        )
-        self.add(
-            "--openai-api-key",
-            env_var="CKV_OPENAI_API_KEY",
-            sanitize=True,
-            help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
-                 "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
-                 "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )
         self.add(
             "--custom-tool-name",
