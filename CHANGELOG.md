@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.458...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.460...HEAD)
+
+## [3.2.460](https://github.com/bridgecrewio/checkov/compare/3.2.458...3.2.460) - 2025-08-10
+
+### Bug Fix
+
+- **general:** pin boto3 and botocore versions as failed test in Jenkins - [#7270](https://github.com/bridgecrewio/checkov/pull/7270)
 
 ## [3.2.458](https://github.com/bridgecrewio/checkov/compare/3.2.457...3.2.458) - 2025-08-06
 
