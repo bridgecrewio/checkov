@@ -19,9 +19,22 @@ scope:
   provider: aws
 definition:
   cond_type: "attribute"
-  resource_types: "all"
+  resource_types: "taggable"
   attribute: "tags.env"
   operator: "exists"
+```
+
+```yaml
+---
+metadata:
+  name: "Check that all resources are tagged with the key - env"
+  id: "CKV2_AWS_1"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types: "all"
+  attribute: "lifecycle"
+  operator: "not_exists"
 ```
 
 ## Basic Query - Module block example 
@@ -81,6 +94,23 @@ definition:
     attribute: "region"
     operator: "not_contains"
     value: "us-west-1"
+```
+
+```yaml
+metadata:
+  name: "Everything must be tagged or labeled"
+  id: "CUSTOM_GRAPH_5"
+  category: "GENERAL_SECURITY"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types: "taggable"
+      attribute: "tags"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types: "taggable"
+      attribute: "labels"
+      operator: "exists"
 ```
 
 ## Basic Query - Terraform plan resource not deleted

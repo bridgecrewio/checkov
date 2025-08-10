@@ -17,6 +17,7 @@ class AppServiceAuthentication(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["name"]
         if self.entity_type == "Microsoft.Web/sites/config":
             if "name" in conf and "authsettings" in conf["name"]:
                 if "properties" in conf and "enabled" in conf["properties"]:

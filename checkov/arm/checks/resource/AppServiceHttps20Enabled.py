@@ -18,8 +18,10 @@ class AppServiceHttps20Enabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties"]
         http_20_enabled = find_in_dict(conf, "properties/siteConfig/http20Enabled")
         if http_20_enabled and "apiVersion" in conf:
+            self.evaluated_keys = ["properties/siteConfig/http20Enabled", "apiVersion"]
             if conf["apiVersion"] == "2018-11-01":
                 if isinstance(http_20_enabled, str) and str(http_20_enabled).lower() == "true":
                     return CheckResult.PASSED

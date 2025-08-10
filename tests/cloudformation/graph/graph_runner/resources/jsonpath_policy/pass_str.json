@@ -1,0 +1,14 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "pass-str": {
+            "Type": "AWS::MediaStore::Container",
+            "Properties": {
+                "ContainerName": "pass-str",
+                "Policy": {
+                    "Fn::Sub": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"MediaStoredenyAccess\",\"Effect\":\"Deny\",\"Action\":[\"mediastore:GetObject\",\"mediastore:DeleteObject\",\"mediastore:DescribeObject\",\"mediastore:ListItems\"],\"Principal\":\"*\",\"Resource\":\"arn:aws:mediastore:${AWS::Region}:${AWS::AccountId}:container/ncmediastorecontainer/*\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}}]}"
+                }
+            }
+        }
+    }
+}

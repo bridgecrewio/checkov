@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.utils import get_scannable_file_paths, get_files_definitions
@@ -22,19 +21,19 @@ class ArmGraphManager(GraphManager[ArmLocalGraph, "dict[str, dict[str, Any]]"]):
         local_graph_class: type[ArmLocalGraph] = ArmLocalGraph,
         render_variables: bool = False,
         parsing_errors: dict[str, Exception] | None = None,
-        download_external_modules: bool = False,
+        download_external_modules: Optional[bool] = False,
         excluded_paths: list[str] | None = None,
+        **kwargs: Any,
     ) -> tuple[ArmLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
-        filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((source_dir, f)))}"
-        definitions, _, _ = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
+        definitions, _, _ = get_files_definitions(files=file_paths)
 
         local_graph = self.build_graph_from_definitions(definitions=definitions)
 
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, dict[str, Any]], render_variables: bool = False
+        self, definitions: dict[str, dict[str, Any]], render_variables: bool = True
     ) -> ArmLocalGraph:
         local_graph = ArmLocalGraph(definitions=definitions)
         local_graph.build_graph(render_variables=render_variables)

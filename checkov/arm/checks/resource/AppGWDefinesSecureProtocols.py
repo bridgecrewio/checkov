@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, List
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 
@@ -66,6 +66,10 @@ class AppGWDefinesSecureProtocols(BaseResourceCheck):
                 return CheckResult.PASSED
             return CheckResult.FAILED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties/sslPolicy", "properties/sslPolicy/policyType", "properties/sslPolicy/minProtocolVersion",
+                "properties/sslPolicy/cipherSuites"]
 
 
 check = AppGWDefinesSecureProtocols()

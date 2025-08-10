@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -19,6 +19,9 @@ class CosmosDBDisableAccessKeyWrite(BaseResourceCheck):
             if "disableKeyBasedMetadataWriteAccess" in conf['properties'] and conf['properties']['disableKeyBasedMetadataWriteAccess']:
                 return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties", "properties/disableKeyBasedMetadataWriteAccess"]
 
 
 check = CosmosDBDisableAccessKeyWrite()

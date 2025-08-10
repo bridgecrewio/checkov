@@ -339,6 +339,17 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(extra_resource.file_abs_path, str(test_file))
         self.assertTrue(extra_resource.file_path.endswith("Dockerfile.prod"))
 
+    def test_runner_multiline(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/multiline_command"
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='dockerfile', checks=['CKV_DOCKER_9']))
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+
 
     def tearDown(self) -> None:
         registry.checks = self.orig_checks

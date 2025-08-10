@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -43,6 +43,9 @@ class RDSClusterAuditLogging(BaseResourceCheck):
             return CheckResult.PASSED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["enabled_cloudwatch_logs_exports"]
 
 
 check = RDSClusterAuditLogging()

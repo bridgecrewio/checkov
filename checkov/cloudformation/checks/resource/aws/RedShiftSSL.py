@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.parsers.node import DictNode
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -23,6 +25,9 @@ class RedShiftSSL(BaseResourceCheck):
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['Properties', 'Properties/Parameters']
 
 
 check = RedShiftSSL()

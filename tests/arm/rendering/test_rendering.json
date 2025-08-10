@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.5.6.12127",
+      "templateHash": "9027093124117826122"
+    }
+  },
+  "parameters": {
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "aci-vnet",
+      "metadata": {
+        "description": "VNet name"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "Address prefix"
+      }
+    }
+  },
+  "variables": {
+    "networkProfileName": "aci-networkProfile",
+    "location": "eth0"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2020-11-01",
+      "name": "[format('{0}/{1}', parameters('vnetName'), variables('networkProfileName'))]",
+      "location": "[variables('location')]",
+      "id": "[resourceId('Microsoft.Network/networkProfiles', variables('networkProfileName'))]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefix')]"
+          ]
+        }
+      }
+    }
+  ]
+}

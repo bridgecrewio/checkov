@@ -37,4 +37,5 @@ skip-path:
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml
+- tests/terraform/runner/resources/plan_with_providers
 summary-position: bottom

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import logging
 from http import HTTPStatus
 from typing import List, Dict, TYPE_CHECKING
 
@@ -19,6 +18,7 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints
 )
+from checkov.common.proxy.proxy_client import call_http_request_with_proxy
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams
@@ -80,14 +80,22 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=None)
 
         request_download_url = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, best_version, "download")))
-        logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
-        logging.debug(f"Module download url: {request_download_url}")
+        self.logger.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
+        self.logger.debug(f"Module download url: {request_download_url} and proxy: {os.getenv('PROXY_URL')}")
         try:
-            response = requests.get(
+            request = requests.Request(
+                method='GET',
                 url=request_download_url,
-                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
-                timeout=DEFAULT_TIMEOUT
+                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None
             )
+            if os.getenv('PROXY_URL'):
+                self.logger.info(f'Sending request to {request.url} through proxy')
+                response = call_http_request_with_proxy(request)
+            else:
+                session = requests.Session()
+                prepared_request = session.prepare_request(request)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
+
             response.raise_for_status()
         except HTTPError as e:
             self.logger.warning(e)
@@ -108,7 +116,7 @@ class RegistryLoader(ModuleLoader):
             except Exception as e:
                 str_e = str(e)
                 if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
-                    self.logger.error(f"failed to get {module_params.module_source} because of {e}")
+                    self.logger.error(f"failed to get {module_params.module_source} in registry loader because of {e}")
                     return ModuleContent(dir=None, failed_url=module_params.module_source)
             if module_params.inner_module:
                 return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
@@ -148,11 +156,18 @@ class RegistryLoader(ModuleLoader):
             return False
 
         try:
-            response = requests.get(
-                url=module_params.tf_modules_versions_endpoint,
+            request = requests.Request(
+                method='GET',
                 headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
-                timeout=DEFAULT_TIMEOUT,
+                url=module_params.tf_modules_versions_endpoint
             )
+            if os.getenv('PROXY_URL'):
+                self.logger.info(f'Sending request to {request.url} through proxy')
+                response = call_http_request_with_proxy(request)
+            else:
+                session = requests.Session()
+                prepared_request = session.prepare_request(request)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
@@ -184,10 +199,17 @@ class RegistryLoader(ModuleLoader):
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
             module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
             try:
-                response = requests.get(
-                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
-                    timeout=DEFAULT_TIMEOUT,
+                request = requests.Request(
+                    method='GET',
+                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json"
                 )
+                if os.getenv('PROXY_URL'):
+                    self.logger.info(f'Sending request to {request.url} through proxy')
+                    response = call_http_request_with_proxy(request)
+                else:
+                    session = requests.Session()
+                    prepared_request = session.prepare_request(request)
+                    response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
                 response.raise_for_status()
             except HTTPError as e:
                 self.logger.debug(e)

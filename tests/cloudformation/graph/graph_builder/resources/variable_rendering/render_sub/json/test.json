@@ -24,7 +24,7 @@
             "Type": "AWS::RDS::DBInstance",
             "Properties": {
                 "DBName": {
-                    "Fn::Sub": "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+                    "Fn::Sub": "rds-${CompanyName}-${Environment}"
                 },
                 "DBInstanceClass": "db.m4.large"
             }
@@ -52,7 +52,7 @@
         "DefaultDBName": {
             "Description": "DefaultDB Name",
             "Value": {
-                "Fn::Sub": "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+                "Fn::Sub": "rds-${CompanyName}-${Environment}"
             }
         }
     }

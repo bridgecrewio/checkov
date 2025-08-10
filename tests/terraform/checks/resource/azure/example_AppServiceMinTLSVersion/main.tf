@@ -34,6 +34,24 @@ resource "azurerm_linux_web_app" "pass" {
   }
 }
 
+resource "azurerm_linux_web_app" "pass_tls13" {
+  name                = "example"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_service_plan.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+  https_only          = true
+  site_config {
+    http2_enabled = true
+  }
+  identity {
+    type = "SystemAssigned"
+
+  }
+  site_config {
+    minimum_tls_version = "1.3"
+  }
+}
+
 resource "azurerm_linux_web_app" "fail" {
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
@@ -57,6 +75,21 @@ resource "azurerm_windows_web_app" "pass" {
   site_config {
     http2_enabled       = true
     minimum_tls_version = "1.2"
+  }
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+resource "azurerm_windows_web_app" "pass_tls13" {
+  name                = "example"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_service_plan.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+  https_only          = true
+  site_config {
+    http2_enabled       = true
+    minimum_tls_version = "1.3"
   }
   identity {
     type = "SystemAssigned"

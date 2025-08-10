@@ -48,3 +48,14 @@ class TemplateSections(str, Enum):
     TRANSFORM = "Transform"
     OUTPUTS = "Outputs"
     GLOBALS = "Globals"
+
+
+class PseudoParameters(Enum):
+    ACCOUNT_ID = "AWS::AccountId"
+    NOTIFICATION_ARNS = "AWS::NotificationARNs"
+    NO_VALUE = "AWS::NoValue"
+    PARTITION = "AWS::Partition"
+    REGION = "AWS::Region"
+    STACK_ID = "AWS::StackId"
+    STACK_NAME = "AWS::StackName"
+    URL_SUFFIX = "AWS::URLSuffix"

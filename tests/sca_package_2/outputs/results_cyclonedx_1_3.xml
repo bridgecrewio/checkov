@@ -1,0 +1,113 @@
+<?xml version="1.0" ?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.3" serialNumber="urn:uuid:23b87421-8abf-4361-bcb7-b64667dbd399" version="1">
+	<metadata>
+		<timestamp>2025-02-05T09:32:16.848085+00:00</timestamp>
+		<tools>
+			<tool>
+				<vendor>CycloneDX</vendor>
+				<name>cyclonedx-python-lib</name>
+				<version>7.6.2</version>
+			</tool>
+			<tool>
+				<vendor>bridgecrew</vendor>
+				<name>checkov</name>
+				<version>UNKNOWN</version>
+			</tool>
+		</tools>
+	</metadata>
+	<components>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2">
+			<name>django</name>
+			<version>1.2</version>
+			<licenses>
+				<license>
+					<name>OSI_BDS</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6">
+			<name>flask</name>
+			<version>0.6</version>
+			<licenses>
+				<license>
+					<name>DUMMY_OTHER_LICENSE</name>
+				</license>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0">
+			<name>github.com/dgrijalva/jwt-go</name>
+			<version>v3.2.0</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41">
+			<name>github.com/miekg/dns</name>
+			<version>v1.1.41</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90">
+			<name>github.com/prometheus/client_model</name>
+			<version>v0.0.0-20190129233127-fd36f4220a90</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90</purl>
+		</component>
+		<component type="library" bom-ref="pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1">
+			<name>golang.org/x/crypto</name>
+			<version>v0.0.1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<licenses>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0</purl>
+		</component>
+		<component type="library" bom-ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0">
+			<name>requests</name>
+			<version>2.26.0</version>
+			<licenses>
+				<license>
+					<name>OSI_APACHE</name>
+				</license>
+			</licenses>
+			<purl>pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0</purl>
+		</component>
+	</components>
+	<dependencies>
+		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0"/>
+		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41"/>
+		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90"/>
+		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0"/>
+	</dependencies>
+</bom>

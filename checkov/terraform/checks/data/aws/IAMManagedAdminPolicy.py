@@ -28,10 +28,12 @@ class IAMManagedAdminPolicy(BaseDataCheck):
     def scan_data_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "name" in conf.keys():
             if conf.get("name")[0] == ADMIN_POLICY_NAME:
+                self.evaluated_keys = ["name"]
                 return CheckResult.FAILED
 
         if "arn" in conf.keys():
             if conf.get("arn")[0] == ADMIN_POLICY_ARN:
+                self.evaluated_keys = ["arn"]
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

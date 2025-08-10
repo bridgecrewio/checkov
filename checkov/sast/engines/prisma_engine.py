@@ -147,7 +147,7 @@ class PrismaEngine(SastEngine):
             os_type = platform.system().lower()
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
-            headers["X-Required-Sast-Version"] = "latest"  # or ant version seperated with _
+            headers["X-Required-Sast-Version"] = "latest"  # or ant version separated with _
 
             # don't use the 'should_call_raise_for_status' parameter for now, because it logs errors messages
             response = request_wrapper(
@@ -301,7 +301,22 @@ class PrismaEngine(SastEngine):
             data["imports"] = {}
         if not data.get("reachability_report"):
             data["reachability_report"] = {}
+
+        self.remove_none_conf_incidents_policies(data)
+
         return PrismaReport(**data)
+
+    @staticmethod
+    def remove_none_conf_incidents_policies(data: Dict[str, Any]) -> None:
+        remove_list = []  # type: ignore
+        for lang, match in data.get('rule_match', dict()).items():
+            for check in match.keys():
+                if bc_integration.customer_run_config_response:
+                    if check not in bc_integration.customer_run_config_response.get('policyMetadata', []):
+                        remove_list.append((lang, check))
+
+        for lang, check in remove_list:
+            del data['rule_match'][lang][check]
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
         try:

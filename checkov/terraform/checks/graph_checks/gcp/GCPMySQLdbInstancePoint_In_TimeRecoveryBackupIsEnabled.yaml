@@ -6,6 +6,11 @@ metadata:
 definition:
   or:
     - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "master_instance_name"
+      operator: "exists"
+    - cond_type: "attribute"
       resource_types: 
         - "google_sql_database_instance"
       attribute: "database_version"

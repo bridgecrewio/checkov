@@ -18,9 +18,9 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - name: Install Node.js
-        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
         with:
           node-version: "16"
       - name: Install and run DangerJS
@@ -34,13 +34,13 @@ jobs:
     env:
       PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Get changed CFN test files
         id: changed-files-specific
-        uses: tj-actions/changed-files@6b2903bdce6310cfbddd87c418f253cf29b2dec9 # v44
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v44
         with:
           files: tests/cloudformation/checks/resource/aws/**/*
       - name: Filter YAML and JSON files
@@ -68,11 +68,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
@@ -88,14 +88,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
+            # needed for numpy
+            python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
+          else
+            python -m pip install --no-cache-dir --upgrade pipenv
+          fi
       - name: Install dependencies
         run: |
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
 
-          if [ '${{ matrix.python }}' == '3.12' ]; then
+          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
+            echo "patching >3.12 issues"
+            pipenv run pip install setuptools
             # needed for numpy
             pipenv install --skip-lock --dev -v
           else
@@ -104,21 +111,6 @@ jobs:
 
           # list all dependencies to get a better view about installed package versions
           pipenv run pip list
-
-      - name: Get venv path
-        id: get-venv
-        run: |
-          echo "venv=$(pipenv --venv)" >> "$GITHUB_OUTPUT"
-
-      - name: Run Redefine.dev
-        uses: redefinedev/redefine-action@main
-        with:
-          auth: ${{ secrets.REDEFINE_AUTH }}
-          python-venv-path: ${{ steps.get-venv.outputs.venv }}
-          testing-framework: pytest
-          mode: fail-fast
-          time-limit: 30  # approx 15% of the run time
-          config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
         env:
@@ -129,18 +121,18 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -185,17 +177,17 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8", "3.9"]
-        os: [ubuntu-latest, macos-12, windows-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -239,11 +231,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -288,10 +280,10 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8"]
-        os: [ubuntu-latest, macos-12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -335,11 +327,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.12"]
+        python: ["3.12", "3.13"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -378,10 +370,10 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.8"]
-        os: [ubuntu-latest, macos-12]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -421,13 +413,13 @@ jobs:
       working-directory: ./performance_tests
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -476,7 +468,7 @@ jobs:
       PYTHON_VERSION: "3.8"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -504,3 +496,61 @@ jobs:
         run: |
           pipenv run pytest
         working-directory: ${{ env.WORKING_DIRECTORY }}
+
+  eval-keys-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
+
+      - name: Get changed Python files
+        id: changed-files
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v44
+        with:
+          files: checkov/**/*.py
+
+      - name: Validate 'BaseResourceCheck' use contains eval keys
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          # Define an array of exceptions (files to skip)
+          EXCEPTIONS=(
+            "base_resource_check.py" 
+            "VPCDefaultNetwork.py"
+            "IAMUserNotUsedForAccess.py"  # Whole Resource type check
+          )
+          
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+          
+          EXIT_CODE=0
+          IFS=$'\n'  # Change Internal Field Separator to handle spaces in filenames too
+          for file in $(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ',' '\n'); do
+            # Check if the file is in the list of exceptions
+            SKIP_FILE="false"
+            for exception in "${EXCEPTIONS[@]}"; do
+              # If the file ends with one of the exception file names, skip it
+              if [[ "$file" == *"$exception" ]]; then
+                echo "Skipping $file (allowed exception)"
+                SKIP_FILE="true"
+                break
+              fi
+            done
+          
+            # Only run checks if not in exceptions list
+            if [[ "$SKIP_FILE" == "false" ]]; then
+              # If file contains 'BaseResourceCheck', check for 'get_inspected_key' or 'evaluated_keys'
+              if grep -q "BaseResourceCheck" "$file"; then
+                if ! grep -q "get_inspected_key" "$file" && ! grep -q "evaluated_keys" "$file"; then
+                  echo "ERROR: $file has BaseResourceCheck but does NOT contain 'get_inspected_key' or 'evaluated_keys'"
+                  EXIT_CODE=1
+                fi
+              fi
+            fi
+          done
+          unset IFS  # Restore IFS to default
+          
+          # Fail the job if any file violated the rule
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            echo "One or more files did not satisfy the requirement."
+            exit 1
+          fi

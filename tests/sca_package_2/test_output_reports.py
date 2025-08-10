@@ -1,12 +1,10 @@
 import json
-import sys
 import xml
 import xml.dom.minidom
 import os
 from operator import itemgetter
 from pathlib import Path
 from typing import List
-from unittest import mock
 
 import pytest
 from pytest_mock import MockerFixture
@@ -20,6 +18,31 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 OUTPUTS_DIR = Path(__file__).parent / "outputs"
 
 
+@pytest.mark.parametrize("env_value, expected_result", [
+    ("value1", "result1"),
+    ("value2", "result2"),
+    ("value3", "result3"),
+])
+def test_env_var(monkeypatch, env_value, expected_result):
+    monkeypatch.setenv("MY_ENV_VAR", env_value)
+
+    # Simulate your function that depends on the env var
+    result = some_function_relying_on_env()
+
+    assert result == expected_result
+
+
+def some_function_relying_on_env():
+    value = os.getenv("MY_ENV_VAR")
+    if value == "value1":
+        return "result1"
+    elif value == "value2":
+        return "result2"
+    elif value == "value3":
+        return "result3"
+    return "default"
+
+
 def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List[str]:
     # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
     # timestamp). so we skip these lines by the first 'if when checking whether we get the expected results
@@ -31,7 +54,8 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
         if not any(word in line for word in black_list_words):
             if i == 0 or not any(tool_name in pretty_xml_as_list[i - 1] for tool_name in
                                  ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
-                filtered_list.append(line)
+                filtered_list.append(
+                    line.replace('&quot;', '\"'))  # fixes differences in xml prettyprint between python 3.12 and 3.13
     return filtered_list
 
 
@@ -142,18 +166,26 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
     )
 
 
-def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path):
+@pytest.mark.parametrize("cyclone_format", [
+    "1.0",
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4"
+])
+def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path, cyclone_format, monkeypatch):
+    monkeypatch.setenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", cyclone_format)
     cyclonedx_reports = [sca_package_2_report]
     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
     cyclonedx_output = cyclonedx.get_xml_output()
     pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
-    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+    with open(os.path.join(OUTPUTS_DIR, f"results_cyclonedx_{cyclone_format.replace('.', '_')}.xml")) as f_xml:
         expected_pretty_xml = f_xml.read()
 
     actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
     expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
 
-    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+    assert '\n'.join(actual_pretty_xml_as_list) == '\n'.join(expected_pretty_xml_as_list)
 
 
 def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_2_with_comma_in_licenses, tmp_path: Path):

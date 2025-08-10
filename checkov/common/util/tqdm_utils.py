@@ -71,6 +71,7 @@ class ProgressBar:
 
     @staticmethod
     def should_show_progress_bar() -> bool:
-        if all([not LOGS_ENABLED, not RUN_IN_DOCKER, sys.__stdout__.isatty()]):
+        # making sure sys.__stdout__ is not None, but still need the type:ignore
+        if all([not LOGS_ENABLED, not RUN_IN_DOCKER, sys.__stdout__, sys.__stdout__.isatty()]):  # type:ignore[union-attr]
             return True
         return False

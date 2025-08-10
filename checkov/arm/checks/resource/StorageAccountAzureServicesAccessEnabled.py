@@ -26,10 +26,13 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
             if year is None:
                 return CheckResult.UNKNOWN  # Should be handled by variable rendering
             if year < 2017:
+                self.evaluated_keys = ["apiVersion"]
                 return CheckResult.FAILED
 
+        self.evaluated_keys = ["properties"]
         if "properties" in conf:
             if "networkAcls" in conf["properties"]:
+                self.evaluated_keys = ["properties/networkAcls"]
                 if "defaultAction" in conf["properties"]["networkAcls"]:
                     if not isinstance(conf["properties"]["networkAcls"], dict):
                         return CheckResult.UNKNOWN

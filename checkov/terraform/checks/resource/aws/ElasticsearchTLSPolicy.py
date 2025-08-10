@@ -16,10 +16,10 @@ class ElasticsearchTLSPolicy(BaseResourceValueCheck):
         return "domain_endpoint_options/[0]/tls_security_policy"
 
     def get_expected_values(self) -> List[Any]:
-        return ["Policy-Min-TLS-1-2-2019-07"]
+        return ["Policy-Min-TLS-1-2-2019-07", "Policy-Min-TLS-1-2-PFS-2023-10"]
 
     def get_expected_value(self) -> Any:
-        return "Policy-Min-TLS-1-2-2019-07"
+        return "Policy-Min-TLS-1-2-PFS-2023-10"
 
 
 check = ElasticsearchTLSPolicy()

@@ -20,7 +20,9 @@ class GlueSecurityConfiguration(BaseResourceCheck):
         cw_enc = False
         book_enc = False
         if 'Properties' in conf.keys():
+            self.evaluated_keys = ['Properties']
             if 'EncryptionConfiguration' in conf['Properties'].keys():
+                self.evaluated_keys = ['Properties/EncryptionConfiguration']
                 enc_conf = conf['Properties']['EncryptionConfiguration']
 
                 if 'CloudWatchEncryption' in enc_conf.keys():

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01-preview",
+      "name": "fail1",
+      "location": "[resourceGroup().location]",
+      "properties": {},
+      "resources": []
+    }
+  ]
+}

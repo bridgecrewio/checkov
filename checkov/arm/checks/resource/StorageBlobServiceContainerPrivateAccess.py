@@ -22,7 +22,9 @@ class StorageBlobServiceContainerPrivateAccess(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "properties" in conf:
+            self.evaluated_keys = ["properties"]
             if "publicAccess" in conf["properties"]:
+                self.evaluated_keys = ["properties/publicAccess"]
                 if str(conf["properties"]["publicAccess"]).lower() == "container" or \
                         str(conf["properties"]["publicAccess"]).lower() == "blob":
                     return CheckResult.FAILED

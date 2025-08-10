@@ -24,6 +24,8 @@ class KMSKeyWildcardPrincipal(BaseResourceCheck):
                         principal = statement['Principal']
                         if 'Effect' in statement and statement['Effect'] == 'Deny':
                             continue
+                        if 'Condition' in statement:
+                            continue
                         if 'AWS' in principal:
                             aws = principal['AWS']
                             if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):

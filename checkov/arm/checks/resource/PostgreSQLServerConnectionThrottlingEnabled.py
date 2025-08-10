@@ -24,6 +24,7 @@ class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
                         if "value" in conf["properties"] and \
                                 conf["properties"]["value"].lower() == "on":
                             return CheckResult.PASSED
+                    self.evaluated_keys = ['properties', 'properties/value']
                     return CheckResult.FAILED
             elif conf["type"] == "configurations":
                 if "name" in conf and conf["name"] == "connection_throttling":
@@ -33,8 +34,10 @@ class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
                                 if "value" in conf["properties"] and \
                                         conf["properties"]["value"].lower() == "on":
                                     return CheckResult.PASSED
+                    self.evaluated_keys = ['properties', 'properties/value']
                     return CheckResult.FAILED
         else:
+            self.evaluated_keys = ["properties"]
             return CheckResult.FAILED
 
         # If name not connection_throttling - don't report (neither pass nor fail)

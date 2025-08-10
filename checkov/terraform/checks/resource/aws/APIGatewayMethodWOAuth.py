@@ -13,7 +13,7 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def _is_policy_secure(self, policy: Dict[str, Any]) -> bool:
+    def _is_policy_secure(self, policy: Dict[str, Any]) -> CheckResult:
         # Check that the policy doesn't allow for all principals to us action execute-api:Invoke
         passed = True
         if policy.get("Statement"):

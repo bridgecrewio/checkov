@@ -21,6 +21,10 @@ class TestAWSCredentials(unittest.TestCase):
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
+        for failed_check in report.failed_checks:
+            del failed_check.entity_tags['__file__']
+            self.assertEqual(dict(sorted(failed_check.entity_tags.items())), {"RESOURCE": "lambda", "PUBLIC": "False"})
+
 
 if __name__ == '__main__':
     unittest.main()

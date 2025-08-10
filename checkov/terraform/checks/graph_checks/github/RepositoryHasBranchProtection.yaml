@@ -11,6 +11,7 @@ definition:
       connected_resource_types:
         - github_branch_protection
         - github_branch_protection_v3
+        - github_repository_ruleset
       operator: exists
       cond_type: connection
     - cond_type: filter

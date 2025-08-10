@@ -400,6 +400,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_AWS_{i}' == 'CKV_AWS_188':
                 # CKV_AWS_188 was deleted because it duplicated CKV_AWS_142
                 continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_384':
+                # CKV_AWS_384 is CFN only
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(
@@ -434,6 +437,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # duplicate of CKV_AZURE_3
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_243":
+                continue  # ARM only check, not a Terraform check
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
@@ -469,7 +474,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 3):
+        for i in range(1, len(aws_checks) + 2):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -1795,6 +1800,30 @@ class TestRunnerValid(unittest.TestCase):
 
                 # then
                 self.assertEqual(len(runner.definitions), 1)
+                self.assertEqual(len(parsing_errors), 1)
+
+    def test__parse_files_with_timout(self):
+        for parallel_type in [ParallelizationType.FORK, ParallelizationType.SPAWN, ParallelizationType.NONE]:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/hcl_timeout"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 0)
                 self.assertEqual(len(parsing_errors), 1)
 
 

@@ -1,0 +1,15 @@
+Resources:
+  Pass2:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "NameOfLambdaFunction"
+      Handler: "handler.handlerverylongcustomhandlernameforservi"
+      Runtime: "python3.9"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: "your-code-bucket"
+        S3Key: "path/to/your-code.zip"
+      Environment:
+        Variables:
+          STAGE: "staging"
+          LAMBDA: "handler.handlerverylongcustomhandlernameforservi"

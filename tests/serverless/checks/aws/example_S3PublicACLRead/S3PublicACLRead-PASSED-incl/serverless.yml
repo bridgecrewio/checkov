@@ -1,0 +1,23 @@
+service: usersCrud
+provider:
+  name: aws
+
+functions:
+  myFunc:
+    name: myFunc
+    tags:
+      RESOURCE: lambda
+      PUBLIC: false
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - "lambda:InvokeFunction"
+        Resource:
+          - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:invokedLambda"
+    handler: Handler.handle
+    timeout: 600
+    memorySize: 320
+
+resources: # CloudFormation template syntax
+  - ${file(resources.yaml)}
+

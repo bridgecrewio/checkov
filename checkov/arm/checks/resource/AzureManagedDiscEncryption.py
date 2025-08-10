@@ -18,6 +18,7 @@ class AzureManagedDiscEncryption(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
         if properties:
+            self.evaluated_keys = ["properties"]
             encryption = properties.get("encryption")
             if encryption:
                 # if the block exists, then it is enabled

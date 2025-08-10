@@ -12,7 +12,7 @@ class TestGoogleProjectImpersonationRoles(unittest.TestCase):
         hcl_res = hcl2.loads("""
             resource "google_project_iam_binding" "project" {
               project = "your-project-id"
-              role    = "roles/resourcemanager.organizationAdmin"
+              role    = "roles/serverless.serviceAgent"
             
               members = [
                 "user",
@@ -28,7 +28,7 @@ class TestGoogleProjectImpersonationRoles(unittest.TestCase):
         hcl_res = hcl2.loads("""
             resource "google_project_iam_member" "project" {
               project = "your-project-id"
-              role    = "roles/resourcemanager.organizationAdmin"
+              role    = "roles/iam.workloadIdentityUser"
               member  = "serviceAccount:test-compute@developer.gserviceaccount.com"
             }
                 """)

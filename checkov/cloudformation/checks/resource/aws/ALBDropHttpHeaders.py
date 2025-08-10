@@ -21,9 +21,11 @@ class ALBDropHttpHeaders(BaseResourceCheck):
             alb = False
 
         # If lb is alb then drop headers must be present and true
+        self.evaluated_keys = ['Properties']
         if alb:
             lb_attributes = properties.get('LoadBalancerAttributes', {})
             if isinstance(lb_attributes, list):
+                self.evaluated_keys = ['Properties/LoadBalancerAttributes']
                 for item in lb_attributes:
                     key = item.get('Key')
                     if key == 'routing.http.drop_invalid_header_fields.enabled':

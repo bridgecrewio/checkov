@@ -17,12 +17,14 @@ class AppServiceDotnetFrameworkVersion(BaseResourceCheck):
             if site_config.get('dotnet_framework_version') and isinstance(site_config.get('dotnet_framework_version'), list):
                 if site_config.get('dotnet_framework_version')[0] == "v6.0":
                     return CheckResult.PASSED
+                self.evaluated_keys = ['site_config/[0]/dotnet_framework_version']
                 return CheckResult.FAILED
             if site_config.get('application_stack') and isinstance(site_config.get('application_stack'), list):
                 stack = site_config.get('application_stack')[0]
                 if stack.get('dotnet_version') and isinstance(stack.get('dotnet_version'), list):
                     if stack.get('dotnet_version')[0] == "v8.0":
                         return CheckResult.PASSED
+                    self.evaluated_keys = ['site_config/[0]/application_stack/[0]/dotnet_version']
                     return CheckResult.FAILED
 
         return CheckResult.UNKNOWN

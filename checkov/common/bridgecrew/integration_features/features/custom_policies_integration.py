@@ -86,6 +86,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                                 get_graph_checks_registry("kubernetes").checks.append(check)
                             elif f.lower() == "bicep":
                                 get_graph_checks_registry("bicep").checks.append(check)
+                            elif f.lower() == "arm":
+                                get_graph_checks_registry("arm").checks.append(check)
                     else:
                         for registry in get_all_graph_checks_registries():
                             registry.checks.append(check)

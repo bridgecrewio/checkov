@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -28,6 +28,9 @@ class SQSQueueEncryption(BaseResourceCheck):
             return CheckResult.FAILED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["sqs_managed_sse_enabled", "kms_master_key_id"]
 
 
 check = SQSQueueEncryption()

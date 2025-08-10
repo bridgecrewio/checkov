@@ -18,6 +18,12 @@ resource "azurerm_sql_firewall_rule" "pass_2" {
   end_ip_address      = "0.0.0.0"
 }
 
+resource "azurerm_mssql_firewall_rule" "pass_2" {
+  name                = "pud_AZ_SQL_FW"
+  start_ip_address    = "10.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
+
 # FAIL case: start_ip_address and end_ip_address equals to 0.0.0.0
 
 
@@ -29,4 +35,9 @@ resource "azurerm_sql_firewall_rule" "fail" {
   end_ip_address      = "0.0.0.0"
 }
 
+resource "azurerm_mssql_firewall_rule" "fail" {
+  name                = "pud_AZ_SQL_FW"
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
 

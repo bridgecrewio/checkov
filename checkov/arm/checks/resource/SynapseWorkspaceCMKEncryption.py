@@ -20,5 +20,8 @@ class SynapseWorkspaceCMKEncryption(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self) -> list[str]:
+        return ['properties', 'properties/encryption']
+
 
 check = SynapseWorkspaceCMKEncryption()

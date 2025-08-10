@@ -1,0 +1,62 @@
+service: acme-service
+
+frameworkVersion: "^2.30.0"
+
+plugins:
+  - serverless-vpc-discovery
+
+custom:
+  resources: ${file(./serverless.${opt:stage}.yml)}
+  vpc:
+    vpcName: acme-vpc
+    subnetNames:
+      - private-subnet-a
+      - private-subnet-b
+    securityGroupNames:
+      - allow_out_to_vpc_endpoints
+      - lambda_sg
+provider:
+  region: us-east-1
+  name: aws
+  runtime: python3.7
+  tracing:
+    lambda: true
+  deploymentBucket: ${self:custom.resources.deploymentBucket}
+  environment: ${self:custom.resources.environment}
+  iamManagedPolicies:
+    - arn:aws:iam::aws:policy/ReadOnlyAccess
+  iamRoleStatements: ${self:custom.resources.iamRoleStatements}
+  ecr:
+    images:
+      base:
+        path: ../../
+        file: ./path/to/Dockerfile
+
+functions:
+  acmeFunc:
+    image: base
+    timeout: 120
+    memorySize: 3000
+    environment:
+      EFS_MOUNT_PATH: ${self:custom.localMountPath}
+    fileSystemConfig:
+      localMountPath: ${self:custom.localMountPath}
+      arn: 'arn:aws:elasticfilesystem:${self:provider.region}:#{AWS::AccountId}:access-point/${self:custom.resources.efsAccessPoint}'
+    events:
+      - sqs:
+          arn: arn:aws:sqs:#{AWS::Region}:#{AWS::AccountId}:job_queue
+          batchSize: 10
+          maximumBatchingWindow: 0
+  acmeFunc2:
+    image: base
+    environment:
+      EFS_MOUNT_PATH: ${self:custom.localMountPath}
+      CLEAN_UP_BEFORE_PROCESS: 'true'
+    timeout: 900
+    memorySize: 9000
+    fileSystemConfig:
+      localMountPath: ${self:custom.localMountPath}
+      arn: 'arn:aws:elasticfilesystem:${self:provider.region}:#{AWS::AccountId}:access-point/${self:custom.resources.efsAccessPoint}'
+
+resources:
+  Resources: ${file(./serverless.${opt:stage}.yml)}  # just shouldn't raise an exception

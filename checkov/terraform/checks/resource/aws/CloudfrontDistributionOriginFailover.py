@@ -17,10 +17,12 @@ class CloudfrontDistributionOriginFailover(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         groups = conf.get("origin_group")
         if groups and isinstance(groups, list):
-            for group in groups:
+            self.evaluated_keys = ["origin_group"]
+            for group_idx, group in enumerate(groups):
                 if isinstance(group, dict) and group.get("failover_criteria"):
                     member = group.get("member")
                     if not member or len(member) < 2:
+                        self.evaluated_keys.append(f"origin_group/[{group_idx}]/member")
                         return CheckResult.FAILED
                 else:
                     return CheckResult.FAILED

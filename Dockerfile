@@ -4,7 +4,7 @@ ENV RUN_IN_DOCKER=True
 
 RUN set -eux; \
     apt-get update; \
-    apt-get -y --no-install-recommends upgrade; \
+    apt-get -y upgrade; \
     apt-get install -y --no-install-recommends \
             ca-certificates \
             git \
@@ -12,6 +12,7 @@ RUN set -eux; \
             openssh-client \
     ; \
     \
+    pip install setuptools==70 urllib3==2.2.2;  \
     curl -sSLo get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 700 get_helm.sh; \
     VERIFY_CHECKSUM=true ./get_helm.sh; \

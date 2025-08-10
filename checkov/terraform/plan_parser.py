@@ -4,6 +4,7 @@ import itertools
 import json
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -20,6 +21,8 @@ TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
+
+COUNT_PATTERN = re.compile(r"\[?\d+\]?$")
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -234,6 +237,31 @@ def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) 
                 # In these cases, policies checking the existence of a value will succeed,
                 # but policies checking for concrete values will fail
                 resource_conf[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                _handle_complex_after_unknown(k, resource_conf, v)
+
+
+def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any) -> None:
+    """
+    Handles a case of an inner key generated with "after_unknown" value.
+    Example:
+        `
+        after_unknown: {
+            "logging_config": [
+            {
+              "bucket": true
+            }
+          ],
+        }
+        `
+    """
+    inner_keys = list(v[0].keys())
+    for inner_key in inner_keys:
+        if inner_key in (START_LINE, END_LINE):
+            # skip inner checkov keys
+            continue
+        if inner_key not in resource_conf[k]:
+            resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(
@@ -298,9 +326,22 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
         if module_name == "module":
             # module names are always prefixed with 'module.', therefore skip it
             continue
-        root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+        found_root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+        if not found_root_module_conf:
+            sanitized_module_name = _sanitize_count_from_name(module_name)
+            found_root_module_conf = root_module_conf.get("module_calls", {}).get(sanitized_module_name, {}).get("module", {})
+        root_module_conf = found_root_module_conf
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
+
+
+def _sanitize_count_from_name(name: str) -> str:
+    """Sanitize the count from the resource name"""
+    if re.search(COUNT_PATTERN, name):
+        name_parts = re.split(COUNT_PATTERN, name)
+        if len(name_parts) == 2:
+            return name_parts[0]
+    return name
 
 
 def _is_provider_key(key: str) -> bool:
@@ -308,10 +349,26 @@ def _is_provider_key(key: str) -> bool:
     return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
 
 
-def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Returns the provider dict"""
+def _get_providers(template: dict[str, dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
+    """Returns a list of provider dicts"""
 
-    provider_map: dict[str, dict[str, Any]] = {}
+    # `providers` should be a list of dicts, one dict for each provider:
+    # [
+    #     {
+    #         "aws": {
+    #             "region": ["us-east-1"],
+    #             . . .
+    #         }
+    #     },
+    #     {
+    #         "aws": {
+    #             "region": ["us-west-1"],
+    #             "alias": ["west"],
+    #             . . .
+    #         }
+    #     }
+    # ]
+    providers: list[dict[str, dict[str, Any]]] = []
     provider_config = template.get("configuration", {}).get("provider_config")
 
     if provider_config and isinstance(provider_config, dict):
@@ -319,9 +376,11 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
             if _is_provider_key(key=provider_key):
                 # Not a provider, skip
                 continue
-            provider_map[provider_key] = {}
+            provider_name = provider_data.get("name")
             provider_alias = provider_data.get("alias", "default")
-            provider_map_entry = provider_map[provider_key]
+            provider_map: dict[str, dict[str, Any]] = {}
+            provider_map[provider_name] = {}
+            provider_map_entry = provider_map[provider_name]
             for field, value in provider_data.get('expressions', {}).items():
                 if field in LINE_FIELD_NAMES or not isinstance(value, dict):
                     continue  # don't care about line #s or non dicts
@@ -335,9 +394,10 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
             provider_map_entry[start_line] = [provider_data.get(START_LINE, 1) - 1]
             provider_map_entry[end_line] = [provider_data.get(END_LINE, 1)]
             provider_map_entry['alias'] = [provider_alias]
-            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
+            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_name}.{provider_alias}"
+            providers.append(provider_map)
 
-    return provider_map
+    return providers
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -396,9 +456,7 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     if not template:
         return None, None
 
-    provider = _get_provider(template=template)
-    if bool(provider):
-        tf_definition["provider"].append(provider)
+    tf_definition["provider"] = _get_providers(template=template)
 
     resource_changes = _get_resource_changes(template=template)
 

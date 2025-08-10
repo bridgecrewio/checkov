@@ -21,7 +21,10 @@ class GKEUseCosImage(BaseResourceCheck):
             splitter = raw.split(".")
 
             if len(splitter) >= 2:
-                version = float(splitter[0] + "." + splitter[1])
+                try:
+                    version = float(splitter[0] + "." + splitter[1])
+                except (ValueError, IndexError):
+                    return CheckResult.UNKNOWN
                 if version >= 1.24:
                     return CheckResult.UNKNOWN
 

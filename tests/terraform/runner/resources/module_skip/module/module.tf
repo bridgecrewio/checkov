@@ -1,5 +1,5 @@
 #
-# WARNING: Line numbers mater in this test!
+# WARNING: Line numbers matter in this test!
 #          Update test_module_skip if a change is made!
 #
 

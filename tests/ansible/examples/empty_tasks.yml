@@ -1,0 +1,6 @@
+---
+- name: Using a Role
+  hosts: all
+  roles:
+    - role: somerolename
+  tasks:

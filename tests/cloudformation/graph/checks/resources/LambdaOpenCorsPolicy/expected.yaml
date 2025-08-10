@@ -1,0 +1,12 @@
+pass:
+  - "AWS::Lambda::Function.ValidLambdaFunction"
+  - "AWS::Lambda::Function.ValidLambdaFunctionWithoutUrl"
+  - "AWS::Lambda::Function.ValidLambdaFunctionNoCorsDefinition"
+  - "AWS::Lambda::Function.ValidLambdaFunctionOnlyOriginsStar"
+  - "AWS::Lambda::Function.ValidLambdaFunctionOnlyMethodsStar"
+fail:
+  - "AWS::Lambda::Function.InvalidLambdaFunction"
+evaluated_keys:
+  - Cors/AllowMethods
+  - Cors/AllowOrigins
+  - resource_type

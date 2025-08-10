@@ -6,8 +6,6 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Generic, TypeVar
-
-import aiohttp
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
@@ -185,12 +183,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
         This is an async implementation of `_fetch_image_results`. The only change is we're getting a session
         as an input, and the asyncio behavior is managed in the calling method.
         """
-        async with aiohttp.ClientSession() as session:
-            results: list[dict[str, Any]] = await asyncio.gather(*[
-                image_scanner.get_scan_results_from_cache_async(session, f"image:{i}")
-                for i in image_names_to_query
-            ])
-        return results
+        return await asyncio.gather(*[
+            image_scanner.get_scan_results_from_cache_async(f"image:{i}")
+            for i in image_names_to_query
+        ])
 
     def _add_image_records(
         self,
@@ -320,11 +316,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
     async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
-        async with aiohttp.ClientSession() as session:
-            license_results = await asyncio.gather(*[
-                get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
-                for i, result in enumerate(image_results)
-                if "results" in result and result["results"]
-            ])
+        license_results = await asyncio.gather(*[
+            get_license_statuses_async(result['results'][0].get('packages') or [], image_names[i])
+            for i, result in enumerate(image_results)
+            if "results" in result and result["results"]
+        ])
         merged_result.update({r['image_name']: r['licenses'] for r in license_results})
         return merged_result

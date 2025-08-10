@@ -18,8 +18,10 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ["properties"]
         properties = conf.get("properties")
         if isinstance(properties, dict) and "supportsHttpsTrafficOnly" in properties:
+            self.evaluated_keys = ["properties/supportsHttpsTrafficOnly"]
             https = str(properties["supportsHttpsTrafficOnly"]).lower()
             return CheckResult.PASSED if https == "true" else CheckResult.FAILED
 
@@ -31,6 +33,7 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
             if year is None:
                 return CheckResult.UNKNOWN
             elif year < 2019:
+                self.evaluated_keys = ["apiVersion"]
                 return CheckResult.FAILED
             else:
                 return CheckResult.PASSED

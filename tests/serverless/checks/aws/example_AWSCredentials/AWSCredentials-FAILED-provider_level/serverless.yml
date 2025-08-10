@@ -5,6 +5,7 @@ provider:
   runtime: python3.7
   stackName: lambda-${self:service.name}
   tag: ${opt:tag}
+  stackTags: ${file(${env:STACK_TAGS_FILE, 'dummy.yaml'}), null}
   environment:
     TABLE_NAME: "mytable"
     BUCKET_NAME: "mybucket"

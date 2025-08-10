@@ -1,0 +1,56 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+      {
+        "type": "Microsoft.Network/storageAccounts",
+        "apiVersion": "2019-06-01",
+        "name": "storaccount1",
+        "location": "westus",
+        "sku": {
+          "name": "Standard_LRS"
+        },
+        "kind": "StorageV2",
+        "properties": {}
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2019-12-01",
+        "name": "VM1",
+        "location": "westus",
+        "dependsOn": [
+          "Microsoft.Network/virtualNetworks/VNet1/subnets/Subnet1",
+          "Microsoft.Network/storageAccounts/storaccount1"
+        ],
+        "properties": {
+          "hardwareProfile": {
+            "vmSize": "Standard_D2s_v3"
+          },
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "MicrosoftWindowsServer",
+              "offer": "WindowsServer",
+              "sku": "2019-Datacenter",
+              "version": "latest"
+            },
+            "osDisk": {
+              "createOption": "FromImage"
+            },
+            "dataDisks": []
+          },
+          "osProfile": {
+            "computerName": "vm1",
+            "adminUsername": "adminuser",
+            "adminPassword": "123!"
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', 'nic1')]"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }

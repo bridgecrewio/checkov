@@ -1,0 +1,8 @@
+pass:
+  - "aws_lb_target_group.pass"
+  - "aws_alb_target_group.pass"
+  - "aws_lb_target_group.public_fargate_target_group"
+  - "aws_alb_target_group.public_fargate_target_group"
+fail:
+  - "aws_lb_target_group.fail"
+  - "aws_alb_target_group.fail"

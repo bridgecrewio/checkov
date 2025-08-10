@@ -19,7 +19,9 @@ def test_render_parameter():
         "name": "example-vm",
         "location": "location",
         "properties": {
-            "networkProfile": {"networkInterfaces": [{"id": "example-id"}]},
+            "networkProfile": {
+                "networkInterfaces": [{"id": "example-id"}]
+            },
             "osProfile": {
                 "linuxConfiguration": {
                     "ssh": {
@@ -27,12 +29,36 @@ def test_render_parameter():
                             {"keyData": "key-data-1", "path": "path-1"},
                             {"keyData": "key-data-2", "path": "path-2"},
                             {"keyData": "key-data-3", "path": "path-3"},
-                            {"keyData": "key-data-4", "path": "path-4"},
+                            {"keyData": {
+                                "operator": {
+                                    "type": "property_accessor",
+                                    "operands": {
+                                        "operand_1": {"keyData": "key-data-4", "path": {"name": "path-4"}},
+                                        "operand_2": "keyData"
+                                    }
+                                }
+                            },
+                             "path": {
+                                 "operator": {
+                                     "type": "property_accessor",
+                                     "operands": {
+                                         "operand_1": {"keyData": "key-data-4", "path": {"name": "path-4"}},
+                                         "operand_2": {
+                                             "operator": {
+                                                 "type": "property_accessor",
+                                                 "operands": {"operand_1": "path", "operand_2": "name"}
+                                             }
+                                         }
+                                     }
+                                 }
+                             }}
                         ]
                     }
                 }
             },
-            "storageProfile": {"imageReference": {"publisher": "MicrosoftWindowsServer"}},
+            "storageProfile": {
+                "imageReference": {"publisher": "MicrosoftWindowsServer"}
+            }
         },
         "tags": {
             "displayName": "Container Registry",
@@ -57,7 +83,11 @@ def test_render_variable():
         "name": "example-vm",
         "location": "westeurope",
         "properties": {
-            "networkProfile": {"networkInterfaces": [{"id": "example-id"}]},
+            "networkProfile": {
+                "networkInterfaces": [
+                    {"id": "example-id"}
+                ]
+            },
             "osProfile": {
                 "linuxConfiguration": {
                     "ssh": {
@@ -65,12 +95,49 @@ def test_render_variable():
                             {"keyData": "key-data-1", "path": "path-1"},
                             {"keyData": "key-data-2", "path": "path-2"},
                             {"keyData": "key-data-3", "path": "path-3"},
-                            {"keyData": "key-data-4", "path": "path-4"},
+                            {
+                                "keyData": {
+                                    "operator": {
+                                        "type": "property_accessor",
+                                        "operands": {
+                                            "operand_1": {
+                                                "keyData": "key-data-4",
+                                                "path": {"name": "path-4"}
+                                            },
+                                            "operand_2": "keyData"
+                                        }
+                                    }
+                                },
+                                "path": {
+                                    "operator": {
+                                        "type": "property_accessor",
+                                        "operands": {
+                                            "operand_1": {
+                                                "keyData": "key-data-4",
+                                                "path": {"name": "path-4"}
+                                            },
+                                            "operand_2": {
+                                                "operator": {
+                                                    "type": "property_accessor",
+                                                    "operands": {
+                                                        "operand_1": "path",
+                                                        "operand_2": "name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         ]
                     }
                 }
             },
-            "storageProfile": {"imageReference": {"publisher": "MicrosoftWindowsServer"}},
+            "storageProfile": {
+                "imageReference": {
+                    "publisher": "MicrosoftWindowsServer"
+                }
+            }
         },
         "tags": {
             "displayName": "Container Registry",
@@ -95,7 +162,11 @@ def test_render_mixed():
         "name": "example-vm",
         "location": "location",
         "properties": {
-            "networkProfile": {"networkInterfaces": [{"id": "example-id"}]},
+            "networkProfile": {
+                "networkInterfaces": [
+                    {"id": "example-id"}
+                ]
+            },
             "osProfile": {
                 "linuxConfiguration": {
                     "ssh": {
@@ -103,12 +174,75 @@ def test_render_mixed():
                             {"keyData": "key-data-1", "path": "path-1"},
                             {"keyData": "key-data-2", "path": "path-2"},
                             {"keyData": "keyData3", "path": "path-3"},
-                            {"keyData": "key-data-4", "path": "path-2"},
+                            {
+                                "keyData": {
+                                    "operator": {
+                                        "type": "property_accessor",
+                                        "operands": {
+                                            "operand_1": {
+                                                "keyData": "key-data-4",
+                                                "path": {
+                                                    "name": {
+                                                        "operator": {
+                                                            "type": "property_accessor",
+                                                            "operands": {
+                                                                "operand_1": {
+                                                                    "keyData": "key-data-2",
+                                                                    "path": "path-2"
+                                                                },
+                                                                "operand_2": "path"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "operand_2": "keyData"
+                                        }
+                                    }
+                                },
+                                "path": {
+                                    "operator": {
+                                        "type": "property_accessor",
+                                        "operands": {
+                                            "operand_1": {
+                                                "keyData": "key-data-4",
+                                                "path": {
+                                                    "name": {
+                                                        "operator": {
+                                                            "type": "property_accessor",
+                                                            "operands": {
+                                                                "operand_1": {
+                                                                    "keyData": "key-data-2",
+                                                                    "path": "path-2"
+                                                                },
+                                                                "operand_2": "path"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "operand_2": {
+                                                "operator": {
+                                                    "type": "property_accessor",
+                                                    "operands": {
+                                                        "operand_1": "path",
+                                                        "operand_2": "name"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         ]
                     }
                 }
             },
-            "storageProfile": {"imageReference": {"publisher": "publisher"}},
+            "storageProfile": {
+                "imageReference": {
+                    "publisher": "publisher"
+                }
+            }
         },
         "tags": {
             "displayName": "Container Registry",
