@@ -10,6 +10,7 @@ from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader # noqa
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
+from checkov.terraform.module_loading.module_params import ModuleParams
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
@@ -565,3 +566,32 @@ def test_latest_tf_managed_registry(tmp_path: Path):
     mc = registry.load(str(tmp_path / 'cache_check'), source='terraform-aws-modules/iam', source_version='latest')
     assert mc and mc.path() == 'xxx'
 
+
+def test_github_is_matching_loader(tmp_path: Path):
+    loader = GithubLoader()
+    dummy_dir = tmp_path.as_posix()
+
+    params = ModuleParams(
+        root_dir=dummy_dir,
+        current_dir=dummy_dir,
+        source="",
+        source_version=None,
+        dest_dir=dummy_dir,
+        external_modules_folder_name=".external_modules"
+    )
+    loader.discover(params)
+
+    # --- Case 1: github.com/org/repo ---
+    params.module_source = "github.com/org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::https://github.com/org/repo"
+
+    # --- Case 2: git@github.com:org/repo ---
+    params.module_source = "git@github.com:org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::ssh://git@github.com/org/repo"
+
+    # --- Case 3: git::git@github.com:org/repo ---
+    params.module_source = "git::git@github.com:org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::ssh://git@github.com/org/repo"

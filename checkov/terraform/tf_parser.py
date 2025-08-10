@@ -1,38 +1,29 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-import platform
-import threading
 from collections import defaultdict
-from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO, Type
-
-import hcl2
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
-from checkov.common.util.env_vars_config import env_vars_config
-from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout
-from checkov.common.util.stopit.utils import BaseTimeout
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
-from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.module_loading.content import ModuleContent
-from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
+from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.common.util.parser_utils import is_acceptable_module_param
 from checkov.terraform.modules.module_utils import safe_index, \
-    remove_module_dependency_from_path, \
-    clean_parser_types, serialize_definitions, _Hcl2Payload
+    remove_module_dependency_from_path, clean_parser_types, serialize_definitions
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
+from checkov.terraform.parser_utils import load_or_die_quietly
+
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -105,7 +96,7 @@ class TFParser:
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
-        load_tf_modules(directory)
+        load_tf_modules(directory, loaded_files_cache=self.loaded_files_map, parsing_errors=self.out_parsing_errors, excluded_paths=self.excluded_paths)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
         self._update_resolved_modules()
         return self.out_definitions
@@ -699,57 +690,3 @@ def get_tf_definition_object_from_module_dependency(
         return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
     return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name,
                                                     nested_tf_module=module_dependency.tf_source_modules))
-
-
-def load_or_die_quietly(
-        file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
-) -> Optional[_Hcl2Payload]:
-    """
-    Load JSON or HCL, depending on filename.
-    :return: None if the file can't be loaded
-    """
-    file_path = os.fspath(file)
-    file_name = os.path.basename(file_path)
-
-    if file_name.endswith('.tfvars'):
-        clean_definitions = False
-
-    try:
-        logging.debug(f"Parsing {file_path}")
-
-        with open(file_path, "r", encoding="utf-8-sig") as f:
-            if file_name.endswith(".json"):
-                return cast("_Hcl2Payload", json.load(f))
-            else:
-                raw_data = __parse_with_timeout(f)
-                non_malformed_definitions = validate_malformed_definitions(raw_data)
-                if clean_definitions:
-                    return clean_bad_definitions(non_malformed_definitions)
-                else:
-                    return non_malformed_definitions
-    except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
-        parsing_errors[file_path] = e
-        return None
-
-
-# if we are not running in a thread, run the hcl2.load function with a timeout, to prevent from getting stuck in parsing.
-def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
-    # setting up timeout class
-    timeout_class: Optional[Type[BaseTimeout]] = None
-    if platform.system() == 'Windows':
-        timeout_class = ThreadingTimeout
-    elif threading.current_thread() is threading.main_thread():
-        timeout_class = SignalTimeout
-
-    # if we're not running on the main thread, don't use timeout
-    parsing_timeout = env_vars_config.HCL_PARSE_TIMEOUT_SEC or 0
-    if not timeout_class or not parsing_timeout:
-        return hcl2.load(f)
-
-    with timeout_class(parsing_timeout) as to_ctx_mgr:
-        raw_data = hcl2.load(f)
-    if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
-        logging.debug(f"reached timeout when parsing file {f} using hcl2")
-        raise Exception(f"file took more than {parsing_timeout} seconds to parse")
-    return raw_data

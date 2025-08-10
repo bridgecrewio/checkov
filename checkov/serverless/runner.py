@@ -139,7 +139,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, self.definitions_raw[sls_file])
 
-            self.cfn_resources_checks(sls_file, sls_file_data, report, runner_filter)
+            self.cfn_resources_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
             self.multi_item_sections_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
             self.single_item_sections_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
             self.complete_python_checks(sls_file, sls_file_data, report, runner_filter, sls_context_parser)
@@ -300,7 +300,8 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                              sls_file: str,
                              sls_file_data: dict[str, Any],
                              report: Report,
-                             runner_filter: RunnerFilter) -> None:
+                             runner_filter: RunnerFilter,
+                             sls_context_parser: SlsContextParser) -> None:
         file_abs_path = Path(sls_file).absolute()
         if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], dict):
             cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
@@ -317,8 +318,7 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
                         # Not Type attribute for resource
                         continue
                     report.add_resource(f'{file_abs_path}:{cf_resource_id}')
-                    entity_lines_range, entity_code_lines = cf_context_parser.extract_cf_resource_code_lines(
-                        resource)
+                    entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(resource)
                     if entity_lines_range and entity_code_lines:
                         skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                         # TODO - Variable Eval Message!

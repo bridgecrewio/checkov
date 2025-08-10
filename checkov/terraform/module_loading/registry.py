@@ -47,11 +47,6 @@ information, see `loader.ModuleLoader.load`.
         if source is None:
             return None
 
-        """
-        We should treat git::git@github.com:... the same as git@github.com:... for all git based loaders
-        """
-        source = source.replace("git::git@", "git@")
-
         if module_address is None:
             module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
