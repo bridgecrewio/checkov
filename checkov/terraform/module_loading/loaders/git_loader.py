@@ -105,8 +105,12 @@ class GenericGitLoader(ModuleLoader):
             version = "HEAD"
 
         if len(module_source_components) < 3:
-            root_module = module_source_components[-1]
-            inner_module = ""
+            if len(module_source_components) == 2 and "git::git" in module_source_components[0]:
+                root_module = module_source_components[-2]
+                inner_module = module_source_components[-1]
+            else:
+                root_module = module_source_components[-1]
+                inner_module = ""
         elif len(module_source_components) == 3:
             root_module = module_source_components[1]
             inner_module = module_source_components[2]
