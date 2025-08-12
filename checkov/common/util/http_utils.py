@@ -12,7 +12,6 @@ import aiohttp
 import asyncio
 from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
-from checkov.common.util import env_vars_config
 from urllib3.response import HTTPResponse
 from urllib3.util import parse_url
 
@@ -213,6 +212,8 @@ async def aiohttp_client_session_wrapper(
         headers: dict[str, Any],
         payload: dict[str, Any] | None = None,
 ) -> ClientResponse:
+    from checkov.common.util import env_vars_config
+
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
