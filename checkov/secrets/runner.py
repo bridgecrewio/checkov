@@ -34,7 +34,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.typing import _CheckResult
+from checkov.common.typing import _CheckResult, _SkippedCheck
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.secrets import omit_secret_value_from_line, GENERIC_OBFUSCATION_LENGTH
 from checkov.runner_filter import RunnerFilter
@@ -45,6 +45,7 @@ from checkov.secrets.git_history_store import GitHistorySecretStore
 from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES, Commit
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
+from checkov.secrets.context_parser import ContextParser
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -291,6 +292,8 @@ class Runner(BaseRunner[None, None, None]):
         secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_49', 'CKV_SECRET_48', 'CKV_SECRET_40', 'CKV_SECRET_30']
 
         secret_key_by_line_to_secrets = defaultdict(list)
+        suppressions_cache: Dict[str, List[_SkippedCheck]] = {}
+
         for key, secret in secrets:
             secret_key_by_line_to_secrets[(key, secret.line_number)].append(secret)
 
@@ -317,6 +320,89 @@ class Runner(BaseRunner[None, None, None]):
             if not check_id:
                 logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                 continue
+
+            try:
+                secret_file_path = os.path.join(root_folder, secret.filename) if root_folder else secret.filename
+                if secret_file_path not in suppressions_cache:
+                    parser = ContextParser(secret_file_path)
+
+                    resource_config = getattr(secret, "resource_config", None)
+
+                    # fallback: try to parse it on-demand if it's a JSON or YAML file
+                    if resource_config is None and secret_file_path.endswith((".json", ".yml", ".yaml")):
+                        try:
+                            import json
+                            import yaml
+
+                            with open(secret_file_path, "r", encoding="utf-8") as f:
+                                content = f.read()
+                                if secret_file_path.endswith(".json"):
+                                    resource_config = json.loads(content)
+                                else:
+                                    resource_config = yaml.safe_load(content)
+
+                                if not isinstance(resource_config, dict):
+                                    resource_config = None
+                        except Exception as e:
+                            logging.debug(
+                                f"Failed to parse file {secret_file_path} as structured data for suppressions: {e}")
+                            resource_config = None
+
+                    suppressions_cache[secret_file_path] = parser.collect_skip_comments(resource_config=resource_config)
+
+                suppressions = suppressions_cache[secret_file_path]
+
+                metadata_suppressions = [s for s in suppressions if s.get("line_number") is None]
+
+                # Check if the check_id is suppressed either inline on this line or by metadata
+                if any(s['id'] == check_id for s in metadata_suppressions):
+                    skip_item = next(s for s in metadata_suppressions if s['id'] == check_id)
+                    suppress_comment = skip_item.get("suppress_comment", "No comment provided")
+
+                    # Get bc_check_id and severity
+                    bc_check_id = metadata_integration.get_bc_id(check_id)
+                    severity = metadata_integration.get_severity(check_id)
+
+                    # Get relative file path
+                    relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}' if root_folder else f'/{secret.filename}'
+
+                    # Try to get the line text for code_block and censor secrets like inline
+                    import linecache
+                    line_text = linecache.getline(secret.filename, secret.line_number)
+                    line_text_censored = line_text
+                    # If you have the secret value (stripped), censor it here the same way as inline
+                    if secret.secret_value:
+                        secret_value = secret.secret_value.strip('"\'')
+                        # Assuming omit_secret_value_from_line is imported
+                        line_text_censored = omit_secret_value_from_line(secret_value, line_text_censored)
+
+                    skipped_check = SecretsRecord(
+                        check_id=check_id,
+                        bc_check_id=bc_check_id,
+                        severity=severity,
+                        check_name=secret.type,
+                        check_result={"result": CheckResult.SKIPPED, "suppress_comment": suppress_comment},
+                        code_block=[(secret.line_number, line_text_censored)],
+                        file_path=relative_file_path,
+                        file_line_range=[secret.line_number, secret.line_number + 1],
+                        resource=secret.secret_hash,
+                        check_class="",
+                        evaluations=None,
+                        file_abs_path=os.path.abspath(secret.filename),
+                        validation_status=ValidationStatus.UNAVAILABLE.value,
+                        added_commit_hash='',
+                        removed_commit_hash='',
+                        added_by='',
+                        removed_date='',
+                        added_date=''
+                    )
+
+                    report.skipped_checks.append(skipped_check)
+                    logging.debug(f'Secret was suppressed via metadata: {check_id}')
+                    continue
+            except Exception as e:
+                logging.debug(f"Suppression parsing failed for file {secret.filename}: {e}")
+
             if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
                 logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
                 continue
