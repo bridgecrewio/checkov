@@ -4,7 +4,6 @@ import os
 import logging
 from typing import List, Tuple, Dict, Any
 from checkov.common.typing import _SkippedCheck
-from checkov.common.util.suppression import collect_suppressions_for_context
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 
 
@@ -45,7 +44,7 @@ class ContextParser:
 
         Returns a list of suppression dicts
         """
-        skipped_checks:List[_SkippedCheck] = []
+        skipped_checks: List[_SkippedCheck] = []
 
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
 
