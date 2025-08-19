@@ -34,24 +34,23 @@ class ContextParser:
 
     def collect_skip_comments(
             self,
-            resource_config: Dict[str, Any] | None = None
+            resource_config: Dict[str, Any] | List[Dict[str, Any]] | None = None
     ) -> List[_SkippedCheck]:
         """
         Collects suppressions from resource metadata.
 
         Supports:
         - Metadata under 'checkov' and 'bridgecrew' keys
+        - Object-rooted and array-rooted JSON/YAML structures
 
         Returns a list of suppression dicts
         """
         skipped_checks: List[_SkippedCheck] = []
-
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
 
-        if resource_config:
-            metadata = resource_config.get("Metadata", {})
+        def extract_skips(metadata_block: Dict[str, Any]) -> None:
             for source in ("checkov", "bridgecrew"):
-                for skip in metadata.get(source, {}).get("skip", []):
+                for skip in metadata_block.get(source, {}).get("skip", []):
                     skip_id = skip.get("id")
                     skip_comment = skip.get("comment", "No comment provided")
                     if not skip_id:
@@ -70,5 +69,15 @@ class ContextParser:
                         skipped_check["bc_id"] = metadata_integration.get_bc_id(skip_id)
 
                     skipped_checks.append(skipped_check)
+
+        if isinstance(resource_config, dict):
+            metadata = resource_config.get("Metadata", {})
+            extract_skips(metadata)
+
+        elif isinstance(resource_config, list):
+            for item in resource_config:
+                if isinstance(item, dict):
+                    metadata = item.get("Metadata", {})
+                    extract_skips(metadata)
 
         return skipped_checks

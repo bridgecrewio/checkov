@@ -536,7 +536,7 @@ class Runner(BaseRunner[None, None, None]):
                             else:
                                 resource_config = yaml.safe_load(content)
 
-                        if not isinstance(resource_config, dict):
+                        if not isinstance(resource_config, (dict, list)):
                             resource_config = None
                     except Exception:
                         resource_config = None
