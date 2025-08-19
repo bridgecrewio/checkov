@@ -34,7 +34,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.typing import _CheckResult, _SkippedCheck
+from checkov.common.typing import _CheckResult
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.secrets import omit_secret_value_from_line, GENERIC_OBFUSCATION_LENGTH
 from checkov.runner_filter import RunnerFilter
