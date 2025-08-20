@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.460...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.461...HEAD)
+
+## [3.2.461](https://github.com/bridgecrewio/checkov/compare/3.2.460...3.2.461) - 2025-08-12
+
+### Bug Fix
+
+- **terraform:** Handled git external module loading with sub-directory but without protocol - [#7272](https://github.com/bridgecrewio/checkov/pull/7272)
 
 ## [3.2.460](https://github.com/bridgecrewio/checkov/compare/3.2.458...3.2.460) - 2025-08-10
 

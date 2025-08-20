@@ -105,9 +105,16 @@ class GenericGitLoader(ModuleLoader):
             version = "HEAD"
 
         if len(module_source_components) < 3:
-            root_module = module_source_components[-1]
-            inner_module = ""
+            if len(module_source_components) == 2 and "git::git" in module_source_components[0]:
+                # Handling the use case of `git::git@github.com:test-inner-module/out-module//inner-module`
+                root_module = module_source_components[-2]
+                inner_module = module_source_components[-1]
+            else:
+                # Handling the use case of `git::<any-protocol>@github.com:test-no-inner-module/out-module`
+                root_module = module_source_components[-1]
+                inner_module = ""
         elif len(module_source_components) == 3:
+            # Handling the use case of `git::<any-protocol>://github.com:test-inner-module/out-module//inner-module`
             root_module = module_source_components[1]
             inner_module = module_source_components[2]
         else:
