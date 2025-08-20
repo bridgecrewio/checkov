@@ -130,7 +130,43 @@ resource "azurerm_network_security_group" "ranges" {
   }
 }
 
+resource "azurerm_network_security_rule" "f_source_slash_zero" {
+  name                        = "example"
+  access                      = "Allow"
+  direction                   = "Inbound"
+  network_security_group_name = "azurerm_network_security_group.example.name"
+  priority                    = 100
+  protocol                    = "Tcp"
+  resource_group_name         = "azurerm_resource_group.example.name"
+
+  destination_port_range  = 3389
+  source_address_prefix   = "0/0"
+  destination_port_ranges = null
+  source_address_prefixes = null
+}
+
 # lower case
+
+resource "azurerm_network_security_rule" "f_ranges_udp_lower_case" {
+  name                        = "example"
+  access                      = "allow"
+  direction                   = "inbound"
+  network_security_group_name = "azurerm_network_security_group.example.name"
+  priority                    = 100
+  protocol                    = "udp"
+  resource_group_name         = "azurerm_resource_group.example.name"
+
+  destination_port_range = null
+  source_address_prefix  = null
+  destination_port_ranges = [
+    3389,
+    443
+  ]
+  source_address_prefixes = [
+    "0.0.0.0/0",
+    "10.0.0.0/16"
+  ]
+}
 
 resource "azurerm_network_security_rule" "ranges_prefixes_lower_case" {
   name                        = "example"
