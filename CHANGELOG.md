@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.461...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.464...HEAD)
+
+## [3.2.464](https://github.com/bridgecrewio/checkov/compare/3.2.461...3.2.464) - 2025-08-20
+
+### Feature
+
+- **secrets:** support suppressions in JSON files - [#7275](https://github.com/bridgecrewio/checkov/pull/7275)
 
 ## [3.2.461](https://github.com/bridgecrewio/checkov/compare/3.2.460...3.2.461) - 2025-08-12
 
