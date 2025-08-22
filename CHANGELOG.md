@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.458...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.464...HEAD)
+
+## [3.2.464](https://github.com/bridgecrewio/checkov/compare/3.2.461...3.2.464) - 2025-08-20
+
+### Feature
+
+- **secrets:** support suppressions in JSON files - [#7275](https://github.com/bridgecrewio/checkov/pull/7275)
+
+## [3.2.461](https://github.com/bridgecrewio/checkov/compare/3.2.460...3.2.461) - 2025-08-12
+
+### Bug Fix
+
+- **terraform:** Handled git external module loading with sub-directory but without protocol - [#7272](https://github.com/bridgecrewio/checkov/pull/7272)
+
+## [3.2.460](https://github.com/bridgecrewio/checkov/compare/3.2.458...3.2.460) - 2025-08-10
+
+### Bug Fix
+
+- **general:** pin boto3 and botocore versions as failed test in Jenkins - [#7270](https://github.com/bridgecrewio/checkov/pull/7270)
 
 ## [3.2.458](https://github.com/bridgecrewio/checkov/compare/3.2.457...3.2.458) - 2025-08-06
 
