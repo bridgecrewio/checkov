@@ -385,7 +385,39 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 2)
         assert report.failed_checks[0].code_block[0][1] == "export AWS_ACCESS_KEY_ID=AKIAI**********\\nexport CIRCLE='rk_liv**********'\n"
         assert report.failed_checks[1].code_block[0][1] == "export AWS_ACCESS_KEY_ID=AKIAI**********\\nexport CIRCLE='rk_liv**********'\n"
-            
+
+    def test_metadata_suppression_object_rooted_json_skips_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(current_dir, "suppressions/metadata_suppression_object.json")
+
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 2)
+
+    def test_metadata_suppression_array_rooted_json_skips_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(current_dir, "suppressions/metadata_suppression_array.json")
+
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 2)
+
+    def test_metadata_suppression_yaml_skips_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(current_dir, "suppressions/metadata_suppression.yaml")
+
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 2)
 
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,6 @@ import logging
 import re
 
 import yaml
-from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
@@ -39,37 +38,31 @@ FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
     template = None
     template_lines = None
+
     try:
         (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.SLS)
         if not template or not is_checked_sls_template(template):
             return None
-    except IOError as e:
-        if e.errno == 2:
-            logger.error('Template file not found: %s', filename)
-            return None
-        elif e.errno == 21:
-            logger.error('Template references a directory, not a file: %s',
-                         filename)
-            return None
-        elif e.errno == 13:
-            logger.error('Permission denied when accessing template file: %s',
-                         filename)
-            return None
+    except FileNotFoundError as e:
+        logger.error(f'Template file not found: {e.filename}')
+        return None
+    except IsADirectoryError as e:
+        logger.error(f'Template references a directory, not a file: {e.filename}')
+        return None
+    except PermissionError as e:
+        logger.error(f'Permission denied when accessing {e.filename}')
+        return None
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return None
-    except CfnParseError:
-        logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
-        return None
-    except YAMLError:
-        logger.warning(f"Failed to parse file {filename} as a yaml")
+    except CfnParseError as e:
+        logger.warning(f"Failed to parse file {e.filename} because it isn't valid yaml")
         return None
 
     if template is None or template_lines is None:
         return None
 
     process_variables(template, filename)
-
     return template, template_lines
 
 

@@ -4,9 +4,9 @@ from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
+from checkov.common.util.env_vars_config import env_vars_config
 
-
-@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
+@mock.patch.object(env_vars_config, 'CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', True)
 def test_runner_with_tf_managed_modules():
     # given
     root_dir = Path(__file__).parent / "data/tf_managed_modules"
@@ -32,7 +32,7 @@ def test_runner_with_tf_managed_modules():
 
 
 # test can be removed after setting this flow as default
-@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "False"})
+@mock.patch.object(env_vars_config, 'CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', False)
 def test_runner_without_tf_managed_modules():
     # given
     root_dir = Path(__file__).parent / "data/tf_managed_modules"

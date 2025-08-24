@@ -51,6 +51,12 @@ class TestTerraformEvaluation(TestCase):
         expected = False
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_nested_conditional_expression(self):
+        input_str = "{for resource in concat(true ? [{'name'='test'}] : [], false ? [] : [{'name'='test2'}]) : resource.name => resource}"
+        value = evaluate_terraform(input_str)
+        self.assertEqual(value, {'test': {'name': 'test'}, 'test2': {'name': 'test2'}})
+
+
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
         expected = 'Hello, Ander!'
@@ -536,6 +542,11 @@ class TestTerraformEvaluation(TestCase):
         input_str = '  {    "Version": "2012-10-17",    "Statement": [      {        "Effect": "Allow",        "Action": [          "lambda:CreateFunction",          "lambda:CreateEventSourceMapping",          "dynamodb:CreateTable",        ],        "Resource": "*"      }    ]  }'
         result = evaluate_terraform(input_str)
         assert result == expected
+
+    def test_continue_stays_the_same(self):
+        expected = "continue"
+        result = evaluate_terraform("continue")
+        self.assertEqual(expected, result)
 
 
 @pytest.mark.parametrize(

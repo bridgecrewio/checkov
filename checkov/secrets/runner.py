@@ -45,6 +45,7 @@ from checkov.secrets.git_history_store import GitHistorySecretStore
 from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES, Commit
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
+from checkov.secrets.context_parser import ContextParser
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -282,7 +283,9 @@ class Runner(BaseRunner[None, None, None]):
         return self.get_report(secrets=secrets, runner_filter=runner_filter, history_store=history_store,
                                root_folder=root_folder, secret_suppressions_ids=secret_suppressions_ids, cleanupFn=cleanupFn)
 
-    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter, history_store: Optional[GitHistorySecretStore], root_folder: Optional[str], secret_suppressions_ids: List[str], cleanupFn: Any) -> Report:
+    def get_report(self, secrets: SecretsCollection, runner_filter: RunnerFilter,
+                   history_store: Optional[GitHistorySecretStore], root_folder: Optional[str],
+                   secret_suppressions_ids: List[str], cleanupFn: Any, use_secret_filename: Optional[bool] = False) -> Report:
         report = Report(self.check_type)
 
         secret_records: dict[str, SecretsRecord] = {}
@@ -374,7 +377,11 @@ class Runner(BaseRunner[None, None, None]):
                 runner_filter=runner_filter,
                 root_folder=root_folder
             ) or result
+
             relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+            if use_secret_filename:
+                relative_file_path = f'/{secret.filename}'
+
             resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
             report.add_resource(resource)
             # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
@@ -386,7 +393,10 @@ class Runner(BaseRunner[None, None, None]):
             secret_key_by_line = (key, secret.line_number)
             line_text_censored = line_text
             for sec in secret_key_by_line_to_secrets[secret_key_by_line]:
-                line_text_censored = omit_secret_value_from_line(cast(str, sec.secret_value), line_text_censored)
+                secret_value = cast(str, sec.secret_value)
+                if secret_value:
+                    secret_value = secret_value.strip('"\'')  # We should always strip quotes from matches before we search for them in the line (because of this line quoted_mm = f"'{mm}'" in custom_regex_detector.py)
+                line_text_censored = omit_secret_value_from_line(secret_value, line_text_censored)
 
             secret_records[secret_key] = SecretsRecord(
                 check_id=check_id,
@@ -507,6 +517,42 @@ class Runner(BaseRunner[None, None, None]):
                     "result": CheckResult.SKIPPED,
                     "suppress_comment": comment
                 }
+
+            # Metadata suppression check
+            try:
+                secret_file_path = os.path.join(root_folder, secret.filename) if root_folder else secret.filename
+                parser = ContextParser(secret_file_path)
+
+                # Parse the file for metadata
+                resource_config = getattr(secret, "resource_config", None)
+                if resource_config is None and secret_file_path.endswith((".json", ".yml", ".yaml")):
+                    try:
+                        import json
+                        import yaml
+                        with open(secret_file_path, "r", encoding="utf-8") as f:
+                            content = f.read()
+                            if secret_file_path.endswith(".json"):
+                                resource_config = json.loads(content)
+                            else:
+                                resource_config = yaml.safe_load(content)
+
+                        if not isinstance(resource_config, (dict, list)):
+                            resource_config = None
+                    except Exception:
+                        resource_config = None
+
+                suppressions = parser.collect_skip_comments(resource_config=resource_config)
+                metadata_suppressions = [s for s in suppressions if s.get("line_number") is None]
+
+                for suppression in metadata_suppressions:
+                    if suppression["id"] == check_id or suppression.get("bc_id") == bc_check_id:
+                        return {
+                            "result": CheckResult.SKIPPED,
+                            "suppress_comment": suppression.get("suppress_comment", "No comment provided")
+                        }
+
+            except Exception as e:
+                logging.debug(f"Metadata suppression check failed for file {secret.filename}: {e}")
         return None
 
     def save_secret_to_coordinator(

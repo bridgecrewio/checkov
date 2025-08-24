@@ -1,6 +1,124 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.436...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.464...HEAD)
+
+## [3.2.464](https://github.com/bridgecrewio/checkov/compare/3.2.461...3.2.464) - 2025-08-20
+
+### Feature
+
+- **secrets:** support suppressions in JSON files - [#7275](https://github.com/bridgecrewio/checkov/pull/7275)
+
+## [3.2.461](https://github.com/bridgecrewio/checkov/compare/3.2.460...3.2.461) - 2025-08-12
+
+### Bug Fix
+
+- **terraform:** Handled git external module loading with sub-directory but without protocol - [#7272](https://github.com/bridgecrewio/checkov/pull/7272)
+
+## [3.2.460](https://github.com/bridgecrewio/checkov/compare/3.2.458...3.2.460) - 2025-08-10
+
+### Bug Fix
+
+- **general:** pin boto3 and botocore versions as failed test in Jenkins - [#7270](https://github.com/bridgecrewio/checkov/pull/7270)
+
+## [3.2.458](https://github.com/bridgecrewio/checkov/compare/3.2.457...3.2.458) - 2025-08-06
+
+### Bug Fix
+
+- **terraform:** Fix conditional expression evaluation - [#7265](https://github.com/bridgecrewio/checkov/pull/7265)
+- **terraform:** Update FunctionAppsAccessibleOverHttps - [#7078](https://github.com/bridgecrewio/checkov/pull/7078)
+
+## [3.2.457](https://github.com/bridgecrewio/checkov/compare/3.2.456...3.2.457) - 2025-07-28
+
+### Bug Fix
+
+- **dockerfile:** Use proxy env vars in aiohttp client requests - [#7260](https://github.com/bridgecrewio/checkov/pull/7260)
+
+## [3.2.456](https://github.com/bridgecrewio/checkov/compare/3.2.454...3.2.456) - 2025-07-27
+
+### Bug Fix
+
+- **terraform:** Parse continue as a string rather as a python object - [#7261](https://github.com/bridgecrewio/checkov/pull/7261)
+
+## [3.2.454](https://github.com/bridgecrewio/checkov/compare/3.2.452...3.2.454) - 2025-07-24
+
+### Bug Fix
+
+- **serverless:** Fixed extraction of code lines for serverless resources - [#7259](https://github.com/bridgecrewio/checkov/pull/7259)
+
+## [3.2.452](https://github.com/bridgecrewio/checkov/compare/3.2.451...3.2.452) - 2025-07-23
+
+### Feature
+
+- **general:** Support Py 3.13 on build workflow - [#7222](https://github.com/bridgecrewio/checkov/pull/7222)
+
+## [3.2.451](https://github.com/bridgecrewio/checkov/compare/3.2.450...3.2.451) - 2025-07-14
+
+### Feature
+
+- **terraform:** Support parsing of provider functions - [#7237](https://github.com/bridgecrewio/checkov/pull/7237)
+
+## [3.2.450](https://github.com/bridgecrewio/checkov/compare/3.2.449...3.2.450) - 2025-07-10
+
+### Bug Fix
+
+- **arm:** filter out failed checks with resource names containing un-rendered functions - [#7231](https://github.com/bridgecrewio/checkov/pull/7231)
+
+## [3.2.449](https://github.com/bridgecrewio/checkov/compare/3.2.447...3.2.449) - 2025-07-09
+
+### Bug Fix
+
+- **terraform:** fix cloning external modules from private regsitries - [#7229](https://github.com/bridgecrewio/checkov/pull/7229)
+- **terraform:** fix issue 7216 module version parsing issue - [#7224](https://github.com/bridgecrewio/checkov/pull/7224)
+
+## [3.2.447](https://github.com/bridgecrewio/checkov/compare/3.2.446...3.2.447) - 2025-06-26
+
+### Bug Fix
+
+- **terraform:** Added support in restricting to a specific GitHub organization for GithubActionsOIDCTrustPolicy - [#7221](https://github.com/bridgecrewio/checkov/pull/7221)
+
+## [3.2.446](https://github.com/bridgecrewio/checkov/compare/3.2.445...3.2.446) - 2025-06-24
+
+### Feature
+
+- **kubernetes:** include hidden folders in scan - [#7219](https://github.com/bridgecrewio/checkov/pull/7219)
+
+## [3.2.445](https://github.com/bridgecrewio/checkov/compare/3.2.443...3.2.445) - 2025-06-22
+
+### Bug Fix
+
+- **helm:** fix file paths to point to original files and not generated ones - [#7212](https://github.com/bridgecrewio/checkov/pull/7212)
+- **secrets:** fix omitting and masking - [#7218](https://github.com/bridgecrewio/checkov/pull/7218)
+
+## [3.2.443](https://github.com/bridgecrewio/checkov/compare/3.2.442...3.2.443) - 2025-06-19
+
+### Bug Fix
+
+- **secrets:** fix omit and masking - [#7213](https://github.com/bridgecrewio/checkov/pull/7213)
+
+## [3.2.442](https://github.com/bridgecrewio/checkov/compare/3.2.440...3.2.442) - 2025-06-15
+
+### Bug Fix
+
+- **secrets:** fix relative path secrets - [#7211](https://github.com/bridgecrewio/checkov/pull/7211)
+
+## [3.2.440](https://github.com/bridgecrewio/checkov/compare/3.2.439...3.2.440) - 2025-06-11
+
+### Feature
+
+- **secrets:** Bump detect secrets - [#7203](https://github.com/bridgecrewio/checkov/pull/7203)
+
+## [3.2.439](https://github.com/bridgecrewio/checkov/compare/3.2.437...3.2.439) - 2025-06-09
+
+### Bug Fix
+
+- **serverless:** Enhance yaml parsing, better support for file expansion - [#7115](https://github.com/bridgecrewio/checkov/pull/7115)
+- **terraform:** Better utilization of managed modules (if enabled) - [#7111](https://github.com/bridgecrewio/checkov/pull/7111)
+
+## [3.2.437](https://github.com/bridgecrewio/checkov/compare/3.2.436...3.2.437) - 2025-06-05
+
+### Bug Fix
+
+- **terraform:** Handle explicitly-specified tfvars explicitly - [#7107](https://github.com/bridgecrewio/checkov/pull/7107)
 
 ## [3.2.436](https://github.com/bridgecrewio/checkov/compare/3.2.435...3.2.436) - 2025-05-30
 
