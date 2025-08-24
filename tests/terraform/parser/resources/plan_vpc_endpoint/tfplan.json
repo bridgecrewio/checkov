@@ -1,0 +1,34 @@
+{
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_vpc_endpoint.test",
+          "mode": "managed",
+          "type": "aws_vpc_endpoint",
+          "name": "test",
+          "values": {
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}"
+          }
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_vpc_endpoint.test",
+          "mode": "managed",
+          "type": "aws_vpc_endpoint",
+          "name": "test",
+          "expressions": {
+            "policy": {
+              "constant_value": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

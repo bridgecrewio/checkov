@@ -134,5 +134,17 @@ def test_large_file(mocker: MockerFixture):
     assert tf_definition['resource'][0]['aws_s3_bucket']['b']['end_line'][0] == 0
 
 
+    def test_vpc_endpoint_policy_is_parsed(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_vpc_endpoint/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertIn('policy', resource_attributes)
+        policy = resource_attributes['policy'][0]
+        self.assertIn('Statement', policy)
+
+
 if __name__ == '__main__':
     unittest.main()
