@@ -24,11 +24,11 @@ class EKSPublicAccess(BaseResourceCheck):
         if properties and isinstance(properties, dict):
             vpc_config = properties.get("ResourcesVpcConfig")
             if vpc_config and isinstance(vpc_config, dict):
-                endpoint_public_access = vpc_config.get("EndpointPublicAccess")
-                if endpoint_public_access and isinstance(endpoint_public_access, bool):
+                endpoint_public_access = vpc_config.get("EndpointPublicAccess", True)
+                if isinstance(endpoint_public_access, bool):
                     if endpoint_public_access is False:
                         return CheckResult.PASSED
-                elif endpoint_public_access and isinstance(endpoint_public_access, str):
+                elif isinstance(endpoint_public_access, str):
                     if endpoint_public_access.lower() == "false":
                         return CheckResult.PASSED
         
