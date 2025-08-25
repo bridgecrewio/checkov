@@ -31,6 +31,8 @@ class EKSPublicAccess(BaseResourceCheck):
                 elif endpoint_public_access and isinstance(endpoint_public_access, str):
                     if endpoint_public_access.lower() == "false":
                         return CheckResult.PASSED
+        
+        # By default, the endpoint allows public access
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:

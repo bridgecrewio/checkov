@@ -33,6 +33,8 @@ class EKSControlPlaneLogging(BaseResourceCheck):
                     if enabled_types and isinstance(enabled_types, list):
                         if all(elem in enabled_types for elem in log_types):
                             return CheckResult.PASSED
+        
+        # By default, no logging is enabled
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
