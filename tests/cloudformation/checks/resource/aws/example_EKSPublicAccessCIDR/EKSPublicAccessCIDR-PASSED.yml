@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  EKSClusterWithoutPublicCidr:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: Prod
+      Version: '1.20'
+      RoleArn: 'arn:aws:iam::012345678910:role/eks-service-role-AWSServiceRoleForAmazonEKS-EXAMPLEBQ4PI'
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - sg-6979fe18
+        SubnetIds:
+          - subnet-6782e71e
+          - subnet-e7e761ac
+        PublicAccessCidrs: ['1.1.1.2/32']
+      Tags:
+        - Key: 'key'
+          Value: 'val'
+  EKSClusterWithoutPublicAccess:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: Prod
+      Version: '1.20'
+      RoleArn: 'arn:aws:iam::012345678910:role/eks-service-role-AWSServiceRoleForAmazonEKS-EXAMPLEBQ4PI'
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - sg-6979fe18
+        SubnetIds:
+          - subnet-6782e71e
+          - subnet-e7e761ac
+        EndpointPublicAccess: false # The public access CIDR is irrelevant if endpoint public access is disabled
+        PublicAccessCidrs: ['0.0.0.0/0']
+      Tags:
+        - Key: 'key'
+          Value: 'val'
