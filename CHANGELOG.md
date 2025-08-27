@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.466...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.467...HEAD)
+
+## [3.2.467](https://github.com/bridgecrewio/checkov/compare/3.2.466...3.2.467) - 2025-08-27
+
+### Bug Fix
+
+- **serverless:** Fixed bad entity code line generation - [#7285](https://github.com/bridgecrewio/checkov/pull/7285)
 
 ## [3.2.466](https://github.com/bridgecrewio/checkov/compare/3.2.464...3.2.466) - 2025-08-25
 
