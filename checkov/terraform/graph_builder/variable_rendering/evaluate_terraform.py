@@ -20,6 +20,7 @@ DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 # exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
 COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
 COMPARE_OPERATORS = (" == ", " != ", " < ", " <= ", " > ", " >= ", " && ", " || ")
+REMOVE_TRAILING_COMMAS = re.compile(r',(\s*[}\]])')
 
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
@@ -72,7 +73,10 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
     try:
-        return evaluate(input_str)  # type:ignore[arg-type]
+        result = evaluate(input_str)  # type:ignore[arg-type]
+        if result is None:
+            raise Exception(f"Can't evaluate {input_str}")
+        return result
     except Exception:
         try:
             return evaluate(f'"{input_str}"')
@@ -85,7 +89,12 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
                     return json.loads(input_str)
                 return input_str
             except Exception:
-                return input_str
+                try:
+                    # Remove trailing commas before } or ]
+                    input_str_no_trailing = REMOVE_TRAILING_COMMAS.sub(r'\1', input_str)  # type:ignore[arg-type]
+                    return json.loads(input_str_no_trailing)
+                except Exception:
+                    return input_str
 
 
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
