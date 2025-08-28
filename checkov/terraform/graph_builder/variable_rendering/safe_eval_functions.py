@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
-
+from asteval import Interpreter
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
@@ -330,15 +330,33 @@ SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M
 SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 
+def get_asteval() -> Interpreter:
+    # asteval provides a safer environment for evaluating expressions by restricting the operations to a secure subset, significantly reducing the risk of executing malicious code.
+    return Interpreter(
+        symtable=SAFE_EVAL_DICT,
+        use_numpy=False,
+        minimal=True
+    )
+    
 
 def evaluate(input_str: str) -> Any:
-    if "__" in input_str:
-        logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
-        return input_str
-    if input_str == "...":
+    """
+    Safely evaluate a Terraform-like function expression using a predefined function map.
+    Falls back gracefully if evaluation fails.
+    """
+    
+    if not input_str or input_str == "...":
         # don't create an Ellipsis object
         return input_str
-    evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
+    
+    asteval = get_asteval()
+    
+    evaluated = asteval(input_str)
+    
+    if asteval.error:
+        error_messages = [err.get_error() for err in asteval.error]
+        raise ValueError(f"Safe evaluation error: {error_messages}")
+    
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)
 
 
