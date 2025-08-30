@@ -62,6 +62,16 @@ class ParallelRunner:
         items: List[Any],
         group_size: Optional[int] = None,
     ) -> Iterable[_T]:
+        env_workers = os.getenv("CHECKOV_WORKERS_NUMBER")
+        if env_workers:
+            try:
+                workers_number = int(env_workers)
+                logging.info(f"Worker number overridden by environment variable: {workers_number}")
+            except ValueError:
+                logging.warning(f"Invalid CHECKOV_WORKERS_NUMBER value: {env_workers}, using default")
+        logging.info(f"Worker number: {self.workers_number}")
+        logging.info(f"Platform OS: {self.os}")
+        logging.info(f"Parallelization type: {self.type}")
         if self.type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
         elif self.type == ParallelizationType.FORK:
