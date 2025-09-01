@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.467...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.469...HEAD)
+
+## [3.2.469](https://github.com/bridgecrewio/checkov/compare/3.2.467...3.2.469) - 2025-09-01
+
+### Feature
+
+- **general:** Control parallelism - [#7286](https://github.com/bridgecrewio/checkov/pull/7286)
 
 ## [3.2.467](https://github.com/bridgecrewio/checkov/compare/3.2.466...3.2.467) - 2025-08-27
 
