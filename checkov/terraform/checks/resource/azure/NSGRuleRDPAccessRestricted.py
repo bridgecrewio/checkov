@@ -7,6 +7,7 @@ class NSGRuleRDPAccessRestricted(NSGRulePortAccessRestricted):
             name="Ensure that RDP access is restricted from the internet",
             check_id="CKV_AZURE_9",
             port=3389,
+            additional_protocols=["udp"]
         )
 
 
