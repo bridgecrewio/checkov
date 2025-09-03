@@ -111,7 +111,7 @@ setup(
         "openai",
         "spdx-tools<0.8.0",
         "license-expression==30.1.0",
-        "asteval==1.0.5"
+        "asteval==1.0.6"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
