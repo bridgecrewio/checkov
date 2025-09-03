@@ -1,6 +1,28 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.464...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.469...HEAD)
+
+## [3.2.469](https://github.com/bridgecrewio/checkov/compare/3.2.467...3.2.469) - 2025-09-01
+
+### Feature
+
+- **general:** Control parallelism - [#7286](https://github.com/bridgecrewio/checkov/pull/7286)
+
+## [3.2.467](https://github.com/bridgecrewio/checkov/compare/3.2.466...3.2.467) - 2025-08-27
+
+### Bug Fix
+
+- **serverless:** Fixed bad entity code line generation - [#7285](https://github.com/bridgecrewio/checkov/pull/7285)
+
+## [3.2.466](https://github.com/bridgecrewio/checkov/compare/3.2.464...3.2.466) - 2025-08-25
+
+### Feature
+
+- **terraform:** add aws_vpc_endpoint to RESOURCE_TYPES_JSONIFY - [#7281](https://github.com/bridgecrewio/checkov/pull/7281)
+
+### Bug Fix
+
+- **general:** Add exclusion for plan_with_providers test files in security scanning - [#7282](https://github.com/bridgecrewio/checkov/pull/7282)
 
 ## [3.2.464](https://github.com/bridgecrewio/checkov/compare/3.2.461...3.2.464) - 2025-08-20
 
