@@ -28,7 +28,15 @@ class ParallelRunner:
         self, workers_number: int | None = None,
         parallelization_type: ParallelizationType = ParallelizationType.FORK
     ) -> None:
+        env_workers = os.getenv("CHECKOV_WORKERS_NUMBER")
+        if env_workers:
+            try:
+                workers_number = int(env_workers)
+            except ValueError:
+                logging.warning(f"Invalid CHECKOV_WORKERS_NUMBER value: {env_workers}, using default")
+
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
+        logging.debug("Workers count for the parallel runner is: %s", self.workers_number)
         self.os = platform.system()
         self.type: str | ParallelizationType = parallelization_type
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
