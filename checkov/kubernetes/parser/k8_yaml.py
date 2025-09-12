@@ -37,8 +37,7 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     """
     Load the given YAML file
     """
-    helm_template_patterns = [r"\{\{-?\s*\.Release\.", r"\{\{-?\s*\.Values\.",
-                              r"\{\{-?\s*if\s", r"\{\{-?\s*end\s", r"\{\{-?\s*with\s"]
+    helm_template_patterns = [r"\{\{-?\s*\.Release\.", r"\{\{-?\s*\.Values\."]
 
     content = read_file_with_any_encoding(file_path=filename)
 

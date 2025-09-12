@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.469...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.470...HEAD)
+
+## [3.2.470](https://github.com/bridgecrewio/checkov/compare/3.2.469...3.2.470) - 2025-09-08
+
+### Bug Fix
+
+- **helm:** Make Helm template detection less aggressive - [#7288](https://github.com/bridgecrewio/checkov/pull/7288)
 
 ## [3.2.469](https://github.com/bridgecrewio/checkov/compare/3.2.467...3.2.469) - 2025-09-01
 
