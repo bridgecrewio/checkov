@@ -6,8 +6,9 @@ from unittest import mock
 from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
-from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name
+from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown
 from checkov.common.parsers.node import StrNode
+
 
 class TestPlanFileParser(unittest.TestCase):
 
@@ -36,15 +37,15 @@ class TestPlanFileParser(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
         tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         providers = tf_definition['provider']
-        self.assertEqual( len(providers), 3)
+        self.assertEqual(len(providers), 3)
         provider_names = []
         provider_aliases = []
         provider_addresses = []
         for provider in providers:
             key = next(iter(provider))
             provider_names.append(key)
-            provider_aliases.append( provider[key]['alias'][0] )
-            provider_addresses.append( provider[key]['__address__'] )
+            provider_aliases.append(provider[key]['alias'][0])
+            provider_addresses.append(provider[key]['__address__'])
 
         self.assertEqual(provider_names, ["aws", "aws", "aws"])
         self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
@@ -82,7 +83,7 @@ class TestPlanFileParser(unittest.TestCase):
 
     def test_provisioners(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        plan_files = ['tfplan.json','tfplan2.json']
+        plan_files = ['tfplan.json', 'tfplan2.json']
 
         for file in plan_files:
             valid_plan_path = current_dir + "/resources/plan_provisioners/" + file
@@ -120,6 +121,31 @@ class TestPlanFileParser(unittest.TestCase):
         result = _sanitize_count_from_name(name)
         self.assertEqual(result, "aws_s3_bucket.bucket")
 
+    def test_handle_complex_after_unknown(self):
+        resource = {
+            "tags": [
+                [
+                    {
+                        "custom_tags": [
+                            {"key": "Tag1", "value": "Value1"},
+                            {"key": "Tag2", "value": "Value2"}
+                        ]
+                    }
+                ]
+            ]
+        }
+        key: str = 'tags'
+        value: list = [
+            {
+                'custom_tags': [
+                    {"key": "Tag1", "value": "Value1"},
+                    {"key": "Tag2", "value": "Value2"}
+                ]
+            }
+        ]
+        _handle_complex_after_unknown(key, resource, value)
+        assert resource == {'tags': [[{'custom_tags': ['true_after_unknown']}]]}
+
 
 def test_large_file(mocker: MockerFixture):
     # given
@@ -132,7 +158,6 @@ def test_large_file(mocker: MockerFixture):
 
     assert tf_definition['resource'][0]['aws_s3_bucket']['b']['start_line'][0] == 0
     assert tf_definition['resource'][0]['aws_s3_bucket']['b']['end_line'][0] == 0
-
 
     def test_vpc_endpoint_policy_is_parsed(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
