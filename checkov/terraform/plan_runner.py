@@ -172,7 +172,17 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             tf_local_graph: Optional[TerraformLocalGraph]
     ) -> Report:
         if self._should_run_deep_analysis and tf_local_graph and self.tf_plan_local_graph:
-            deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
+            # Get the plan file path from definitions
+            plan_file_path = None
+            if self.definitions:
+                # The definitions dict has file paths as keys
+                plan_file_path = next(iter(self.definitions.keys()), None)
+            
+            deep_analysis_graph_manager = DeepAnalysisGraphManager(
+                tf_local_graph,
+                self.tf_plan_local_graph,
+                plan_file_path=plan_file_path
+            )
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
