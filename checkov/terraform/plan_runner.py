@@ -177,7 +177,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             if self.definitions:
                 # The definitions dict has file paths as keys
                 plan_file_path = next(iter(self.definitions.keys()), None)
-            
+
             deep_analysis_graph_manager = DeepAnalysisGraphManager(
                 tf_local_graph,
                 self.tf_plan_local_graph,

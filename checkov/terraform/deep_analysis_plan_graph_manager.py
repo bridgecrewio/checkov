@@ -17,7 +17,7 @@ class DeepAnalysisGraphManager:
         self._address_to_tf_idx_and_vertex_map: Dict[str, Tuple[int, TerraformBlock]] = {}
         self._address_to_tf_plan_idx_and_vertex_map: Dict[str, Tuple[int, TerraformBlock]] = {}
         self._apply_address_mapping()
-        
+
         # Use PlanConnectionResolver for unresolved connection inference if plan file is available
         if plan_file_path:
             try:
