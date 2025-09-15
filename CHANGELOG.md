@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.470...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.471...HEAD)
+
+## [3.2.471](https://github.com/bridgecrewio/checkov/compare/3.2.470...3.2.471) - 2025-09-14
+
+### Bug Fix
+
+- **terraform_plan:** fix access to list by str in tf plan under _handle_complex_after_unknown - [#7299](https://github.com/bridgecrewio/checkov/pull/7299)
 
 ## [3.2.470](https://github.com/bridgecrewio/checkov/compare/3.2.469...3.2.470) - 2025-09-08
 
