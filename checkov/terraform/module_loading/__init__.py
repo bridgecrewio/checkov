@@ -5,4 +5,5 @@ from checkov.terraform.module_loading.loaders.github_loader import GithubLoader 
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader  # noqa
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader  # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader  # noqa
+from checkov.terraform.module_loading.loaders.s3_loader import S3Loader # noqa
 from checkov.terraform.module_loading.loaders.local_path_loader import LocalPathLoader  # noqa
