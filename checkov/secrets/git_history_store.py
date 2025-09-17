@@ -62,15 +62,17 @@ class GitHistorySecretStore:
                                                                        'removed_commit_hash': '',
                                                                        'removed_date': ''})
                 return
-        code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
+        code_context = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
         enriched_potential_secret: EnrichedPotentialSecret = {
             'added_commit_hash': commit.metadata.commit_hash,
             'removed_commit_hash': '',
             'potential_secret': secret,
-            'code_line': code_line,
+            'code_line': code_context['current_line'],
+            'line_before': code_context['previous_line'],
+            'line_after': code_context['next_line'],
             'added_by': commit.metadata.committer,
             'removed_date': '',
-            'added_date': commit.metadata.committed_datetime
+            'added_date': commit.metadata.committed_datetime,
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
@@ -101,11 +103,15 @@ class GitHistorySecretStore:
                     new_secret = pickle_deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     code = secret_data.get('code_line')
+                    line_before = secret_data.get('line_before')
+                    line_after = secret_data.get('line_after')
                     enriched_potential_secret: EnrichedPotentialSecret = {
                         'added_commit_hash': commit.metadata.commit_hash,
                         'removed_commit_hash': '',
                         'potential_secret': new_secret,
                         'code_line': code,
+                        'line_before': line_before,
+                        'line_after': line_after,
                         'added_by': secret_data.get('added_by'),
                         'removed_date': '',
                         'added_date': secret_data.get('added_date')
@@ -113,7 +119,8 @@ class GitHistorySecretStore:
                     temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret, root_folder: Optional[str]) -> EnrichedPotentialSecretMetadata:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret,
+                                          root_folder: Optional[str]) -> EnrichedPotentialSecretMetadata:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -149,6 +156,8 @@ class GitHistorySecretStore:
                 'added_commit_hash': chosen_secret.get('added_commit_hash', ''),
                 'removed_commit_hash': chosen_secret.get('removed_commit_hash', ''),
                 'code_line': chosen_secret.get('code_line'),
+                'line_before': chosen_secret.get('line_before'),
+                'line_after': chosen_secret.get('line_after'),
                 'added_by': chosen_secret.get('added_by'),
                 'removed_date': chosen_secret.get('removed_date'),
                 'added_date': chosen_secret.get('added_date')
@@ -158,18 +167,56 @@ class GitHistorySecretStore:
             return {}
 
 
-def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+class CodeLineContext(TypedDict):
+    previous_line: Optional[str]
+    current_line: str
+    next_line: Optional[str]
+
+
+def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str],
+                         is_added: Optional[bool]) -> CodeLineContext:
+    default_result: CodeLineContext = {
+        'previous_line': None,
+        'current_line': '',
+        'next_line': None
+    }
+
     if not commit_diff:
         logging.warning(f'missing file name for {commit_diff}, hence no available code line')
+        return default_result
+
     if secret_value is None:
-        return ''
+        return default_result
+
     split = commit_diff.split('\n')
     start_char = '+' if is_added else '-'
-    for line in split:
+
+    for index, line in enumerate(split):
         if line.startswith(start_char) and secret_value in line:
-            # remove +/- in the beginning & spaces and omit
-            return omit_secret_value_from_line(secret_value, line[1:].strip()) or ''
-    return ''  # not found
+            # Found the line with the secret
+            current_line = omit_secret_value_from_line(secret_value, line[1:].strip()) or ''
+
+            # Get previous line (if exists)
+            previous_line = None
+            if index > 0:
+                prev = split[index - 1]
+                if prev.startswith(('+', '-', ' ')):  # Valid diff line
+                    previous_line = prev[1:].strip()
+
+            # Get next line (if exists)
+            next_line = None
+            if index + 1 < len(split):
+                next = split[index + 1]
+                if next.startswith(('+', '-', ' ')):  # Valid diff line
+                    next_line = next[1:].strip()
+
+            return {
+                'previous_line': previous_line,
+                'current_line': current_line,
+                'next_line': next_line
+            }
+
+    return default_result  # not found
 
 
 def get_secret_key(file_name: str, secret_hash: str, secret_type: str) -> str:
