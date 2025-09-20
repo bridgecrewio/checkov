@@ -52,7 +52,7 @@ class BaseResourceSolver(BaseSolver):
             return self._passed_vertices, self._failed_vertices, self._unknown_vertices
 
         for _, data in graph_connector.nodes():
-            result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
+            result = self.get_operation(resource_type=str(data.get(CustomAttributes.RESOURCE_TYPE)))
             self._handle_result(result, data)
 
         return self._passed_vertices, self._failed_vertices, self._unknown_vertices

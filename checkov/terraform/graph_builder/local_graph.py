@@ -760,9 +760,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     idx = list(v.source_module)[0]
                     v = self.vertices[idx]
                     module_data = v.get_export_data()
-                    module_data["idx"] = idx
+                    module_data["idx"] = str(idx)
                     if hasattr(vertex, "source_module_object"):
-                        module_data["source_module_object"] = v.source_module_object
+                        module_data["source_module_object"] = str(v.source_module_object)
                     source_module_data.append(module_data)
                 source_module_data.reverse()
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
