@@ -262,7 +262,10 @@ def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any)
             # skip inner checkov keys
             continue
         if inner_key not in resource_conf[k]:
-            resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            if isinstance(resource_conf[k][0], dict):
+                resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            elif isinstance(resource_conf[k][0], list) and isinstance(resource_conf[k][0][0], dict):
+                resource_conf[k][0][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(
