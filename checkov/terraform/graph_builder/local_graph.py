@@ -574,7 +574,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 try:
                     relative_module_idx = int(relative_module_idx)
                 except ValueError:
-                    raise TypeError(f"Cannot convert {relative_module_idx} to int for indexing vertices")
+                    logging.warning(f"Cannot convert {relative_module_idx} to int for indexing vertices")
             vertex = self.vertices[relative_module_idx]
             module_dependency_by_name_key = vertex.source_module_object
 
