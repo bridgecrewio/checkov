@@ -9,6 +9,7 @@ pytest-xdist = ">=2.5.0,<3.0.0"
 pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-benchmark = "*"
 exceptiongroup = {version = "*", markers="python_version < '3.11'"}
 coverage ="==7.6.1"
 coverage-badge = "*"
