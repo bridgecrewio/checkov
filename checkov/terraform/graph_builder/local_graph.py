@@ -570,11 +570,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if relative_module_idx is None:
             module_dependency_by_name_key = source_module_object
         else:
-            if isinstance(relative_module_idx, str):
-                try:
-                    relative_module_idx = int(relative_module_idx)
-                except ValueError:
-                    logging.warning(f"Cannot convert {relative_module_idx} to int for indexing vertices")
+            if isinstance(relative_module_idx, str) and relative_module_idx.isnumeric():
+                relative_module_idx = int(relative_module_idx)
+
             vertex = self.vertices[relative_module_idx]
             module_dependency_by_name_key = vertex.source_module_object
 
@@ -765,9 +763,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     idx = list(v.source_module)[0]
                     v = self.vertices[idx]
                     module_data = v.get_export_data()
-                    module_data["idx"] = str(idx)
+                    module_data["idx"] = idx
                     if hasattr(vertex, "source_module_object"):
-                        module_data["source_module_object"] = str(v.source_module_object)
+                        module_data["source_module_object"] = v.source_module_object
                     source_module_data.append(module_data)
                 source_module_data.reverse()
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
