@@ -276,7 +276,7 @@ class Block:
     def _should_set_changed_attributes(change_origin_id: int | None, attribute_at_dest: str | None) -> bool:
         return True
 
-    def get_export_data(self) -> Dict[str, Union[bool, str]]:
+    def get_export_data(self) -> Dict[str, Any]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
 
     def get_base_attributes(self) -> Dict[str, Any]:
