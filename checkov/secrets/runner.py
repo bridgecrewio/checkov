@@ -45,6 +45,7 @@ from checkov.secrets.git_history_store import GitHistorySecretStore
 from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES, Commit
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
+from checkov.secrets.context_parser import ContextParser
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -516,6 +517,42 @@ class Runner(BaseRunner[None, None, None]):
                     "result": CheckResult.SKIPPED,
                     "suppress_comment": comment
                 }
+
+            # Metadata suppression check
+            try:
+                secret_file_path = os.path.join(root_folder, secret.filename) if root_folder else secret.filename
+                parser = ContextParser(secret_file_path)
+
+                # Parse the file for metadata
+                resource_config = getattr(secret, "resource_config", None)
+                if resource_config is None and secret_file_path.endswith((".json", ".yml", ".yaml")):
+                    try:
+                        import json
+                        import yaml
+                        with open(secret_file_path, "r", encoding="utf-8") as f:
+                            content = f.read()
+                            if secret_file_path.endswith(".json"):
+                                resource_config = json.loads(content)
+                            else:
+                                resource_config = yaml.safe_load(content)
+
+                        if not isinstance(resource_config, (dict, list)):
+                            resource_config = None
+                    except Exception:
+                        resource_config = None
+
+                suppressions = parser.collect_skip_comments(resource_config=resource_config)
+                metadata_suppressions = [s for s in suppressions if s.get("line_number") is None]
+
+                for suppression in metadata_suppressions:
+                    if suppression["id"] == check_id or suppression.get("bc_id") == bc_check_id:
+                        return {
+                            "result": CheckResult.SKIPPED,
+                            "suppress_comment": suppression.get("suppress_comment", "No comment provided")
+                        }
+
+            except Exception as e:
+                logging.debug(f"Metadata suppression check failed for file {secret.filename}: {e}")
         return None
 
     def save_secret_to_coordinator(

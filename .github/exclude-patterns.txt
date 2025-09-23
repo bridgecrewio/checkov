@@ -34,5 +34,7 @@ tests/common/utils/conftest.py
 tests/terraform/runner/resources/get_graph_resource_entity_config/main.tf
 tests/terraform/runner/tf_plan_skip_check_regex/resource/.*
 tests/terraform/runner/tfplan2.json
+tests/terraform/runner/resources/plan_with_providers/tfplan.json
+tests/terraform/runner/resources/plan_with_providers/main.tf
 .*Scans.md
 .*Pipfile.lock
