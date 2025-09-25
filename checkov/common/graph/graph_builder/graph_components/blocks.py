@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import typing
 from collections.abc import Collection
-from typing import Dict, Any, List, cast
+from typing import Union, Dict, Any, List, cast
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
