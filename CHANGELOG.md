@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.471...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.472...HEAD)
+
+## [3.2.472](https://github.com/bridgecrewio/checkov/compare/3.2.471...3.2.472) - 2025-09-28
+
+### Feature
+
+- **terraform:** fix foreach module handling - [#7313](https://github.com/bridgecrewio/checkov/pull/7313)
 
 ## [3.2.471](https://github.com/bridgecrewio/checkov/compare/3.2.470...3.2.471) - 2025-09-14
 
