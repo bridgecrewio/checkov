@@ -299,17 +299,18 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         if isinstance(config, dict):
             resolved_module_name = config.get(RESOLVED_MODULE_ENTRY_NAME)
             if resolved_module_name is not None and len(resolved_module_name) > 0:
-                original_definition_key = config[RESOLVED_MODULE_ENTRY_NAME][0]
-                if isinstance(original_definition_key, str):
-                    original_definition_key = TFDefinitionKey.from_json(json.loads(original_definition_key))
-                resolved_tf_source_module = TFDefinitionKey.from_json(json.loads(resolved_module_name[0])) if isinstance(resolved_module_name[0], str) else resolved_module_name[0]
-                tf_source_modules = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx(
-                    original_foreach_or_count_key,
-                    original_module_key,
-                    resolved_tf_source_module.tf_source_modules,
-                )
-                config[RESOLVED_MODULE_ENTRY_NAME][0] = TFDefinitionKey(file_path=original_definition_key.file_path,
-                                                                        tf_source_modules=tf_source_modules)
+                # iterate over each item in the resolved list and override it with updated data
+                for idx, original_definition_key in enumerate(resolved_module_name):
+                    if isinstance(original_definition_key, str):
+                        original_definition_key = TFDefinitionKey.from_json(json.loads(original_definition_key))
+                    resolved_tf_source_module = TFDefinitionKey.from_json(json.loads(resolved_module_name[idx])) if isinstance(resolved_module_name[idx], str) else resolved_module_name[idx]
+                    tf_source_modules = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx(
+                        original_foreach_or_count_key,
+                        original_module_key,
+                        resolved_tf_source_module.tf_source_modules,
+                    )
+                    resolved_module_name[idx] = TFDefinitionKey(file_path=original_definition_key.file_path,
+                                                                tf_source_modules=tf_source_modules)
 
     @staticmethod
     def _get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key: int | str,
