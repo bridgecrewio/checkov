@@ -160,7 +160,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/for_each"
         runner = Runner(db_connector=self.db_connector())
-        checks_allowlist = ['CKV_AWS_186', 'CKV_AWS_21']
+        checks_allowlist = ['CKV_AWS_186', 'CKV_AWS_88']
         report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
