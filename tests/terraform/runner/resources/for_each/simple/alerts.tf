@@ -1,0 +1,3 @@
+locals {
+  alerts = 0
+}
