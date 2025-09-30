@@ -19,10 +19,15 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :return: <CheckResult>
         """
         log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-        if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"] and \
-                conf["enabled_cluster_log_types"][0] is not None \
-                and all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
-            return CheckResult.PASSED
+        enabled_cluster_log_types = conf.get("enabled_cluster_log_types")
+        if enabled_cluster_log_types and enabled_cluster_log_types[0] is not None:
+            enabled_cluster_log_types = enabled_cluster_log_types[0]
+            if isinstance(enabled_cluster_log_types[0], str):
+                if all(elem in enabled_cluster_log_types for elem in log_types):
+                    return CheckResult.PASSED
+            elif isinstance(enabled_cluster_log_types[0], list):
+                if all([elem] in enabled_cluster_log_types for elem in log_types):
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
