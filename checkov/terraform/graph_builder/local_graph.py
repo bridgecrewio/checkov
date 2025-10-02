@@ -570,6 +570,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if relative_module_idx is None:
             module_dependency_by_name_key = source_module_object
         else:
+            if isinstance(relative_module_idx, str) and relative_module_idx.isnumeric():
+                relative_module_idx = int(relative_module_idx)
+
             vertex = self.vertices[relative_module_idx]
             module_dependency_by_name_key = vertex.source_module_object
 

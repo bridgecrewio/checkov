@@ -317,9 +317,9 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         attribute_at_dest = None
 
         # value = '..${ref/getatt}..${ref/getatt}..${ref/getatt}..'
-        block_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME, None)
-        block_type = dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE, None)
-        if block_type == BlockType.RESOURCE:
+        block_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME, '')
+        block_type = dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE, '')
+        if block_type == BlockType.RESOURCE and isinstance(block_name, str):
             block_name = block_name.split('.')[-1]
 
         vars_set = set(find_all_interpolations(value))  # a list of parameters and resources.at.attribute
