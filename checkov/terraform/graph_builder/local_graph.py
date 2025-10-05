@@ -637,7 +637,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             vertex_parts = vertex_module_name.split('.')
 
             common_parts = []
-            for o, v in zip(origin_parts, vertex_parts):
+            for o, v in zip(origin_parts, vertex_parts):  # noqa: B905
                 if o == v:
                     common_parts.append(o)
                 else:
