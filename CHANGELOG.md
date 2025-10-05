@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.473...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.474...HEAD)
+
+## [3.2.474](https://github.com/bridgecrewio/checkov/compare/3.2.473...3.2.474) - 2025-10-05
+
+### Documentation
+
+- **general:** Add JAVA_FULL_DT environment variable to CLI reference - [#7312](https://github.com/bridgecrewio/checkov/pull/7312)
 
 ## [3.2.473](https://github.com/bridgecrewio/checkov/compare/3.2.472...3.2.473) - 2025-09-30
 
