@@ -263,9 +263,21 @@ def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any)
             continue
         if inner_key not in resource_conf[k]:
             if isinstance(resource_conf[k][0], dict):
-                resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+                if _validate_after_unknown_list_not_empty(inner_key, k, resource_conf):
+                    resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
             elif isinstance(resource_conf[k][0], list) and isinstance(resource_conf[k][0][0], dict):
-                resource_conf[k][0][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+                if _validate_after_unknown_list_not_empty(inner_key, k, resource_conf):
+                    resource_conf[k][0][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+
+
+def _validate_after_unknown_list_not_empty(inner_key: str, k: str, resource_conf: dict[str, Any]) -> bool:
+    """
+    If the inner key is a list - we want to check it's not empty, if not we handle it in the original way.
+    """
+    value = resource_conf[k][0]
+    return ((inner_key not in value) or
+            (inner_key in value and not isinstance(value[inner_key], list)) or
+            (isinstance(value[inner_key], list) and value[inner_key] != [] and value[inner_key][0] != []))
 
 
 def _find_child_modules(

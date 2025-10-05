@@ -146,6 +146,23 @@ class TestPlanFileParser(unittest.TestCase):
         _handle_complex_after_unknown(key, resource, value)
         assert resource == {'tags': [[{'custom_tags': ['true_after_unknown']}]]}
 
+    def test_handle_complex_after_unknown_with_empty_list(self):
+        resource = {"network_configuration": [
+            {
+                "endpoint_configuration": [
+                ]
+            }
+        ]}
+        key: str = 'network_configuration'
+        value: list = [
+            {
+                "endpoint_configuration": [
+                ]
+            }
+        ]
+        _handle_complex_after_unknown(key, resource, value)
+        assert resource == {'network_configuration': [{"endpoint_configuration": []}]}
+
 
 def test_large_file(mocker: MockerFixture):
     # given
