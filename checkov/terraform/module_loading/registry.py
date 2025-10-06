@@ -118,18 +118,26 @@ information, see `loader.ModuleLoader.load`.
                     self.module_content_cache[module_address] = ModuleContent(None)
                     continue
                 else:
-                    v = module_address.rsplit(':', 1)
-                    if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
-                        self.module_latest[v[0]] = v[1]
+                    if ':' in module_address:
+                        name, ver = module_address.rsplit(':', 1)
+                    else:
+                        name, ver = module_address, source_version or ''
+                    if ver:
+                        if name not in self.module_latest or self.module_latest.get(name, '') < ver:
+                            self.module_latest[name] = ver
                     self.module_content_cache[module_address] = content
                     return content
 
         if last_exception is not None:
             raise last_exception
 
-        v = module_address.rsplit(':', 1)
-        if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
-            self.module_latest[v[0]] = v[1]
+        if ':' in module_address:
+            name, ver = module_address.rsplit(':', 1)
+        else:
+            name, ver = module_address, source_version or ''
+        if ver:
+            if name not in self.module_latest or self.module_latest.get(name, '') < ver:
+                self.module_latest[name] = ver
         self.module_content_cache[module_address] = content
         return content
 

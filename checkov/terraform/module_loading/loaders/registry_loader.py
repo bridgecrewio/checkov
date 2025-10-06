@@ -130,6 +130,8 @@ class RegistryLoader(ModuleLoader):
 
     def _find_best_version(self, module_params: ModuleParams) -> str:
         versions_by_size = RegistryLoader.modules_versions_cache.get(module_params.tf_modules_versions_endpoint, [])  # type:ignore[arg-type]  # argument can be None
+        if not versions_by_size:
+            return "latest"
         if module_params.version == "latest":
             module_params.version = versions_by_size[0]
         elif module_params.version is None:
@@ -169,9 +171,13 @@ class RegistryLoader(ModuleLoader):
                 prepared_request = session.prepare_request(request)
                 response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
-            available_versions = [
-                v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
-            ]
+            data = response.json()
+            modules = data.get("modules") or []
+            if not isinstance(modules, list) or not modules:
+                RegistryLoader.modules_versions_cache[module_params.tf_modules_versions_endpoint] = []
+                return False
+            versions = modules[0].get("versions") or []
+            available_versions = [v.get("version") for v in versions if isinstance(v, dict) and v.get("version")]
             RegistryLoader.modules_versions_cache[module_params.tf_modules_versions_endpoint] = order_versions_in_descending_order(
                 available_versions)
             return True
@@ -242,7 +248,7 @@ class RegistryLoader(ModuleLoader):
             query_params = query_params_str.split("&")
             for query_param in query_params:
                 if query_param.startswith("archive="):
-                    return query_params_str.split("=")[1]
+                    return query_param.split("=", 1)[1]
         return None
 
 
