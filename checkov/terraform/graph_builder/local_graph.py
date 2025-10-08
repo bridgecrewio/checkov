@@ -612,10 +612,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if origin_vertex_index is not None:
                 vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
                 origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
-                    split_module_name = vertex_module_name.split('.')[1]
-                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
-                        common_prefix = f"{common_prefix} {BlockType.MODULE}.{split_module_name}"
+                common_prefix = self._get_common_prefix_name(origin_module_name, vertex_module_name, common_prefix)
 
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
@@ -632,6 +629,24 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
                                                               vertex_index_with_longest_common_prefix)
         return vertex_index_with_longest_common_prefix
+
+    @staticmethod
+    def _get_common_prefix_name(origin_module_name: str, vertex_module_name: str, common_prefix: str) -> str:
+        if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+            origin_parts = origin_module_name.split('.')
+            vertex_parts = vertex_module_name.split('.')
+
+            common_parts = []
+            for o, v in zip(origin_parts, vertex_parts):  # noqa: B905
+                if o == v:
+                    common_parts.append(o)
+                else:
+                    break
+
+            if common_parts:
+                common_prefix = f"{common_prefix} {'.'.join(common_parts)}"
+
+        return common_prefix.strip()
 
     def _find_best_match_based_on_foreach_key(
             self,
