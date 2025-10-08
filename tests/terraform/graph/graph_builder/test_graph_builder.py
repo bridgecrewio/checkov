@@ -380,6 +380,7 @@ class TestGraphBuilder(TestCase):
         definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
         graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
         tf_plan_local_graph = graph_manager.build_graph_from_definitions(definitions, render_variables=False)
+        self.assertTrue(tf_plan_local_graph.in_edges[1])
         self.assertTrue(tf_plan_local_graph.in_edges[3])
 
     def test_best_match_multiple_modules_with_connected_resources(self):
