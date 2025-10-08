@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.471...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.474...HEAD)
+
+## [3.2.474](https://github.com/bridgecrewio/checkov/compare/3.2.473...3.2.474) - 2025-10-05
+
+### Documentation
+
+- **general:** Add JAVA_FULL_DT environment variable to CLI reference - [#7312](https://github.com/bridgecrewio/checkov/pull/7312)
+
+## [3.2.473](https://github.com/bridgecrewio/checkov/compare/3.2.472...3.2.473) - 2025-09-30
+
+- no noteworthy changes
+
+## [3.2.472](https://github.com/bridgecrewio/checkov/compare/3.2.471...3.2.472) - 2025-09-28
+
+### Feature
+
+- **terraform:** fix foreach module handling - [#7313](https://github.com/bridgecrewio/checkov/pull/7313)
 
 ## [3.2.471](https://github.com/bridgecrewio/checkov/compare/3.2.470...3.2.471) - 2025-09-14
 
