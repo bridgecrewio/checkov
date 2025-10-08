@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.474...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.477...HEAD)
+
+## [3.2.477](https://github.com/bridgecrewio/checkov/compare/3.2.474...3.2.477) - 2025-10-08
+
+### Bug Fix
+
+- **terraform_plan:** compute the longest common prefix between two optional vertex - [#7320](https://github.com/bridgecrewio/checkov/pull/7320)
+- **terraform_plan:** Don't add values to empty list values in after_unknown - [#7319](https://github.com/bridgecrewio/checkov/pull/7319)
 
 ## [3.2.474](https://github.com/bridgecrewio/checkov/compare/3.2.473...3.2.474) - 2025-10-05
 
