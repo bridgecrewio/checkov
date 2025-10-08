@@ -375,7 +375,7 @@ class TestGraphBuilder(TestCase):
         self.check_edge(graph, provider_node, var_aws_profile_node, 'profile')
         self.check_edge(graph, local_node, var_bucket_name_node, 'bucket_name')
 
-    def test_multiple_modules_with_connected_resources(self):
+    def test_multiple_nested_module_with_connected_resources(self):
         valid_plan_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_edges_tfplan/tfplan.json'))
         definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
         graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
