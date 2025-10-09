@@ -55,7 +55,6 @@ jobs:
         if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-          echo "Files to lint: $YAML_JSON_FILES"
           echo "$YAML_JSON_FILES" | while IFS= read -r file; do
             if [ -n "$file" ]; then
               cfn-lint "$file" -i W
