@@ -52,7 +52,7 @@ jobs:
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
       - name: Install cfn-lint & Lint Cloudformation templates
-        if: env.YAML_JSON_FILES != ''
+        if: env.YAML_JSON_FILES && env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
           for file in $YAML_JSON_FILES; do
