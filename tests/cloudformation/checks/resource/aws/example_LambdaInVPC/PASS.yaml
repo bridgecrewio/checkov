@@ -11,7 +11,7 @@ Resources:
       Runtime: python3.9
       VpcConfig:
         SecurityGroupIds:
-          - sg-12345
+          - sg-01234567
         SubnetIds:
-          - subnet-12345
-          - subnet-67890
+          - subnet-01234567
+          - subnet-34567890
