@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.477...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.479...HEAD)
+
+## [3.2.479](https://github.com/bridgecrewio/checkov/compare/3.2.477...3.2.479) - 2025-10-09
+
+### Feature
+
+- **general:** upgrade checkov python version 3.9 - [#7326](https://github.com/bridgecrewio/checkov/pull/7326)
+- **general:** upgrade checkvo python version - [#7303](https://github.com/bridgecrewio/checkov/pull/7303)
+- **terraform:** skip raw tf resource violation - [#7325](https://github.com/bridgecrewio/checkov/pull/7325)
+
+### Bug Fix
+
+- **general:** revert pipfile urllib3 change - [#7324](https://github.com/bridgecrewio/checkov/pull/7324)
 
 ## [3.2.477](https://github.com/bridgecrewio/checkov/compare/3.2.474...3.2.477) - 2025-10-08
 
