@@ -56,8 +56,10 @@ jobs:
         run: |
           pip install -U cfn-lint
           echo "Files to lint: $YAML_JSON_FILES"
-          for file in $YAML_JSON_FILES; do
-            cfn-lint "$file" -i W
+          echo "$YAML_JSON_FILES" | while IFS= read -r file; do
+            if [ -n "$file" ]; then
+              cfn-lint "$file" -i W
+            fi
           done
 
   mypy:
