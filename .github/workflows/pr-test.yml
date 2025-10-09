@@ -57,8 +57,12 @@ jobs:
           pip install -U cfn-lint
           echo "DEBUG: YAML_JSON_FILES = '${YAML_JSON_FILES}'"
           for file in $YAML_JSON_FILES; do
-            echo "Linting file: '$file'"
-            cfn-lint "$file" -i W
+            if [ -n "$file" ]; then
+              echo "Linting file: '$file'"
+              cfn-lint "$file" -i W
+            else
+              echo "Skipping empty file path in loop."
+            fi
           done
 
   mypy:
