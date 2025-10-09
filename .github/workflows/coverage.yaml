@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
+      - uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
