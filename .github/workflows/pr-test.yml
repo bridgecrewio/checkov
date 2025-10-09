@@ -47,7 +47,7 @@ jobs:
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$')
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
@@ -55,10 +55,9 @@ jobs:
         if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-          echo "$YAML_JSON_FILES" | while IFS= read -r file; do
-            if [ -n "$file" ]; then
-              cfn-lint "$file" -i W
-            fi
+          echo "Files to lint: $YAML_JSON_FILES"
+          for file in $YAML_JSON_FILES; do
+            cfn-lint "$file" -i W
           done
 
   mypy:
@@ -169,7 +168,7 @@ jobs:
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} ${{ matrix.python }}'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'

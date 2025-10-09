@@ -4,8 +4,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-
-
 @dataclass
 class VarReference:
     definition_name: str               # Example: 'region'
