@@ -55,8 +55,9 @@ jobs:
         if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
+          echo "DEBUG: YAML_JSON_FILES = '${YAML_JSON_FILES}'"
           for file in $YAML_JSON_FILES; do
-            echo "Linting file: $file"
+            echo "Linting file: '$file'"
             cfn-lint "$file" -i W
           done
 
