@@ -32,6 +32,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.tf_parser import TFParser
+from checkov.common.util.env_vars_config import env_vars_config
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -138,6 +139,12 @@ class BaseTerraformRunner(
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_context = self.get_entity_context_and_evaluations(entity)
+                virtual_resources = entity.get(CustomAttributes.CONFIG, {}).get('virtual_resources')
+                if (env_vars_config.RAW_TF_IN_GRAPH_ENV and virtual_resources
+                        and isinstance(virtual_resources, list) and len(virtual_resources) > 0):
+                    # We want to skip violations for raw TF resources and keep only virtual one's. The raw resource
+                    # should have an array of attached virtual resources so we check it and skip if needed
+                    continue
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
