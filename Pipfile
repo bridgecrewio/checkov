@@ -4,9 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-#
-# REMINDER: Update "dev" deps on setup.py when changing
-#
 pytest = "<8.0.0"
 pytest-xdist = "*"
 pytest-asyncio = "*"
@@ -42,9 +39,6 @@ types-colorama = "<0.5.0,>=0.4.3"
 tomli = "*"
 
 [packages]
-#
-# REMINDER: Update "install_requires" deps on setup.py when changing
-#
 bc-jsonpath-ng = "==1.6.1"
 pycep-parser = "==0.5.1"
 tabulate = ">=0.9.0,<0.10.0"
@@ -89,6 +83,7 @@ asteval = "==1.0.6"
 bc-detect-secrets = "==1.5.45"
 urllib3 = "==1.26.20"
 bc-python-hcl2 = "==0.4.3"
+cfn-lint = "*"
 
 [requires]
 python_version = "3.9"
