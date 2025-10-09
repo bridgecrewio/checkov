@@ -47,7 +47,7 @@ jobs:
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
@@ -55,8 +55,10 @@ jobs:
         if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-          for file in $YAML_JSON_FILES; do
-            cfn-lint "$file" -i W
+          echo "$YAML_JSON_FILES" | while IFS= read -r file; do
+            if [ -n "$file" ]; then
+              cfn-lint "$file" -i W
+            fi
           done
 
   mypy:
