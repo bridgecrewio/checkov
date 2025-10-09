@@ -48,21 +48,21 @@ jobs:
         id: filter-files
         run: |
           YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
-          VALID_FILES=""
-          for file in $YAML_JSON_FILES; do
-            if grep -qE 'AWSTemplateFormatVersion|Resources' "$file"; then
-              VALID_FILES="$VALID_FILES $file"
-            fi
-          done
-          if [ -n "$VALID_FILES" ]; then
-            echo "YAML_JSON_FILES=$VALID_FILES" >> "$GITHUB_ENV"
+          if [ -n "$YAML_JSON_FILES" ]; then
+            echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
       - name: Install cfn-lint & Lint Cloudformation templates
         if: env.YAML_JSON_FILES != ''
         run: |
+          echo "DEBUG: YAML_JSON_FILES='$YAML_JSON_FILES'"
           pip install -U cfn-lint
           for file in $YAML_JSON_FILES; do
-            cfn-lint "$file" -i W
+            if [ -n "$file" ] && [ -f "$file" ]; then
+              echo "Linting $file..."
+              cfn-lint "$file" -i W
+            else
+              echo "Skipping invalid or empty file: '$file'"
+            fi
           done
 
   mypy:
