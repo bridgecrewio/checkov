@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-# NOTE: These would be better as TypedDict, but that requires python 3.8 :-(
 
 
 @dataclass
