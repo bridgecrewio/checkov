@@ -55,7 +55,9 @@ jobs:
         if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-          echo "$YAML_JSON_FILES" | xargs -r -n 1 cfn-lint -i W
+          for file in $YAML_JSON_FILES; do
+            cfn-lint "$file" -i W
+          done
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
@@ -165,7 +167,7 @@ jobs:
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} ${{ matrix.python }}'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
