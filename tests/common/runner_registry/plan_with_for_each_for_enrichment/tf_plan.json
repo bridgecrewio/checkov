@@ -1,0 +1,55 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.7",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_route53_zone.example['example.com']",
+          "mode": "managed",
+          "type": "aws_route53_zone",
+          "name": "example",
+          "index": "example.com",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "comment": "Managed by Terraform",
+            "delegation_set_id": null,
+            "force_destroy": false,
+            "name": "example.com",
+            "tags": null,
+            "vpc": []
+          },
+          "sensitive_values": {
+            "name_servers": [],
+            "tags_all": {},
+            "vpc": []
+          }
+        },
+        {
+          "address": "aws_route53_zone.example['example2.eu']",
+          "mode": "managed",
+          "type": "aws_route53_zone",
+          "name": "example",
+          "index": "example2.eu",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "comment": "Managed by Terraform",
+            "delegation_set_id": null,
+            "force_destroy": false,
+            "name": "example2.eu",
+            "tags": null,
+            "vpc": []
+          },
+          "sensitive_values": {
+            "name_servers": [],
+            "tags_all": {
+            },
+            "vpc": []
+          }
+        }
+      ]
+    }
+  }
+}
