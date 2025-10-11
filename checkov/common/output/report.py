@@ -562,9 +562,7 @@ class Report:
         skip_records = []
         for record in report.failed_checks:
             resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
-            resource_skips = enriched_resources.get(resource_raw_id, {}).get(
-                "skipped_checks", []
-            )
+            resource_skips = enriched_resources.get(resource_raw_id, {}).get("skipped_checks", [])
             for skip in resource_skips:
                 if record.check_id in skip["id"]:
                     # Mark for removal and add it as a skipped record. It is not safe to remove
