@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.479...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.483...HEAD)
+
+## [3.2.483](https://github.com/bridgecrewio/checkov/compare/3.2.479...3.2.483) - 2025-10-12
+
+### Feature
+
+- **general:** anchor setuptools to fix metadata version - [#7330](https://github.com/bridgecrewio/checkov/pull/7330)
+- **general:** update our publishing job SHA to latest - [#7332](https://github.com/bridgecrewio/checkov/pull/7332)
+- **terraform_plan:** fix handling of resource_id for enrichment in tf_plan - [#7329](https://github.com/bridgecrewio/checkov/pull/7329)
 
 ## [3.2.479](https://github.com/bridgecrewio/checkov/compare/3.2.477...3.2.479) - 2025-10-09
 
