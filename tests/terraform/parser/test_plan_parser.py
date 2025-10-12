@@ -10,7 +10,7 @@ from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
 from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown, \
-    _validate_after_unknown_list_not_empty
+    _update_after_unkown_in_complex_types
 from checkov.common.parsers.node import StrNode
 
 
@@ -148,7 +148,7 @@ class TestPlanFileParser(unittest.TestCase):
             }
         ]
         _handle_complex_after_unknown(key, resource, value)
-        assert resource == {'tags': [[{'custom_tags': ['true_after_unknown']}]]}
+        assert resource["tags"] == [value]
 
     def test_handle_complex_after_unknown_with_empty_list(self):
         resource = {"network_configuration": [
@@ -161,6 +161,23 @@ class TestPlanFileParser(unittest.TestCase):
         value = [{"endpoint_configuration": []}]
         _handle_complex_after_unknown(key, resource, value)
         assert resource == {'network_configuration': [{"endpoint_configuration": []}]}
+
+    def test_handle_complex_after_unknown_with_some_known_values(self):
+        original_resource = {
+            "tags": [
+                {"tag1": "my_tag"},
+                {"tag2": "true"},
+            ]
+        }
+        _update_after_unkown_in_complex_types("tags", original_resource)
+        assert original_resource == {
+            "tags": [
+                {"tag1": "my_tag"},
+                {"tag2": ["true_after_unknown"]},
+            ]
+        }
+
+
 
 @pytest.mark.parametrize("inner_key, k, is_inner_list", [
     ("endpoint_configuration", "network_configuration", False),
