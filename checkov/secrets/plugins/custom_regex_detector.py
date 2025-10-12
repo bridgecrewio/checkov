@@ -171,6 +171,8 @@ class CustomRegexDetector(RegexBasedDetector):
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
                     mm = self._extract_real_regex_match(mm)
+                    if isinstance(mm, tuple):
+                        mm = mm[0]
                     line_num = find_line_number(file_content, mm, line_number)
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(

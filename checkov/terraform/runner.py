@@ -33,6 +33,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.tf_parser import TFParser
+from checkov.common.util.env_vars_config import env_vars_config
 
 if TYPE_CHECKING:
     from checkov.common.typing import _SkippedCheck, LibraryGraph, LibraryGraphConnector
@@ -339,6 +340,12 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             return
 
         for entity in entities:
+            virtual_resources = entity.get("virtual_resources")
+            if (env_vars_config.RAW_TF_IN_GRAPH_ENV and virtual_resources
+                    and isinstance(virtual_resources, list) and len(virtual_resources) > 0):
+                # We want to skip violations for raw TF resources and keep only virtual one's. The raw resource
+                # should have an array of attached virtual resources so we check it and skip if needed
+                continue
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)

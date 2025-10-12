@@ -38,6 +38,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.data.registry import data_registry
+from checkov.common.util.env_vars_config import env_vars_config
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
@@ -160,13 +161,14 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/for_each"
         runner = Runner(db_connector=self.db_connector())
-        checks_allowlist = ['CKV_AWS_186']
+        checks_allowlist = ['CKV_AWS_186', 'CKV_AWS_88']
         report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
         assert len(report.failed_checks) == 2
+        assert len(report.skipped_checks) == 2
         assert len(report.passed_checks) == 0
         failed_resources = [c.resource for c in report.failed_checks]
         assert 'module.simple[0].aws_s3_bucket_object.this_file' in failed_resources
@@ -534,7 +536,7 @@ class TestRunnerValid(unittest.TestCase):
                     'CKV_AWS_109',
                     'CKV_AWS_110'], framework=['terraform']))
         self.assertEqual(len(result.passed_checks), 52)
-        self.assertEqual(len(result.failed_checks), 255)
+        self.assertEqual(len(result.failed_checks), 263)
         self.assertEqual(len(result.skipped_checks), 0)
 
     def test_modules_folder_with_files_args(self):
@@ -554,7 +556,7 @@ class TestRunnerValid(unittest.TestCase):
                                         'CKV_AWS_107', 'CKV_AWS_110'],
                                 framework=['terraform']))
         self.assertEqual(len(result.passed_checks), 51)
-        self.assertEqual(len(result.failed_checks), 263)
+        self.assertEqual(len(result.failed_checks), 271)
         self.assertEqual(len(result.skipped_checks), 0)
 
     def test_terraform_module_checks_are_performed(self):
@@ -668,6 +670,18 @@ class TestRunnerValid(unittest.TestCase):
         # cleanup
         if (root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH).exists():
             shutil.rmtree(root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH)
+
+    @mock.patch.object(env_vars_config, "RAW_TF_IN_GRAPH_ENV", "True")
+    def test_for_each_raw_resource_no_finding(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        dir_path = os.path.join(current_dir, "resources/tf_raw_resource")
+
+        runner = Runner(db_connector=self.db_connector())
+        result = runner.run(root_folder=dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=['CKV2_AWS_62', 'CKV_AWS_93']))
+        # we test here both graph checks and resource checks
+        self.assertEqual(len(result.failed_checks), 2)
+        self.assertEqual(len(result.passed_checks), 2)
 
     def test_parser_error_handled_for_directory_target(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

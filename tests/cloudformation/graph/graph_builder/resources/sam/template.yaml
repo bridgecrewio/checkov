@@ -17,7 +17,7 @@ Globals:
   Function:
     Timeout: 5
     CodeUri: src/
-    Runtime: python3.8
+    Runtime: python3.9
     Tracing: Active
     Environment:
       Variables:
