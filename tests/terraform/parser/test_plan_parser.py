@@ -1,13 +1,18 @@
+import copy
 import os
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
-from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name
+from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown, \
+    _validate_after_unknown_list_not_empty
 from checkov.common.parsers.node import StrNode
+
 
 class TestPlanFileParser(unittest.TestCase):
 
@@ -36,15 +41,15 @@ class TestPlanFileParser(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan_multiple_providers/tfplan.json"
         tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         providers = tf_definition['provider']
-        self.assertEqual( len(providers), 3)
+        self.assertEqual(len(providers), 3)
         provider_names = []
         provider_aliases = []
         provider_addresses = []
         for provider in providers:
             key = next(iter(provider))
             provider_names.append(key)
-            provider_aliases.append( provider[key]['alias'][0] )
-            provider_addresses.append( provider[key]['__address__'] )
+            provider_aliases.append(provider[key]['alias'][0])
+            provider_addresses.append(provider[key]['__address__'])
 
         self.assertEqual(provider_names, ["aws", "aws", "aws"])
         self.assertEqual(provider_aliases, ["default", "ohio", "oregon"])
@@ -82,7 +87,7 @@ class TestPlanFileParser(unittest.TestCase):
 
     def test_provisioners(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        plan_files = ['tfplan.json','tfplan2.json']
+        plan_files = ['tfplan.json', 'tfplan2.json']
 
         for file in plan_files:
             valid_plan_path = current_dir + "/resources/plan_provisioners/" + file
@@ -120,6 +125,58 @@ class TestPlanFileParser(unittest.TestCase):
         result = _sanitize_count_from_name(name)
         self.assertEqual(result, "aws_s3_bucket.bucket")
 
+    def test_handle_complex_after_unknown(self):
+        resource = {
+            "tags": [
+                [
+                    {
+                        "custom_tags": [
+                            {"key": "Tag1", "value": "Value1"},
+                            {"key": "Tag2", "value": "Value2"}
+                        ]
+                    }
+                ]
+            ]
+        }
+        key: str = 'tags'
+        value: list = [
+            {
+                'custom_tags': [
+                    {"key": "Tag1", "value": "Value1"},
+                    {"key": "Tag2", "value": "Value2"}
+                ]
+            }
+        ]
+        _handle_complex_after_unknown(key, resource, value)
+        assert resource == {'tags': [[{'custom_tags': ['true_after_unknown']}]]}
+
+    def test_handle_complex_after_unknown_with_empty_list(self):
+        resource = {"network_configuration": [
+            {
+                "endpoint_configuration": [
+                ]
+            }
+        ]}
+        key: str = 'network_configuration'
+        value = [{"endpoint_configuration": []}]
+        _handle_complex_after_unknown(key, resource, value)
+        assert resource == {'network_configuration': [{"endpoint_configuration": []}]}
+
+@pytest.mark.parametrize("inner_key, k, is_inner_list", [
+    ("endpoint_configuration", "network_configuration", False),
+    ("endpoint_configuration", "network_configuration", True)
+])
+def test_handle_complex_after_unknown(inner_key: str, k: str, is_inner_list: bool) -> None:
+    if is_inner_list:
+        # We cannot parametrize a dict object, so we use a boolean to decide which conf to use
+        resource_conf = {'network_configuration': [[{"endpoint_configuration": []}]]}
+    else:
+        resource_conf = {'network_configuration': [{"endpoint_configuration": []}]}
+    value = [{"endpoint_configuration": []}]
+    resource_conf_copy = copy.deepcopy(resource_conf)
+    _handle_complex_after_unknown(k, resource_conf, value)
+    assert resource_conf == resource_conf_copy
+
 
 def test_large_file(mocker: MockerFixture):
     # given
@@ -132,6 +189,17 @@ def test_large_file(mocker: MockerFixture):
 
     assert tf_definition['resource'][0]['aws_s3_bucket']['b']['start_line'][0] == 0
     assert tf_definition['resource'][0]['aws_s3_bucket']['b']['end_line'][0] == 0
+
+    def test_vpc_endpoint_policy_is_parsed(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_vpc_endpoint/tfplan.json"
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertIn('policy', resource_attributes)
+        policy = resource_attributes['policy'][0]
+        self.assertIn('Statement', policy)
 
 
 if __name__ == '__main__':

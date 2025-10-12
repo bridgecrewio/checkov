@@ -1,6 +1,75 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.464...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.479...HEAD)
+
+## [3.2.479](https://github.com/bridgecrewio/checkov/compare/3.2.477...3.2.479) - 2025-10-09
+
+### Feature
+
+- **general:** upgrade checkov python version 3.9 - [#7326](https://github.com/bridgecrewio/checkov/pull/7326)
+- **general:** upgrade checkvo python version - [#7303](https://github.com/bridgecrewio/checkov/pull/7303)
+- **terraform:** skip raw tf resource violation - [#7325](https://github.com/bridgecrewio/checkov/pull/7325)
+
+### Bug Fix
+
+- **general:** revert pipfile urllib3 change - [#7324](https://github.com/bridgecrewio/checkov/pull/7324)
+
+## [3.2.477](https://github.com/bridgecrewio/checkov/compare/3.2.474...3.2.477) - 2025-10-08
+
+### Bug Fix
+
+- **terraform_plan:** compute the longest common prefix between two optional vertex - [#7320](https://github.com/bridgecrewio/checkov/pull/7320)
+- **terraform_plan:** Don't add values to empty list values in after_unknown - [#7319](https://github.com/bridgecrewio/checkov/pull/7319)
+
+## [3.2.474](https://github.com/bridgecrewio/checkov/compare/3.2.473...3.2.474) - 2025-10-05
+
+### Documentation
+
+- **general:** Add JAVA_FULL_DT environment variable to CLI reference - [#7312](https://github.com/bridgecrewio/checkov/pull/7312)
+
+## [3.2.473](https://github.com/bridgecrewio/checkov/compare/3.2.472...3.2.473) - 2025-09-30
+
+- no noteworthy changes
+
+## [3.2.472](https://github.com/bridgecrewio/checkov/compare/3.2.471...3.2.472) - 2025-09-28
+
+### Feature
+
+- **terraform:** fix foreach module handling - [#7313](https://github.com/bridgecrewio/checkov/pull/7313)
+
+## [3.2.471](https://github.com/bridgecrewio/checkov/compare/3.2.470...3.2.471) - 2025-09-14
+
+### Bug Fix
+
+- **terraform_plan:** fix access to list by str in tf plan under _handle_complex_after_unknown - [#7299](https://github.com/bridgecrewio/checkov/pull/7299)
+
+## [3.2.470](https://github.com/bridgecrewio/checkov/compare/3.2.469...3.2.470) - 2025-09-08
+
+### Bug Fix
+
+- **helm:** Make Helm template detection less aggressive - [#7288](https://github.com/bridgecrewio/checkov/pull/7288)
+
+## [3.2.469](https://github.com/bridgecrewio/checkov/compare/3.2.467...3.2.469) - 2025-09-01
+
+### Feature
+
+- **general:** Control parallelism - [#7286](https://github.com/bridgecrewio/checkov/pull/7286)
+
+## [3.2.467](https://github.com/bridgecrewio/checkov/compare/3.2.466...3.2.467) - 2025-08-27
+
+### Bug Fix
+
+- **serverless:** Fixed bad entity code line generation - [#7285](https://github.com/bridgecrewio/checkov/pull/7285)
+
+## [3.2.466](https://github.com/bridgecrewio/checkov/compare/3.2.464...3.2.466) - 2025-08-25
+
+### Feature
+
+- **terraform:** add aws_vpc_endpoint to RESOURCE_TYPES_JSONIFY - [#7281](https://github.com/bridgecrewio/checkov/pull/7281)
+
+### Bug Fix
+
+- **general:** Add exclusion for plan_with_providers test files in security scanning - [#7282](https://github.com/bridgecrewio/checkov/pull/7282)
 
 ## [3.2.464](https://github.com/bridgecrewio/checkov/compare/3.2.461...3.2.464) - 2025-08-20
 

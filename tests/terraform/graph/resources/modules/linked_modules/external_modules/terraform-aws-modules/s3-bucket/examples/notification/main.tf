@@ -18,7 +18,7 @@ module "s3_bucket" {
 #############################################
 
 locals {
-  package_url = "https://raw.githubusercontent.com/terraform-aws-modules/terraform-aws-lambda/master/examples/fixtures/python3.8-zip/existing_package.zip"
+  package_url = "https://raw.githubusercontent.com/terraform-aws-modules/terraform-aws-lambda/master/examples/fixtures/python3.9-zip/existing_package.zip"
   downloaded  = "downloaded_package_${md5(local.package_url)}.zip"
 }
 
@@ -45,7 +45,7 @@ module "lambda_function1" {
 
   function_name = "${random_pet.this.id}-lambda1"
   handler       = "index.lambda_handler"
-  runtime       = "python3.8"
+  runtime       = "python3.9"
 
   create_package         = false
   local_existing_package = data.null_data_source.downloaded_package.outputs["filename"]

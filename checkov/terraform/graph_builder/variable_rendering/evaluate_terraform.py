@@ -62,9 +62,11 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
     evaluated_value = handle_for_loop(evaluated_value)
-    second_evaluated_value = _try_evaluate(evaluated_value)
+    second_evaluated_value = None
+    if isinstance(evaluated_value, str):
+        second_evaluated_value = _try_evaluate(evaluated_value)
 
-    if callable(second_evaluated_value):
+    if second_evaluated_value and callable(second_evaluated_value):
         return evaluated_value
     elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
         return value_before_removing_interpolations

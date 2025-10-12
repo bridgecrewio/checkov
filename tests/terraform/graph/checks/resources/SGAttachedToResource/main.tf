@@ -645,7 +645,7 @@ resource "aws_lambda_function" "pass_lambda" {
   function_name = "lambda"
   handler       = "lambda.handler"
   role          = "aws_iam_role.lambda.arn"
-  runtime       = "python3.8"
+  runtime       = "python3.9"
 
   vpc_config {
     security_group_ids = [aws_security_group.pass_lambda.id]

@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.3",
-        "bc-detect-secrets==1.5.44",
+        "bc-detect-secrets==1.5.45",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.5.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -107,14 +107,14 @@ setup(
         "license-expression<31.0.0,>=30.1.0",
         "rustworkx>=0.13.0,<1.0.0",
         "pydantic<3.0.0,>=2.0.0",
-        "asteval==1.0.5",
+        "asteval==1.0.6",
         "urllib3==1.26.20"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
     name="checkov",
     version=version,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
@@ -154,7 +154,6 @@ setup(
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",

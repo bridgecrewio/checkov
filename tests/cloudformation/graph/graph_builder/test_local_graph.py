@@ -199,7 +199,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual(['subnet-123', 'subnet-456'], function_1_vertex.attributes["VpcConfig"]["SubnetIds"])
 
         self.assertEqual("src/", function_2_vertex.attributes["CodeUri"])
-        self.assertEqual("python3.8", function_2_vertex.attributes["Runtime"])
+        self.assertEqual("python3.9", function_2_vertex.attributes["Runtime"])
         self.assertEqual(5, function_2_vertex.attributes["Timeout"])
         self.assertEqual("Active", function_2_vertex.attributes["Tracing"])
         self.assertEqual("Production", function_2_vertex.attributes["Environment"]["Variables"]["STAGE"])
