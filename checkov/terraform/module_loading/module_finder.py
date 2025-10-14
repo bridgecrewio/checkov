@@ -83,8 +83,14 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
                 for module_name, module_data in module.items():
                     md = ModuleDownload(os.path.dirname(file_path))
                     md.module_name = module_name
-                    md.module_link = module_data.get("source", [None])[0]
-                    md.version = module_data.get("version", [None])[0]
+                    try:
+                        md.module_link = module_data.get("source", [None])[0]
+                    except IndexError:
+                        md.module_link = None
+                    try:
+                        md.version = module_data.get("version", [None])[0]
+                    except IndexError:
+                        md.version = None
                     if md.module_link:
                         md.address = f"{md.module_link}:{md.version}" if md.version else md.module_link
                     modules_found.append(md)
@@ -148,7 +154,7 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
                 logging.warning(log_message)
             return False
     except Exception as e:
-        logging.warning(f"Unable to load module ({module_download.address}): {e}")
+        logging.warning(f"Unable to load module in module_finder ({module_download.address}): {e}")
         return False
 
     return True

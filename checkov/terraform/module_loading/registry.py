@@ -118,18 +118,28 @@ information, see `loader.ModuleLoader.load`.
                     self.module_content_cache[module_address] = ModuleContent(None)
                     continue
                 else:
-                    v = module_address.rsplit(':', 1)
-                    if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
-                        self.module_latest[v[0]] = v[1]
+                    # safely derive module key/version even when module_address lacks ':' (e.g., github ?ref=... case)
+                    if ':' in module_address:
+                        key, ver = module_address.rsplit(':', 1)
+                        ver = ver or (source_version or 'HEAD')
+                    else:
+                        key, ver = module_address, (source_version or 'HEAD')
+                    if key not in self.module_latest or self.module_latest.get(key, '') < ver:
+                        self.module_latest[key] = ver
                     self.module_content_cache[module_address] = content
                     return content
 
         if last_exception is not None:
             raise last_exception
 
-        v = module_address.rsplit(':', 1)
-        if v[0] not in self.module_latest or self.module_latest[v[0]] < v[1]:
-            self.module_latest[v[0]] = v[1]
+        # safely derive module key/version even when module_address lacks ':' (e.g., github ?ref=... case)
+        if ':' in module_address:
+            key, ver = module_address.rsplit(':', 1)
+            ver = ver or (source_version or 'HEAD')
+        else:
+            key, ver = module_address, (source_version or 'HEAD')
+        if key not in self.module_latest or self.module_latest.get(key, '') < ver:
+            self.module_latest[key] = ver
         self.module_content_cache[module_address] = content
         return content
 
