@@ -265,12 +265,12 @@ def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any)
         if inner_key not in resource_conf_value and isinstance(resource_conf_value, list):
             for i in range(len(resource_conf_value)):
                 if isinstance(resource_conf_value[i], dict):
-                    _update_after_unkown_in_complex_types(inner_key, resource_conf_value[i])
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i])
                 elif isinstance(resource_conf_value[i], list) and isinstance(resource_conf_value[i][0], dict):
-                    _update_after_unkown_in_complex_types(inner_key, resource_conf_value[i][0])
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i][0])
 
 
-def _update_after_unkown_in_complex_types(inner_key: str, value: dict[str, Any]) -> None:
+def _update_after_unknown_in_complex_types(inner_key: str, value: dict[str, Any]) -> None:
     """
     Based on terraform docs, in complex types like list/dict some values might be known while others are not.
     So when trying to update the info shared from the `after_unknown`, we only want to update the specific items in
@@ -306,19 +306,19 @@ def _update_after_unkown_in_complex_types(inner_key: str, value: dict[str, Any])
             if isinstance(v, str) and v.lower() == "true":
                 inner_value[i] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
             if isinstance(v, dict):
-                _handle_after_unkown_dict(v)
+                _handle_after_unknown_dict(v)
     if isinstance(inner_value, dict):
         for k, v in inner_value.items():
             if isinstance(v, str) and v.lower() == "true":
                 inner_value[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
             if isinstance(v, dict):
-                _handle_after_unkown_dict(v)
+                _handle_after_unknown_dict(v)
     return
 
 
-def _handle_after_unkown_dict(v: dict[str, Any]) -> None:
+def _handle_after_unknown_dict(v: dict[str, Any]) -> None:
     for k in v.keys():
-        _update_after_unkown_in_complex_types(k, v)
+        _update_after_unknown_in_complex_types(k, v)
 
 
 def _find_child_modules(

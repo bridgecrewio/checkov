@@ -10,7 +10,7 @@ from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
 from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown, \
-    _update_after_unkown_in_complex_types
+    _update_after_unknown_in_complex_types
 from checkov.common.parsers.node import StrNode
 
 
@@ -169,7 +169,7 @@ class TestPlanFileParser(unittest.TestCase):
                 {"tag2": "true"},
             ]
         }
-        _update_after_unkown_in_complex_types("tags", original_resource)
+        _update_after_unknown_in_complex_types("tags", original_resource)
         assert original_resource == {
             "tags": [
                 {"tag1": "my_tag"},
