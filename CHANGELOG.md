@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.483...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.484...HEAD)
+
+## [3.2.484](https://github.com/bridgecrewio/checkov/compare/3.2.483...3.2.484) - 2025-10-15
+
+### Bug Fix
+
+- **terraform_plan:** Correctly handle complex types for after_unknown - [#7333](https://github.com/bridgecrewio/checkov/pull/7333)
 
 ## [3.2.483](https://github.com/bridgecrewio/checkov/compare/3.2.479...3.2.483) - 2025-10-12
 
