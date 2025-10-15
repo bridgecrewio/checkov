@@ -31,7 +31,7 @@ class MyServerlessFunctionStack(core.Stack):
             self, 'MyServerlessFunction',
             code_uri='lambda/',  # Replace 'lambda/' with your function code directory
             handler='index.handler',
-            runtime='python3.9',
+            runtime='python3.10',
             environment={
                 'MY_VARIABLE': {'a':'b'}
             }
