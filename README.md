@@ -66,7 +66,7 @@ Scheduled scan result in Jenkins
 ## Getting started
 
 ### Requirements
- * Python >= 3.9, <=3.12
+ * Python >= 3.10, <=3.12
  * Terraform >= 0.12
 
 ### Installation
@@ -499,6 +499,6 @@ Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.ht
 
 ## Python Version Support
 We follow the official support cycle of Python, and we use automated tests for supported versions of Python.
-This means we currently support Python 3.9 - 3.13, inclusive.
+This means we currently support Python 3.10 - 3.13, inclusive.
 Note that Python 3.8 reached EOL on October 2024 and Python 3.9 will reach EOL in October 2025.
 If you run into any issues with any non-EOL Python version, please open an Issue.
