@@ -1,7 +1,6 @@
-FROM ubuntu:20.04
-
-# Safe: no secrets or sensitive data in ENV/ARG
+FROM python:3.10-slim
 ENV APP_ENV=production
 ENV LOG_LEVEL=info
 ARG BUILD_VERSION=1.0.0
-RUN echo "Building image safely without secrets"
+CMD ["python3", "--version"]
+
