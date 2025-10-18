@@ -1,0 +1,7 @@
+FROM ubuntu:20.04
+
+# Safe: no secrets or sensitive data in ENV/ARG
+ENV APP_ENV=production
+ENV LOG_LEVEL=info
+ARG BUILD_VERSION=1.0.0
+RUN echo "Building image safely without secrets"
