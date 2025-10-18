@@ -1,6 +1,9 @@
+FROM ubuntu:20.04
+
+# Bad practice: secrets stored directly in ENV or ARG
 FROM python:3.10-slim
 ENV API_KEY=abcd1234
 ENV DB_PASSWORD=mysecretpass
 ARG ACCESS_TOKEN=xyz789
+RUN echo "Using secret environment variables"
 CMD ["python3", "--version"]
-
