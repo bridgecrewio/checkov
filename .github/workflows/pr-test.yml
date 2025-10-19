@@ -32,7 +32,7 @@ jobs:
   cfn-lint:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
@@ -46,8 +46,12 @@ jobs:
       - name: Filter YAML and JSON files
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: filter-files
-        run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+        run:  |
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} \
+            | tr ' ' '\n' \
+            | grep -E '\.ya?ml$|\.json$' \
+            | grep -v 'sam\.yaml$' \
+            | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
           fi
@@ -62,13 +66,13 @@ jobs:
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
     with:
-      python-version: "3.8"
+      python-version: "3.9"
 
   unit-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -167,7 +171,7 @@ jobs:
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
@@ -176,7 +180,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9"]
+        python: ["3.9"]
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -222,7 +226,7 @@ jobs:
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
@@ -279,7 +283,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8"]
+        python: ["3.9"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -369,7 +373,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8"]
+        python: ["3.9"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -409,7 +413,7 @@ jobs:
 
   performance-tests:
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
       working-directory: ./performance_tests
     runs-on: [self-hosted, public, linux, x64]
     steps:
@@ -465,7 +469,7 @@ jobs:
   dogfood-tests:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3

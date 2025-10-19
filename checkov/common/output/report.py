@@ -562,9 +562,7 @@ class Report:
         skip_records = []
         for record in report.failed_checks:
             resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
-            resource_skips = enriched_resources.get(resource_raw_id, {}).get(
-                "skipped_checks", []
-            )
+            resource_skips = enriched_resources.get(resource_raw_id, {}).get("skipped_checks", [])
             for skip in resource_skips:
                 if record.check_id in skip["id"]:
                     # Mark for removal and add it as a skipped record. It is not safe to remove
@@ -594,10 +592,11 @@ class Report:
         """
         return the resource raw id without the modules and the indexes
         example: from resource_id='module.module_name.type.name[1]' return 'type.name'
+        example: from resource_id='type.name['some.long.address']' return 'type.name'
         """
+        if '[' in resource_id:
+            resource_id = resource_id[:resource_id.index('[')]
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
-        if '[' in resource_raw_id:
-            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
         return resource_raw_id
 
     @classmethod

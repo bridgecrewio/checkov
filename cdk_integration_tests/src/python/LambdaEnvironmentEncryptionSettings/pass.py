@@ -31,7 +31,7 @@ class MyServerlessFunctionStack(core.Stack):
         my_sam_function = sam.CfnFunction(
             self, 'MySAMFunction',
             handler='index.handler',
-            runtime='python3.8',
+            runtime='python3.9',
             code_uri='./path/to/your/function/code',
             environment={
                 'MY_VARIABLE_1': 'Value1',

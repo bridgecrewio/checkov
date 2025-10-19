@@ -1,5 +1,9 @@
 resource "aws_s3_bucket_object" "this_file" {
-  bucket   = "your_bucket_name"
-  key      = "readme.md"
   source   = "readme.md"
+}
+
+resource "aws_instance" "public_server" {
+  ami           = "ami-0abcdef1234567890"
+  instance_type = "t2.micro"
+  associate_public_ip_address = true
 }
