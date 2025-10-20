@@ -795,6 +795,15 @@
             "markers": "python_version >= '3.8'",
             "version": "==7.2.1"
         },
+        "iniconfig": {
+            "hashes": [
+                "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730",
+                "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.10'",
+            "version": "==2.3.0"
+        },
         "isodate": {
             "hashes": [
                 "sha256:28009937d8031054830160fce6d409ed342816b543597cece116d966c6d99e15",
