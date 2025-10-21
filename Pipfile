@@ -4,9 +4,6 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-#
-# REMINDER: Update "dev" deps on setup.py when changing
-#
 pytest = "<8.0.0"
 pytest-xdist = "*"
 pytest-asyncio = "*"
@@ -43,9 +40,6 @@ tomli = "*"
 setuptools = "==75.3.2"
 
 [packages]
-#
-# REMINDER: Update "install_requires" deps on setup.py when changing
-#
 bc-jsonpath-ng = "==1.6.1"
 pycep-parser = "==0.5.1"
 tabulate = ">=0.9.0,<0.10.0"
@@ -66,7 +60,7 @@ docker = ">=6.0.1,<8.0.0"
 configargparse = ">=1.5.3,<2.0.0"
 argcomplete = ">=3.0.0,<4.0.0"
 typing-extensions = ">=4.5.0,<5.0.0"
-importlib-metadata = ">=6.0.0,<8.0.0"
+importlib-metadata = ">=6.0.0,<9.0.0"
 cachetools = ">=5.2.0,<6.0.0"
 cyclonedx-python-lib = ">=6.0.0,<8.0.0"
 packageurl-python = ">=0.11.1,<0.14.0"
@@ -90,6 +84,8 @@ asteval = "==1.0.6"
 bc-detect-secrets = "==1.5.45"
 urllib3 = "==1.26.20"
 bc-python-hcl2 = "==0.4.3"
+checkov = {file = ".", editable = true}
+ansible-lint = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"
