@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.484...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.485...HEAD)
+
+## [3.2.485](https://github.com/bridgecrewio/checkov/compare/3.2.484...3.2.485) - 2025-10-20
+
+### Bug Fix
+
+- **general:** fix urllib3 dependency - [#7345](https://github.com/bridgecrewio/checkov/pull/7345)
 
 ## [3.2.484](https://github.com/bridgecrewio/checkov/compare/3.2.483...3.2.484) - 2025-10-15
 

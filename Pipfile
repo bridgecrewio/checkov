@@ -38,6 +38,7 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 types-colorama = "<0.5.0,>=0.4.3"
 tomli = "*"
 setuptools = "==75.3.2"
+iniconfig = "*"
 
 [packages]
 bc-jsonpath-ng = "==1.6.1"
@@ -82,7 +83,7 @@ rustworkx = ">=0.13.0,<1.0.0"
 pydantic = ">=2.0.0,<3.0.0"
 asteval = "==1.0.6"
 bc-detect-secrets = "==1.5.45"
-urllib3 = "==1.26.20"
+urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.3"
 checkov = {file = ".", editable = true}
 ansible-lint = "*"
