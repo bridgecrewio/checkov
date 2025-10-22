@@ -7,13 +7,6 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 _SECURE_RE = re.compile(r"^TLSv1\.(?:2|3)_\d{4}$")
 
 
-def _first(v: Any) -> Any:
-    # Terraform parser often wraps scalars in single-item lists
-    if isinstance(v, list):
-        return v[0] if v else None
-    return v
-
-
 class CloudFrontTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Verify CloudFront Distribution Viewer Certificate is using TLS v1.2 or higher"
@@ -33,12 +26,17 @@ class CloudFrontTLS12(BaseResourceValueCheck):
 
         vc = vc_list[0]
 
-        # If default CloudFront cert is used -> fail
-        default_cert = _first(vc.get("cloudfront_default_certificate"))
-        if default_cert in (True, "true"):
+        default_cert = vc.get("cloudfront_default_certificate")
+        if isinstance(default_cert, list):
+            default_cert = default_cert[0] if default_cert else None
+        if isinstance(default_cert, str):
+            default_cert = default_cert.lower() == "true"
+        if default_cert is True:
             return CheckResult.FAILED
 
-        mpv = _first(vc.get("minimum_protocol_version"))
+        mpv = vc.get("minimum_protocol_version")
+        if isinstance(mpv, list):
+            mpv = mpv[0] if mpv else None
         if isinstance(mpv, str) and _SECURE_RE.match(mpv):
             return CheckResult.PASSED
 
