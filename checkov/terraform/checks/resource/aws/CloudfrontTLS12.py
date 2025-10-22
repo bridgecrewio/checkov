@@ -26,8 +26,6 @@ class CloudFrontTLS12(BaseResourceValueCheck):
         return "viewer_certificate/[0]/minimum_protocol_version"
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
-        # Terraform shape:
-        # conf["viewer_certificate"] -> [ { "minimum_protocol_version": ["TLSv1.2_2018"], "cloudfront_default_certificate": [True] } ]
         vc_list = conf.get("viewer_certificate")
         if not isinstance(vc_list, list) or not vc_list or not isinstance(vc_list[0], dict):
             return CheckResult.FAILED
