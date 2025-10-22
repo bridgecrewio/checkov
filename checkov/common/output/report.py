@@ -593,9 +593,12 @@ class Report:
         return the resource raw id without the modules and the indexes
         example: from resource_id='module.module_name.type.name[1]' return 'type.name'
         example: from resource_id='type.name['some.long.address']' return 'type.name'
+        example: from resource_id='module.module_name['some.long.address']'.type.name return 'type.name'
         """
         if '[' in resource_id:
-            resource_id = resource_id[:resource_id.index('[')]
+            # remove any information inside brackets
+            resource_id = resource_id[:resource_id.index('[')] + resource_id[resource_id.index(']') + 1:]
+        # take last two elements
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
         return resource_raw_id
 
