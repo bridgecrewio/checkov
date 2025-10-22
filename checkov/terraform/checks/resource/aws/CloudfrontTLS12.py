@@ -14,12 +14,11 @@ def _first(v: Any) -> Any:
 
 class CloudFrontTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
-        super().__init__(
-            name="Verify CloudFront Distribution Viewer Certificate is using TLS >= 1.2",
-            id="CKV_AWS_174",
-            categories=(CheckCategories.ENCRYPTION,),
-            supported_resources=("aws_cloudfront_distribution",),
-        )
+        name = "Verify CloudFront Distribution Viewer Certificate is using TLS >= 1.2"
+        id = "CKV_AWS_174"
+        supported_resources = ("aws_cloudfront_distribution",)
+        categories = (CheckCategories.ENCRYPTION,)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
         # keep this for reporting
