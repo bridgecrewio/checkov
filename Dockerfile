@@ -12,7 +12,7 @@ RUN set -eux; \
             openssh-client \
     ; \
     \
-    pip install setuptools==70 urllib3==2.2.2;  \
+    pip install setuptools==78.1.1 urllib3==2.2.2;  \
     curl -sSLo get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 700 get_helm.sh; \
     VERIFY_CHECKSUM=true ./get_helm.sh; \

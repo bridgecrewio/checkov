@@ -291,8 +291,8 @@ def create_iac_violations_overview_table_part(
 
         iac_table.min_width = regular_width
         iac_table.max_width = regular_width
-        iac_table.min_width['Title'] = double_width  # type:ignore[index]
-        iac_table.max_width['Title'] = double_width  # type:ignore[index]
+        iac_table.min_width['Title'] = double_width
+        iac_table.max_width['Title'] = double_width
 
         for line in iac_table.get_string().splitlines(keepends=True):
             if resource_idx > 0:

@@ -261,11 +261,64 @@ def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any)
         if inner_key in (START_LINE, END_LINE):
             # skip inner checkov keys
             continue
-        if inner_key not in resource_conf[k]:
-            if isinstance(resource_conf[k][0], dict):
-                resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
-            elif isinstance(resource_conf[k][0], list) and isinstance(resource_conf[k][0][0], dict):
-                resource_conf[k][0][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+        resource_conf_value = resource_conf[k]
+        if inner_key not in resource_conf_value and isinstance(resource_conf_value, list):
+            for i in range(len(resource_conf_value)):
+                if isinstance(resource_conf_value[i], dict):
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i])
+                elif isinstance(resource_conf_value[i], list) and isinstance(resource_conf_value[i][0], dict):
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i][0])
+
+
+def _update_after_unknown_in_complex_types(inner_key: str, value: dict[str, Any]) -> None:
+    """
+    Based on terraform docs, in complex types like list/dict some values might be known while others are not.
+    So when trying to update the info shared from the `after_unknown`, we only want to update the specific items in
+    those objects which are unknown.
+    For example, in the conf:
+    ```
+    "after": {
+        "outer": [
+            {"tag1": 1}
+        ]
+    },
+    "after_unknown": {
+        "outer": [
+            {},  -> the value is known from the "after" section, we don't want to touch it
+            true -> the value is unknown, we want to replace it with `TRUE_AFTER_UNKNOWN`
+        ]
+    }.
+
+    Full result for resource conf:
+    ```
+    "outer": [{"tag1": 1}, `TRUE_AFTER_UNKNOWN`]
+    ```
+    ```
+    """
+    if inner_key not in value:
+        value[inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+        return
+    inner_value = value[inner_key]
+    if isinstance(inner_value, str) and inner_value.lower() == "true":
+        value[inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+    if isinstance(inner_value, list):
+        for i, v in enumerate(inner_value):
+            if isinstance(v, str) and v.lower() == "true":
+                inner_value[i] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            if isinstance(v, dict):
+                _handle_after_unknown_dict(v)
+    if isinstance(inner_value, dict):
+        for k, v in inner_value.items():
+            if isinstance(v, str) and v.lower() == "true":
+                inner_value[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            if isinstance(v, dict):
+                _handle_after_unknown_dict(v)
+    return
+
+
+def _handle_after_unknown_dict(v: dict[str, Any]) -> None:
+    for k in v.keys():
+        _update_after_unknown_in_complex_types(k, v)
 
 
 def _find_child_modules(

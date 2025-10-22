@@ -1,6 +1,61 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.471...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.485...HEAD)
+
+## [3.2.485](https://github.com/bridgecrewio/checkov/compare/3.2.484...3.2.485) - 2025-10-20
+
+### Bug Fix
+
+- **general:** fix urllib3 dependency - [#7345](https://github.com/bridgecrewio/checkov/pull/7345)
+
+## [3.2.484](https://github.com/bridgecrewio/checkov/compare/3.2.483...3.2.484) - 2025-10-15
+
+### Bug Fix
+
+- **terraform_plan:** Correctly handle complex types for after_unknown - [#7333](https://github.com/bridgecrewio/checkov/pull/7333)
+
+## [3.2.483](https://github.com/bridgecrewio/checkov/compare/3.2.479...3.2.483) - 2025-10-12
+
+### Feature
+
+- **general:** anchor setuptools to fix metadata version - [#7330](https://github.com/bridgecrewio/checkov/pull/7330)
+- **general:** update our publishing job SHA to latest - [#7332](https://github.com/bridgecrewio/checkov/pull/7332)
+- **terraform_plan:** fix handling of resource_id for enrichment in tf_plan - [#7329](https://github.com/bridgecrewio/checkov/pull/7329)
+
+## [3.2.479](https://github.com/bridgecrewio/checkov/compare/3.2.477...3.2.479) - 2025-10-09
+
+### Feature
+
+- **general:** upgrade checkov python version 3.9 - [#7326](https://github.com/bridgecrewio/checkov/pull/7326)
+- **general:** upgrade checkvo python version - [#7303](https://github.com/bridgecrewio/checkov/pull/7303)
+- **terraform:** skip raw tf resource violation - [#7325](https://github.com/bridgecrewio/checkov/pull/7325)
+
+### Bug Fix
+
+- **general:** revert pipfile urllib3 change - [#7324](https://github.com/bridgecrewio/checkov/pull/7324)
+
+## [3.2.477](https://github.com/bridgecrewio/checkov/compare/3.2.474...3.2.477) - 2025-10-08
+
+### Bug Fix
+
+- **terraform_plan:** compute the longest common prefix between two optional vertex - [#7320](https://github.com/bridgecrewio/checkov/pull/7320)
+- **terraform_plan:** Don't add values to empty list values in after_unknown - [#7319](https://github.com/bridgecrewio/checkov/pull/7319)
+
+## [3.2.474](https://github.com/bridgecrewio/checkov/compare/3.2.473...3.2.474) - 2025-10-05
+
+### Documentation
+
+- **general:** Add JAVA_FULL_DT environment variable to CLI reference - [#7312](https://github.com/bridgecrewio/checkov/pull/7312)
+
+## [3.2.473](https://github.com/bridgecrewio/checkov/compare/3.2.472...3.2.473) - 2025-09-30
+
+- no noteworthy changes
+
+## [3.2.472](https://github.com/bridgecrewio/checkov/compare/3.2.471...3.2.472) - 2025-09-28
+
+### Feature
+
+- **terraform:** fix foreach module handling - [#7313](https://github.com/bridgecrewio/checkov/pull/7313)
 
 ## [3.2.471](https://github.com/bridgecrewio/checkov/compare/3.2.470...3.2.471) - 2025-09-14
 
