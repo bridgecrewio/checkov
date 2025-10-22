@@ -14,7 +14,7 @@ def _first(v: Any) -> Any:
 
 class CloudFrontTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Verify CloudFront Distribution Viewer Certificate is using TLS >= 1.2"
+        name = "Verify CloudFront Distribution Viewer Certificate is using TLS v1.2 or higher"
         id = "CKV_AWS_174"
         supported_resources = ("aws_cloudfront_distribution",)
         categories = (CheckCategories.ENCRYPTION,)

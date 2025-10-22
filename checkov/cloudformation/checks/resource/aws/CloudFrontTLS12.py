@@ -9,11 +9,11 @@ _SECURE_RE = re.compile(r"^TLSv1\.(?:2|3)_\d{4}$")
 
 class CloudFrontTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Verify CloudFront viewer certificate uses TLS >= 1.2"
+        name = "Verify CloudFront Distribution Viewer Certificate is using TLS v1.2 or higher"
         id = "CKV_AWS_174"
         supported_resources = ["AWS::CloudFront::Distribution"]
         categories = [CheckCategories.ENCRYPTION]
-        super().__init__(name=name,id=id,categories=categories,supported_resources=supported_resources)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
         return "Properties/DistributionConfig/ViewerCertificate/MinimumProtocolVersion"
