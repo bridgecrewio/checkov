@@ -6,11 +6,13 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 _SECURE_RE = re.compile(r"^TLSv1\.(?:2|3)_\d{4}$")
 
+
 def _first(v: Any) -> Any:
     # Terraform parser often wraps scalars in single-item lists
     if isinstance(v, list):
         return v[0] if v else None
     return v
+
 
 class CloudFrontTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
@@ -46,3 +48,4 @@ class CloudFrontTLS12(BaseResourceValueCheck):
         return [self.get_inspected_key()]
 
 check = CloudFrontTLS12()
+

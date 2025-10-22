@@ -50,3 +50,4 @@ class CloudFrontTLS12(BaseResourceValueCheck):
         return CheckResult.FAILED
 
 check = CloudFrontTLS12()
+
