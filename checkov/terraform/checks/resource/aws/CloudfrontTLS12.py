@@ -47,5 +47,5 @@ class CloudFrontTLS12(BaseResourceValueCheck):
     def get_evaluated_keys(self):
         return [self.get_inspected_key()]
 
-check = CloudFrontTLS12()
 
+check = CloudFrontTLS12()
