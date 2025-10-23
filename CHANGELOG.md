@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.485...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.486...HEAD)
+
+## [3.2.486](https://github.com/bridgecrewio/checkov/compare/3.2.485...3.2.486) - 2025-10-22
+
+### Feature
+
+- **general:** update setuptools version 78.1.1 - [#7347](https://github.com/bridgecrewio/checkov/pull/7347)
 
 ## [3.2.485](https://github.com/bridgecrewio/checkov/compare/3.2.484...3.2.485) - 2025-10-20
 

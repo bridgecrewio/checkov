@@ -93,3 +93,18 @@ Resources:
           AcmCertificateArn: "cert-test"
           MinimumProtocolVersion: TLSv1.2_2021
           SslSupportMethod: sni-only
+  cloudfrontdistributionPASSED4:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - DomainName: example.com
+            Id: origin1
+        DefaultCacheBehavior:
+          TargetOriginId: origin1
+          ViewerProtocolPolicy: redirect-to-https
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:123456789012:certificate/abc
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.3_2025
