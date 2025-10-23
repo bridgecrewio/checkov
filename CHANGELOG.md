@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.486...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.487...HEAD)
+
+## [3.2.487](https://github.com/bridgecrewio/checkov/compare/3.2.486...3.2.487) - 2025-10-23
+
+### Bug Fix
+
+- **general:** CKV_AWS_174 should-allow-higher-then-TLSv1.2 - terraform and cloudformation - [#7352](https://github.com/bridgecrewio/checkov/pull/7352)
 
 ## [3.2.486](https://github.com/bridgecrewio/checkov/compare/3.2.485...3.2.486) - 2025-10-22
 
