@@ -594,12 +594,16 @@ class Report:
         example: from resource_id='module.module_name.type.name[1]' return 'type.name'
         example: from resource_id='type.name['some.long.address']' return 'type.name'
         example: from resource_id='module.module_name['some.long.address']'.type.name return 'type.name'
+        example: from resource_id='module.module_name['some.long.address']'.type.name[1] return 'type.name'
         """
         if '[' in resource_id:
             # remove any information inside brackets
             resource_id = resource_id[:resource_id.index('[')] + resource_id[resource_id.index(']') + 1:]
         # take last two elements
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
+        if '[' in resource_raw_id:
+            # cut string at bracket start
+            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
         return resource_raw_id
 
     @classmethod
