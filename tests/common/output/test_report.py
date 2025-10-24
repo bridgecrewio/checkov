@@ -47,3 +47,38 @@ def test_from_reduced_json(json_reduced_report):
         ],
     ]
     assert passed_check.bc_check_id == 'BC_REPO_GITHUB_ACTION_1'
+
+
+def test_get_plan_resource_raw_id_1():
+    resource_id = Report.get_plan_resource_raw_id("module.vnet[0].azurerm_subnet.subnet_for_each['snet-commonservices']")
+    assert resource_id == 'azurerm_subnet.subnet_for_each'
+
+
+def test_get_plan_resource_raw_id_2():
+    resource_id = Report.get_plan_resource_raw_id("module.vnet[0].azurerm_subnet.subnet_for_each[1]")
+    assert resource_id == 'azurerm_subnet.subnet_for_each'
+
+
+def test_get_plan_resource_raw_id_3():
+    resource_id = Report.get_plan_resource_raw_id("module.vnet[0].azurerm_subnet.subnet_for_each")
+    assert resource_id == 'azurerm_subnet.subnet_for_each'
+
+
+def test_get_plan_resource_raw_id_4():
+    resource_id = Report.get_plan_resource_raw_id("module.vnet.azurerm_subnet.subnet_for_each")
+    assert resource_id == 'azurerm_subnet.subnet_for_each'
+
+
+def test_get_plan_resource_raw_id_5():
+    resource_id = Report.get_plan_resource_raw_id("aws_route53_zone.example[\"example.com\"]")
+    assert resource_id == 'aws_route53_zone.example'
+
+
+def test_get_plan_resource_raw_id_6():
+    resource_id = Report.get_plan_resource_raw_id("module.sg[\"bad_example\"].aws_security_group.bad")
+    assert resource_id == 'aws_security_group.bad'
+
+
+def test_get_plan_resource_raw_id_7():
+    resource_id = Report.get_plan_resource_raw_id("type.name")
+    assert resource_id == 'type.name'
