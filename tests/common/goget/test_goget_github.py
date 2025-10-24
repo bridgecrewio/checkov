@@ -108,6 +108,17 @@ class TestGitGetter(unittest.TestCase):
         self.assertEqual("aa218f56b14c9653891f9e74264a383fa43fefbd", getter.commit_id,
                          "Parsed source commit_id is wrong")
 
+    def test_parse_shortened_commit_id(self):
+        """Test parsing of shortened git commit IDs (5-39 characters)."""
+        url = "https://my-git.com/owner/repository-name?ref=aa218"
+        getter = GitGetter(url)
+        git_url = getter.extract_git_ref(url)
+
+        self.assertEqual(
+            "https://my-git.com/owner/repository-name", git_url, "Parsed source url is wrong for 5-char commit"
+        )
+        self.assertEqual("aa218", getter.commit_id, "Parsed source commit_id is wrong for 5-char commit")
+
     @patch('checkov.common.goget.github.get_git.Repo')
     @patch('shutil.copytree')
     @patch('os.makedirs')
