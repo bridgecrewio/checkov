@@ -94,7 +94,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install pipenv
