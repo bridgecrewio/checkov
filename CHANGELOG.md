@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.487...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.488...HEAD)
+
+## [3.2.488](https://github.com/bridgecrewio/checkov/compare/3.2.487...3.2.488) - 2025-10-27
+
+### Feature
+
+- **terraform_plan:** add new cases for foreach in the presence of skips - [#7351](https://github.com/bridgecrewio/checkov/pull/7351)
 
 ## [3.2.487](https://github.com/bridgecrewio/checkov/compare/3.2.486...3.2.487) - 2025-10-23
 
