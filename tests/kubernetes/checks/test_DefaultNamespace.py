@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import mock
 
 from checkov.kubernetes.checks.resource.k8s.DefaultNamespace import check
 from checkov.kubernetes.runner import Runner
@@ -21,19 +22,18 @@ class TestDefaultNamespace(unittest.TestCase):
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
+    @mock.patch.dict(os.environ, {"HELM_NAMESPACE": "non-default"})
     def test_summary_with_env_var(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        os.environ['HELM_NAMESPACE'] = 'non-default'
         test_files_dir = current_dir + "/example_DefaultNamespace"
-        report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 11)
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        os.environ.pop("HELM_NAMESPACE", None)
 
 
 if __name__ == '__main__':
