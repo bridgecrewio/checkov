@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -36,6 +37,8 @@ class DefaultNamespace(BaseK8Check):
         metadata = conf.get("metadata")
         if metadata:
             if "namespace" in metadata and metadata["namespace"] != "default":
+                return CheckResult.PASSED
+            if os.getenv('HELM_NAMESPACE') and os.getenv('HELM_NAMESPACE') != "default":
                 return CheckResult.PASSED
 
             # If namespace not defined it is default -> Ignore default Service account and kubernetes service
