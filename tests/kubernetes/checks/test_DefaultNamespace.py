@@ -33,6 +33,7 @@ class TestDefaultNamespace(unittest.TestCase):
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
+        os.environ.pop("HELM_NAMESPACE", None)
 
 
 if __name__ == '__main__':
