@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.488...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.489...HEAD)
+
+## [3.2.489](https://github.com/bridgecrewio/checkov/compare/3.2.488...3.2.489) - 2025-10-29
+
+### Bug Fix
+
+- **helm:** Check HELM_NAMESPACE env var in CKV_K8S_21  - [#7355](https://github.com/bridgecrewio/checkov/pull/7355)
 
 ## [3.2.488](https://github.com/bridgecrewio/checkov/compare/3.2.487...3.2.488) - 2025-10-27
 
