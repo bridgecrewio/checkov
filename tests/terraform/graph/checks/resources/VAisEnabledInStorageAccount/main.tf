@@ -107,3 +107,23 @@ resource "azurerm_mssql_server_vulnerability_assessment" "badExampleNotEnabled" 
     ]
   }
 }
+
+resource "azurerm_mssql_server" "pass" {
+  name                         = "mssqlserver-pass"
+  resource_group_name          = azurerm_resource_group.okExample.name
+  location                     = azurerm_resource_group.okExample.location
+  version                      = "12.0"
+}
+
+resource "azurerm_mssql_server_security_alert_policy" "pass" {
+  resource_group_name        = azurerm_resource_group.example.name
+  server_name                = azurerm_mssql_server.pass.name
+  state                      = "Enabled"
+  storage_endpoint           = azurerm_storage_account.example.primary_blob_endpoint
+  storage_account_access_key = azurerm_storage_account.example.primary_access_key
+  disabled_alerts = [
+    "Sql_Injection",
+    "Data_Exfiltration"
+  ]
+  retention_days = 20
+}

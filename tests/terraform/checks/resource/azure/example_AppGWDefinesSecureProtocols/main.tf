@@ -31,7 +31,7 @@ resource "azurerm_public_ip" "example" {
   allocation_method   = "Dynamic"
 }
 
-# since these variables are re-used - a locals block makes this more maintainable
+# since these variables are reused - a locals block makes this more maintainable
 locals {
   backend_address_pool_name      = "${azurerm_virtual_network.example.name}-beap"
   frontend_port_name             = "${azurerm_virtual_network.example.name}-feport"

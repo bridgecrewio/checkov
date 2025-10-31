@@ -63,6 +63,11 @@ class TestPrioritiseSecrets(unittest.TestCase):
         self.assertFalse(result)
         self.assertIn('key3', self.secret_records)
 
+    def test_no_removal_of_first_check_id(self):
+        result = Runner._prioritise_secrets(self.secret_records, 'key1', 'CKV_SECRET_80')
+        self.assertFalse(result)
+        self.assertIn('key1', self.secret_records)
+
 
 if __name__ == '__main__':
     unittest.main()

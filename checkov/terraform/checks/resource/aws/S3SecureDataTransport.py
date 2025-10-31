@@ -77,6 +77,8 @@ class S3SecureDataTransport(BaseResourceCheck):
         if not is_public and access_control_policy:
             grants = access_control_policy[0].get('grant', [])
             for grant in grants:
+                if isinstance(grant, str):
+                    continue
                 grantee = grant.get('grantee', [])
                 if grantee and grantee[0].get('uri', [None])[0] == 'http://acs.amazonaws.com/groups/global/AllUsers':
                     # Search for a connected aws_s3_bucket then a connected aws_s3_bucket_public_access_block then

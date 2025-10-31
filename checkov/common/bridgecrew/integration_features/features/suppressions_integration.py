@@ -108,7 +108,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self._apply_suppressions_to_report(scan_report)
 
     def _apply_suppressions_to_report(self, scan_report: Report) -> None:
-
+        logging.debug('Start apply_suppressions_to_report')
         # holds the checks that are still not suppressed
         still_failed_checks = []
         still_passed_checks = []
@@ -124,7 +124,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             relevant_suppressions_v2 = self.suppressions_v2.get(check.check_id)
 
             has_suppression = relevant_suppressions or relevant_suppressions_v2
-
+            if isinstance(has_suppression, list):
+                logging.debug(f'(_apply_suppressions_to_report) - number of suppression {len(has_suppression)}')
             applied_suppression = self._check_suppressions(check, relevant_suppressions, relevant_suppressions_v2) if has_suppression else None
             if applied_suppression:
                 suppress_comment = applied_suppression['comment'] if applied_suppression['isV1'] else applied_suppression['justificationComment']
@@ -168,6 +169,25 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return suppression
         return None
 
+    def _check_cve_suppression(self, record: Record, suppression: dict[str, Any]) -> bool:
+        if 'accountIds' not in suppression:
+            return False
+        if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in \
+                suppression['accountIds'] \
+                and suppression['cves']:
+            repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
+            suppression_path = self._get_cve_suppression_path(suppression)
+            repo_file_path = align_path(record.repo_file_path)
+            file_abs_path = align_path(record.file_abs_path)
+            if file_abs_path == suppression_path[1:] or \
+                    file_abs_path == suppression_path or \
+                    file_abs_path.endswith("".join([repo_name, suppression_path])) or \
+                    removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/') \
+                    or record.file_path == suppression_path:
+                return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
+                           for cve in suppression['cves'])
+        return False
+
     def _check_suppression(self, record: Record, suppression: dict[str, Any]) -> bool:
         """
         Returns True if and only if the specified suppression applies to the specified record.
@@ -188,6 +208,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # But checking here adds some resiliency against bugs if that changes.
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
+            logging.debug(f'check_suppression type Resources {suppression}. resource_id = {record.repo_file_path}:{record.resource} repo_id = {self.bc_integration.repo_id}')
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
@@ -215,21 +236,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         elif type == 'Cves':
-            if 'accountIds' not in suppression:
-                return False
-            if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']\
-                    and suppression['cves']:
-                repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
-                suppression_path = self._get_cve_suppression_path(suppression)
-                repo_file_path = align_path(record.repo_file_path)
-                file_abs_path = align_path(record.file_abs_path)
-                if file_abs_path == suppression_path[1:] or \
-                        file_abs_path == suppression_path or \
-                        file_abs_path.endswith("".join([repo_name, suppression_path])) or \
-                        removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/'):
-                    return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
-                               for cve in suppression['cves'])
-            return False
+            return self._check_cve_suppression(record, suppression)
 
         elif type == 'LicenseType':
             return any(record.vulnerability_details and record.vulnerability_details['license'] == license_type

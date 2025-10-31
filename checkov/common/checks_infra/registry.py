@@ -33,11 +33,12 @@ class Registry(BaseRegistry):
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
         self.checks_dir = checks_dir
+        self.internal_checks_dir_loaded = False
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
 
     def load_checks(self) -> None:
-        if self.checks:
+        if self.checks and self.internal_checks_dir_loaded:
             # checks were previously loaded
             return
 
@@ -78,6 +79,8 @@ class Registry(BaseRegistry):
                                 # Note the external check; used in the should_run_check logic
                                 RunnerFilter.notify_external_check(check.id)
                             self.checks.append(check)
+        if not external_check:
+            self.internal_checks_dir_loaded = True
 
     def load_external_checks(self, dir: str) -> None:
         self._load_checks_from_dir(dir, True)

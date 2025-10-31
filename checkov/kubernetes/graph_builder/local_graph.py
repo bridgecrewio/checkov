@@ -90,7 +90,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         for vertex_index, vertex in enumerate(self.vertices):
             for edge_builder in self.edge_builders:
                 if edge_builder.should_search_for_edges(vertex):
-                    # Needs to be handled separately as it requires an isntance rather than a static method
+                    # Needs to be handled separately as it requires an instance rather than a static method
                     if isinstance(edge_builder, ServiceAccountEdgeBuilder):
                         current_vertex_connections = edge_builder.find_connections_for_instance(vertex, self.vertices)
                     else:
@@ -171,6 +171,12 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 template['apiVersion'] = conf.get('apiVersion')
 
             template_metadata = template.get('metadata')
+
+            template_namespace = template_metadata.get('namespace')
+            metadata_namespace = metadata.get('namespace')
+            if template_namespace is None and metadata_namespace is not None:
+                template_metadata['namespace'] = metadata_namespace
+
             annotations = metadata.get('annotations')
             if annotations is not None and template_metadata is not None and 'annotations' not in template_metadata:
                 # Updates annotations to template as well to handle metadata added to the parent resource

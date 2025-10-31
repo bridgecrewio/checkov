@@ -1,4 +1,5 @@
 pass:
   - "azurerm_sql_server.okExample"
+  - "azurerm_mssql_server.pass"
 fail:
   - "azurerm_sql_server.badExample"

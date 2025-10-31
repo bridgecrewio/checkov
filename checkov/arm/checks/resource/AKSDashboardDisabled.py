@@ -19,16 +19,21 @@ class AKSDashboardDisabled(BaseResourceCheck):
         if conf.get("apiVersion") is not None:
             if conf["apiVersion"] == "2017-08-31":
                 # No addonProfiles option to configure
+                self.evaluated_keys = ["apiVersion"]
                 return CheckResult.FAILED
 
         properties = conf.get("properties")
+        self.evaluated_keys = ["properties"]
         if properties is None or not isinstance(properties, dict):
+            self.evaluated_keys = ["properties"]
             return CheckResult.FAILED
         addon_profiles = conf["properties"].get("addonProfiles")
         if not isinstance(addon_profiles, dict):
+            self.evaluated_keys = ["properties/addonProfiles"]
             return CheckResult.FAILED
         kube_dashboard = addon_profiles.get("kubeDashboard")
         if not isinstance(kube_dashboard, dict):
+            self.evaluated_keys = ["properties/addonProfiles/kubeDashboard"]
             return CheckResult.FAILED
         enabled = kube_dashboard.get("enabled")
         if enabled is not None and str(enabled).lower() == "false":

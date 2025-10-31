@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
+from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.utils import ArmElements
 
 if TYPE_CHECKING:
@@ -16,12 +17,11 @@ def convert_graph_vertices_to_definitions(vertices: list[ArmBlock], root_folder:
     breadcrumbs: dict[str, dict[str, Any]] = {}
     for vertex in vertices:
         block_path = vertex.path
-        arm_element = vertex.block_type
-        element_name = vertex.name
-        if arm_element == ArmElements.RESOURCES:
-            arm_definitions.setdefault(block_path, {}).setdefault(arm_element, []).append(vertex.config)
+        if vertex.block_type == BlockType.RESOURCE:
+            arm_definitions.setdefault(block_path, {}).setdefault(ArmElements.RESOURCES, []).append(vertex.config)
         else:
-            arm_definitions.setdefault(block_path, {}).setdefault(arm_element, {})[element_name] = vertex.config
+            element_name = vertex.name.split('/')[-1]
+            arm_definitions.setdefault(block_path, {}).setdefault(vertex.block_type, {})[element_name] = vertex.config
 
         if vertex.breadcrumbs:
             relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"

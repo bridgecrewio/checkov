@@ -19,18 +19,21 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
         :return: <CheckResult>
         """
 
+        self.evaluated_keys = ["Properties"]
         if 'Properties' in conf.keys():
             if 'DistributionConfig' in conf['Properties'].keys():
                 if 'DefaultCacheBehavior' in conf['Properties']['DistributionConfig'].keys():
                     if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['DefaultCacheBehavior'].keys():
                         if conf['Properties']['DistributionConfig']['DefaultCacheBehavior']['ViewerProtocolPolicy'] == 'allow-all':
+                            self.evaluated_keys = ["Properties/DistributionConfig/DefaultCacheBehavior/ViewerProtocolPolicy"]
                             return CheckResult.FAILED
                 if 'CacheBehaviors' in conf['Properties']['DistributionConfig'].keys():
                     if not isinstance(conf['Properties']['DistributionConfig']['CacheBehaviors'], list):
                         return CheckResult.UNKNOWN
-                    for behavior in range(len(conf['Properties']['DistributionConfig']['CacheBehaviors'])):
+                    for idx, behavior in enumerate(range(len(conf['Properties']['DistributionConfig']['CacheBehaviors']))):
                         if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior].keys():
                             if conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior]['ViewerProtocolPolicy'] == 'allow-all':
+                                self.evaluated_keys = [f"Properties/DistributionConfig/CacheBehaviors/[{idx}]/ViewerProtocolPolicy"]
                                 return CheckResult.FAILED
         return CheckResult.PASSED
 

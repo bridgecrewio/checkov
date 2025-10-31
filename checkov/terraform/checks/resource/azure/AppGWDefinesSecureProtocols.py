@@ -61,14 +61,17 @@ class AppGWDefinesSecureProtocols(BaseResourceCheck):
                     ):
                         ciphers = ssl_policy.get("cipher_suites")
                         if ciphers and isinstance(ciphers, list) and any(cipher in BAD_CIPHERS for cipher in ciphers[0]):
+                            self.evaluated_keys = ["ssl_policy/[0]/cipher_suites"]
                             return CheckResult.FAILED
                         return CheckResult.PASSED
 
                 policy_name = ssl_policy.get("policy_name")
                 if policy_name and isinstance(policy_name, list) and policy_name[0] == "AppGwSslPolicy20220101S":
                     return CheckResult.PASSED
+                self.evaluated_keys = ["ssl_policy/[0]/policy_name"]
                 return CheckResult.FAILED
 
+        self.evaluated_keys = ["ssl_policy"]
         return CheckResult.FAILED
 
 

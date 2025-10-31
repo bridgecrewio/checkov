@@ -1,4 +1,4 @@
 pass:
-  - 'Pod.default.nginx-ingress-controller-2.app.kubernetes.io/name-ingress-nginx.app.kubernetes.io/part-of-ingress-nginx'
+  - 'Pod.example-ns.nginx-ingress-controller-2.app.kubernetes.io/name-ingress-nginx.app.kubernetes.io/part-of-ingress-nginx'
 fail:
-  - 'Pod.default.nginx-ingress-controller.app.kubernetes.io/name-ingress-nginx.app.kubernetes.io/part-of-ingress-nginx'
+  - 'Pod.example-ns.nginx-ingress-controller.app.kubernetes.io/name-ingress-nginx.app.kubernetes.io/part-of-ingress-nginx'

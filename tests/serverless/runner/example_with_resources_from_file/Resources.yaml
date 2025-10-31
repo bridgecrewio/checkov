@@ -1,0 +1,30 @@
+Resources:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  UsernameOutsideOfLineRangeOfOriginalFile:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Description: "User"
+        Name: /username
+        Type: String
+        Value: "user"

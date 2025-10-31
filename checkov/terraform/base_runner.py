@@ -32,6 +32,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.tf_parser import TFParser
+from checkov.common.util.env_vars_config import env_vars_config
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -106,14 +107,14 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def get_connected_node(self, entity: dict[str, Any], root_folder: str) -> Optional[Dict[str, Any]]:
-        connected_entity = entity.get("connected_node")
-        if not connected_entity:
+    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str) \
+            -> Optional[Dict[str, Any]]:
+        if not connected_node:
             return None
-        connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
+        connected_entity_context = self.get_entity_context_and_evaluations(connected_node)
         if not connected_entity_context:
             return None
-        full_file_path = connected_entity[CustomAttributes.FILE_PATH]
+        full_file_path = connected_node[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data["code_block"] = connected_entity_context.get("code_lines")
         connected_node_data["file_path"] = f"{os.sep}{os.path.relpath(full_file_path, root_folder)}"
@@ -122,7 +123,7 @@ class BaseTerraformRunner(
             connected_entity_context.get("end_line"),
         ]
         connected_node_data["resource"] = ".".join(connected_entity_context["definition_path"])
-        connected_node_data["entity_tags"] = connected_entity.get("tags", {})
+        connected_node_data["entity_tags"] = connected_node.get("tags", {})
         connected_node_data["evaluations"] = None
         connected_node_data["file_abs_path"] = os.path.abspath(full_file_path)
         connected_node_data["resource_address"] = connected_entity_context.get("address")
@@ -138,6 +139,12 @@ class BaseTerraformRunner(
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_context = self.get_entity_context_and_evaluations(entity)
+                virtual_resources = entity.get(CustomAttributes.CONFIG, {}).get('virtual_resources')
+                if (env_vars_config.RAW_TF_IN_GRAPH_ENV and virtual_resources
+                        and isinstance(virtual_resources, list) and len(virtual_resources) > 0):
+                    # We want to skip violations for raw TF resources and keep only virtual one's. The raw resource
+                    # should have an array of attached virtual resources so we check it and skip if needed
+                    continue
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
@@ -147,7 +154,8 @@ class BaseTerraformRunner(
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
-                    connected_node_data = self.get_connected_node(entity, root_folder)
+                    connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
+                                                                        root_folder)
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])

@@ -15,9 +15,10 @@ class AccessControlGroupOutboundRule(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        for outbound in conf.get("outbound", []):
+        for idx, outbound in enumerate(conf.get("outbound", [])):
             ip = outbound.get("ip_block")
             if ip == ["0.0.0.0/0"] or ip == ["::/0"]:
+                self.evaluated_keys = [f"outbound/[{idx}]/ip_block"]
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

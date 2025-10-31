@@ -6,6 +6,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.modules.module_utils import external_modules_download_path
@@ -374,12 +375,27 @@ class TestGraphBuilder(TestCase):
         self.check_edge(graph, provider_node, var_aws_profile_node, 'profile')
         self.check_edge(graph, local_node, var_bucket_name_node, 'bucket_name')
 
-    def test_multiple_modules_with_connected_resources(self):
+    def test_multiple_nested_module_with_connected_resources(self):
         valid_plan_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_edges_tfplan/tfplan.json'))
         definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
         graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
         tf_plan_local_graph = graph_manager.build_graph_from_definitions(definitions, render_variables=False)
+        self.assertTrue(tf_plan_local_graph.in_edges[1])
         self.assertTrue(tf_plan_local_graph.in_edges[3])
+
+    def test_best_match_multiple_modules_with_connected_resources(self):
+        valid_plan_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_edges_tfplan/tfplan.json'))
+        definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
+        graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
+        tf_plan_local_graph = graph_manager.build_graph_from_definitions(definitions, render_variables=False)
+        origin_module_name = 'module.test.test.s3-bucket-1.aws_s3_bucket_public_access_block.this[0]'
+        vertex_module_name_1 = 'module.test.test.s3-bucket-1.aws_s3_bucket.this[0]'
+        vertex_module_name_2 = 'module.test.s3-bucket-2.aws_s3_bucket.this[0]'
+        origin_path = 'modules_edges_tfplan/tfplan.json'
+        common_prefix_1 = tf_plan_local_graph._get_common_prefix_name(origin_module_name, vertex_module_name_1, origin_path)
+        common_prefix_2 = tf_plan_local_graph._get_common_prefix_name(origin_module_name, vertex_module_name_2, origin_path)
+        assert(common_prefix_1 == 'modules_edges_tfplan/tfplan.json module.test.test.s3-bucket-1')
+        assert(common_prefix_2 == 'modules_edges_tfplan/tfplan.json module.test')
 
 
 def build_new_key_for_tf_definition(key):

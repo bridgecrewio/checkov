@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -14,6 +16,9 @@ class SynapseSQLPoolDataEncryption(BaseResourceCheck):
         if 'data_encrypted' in conf and conf['data_encrypted'][0] is True:
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['data_encrypted']
 
 
 check = SynapseSQLPoolDataEncryption()

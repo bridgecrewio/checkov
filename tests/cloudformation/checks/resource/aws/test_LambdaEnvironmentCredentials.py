@@ -21,6 +21,8 @@ class TestLambdaEnvironmentCredentials(unittest.TestCase):
             "AWS::Serverless::Function.NoEnv",
             "AWS::Serverless::Function.NoProperties",
             "AWS::Serverless::Function.NoSecret",
+            "AWS::Lambda::Function.Pass2",
+            "AWS::Lambda::Function.CDKLambda",
         }
         failing_resources = {
             "AWS::Lambda::Function.Secret",

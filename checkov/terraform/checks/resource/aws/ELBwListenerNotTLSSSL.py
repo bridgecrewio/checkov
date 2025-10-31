@@ -16,8 +16,10 @@ class ELBwListenerNotTLSSSL(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if 'listener' in conf:
-            for listener in conf.get('listener'):
+            self.evaluated_keys = ['listener']
+            for listener_idx, listener in enumerate(conf.get('listener')):
                 if 'instance_protocol' in listener:
+                    self.evaluated_keys.append(f'listener/[{listener_idx}]/instance_protocol')
                     if listener.get('instance_protocol')[0].lower() in ('http', 'tcp'):
                         return CheckResult.FAILED
                     if listener.get('instance_protocol')[0].lower() in ('https', 'ssl') and \

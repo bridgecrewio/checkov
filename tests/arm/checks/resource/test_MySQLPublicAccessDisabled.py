@@ -22,9 +22,11 @@ class TestMySQLPublicAccessDisabled(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.DBforMySQL/servers.pass",
+            "Microsoft.DBforMySQL/flexibleServers.pass2",
         }
         failing_resources = {
             "Microsoft.DBforMySQL/servers.fail",
+            "Microsoft.DBforMySQL/flexibleServers.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

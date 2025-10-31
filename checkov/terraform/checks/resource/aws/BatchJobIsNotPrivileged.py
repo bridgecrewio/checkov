@@ -16,6 +16,7 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        self.evaluated_keys = ["container_properties"]
         container_properties = conf.get("container_properties")
         if container_properties:
             if isinstance(container_properties[0], str):
@@ -28,6 +29,7 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
             if not isinstance(container, dict):
                 return CheckResult.UNKNOWN
             if container.get("privileged"):
+                self.evaluated_keys.append("container_properties/[0]/privileged")
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN

@@ -50,7 +50,7 @@ def test_deployment_resources(mocker: MockerFixture):
 
     assert len(helm_report.resources) == 4
     assert len(helm_report.passed_checks) == 72
-    assert len(helm_report.failed_checks) == 19
+    assert len(helm_report.failed_checks) == 20
     assert len(helm_report.skipped_checks) == 0
     assert len(helm_report.parsing_errors) == 0
 

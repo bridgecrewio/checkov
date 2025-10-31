@@ -69,6 +69,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(key)
         if isinstance(key, TFModule):
             return str(key)
+        if isinstance(key, tuple):
+            return ",".join(key)
         else:
             return key
 

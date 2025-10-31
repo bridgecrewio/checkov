@@ -37,6 +37,10 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'map': {}
 }
 
+attrsToFilterByResourceType = {
+    "google_iam_workload_identity_pool_provider": ["attribute_condition"]
+}
+
 DYNAMIC_STRING = 'dynamic'
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
@@ -45,6 +49,8 @@ LOOKUP = 'lookup'
 DOT_SEPERATOR = '.'
 LEFT_BRACKET_WITH_QUOTATION = '["'
 RIGHT_BRACKET_WITH_QUOTATION = '"]'
+LEFT_PARENTHESIS = '('
+COMMA = ','
 LEFT_BRACKET = '['
 RIGHT_BRACKET = ']'
 LEFT_CURLY = '{'
@@ -114,11 +120,9 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
-                # evaluate the last specified variable based on .tfvars precedence
-                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
-                    changed_attribute_value=destination_vertex.attributes["default"],
+                    changed_attribute_value=destination_vertex.attributes['default'],
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
@@ -210,7 +214,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     if isinstance(default_val_eval, dict):
                         value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
-                    logging.debug(f"cant evaluate this rendered value: {default_val}")
+                    logging.debug(f"cannot evaluate this rendered value: {default_val}")
             return default_val if value is None else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
@@ -489,6 +493,14 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         else:
             dpath.set(block_conf, dynamic_argument, dynamic_value, separator=DOT_SEPERATOR)
 
+    def shouldBeFilteredByConditionAndResourceType(self, attr: str, resource_type: List[str]) -> bool:
+        if not resource_type:
+            return False
+        for resource in resource_type:
+            if resource in attrsToFilterByResourceType and attr in attrsToFilterByResourceType[resource]:
+                return True
+        return False
+
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
             changed_attributes = {}
@@ -500,6 +512,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 for attr in vertex.attributes
                 if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf)
                 and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
+                and not self.shouldBeFilteredByConditionAndResourceType(attr, vertex.attributes.get("resource_type", []))
             ]
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)

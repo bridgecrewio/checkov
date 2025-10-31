@@ -11,9 +11,6 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
             self, resource_types: List[str], attribute: Optional[str], value: Union[Any, List[Any]],
             is_jsonpath_check: bool = False
     ) -> None:
-        # Convert value to a list if it's not already one to unify handling
-        value = [force_int(v) if isinstance(v, (str, int)) else v for v in
-                 (value if isinstance(value, list) else [value])]
         super().__init__(resource_types, attribute, value, is_jsonpath_check)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
@@ -22,10 +19,32 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         if attr is None:
             return False
 
-        if isinstance(attr, list):
-            return any(self._check_value(value, attr_val) for attr_val in attr for value in self.value)
+        processed_value = self._handle_range_values(self.value)
 
-        return any(self._check_value(value, attr) for value in self.value)
+        if isinstance(attr, list):
+            return any(self._check_value(value, attr_val) for attr_val in attr for value in processed_value)
+
+        return any(self._check_value(value, attr) for value in processed_value)
+
+    def _handle_range_values(self, value: Union[Any, List[Any]]) -> List[Any]:
+        # Convert value to a list if it's not already one to unify handling
+        value_list = value if isinstance(value, list) else [value]
+
+        # Process each item in the value list
+        processed_value: List[Any] = []
+        for v in value_list:
+            if isinstance(v, str) and '-' in v:
+                # Handle range strings
+                start_str, end_str = v.split('-')
+                start = force_int(start_str)
+                end = force_int(end_str)
+                if start is not None and end is not None:
+                    processed_value.extend(range(start, end + 1))
+            else:
+                # Handle single values
+                processed_value.append(force_int(v) if isinstance(v, (str, int)) else v)
+
+        return processed_value
 
     def _check_value(self, value: Any, attr: Any) -> bool:
         # expects one of the following values:

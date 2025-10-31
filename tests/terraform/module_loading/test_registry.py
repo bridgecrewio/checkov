@@ -6,10 +6,13 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader # noqa
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
+from checkov.terraform.module_loading.module_params import ModuleParams
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
+from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
 
@@ -140,6 +143,14 @@ def test_load_terraform_registry(
             "git::ssh://git@github.com/bridgecrewio/terragoat",
             "modules/s3-encrypted",
         ),
+        (
+            "git::git@github.com/bridgecrewio/terragoat//modules/s3-encrypted",
+            "git@github.com/bridgecrewio/terragoat/HEAD/modules/s3-encrypted",
+            "ssh://git@github.com/bridgecrewio/terragoat",
+            "git@github.com/bridgecrewio/terragoat/HEAD",
+            "git::ssh://git@github.com/bridgecrewio/terragoat",
+            "modules/s3-encrypted",
+        ),
     ],
     ids=[
         "module",
@@ -151,6 +162,7 @@ def test_load_terraform_registry(
         "module_over_ssh_without_protocol",
         "module_over_ssh_without_protocol_with_version",
         "git_username",
+        "git::git@ syntax"
     ],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
@@ -243,7 +255,7 @@ def test_load_github(
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
 
-# TODO: create a dummy repo in bitbucket for more consitent tests
+# TODO: create a dummy repo in bitbucket for more consistent tests
 @pytest.mark.parametrize(
     "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
     [
@@ -527,3 +539,59 @@ def test_multiple_similar_loaders():
     GenericGitLoader()
     BitbucketLoader()
     assert len(registry.loaders) == 7
+
+@mock.patch.object(env_vars_config, 'CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', True)
+def test_latest_tf_managed(tmp_path: Path):
+    registry = ModuleLoaderRegistry(download_external_modules=False)
+    registry.module_content_cache = {
+        'terraform-aws-modules/iam:5.55.0': ModuleContent('xxx')
+    }
+    registry.module_latest = {
+        'terraform-aws-modules/iam': '5.55.0'
+    }
+
+    mc = registry.load(str(tmp_path / 'cache_check'), source='terraform-aws-modules/iam', source_version='latest')
+    assert mc and mc.path() == 'xxx'
+
+@mock.patch.object(env_vars_config, 'CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', True)
+def test_latest_tf_managed_registry(tmp_path: Path):
+    registry = ModuleLoaderRegistry(download_external_modules=False)
+    registry.module_content_cache = {
+        'registry.terraform.io/terraform-aws-modules/iam:5.55.0': ModuleContent('xxx')
+    }
+    registry.module_latest = {
+        'registry.terraform.io/terraform-aws-modules/iam': '5.55.0'
+    }
+
+    mc = registry.load(str(tmp_path / 'cache_check'), source='terraform-aws-modules/iam', source_version='latest')
+    assert mc and mc.path() == 'xxx'
+
+
+def test_github_is_matching_loader(tmp_path: Path):
+    loader = GithubLoader()
+    dummy_dir = tmp_path.as_posix()
+
+    params = ModuleParams(
+        root_dir=dummy_dir,
+        current_dir=dummy_dir,
+        source="",
+        source_version=None,
+        dest_dir=dummy_dir,
+        external_modules_folder_name=".external_modules"
+    )
+    loader.discover(params)
+
+    # --- Case 1: github.com/org/repo ---
+    params.module_source = "github.com/org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::https://github.com/org/repo"
+
+    # --- Case 2: git@github.com:org/repo ---
+    params.module_source = "git@github.com:org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::ssh://git@github.com/org/repo"
+
+    # --- Case 3: git::git@github.com:org/repo ---
+    params.module_source = "git::git@github.com:org/repo"
+    assert loader._is_matching_loader(params) is True
+    assert params.module_source == "git::ssh://git@github.com/org/repo"

@@ -174,7 +174,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_record_includes_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-
         function_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseFunctionCheck):
@@ -196,14 +195,15 @@ class TestRunnerValid(unittest.TestCase):
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
         file_abs_path = os.path.abspath(scan_file_path)
 
-        report = Runner().run(files=[file_abs_path], runner_filter=RunnerFilter(framework=['serverless'], checks=[custom_check_id]), root_folder="")
+        report = Runner().run(files=[file_abs_path],
+                              runner_filter=RunnerFilter(framework=['serverless'], checks=[custom_check_id]),
+                              root_folder="")
 
         self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
 
     def test_record_check_severity_omit(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-
         function_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseFunctionCheck):
@@ -225,14 +225,14 @@ class TestRunnerValid(unittest.TestCase):
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
         file_abs_path = os.path.abspath(scan_file_path)
 
-        report = Runner().run(files=[file_abs_path], runner_filter=RunnerFilter(framework=['serverless'], checks=['MEDIUM']), root_folder="")
+        report = Runner().run(files=[file_abs_path],
+                              runner_filter=RunnerFilter(framework=['serverless'], checks=['MEDIUM']), root_folder="")
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_record_check_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"
-
 
         function_registry.checks = defaultdict(list)
 
@@ -255,7 +255,8 @@ class TestRunnerValid(unittest.TestCase):
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
         file_abs_path = os.path.abspath(scan_file_path)
 
-        report = Runner().run(files=[file_abs_path], runner_filter=RunnerFilter(framework=['serverless'], checks=['MEDIUM']), root_folder="")
+        report = Runner().run(files=[file_abs_path],
+                              runner_filter=RunnerFilter(framework=['serverless'], checks=['MEDIUM']), root_folder="")
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
@@ -284,7 +285,9 @@ class TestRunnerValid(unittest.TestCase):
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
         file_abs_path = os.path.abspath(scan_file_path)
 
-        report = Runner().run(files=[file_abs_path], runner_filter=RunnerFilter(framework=['serverless'], skip_checks=['MEDIUM']), root_folder="")
+        report = Runner().run(files=[file_abs_path],
+                              runner_filter=RunnerFilter(framework=['serverless'], skip_checks=['MEDIUM']),
+                              root_folder="")
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
@@ -313,10 +316,29 @@ class TestRunnerValid(unittest.TestCase):
         scan_file_path = os.path.join(current_dir, "resources", "serverless.yaml")
         file_abs_path = os.path.abspath(scan_file_path)
 
-        report = Runner().run(files=[file_abs_path], runner_filter=RunnerFilter(framework=['serverless'], skip_checks=['MEDIUM']), root_folder="")
+        report = Runner().run(files=[file_abs_path],
+                              runner_filter=RunnerFilter(framework=['serverless'], skip_checks=['MEDIUM']),
+                              root_folder="")
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_report_generation_when_using_resources_from_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_dir = os.path.join(current_dir, "example_with_resources_from_file")
+
+        report = Runner().run(root_folder=scan_file_dir, runner_filter=RunnerFilter(framework=['serverless'],
+                                                                                    checks=["CKV_AWS_384"]))
+
+        passed_check_on_username_resource = report.passed_checks[0]
+        assert passed_check_on_username_resource.code_block == [(24, '  UsernameOutsideOfLineRangeOfOriginalFile:\n'),
+                                                                (25, '      Type: AWS::SSM::Parameter\n'),
+                                                                (26, '      Properties:\n'),
+                                                                (27, '        Description: "User"\n'),
+                                                                (28, '        Name: /username\n'),
+                                                                (29, '        Type: String\n'),
+                                                                (30, '        Value: "user"\n')]
+
 
     def tearDown(self):
         function_registry.checks = self.orig_checks

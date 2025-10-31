@@ -9,9 +9,23 @@ scope:
   languages:
     - python
 definition:
-  pattern: aws_cdk.aws_ecs.CfnCluster(<ANY>)
-  conditions:
-    - not_pattern: |
-        aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'name': 'containerInsights', 'value': 'enabled'} ,<ANY>], <ANY>)
-    - not_pattern: |
-        aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'value': 'enabled', 'name': 'containerInsights'} ,<ANY>], <ANY>)
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_ecs.CfnCluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'name': 'containerInsights', 'value': 'enabled'} ,<ANY>], <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'value': 'enabled', 'name': 'containerInsights'} ,<ANY>], <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'name': 'containerInsights', 'value': 'enhanced'} ,<ANY>], <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'value': 'enhanced', 'name': 'containerInsights'} ,<ANY>], <ANY>)
+      - pattern: aws_cdk.aws_ecs.Cluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_ecs.Cluster(<ANY>, container_insights=True, <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_ecs.Cluster(<ANY>, container_insights_v2=aws_ecs.ContainerInsights.ENABLED, <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_ecs.Cluster(<ANY>, container_insights_v2=aws_ecs.ContainerInsights.ENHANCED, <ANY>)

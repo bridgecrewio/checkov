@@ -17,12 +17,26 @@ if TYPE_CHECKING:
 _T = TypeVar("_T")
 
 
+class ParallelRunException(Exception):
+    def __init__(self, internal_exception: Exception) -> None:
+        self.internal_exception = internal_exception
+        super().__init__(internal_exception)
+
+
 class ParallelRunner:
     def __init__(
         self, workers_number: int | None = None,
         parallelization_type: ParallelizationType = ParallelizationType.FORK
     ) -> None:
+        env_workers = os.getenv("CHECKOV_WORKERS_NUMBER")
+        if env_workers:
+            try:
+                workers_number = int(env_workers)
+            except ValueError:
+                logging.warning(f"Invalid CHECKOV_WORKERS_NUMBER value: {env_workers}, using default")
+
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
+        logging.debug("Workers count for the parallel runner is: %s", self.workers_number)
         self.os = platform.system()
         self.type: str | ParallelizationType = parallelization_type
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
@@ -72,14 +86,15 @@ class ParallelRunner:
                         result = original_func(*item)
                     else:
                         result = original_func(item)
-                except Exception:
+
+                    connection.send(result)
+                except Exception as e:
                     logging.error(
                         f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}",
                         exc_info=True,
                     )
-                    result = None
+                    connection.send(ParallelRunException(e))
 
-                connection.send(result)
             connection.close()
 
         logging.debug(
@@ -97,7 +112,12 @@ class ParallelRunner:
         for _, parent_conn, group_len in processes:
             for _ in range(group_len):
                 try:
-                    yield parent_conn.recv()
+                    v = parent_conn.recv()
+
+                    if isinstance(v, ParallelRunException):
+                        raise v.internal_exception.with_traceback(v.internal_exception.__traceback__)
+
+                    yield v
                 except EOFError:
                     pass
 

@@ -43,7 +43,7 @@ from checkov.common.sast.consts import CDKLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import default_tool as tool_name
-from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
@@ -98,7 +98,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.licensing_integration = licensing_integration  # can be manipulated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
@@ -270,16 +270,17 @@ class RunnerRegistry:
         return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
-        integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
+                external_modules_download_path=self.runner_filter.external_modules_download_path,
             )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
+        integration_feature_registry.run_post_runner(scan_report)
         self.scan_reports.append(scan_report)
 
     def save_output_to_file(self, file_name: str, data: str, data_format: str) -> None:
@@ -476,7 +477,6 @@ class RunnerRegistry:
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
                     summary_position=config.summary_position,
-                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(
@@ -488,7 +488,7 @@ class RunnerRegistry:
             )
 
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
             sarif = Sarif(reports=sarif_reports, tool=self.tool)
@@ -730,7 +730,9 @@ class RunnerRegistry:
 
     @staticmethod
     def get_enriched_resources(
-        repo_roots: list[str | Path], download_external_modules: bool
+        repo_roots: list[str | Path],
+        download_external_modules: Optional[bool],
+        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> dict[str, dict[str, Any]]:
         from checkov.terraform.modules.module_objects import TFDefinitionKey
 
@@ -742,6 +744,7 @@ class RunnerRegistry:
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_parsing_errors=parsing_errors,
                 download_external_modules=download_external_modules,
+                external_modules_download_path=external_modules_download_path,
             )
             repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 

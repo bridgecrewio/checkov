@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import ssl
 import uuid
-
+from urllib.parse import urlparse
 import requests
 import logging
 import time
@@ -24,6 +25,8 @@ from checkov.version import version as checkov_version
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
+    from aiohttp.typedefs import StrOrURL
+    from aiohttp import ClientResponse
 
 # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
 REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1
@@ -204,28 +207,47 @@ def request_wrapper(
 
 
 async def aiohttp_client_session_wrapper(
-        url: str,
+        method: str,
+        url: StrOrURL,
         headers: dict[str, Any],
-        payload: dict[str, Any]
-) -> int:
+        payload: dict[str, Any] | None = None,
+) -> ClientResponse:
+    from checkov.common.util import env_vars_config
+
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
+
+    # 1. Read proxy URL (may include user:pass for authentication)
+    proxy_url = env_vars_config.env_vars_config.HTTPS_PROXY
+    proxy_auth = None
+    if proxy_url:
+        parsed_proxy_url = urlparse(proxy_url)
+        if parsed_proxy_url.username and parsed_proxy_url.password:
+            proxy_auth = aiohttp.BasicAuth(login=parsed_proxy_url.username, password=parsed_proxy_url.password)
+    # 2. Read path to custom certificate bundle
+    ca_bundle_path = env_vars_config.env_vars_config.BC_CA_BUNDLE
+    ssl_context = None
+    if ca_bundle_path:
+        logger.info(f"Loading custom CA bundle from: {ca_bundle_path}")
+        # Create a new SSL context
+        ssl_context = ssl.create_default_context(cafile=ca_bundle_path)
+    connector = aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver(), ssl_context=ssl_context)
 
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
+    async with aiohttp.ClientSession(connector=connector) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
             try:
-                async with session.post(
-                        url=url, headers=headers, json=payload
+                async with session.request(
+                        method=method, url=url, headers=headers, json=payload, proxy=proxy_url, proxy_auth=proxy_auth
                 ) as response:
                     content = await response.text()
                 if response.ok:
                     logging.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
-                    return 0
+                    return response
                 elif i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))
                     continue
@@ -233,7 +255,7 @@ async def aiohttp_client_session_wrapper(
                     logging.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
                                   f"url \'{url}\'")
                     logging.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
-                    return 1
+                    return response
             except aiohttp.ClientOSError:
                 if i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))

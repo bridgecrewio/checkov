@@ -30,16 +30,15 @@ def parse(
 
     try:
         (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.CFN)
-    except IOError as err:
-        if err.errno == 2:
-            error = f"Template file not found: {filename} - {err}"
-            LOGGER.error(error)
-        elif err.errno == 21:
-            error = f"Template references a directory, not a file: {filename} - {err}"
-            LOGGER.error(error)
-        elif err.errno == 13:
-            error = f"Permission denied when accessing template file: {filename} - {err}"
-            LOGGER.error(error)
+    except FileNotFoundError as e:
+        error = f'Template file not found: {e.filename}'
+        LOGGER.error(error)
+    except IsADirectoryError as e:
+        error = f'Template references a directory, not a file: {e.filename}'
+        LOGGER.error(error)
+    except PermissionError as e:
+        error = f'Permission denied when accessing {e.filename}'
+        LOGGER.error(error)
     except UnicodeDecodeError as err:
         error = f"Cannot read file contents: {filename} - {err}"
         LOGGER.error(error)
@@ -81,6 +80,8 @@ def parse(
     if isinstance(template, dict):
         resources = template.get(TemplateSections.RESOURCES.value, None)
         if resources and isinstance(resources, dict):
+            if '__file__' in resources:
+                del resources['__file__']
             if "__startline__" in resources:
                 del resources["__startline__"]
             if "__endline__" in resources:

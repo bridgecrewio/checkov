@@ -18,11 +18,13 @@ class TestACRUseSignedImages(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_container_registry.pass',
+            'azurerm_container_registry.pass_new',
+            'azurerm_container_registry.pass_old',
         }
         failing_resources = {
             'azurerm_container_registry.fail',
-            'azurerm_container_registry.fail2'
+            'azurerm_container_registry.fail2_new',
+            'azurerm_container_registry.fail2_old'
         }
         skipped_resources = {}
 

@@ -10,6 +10,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.registry import module_loader_registry
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
+from checkov.terraform.tf_parser import TFParser
 
 
 class TestRunnerRegistryEnrichment(unittest.TestCase):
@@ -120,6 +121,25 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
         self.assertEqual(enriched_data, expected_enriched_data)
 
+    def test_enrichment_of_plan_report_with_for_each(self):
+        allowed_checks = ["CKV2_AWS_38", "CKV_AWS_277"]
+        runner_registry = RunnerRegistry(
+            banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
+        )
+
+        repo_root = Path(__file__).parent / "plan_with_for_each_for_enrichment"
+        valid_plan_path = repo_root / "tf_plan.json"
+
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
+
+        # TODO: after fixing module enrichment with skipped checks the failed checks will become skipped
+        self.assertEqual(len(report.failed_checks), 3)
+
+        self.assertEqual(len(report.passed_checks), 0)
+
+        self.assertEqual(len(report.skipped_checks), 2)
+
+
     def test_skip_check(self):
         allowed_checks = ["CKV_AWS_20", "CKV_AWS_28"]
         runner_registry = RunnerRegistry(
@@ -138,6 +158,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(len(failed_check_ids), 0)
         self.assertEqual(len(skipped_check_ids), 2)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
+
 
     def test_skip_check_in_module(self):
         allowed_checks = ["CKV_AWS_19", "CKV2_AWS_6"]
@@ -185,6 +206,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
         checks=allowed_checks,
         framework=["terraform_plan"],
         download_external_modules=True,
+        external_modules_download_path="example/path",
     )
     runner_registry = RunnerRegistry(banner, runner_filter, tf_plan_runner())
 
@@ -199,6 +221,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
             )
         }
 
+    parse_directory_spy = mocker.spy(TFParser, "parse_directory")
     mocker.patch("checkov.terraform.tf_parser.load_tf_modules", side_effect=_load_tf_modules)
 
     # when
@@ -217,6 +240,10 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
 
     assert {c.check_id for c in report.passed_checks} == {"CKV_AWS_66"}
     assert {c.check_id for c in report.skipped_checks} == {"CKV_AWS_158"}
+
+    parse_directory_spy.assert_called()
+    call_args = parse_directory_spy.call_args
+    assert call_args.kwargs["external_modules_download_path"] == "example/path"
 
 
 if __name__ == "__main__":

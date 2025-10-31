@@ -9,7 +9,7 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 
 STO_NAME_REGEX = re.compile(r"^[a-z0-9]{3,24}$")
 VARIABLE_REFS = ("local.", "module.", "var.", "random_string.", "random_id.", "random_integer.", "random_pet.",
-                 "azurecaf_name", "each.")
+                 "azurecaf_name", "each.", "substring")
 
 
 class StorageAccountName(BaseResourceCheck):
@@ -43,6 +43,9 @@ class StorageAccountName(BaseResourceCheck):
                 if re.findall(STO_NAME_REGEX, name):
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> typing.List[str]:
+        return ["name"]
 
 
 check = StorageAccountName()

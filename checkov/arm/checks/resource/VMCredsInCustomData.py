@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.secrets import string_has_secrets
+from checkov.common.util.secrets import string_has_secrets, AZURE, GENERAL
 from checkov.arm.base_resource_value_check import BaseResourceCheck
 
 
@@ -20,7 +20,7 @@ class VMCredsInCustomData(BaseResourceCheck):
             if isinstance(os_profile, dict):
                 custom_data = os_profile.get("customData")
                 if isinstance(custom_data, str):
-                    if string_has_secrets(custom_data):
+                    if string_has_secrets(custom_data, AZURE, GENERAL):
                         conf[f'{self.id}_secret'] = custom_data
                         return CheckResult.FAILED
         return CheckResult.PASSED

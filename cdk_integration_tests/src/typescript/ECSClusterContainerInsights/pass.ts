@@ -8,6 +8,11 @@ export class exampleStack extends cdk.Stack {
         super(scope, id, props);
         const vpc = new ec2.Vpc(this, 'Vpc', {maxAzs: 1});
         const cluster = new ecs.Cluster(this, 'EcsCluster', {vpc, containerInsights: true});
+        const cluster2 = new ecs.Cluster(this, 'EcsCluster2', {vpc, containerInsightsV2: ecs.ContainerInsights.ENABLED});
+        const cluster3 = new ecs.Cluster(this, 'EcsCluster6', {vpc, containerInsightsV2: ecs.ContainerInsights.ENHANCED});
+
+        const cluster4 = new ecs.CfnCluster(this, 'EcsCluster4', {clusterSettings: [{name: 'containerInsights', value: 'enabled'}]});
+        const cluster5 = new ecs.CfnCluster(this, 'EcsCluster5', {clusterSettings: [{value: 'enhanced', name: 'containerInsights'}]});
     }
 }
 

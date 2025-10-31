@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -29,6 +31,9 @@ class ElasticBeanstalkUseEnhancedHealthChecks(BaseResourceCheck):
                             if value == "True" or (value and isinstance(value, bool)):
                                 return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["setting"]
 
 
 check = ElasticBeanstalkUseEnhancedHealthChecks()

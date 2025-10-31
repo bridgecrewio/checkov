@@ -5,6 +5,7 @@ from typing import Iterable, TypedDict
 class EnrichedSecret(TypedDict):
     original_secret: str
     bc_check_id: str
+    check_id: str
     resource: str
     line_number: int
 

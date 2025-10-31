@@ -22,6 +22,7 @@ class VPCSecurityGroupAllowAll(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "ingress" in conf.keys():
             cidr_block = conf["ingress"][0]["v4_cidr_blocks"]
+            self.evaluated_keys = ["ingress/[0]/v4_cidr_blocks"]
             for cidr in cidr_block[0]:
                 if cidr == "0.0.0.0/0":
                     if "port" in conf["ingress"][0].keys():

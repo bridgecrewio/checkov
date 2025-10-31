@@ -1,0 +1,47 @@
+metadata:
+  id: "CKV2_AZURE_55"
+  name: "Ensure Azure Spring Cloud app end-to-end TLS is enabled"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - azurerm_spring_cloud_service
+      attribute: sku_tier
+      operator: not_exists
+    - cond_type: attribute
+      resource_types:
+        - azurerm_spring_cloud_service
+      attribute: sku_tier
+      operator: equals
+      value: "Basic"
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - azurerm_spring_cloud_service
+        operator: within
+      - or:
+        - resource_types:
+            - azurerm_spring_cloud_service
+          connected_resource_types:
+            - azurerm_spring_cloud_app
+          operator: not_exists
+          cond_type: connection
+        - and:
+          - resource_types:
+              - azurerm_spring_cloud_service
+            connected_resource_types:
+              - azurerm_spring_cloud_app
+            operator: exists
+            cond_type: connection
+          - cond_type: attribute
+            resource_types:
+              - azurerm_spring_cloud_app
+            attribute: tls_enabled
+            operator: exists
+          - cond_type: attribute
+            resource_types:
+              - azurerm_spring_cloud_app
+            attribute: tls_enabled
+            operator: is_true

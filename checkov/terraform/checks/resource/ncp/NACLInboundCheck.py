@@ -12,8 +12,9 @@ class NACLInboundCheck(BaseResourceCheck):
         self.port = port
 
     def scan_resource_conf(self, conf):
-        for inbound in conf.get('inbound', []):
+        for idx, inbound in enumerate(conf.get('inbound', [])):
             if inbound['rule_action'] == ["ALLOW"]:
+                self.evaluated_keys = [f"inbound/[{idx}]/ip_block", f"inbound/[{idx}]/port_range"]
                 ip = inbound.get('ip_block', ['0.0.0.0/0'])
                 if ip == ['0.0.0.0/0'] or ip == ['::/0']:
                     port = inbound.get('port_range', str(self.port))[0]

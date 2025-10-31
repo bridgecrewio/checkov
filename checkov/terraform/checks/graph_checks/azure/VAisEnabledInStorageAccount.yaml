@@ -8,9 +8,11 @@ definition:
       attribute: resource_type
       value:
         - azurerm_sql_server
+        - azurerm_mssql_server
       operator: within
     - resource_types:
         - azurerm_sql_server
+        - azurerm_mssql_server
       connected_resource_types:
         - azurerm_mssql_server_security_alert_policy
       operator:  exists

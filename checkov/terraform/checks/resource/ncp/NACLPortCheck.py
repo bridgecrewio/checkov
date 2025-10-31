@@ -3,16 +3,17 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class NACLPortCheck(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "An inbound Network ACL rule should not allow ALL ports."
         id = "CKV_NCP_12"
         supported_resources = ('ncloud_network_acl_rule',)
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> CheckResult:
         if 'inbound' in conf.keys():
-            for inbound in conf['inbound']:
+            for idx, inbound in enumerate(conf['inbound']):
+                self.evaluated_keys = [f"inbound/[{idx}]/port_range"]
                 if 'port_range' in inbound.keys():
                     for port_range in inbound['port_range']:
                         if port_range == "1-65535":

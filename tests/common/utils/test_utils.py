@@ -64,6 +64,9 @@ class TestUtils(unittest.TestCase):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=BC_AWS_GENERAL_123'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'bridgecrew:skip=bcorg_AWS_1234567'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=bcorg_AWS_1234567'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145: ADD REASON'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145:ADD REASON'))
+        self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145'))
 
 
 

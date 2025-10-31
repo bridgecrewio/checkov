@@ -13,8 +13,10 @@ class CVMUserData(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict) -> CheckResult:
         if conf.get("user_data_raw") and ("TENCENTCLOUD_SECRET_ID" in conf["user_data_raw"][0] or "TENCENTCLOUD_SECRET_KEY" in conf["user_data_raw"][0]):
+            self.evaluated_keys = ["user_data_raw"]
             return CheckResult.FAILED
         if conf.get("user_data") and ("TENCENTCLOUD_SECRET_ID" in conf["user_data"][0] or "TENCENTCLOUD_SECRET_KEY" in conf["user_data"][0]):
+            self.evaluated_keys = ["user_data"]
             return CheckResult.FAILED
         return CheckResult.PASSED
 

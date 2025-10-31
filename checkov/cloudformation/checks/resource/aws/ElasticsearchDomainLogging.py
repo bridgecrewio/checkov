@@ -17,8 +17,10 @@ class ElasticsearchDomainLogging(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("Properties")
         if properties:
+            self.evaluated_keys = ["Properties"]
             options = properties.get("LogPublishingOptions")
             if options:
+                self.evaluated_keys = ["Properties/LogPublishingOptions"]
                 for option_conf in options.values():
                     if isinstance(option_conf, dict) and option_conf.get("Enabled"):
                         return CheckResult.PASSED

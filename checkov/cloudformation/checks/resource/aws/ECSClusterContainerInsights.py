@@ -21,12 +21,14 @@ class ECSClusterContainerInsights(BaseResourceCheck):
         :param conf: AWS::ECS::Cluster configuration
         :return: <CheckResult>
         """
+        self.evaluated_keys = ["Properties"]
         properties = conf.get("Properties")
         if properties and isinstance(properties, dict):
             settings = properties.get("ClusterSettings")
             if settings and isinstance(settings, list):
+                self.evaluated_keys = ["Properties/ClusterSettings"]
                 for setting in settings:
-                    if setting["Name"] == "containerInsights" and setting["Value"] == "enabled":
+                    if setting["Name"] == "containerInsights" and setting["Value"] in ["enhanced", "enabled"]:
                         return CheckResult.PASSED
         return CheckResult.FAILED
 

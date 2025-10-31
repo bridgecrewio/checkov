@@ -11,7 +11,7 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'example-app-service-plan')]",
         "siteConfig": {
-          "minTlsVersion": 1.2
+          "minTlsVersion": 1.3
         }
       }
     }

@@ -140,10 +140,10 @@ async def test_aiohttp_client_session_wrapper_with_one_handled_exception(mocker:
         m.post(report_url, exception=aiohttp.ClientOSError())
         m.post(report_url, status=200, repeat=True)
 
-        result = await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+        response = await aiohttp_client_session_wrapper("POST", get_report_url(), {}, {})
 
     # then
-    assert result == 0
+    assert response.ok
 
 
 @pytest.mark.asyncio
@@ -158,7 +158,7 @@ async def test_aiohttp_client_session_wrapper_with_several_handled_exceptions(mo
     with aioresponses() as m:
         m.post(report_url, exception=aiohttp.ClientOSError(), repeat=True)
         try:
-            await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+            await aiohttp_client_session_wrapper("POST", get_report_url(), {}, {})
 
             # case the specific error wasn't raised
             assert False
@@ -180,7 +180,7 @@ async def test_raiohttp_client_session_wrapper_with_one_not_handled_exception(mo
     with aioresponses() as m:
         m.post(report_url, exception=aiohttp.ServerTimeoutError())
         try:
-            await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+            await aiohttp_client_session_wrapper("POST", get_report_url(), {}, {})
             # case that specific error wasn't raised
             assert False
 

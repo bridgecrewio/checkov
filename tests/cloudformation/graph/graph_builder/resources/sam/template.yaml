@@ -17,11 +17,11 @@ Globals:
   Function:
     Timeout: 5
     CodeUri: src/
-    Runtime: python3.8
+    Runtime: python3.9
     Tracing: Active
     Environment:
       Variables:
-        QUEUE_URL: !If [ IsStageEnvironment, !Ref SomeQueue, unkown ]
+        QUEUE_URL: !If [ IsStageEnvironment, !Ref SomeQueue, unknown ]
         STAGE: Production
         TABLE_NAME: global-table
     VpcConfig:

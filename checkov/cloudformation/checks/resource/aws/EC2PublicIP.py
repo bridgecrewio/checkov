@@ -15,15 +15,17 @@ class EC2PublicIP(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        self.evaluated_keys = ['Properties']
         properties = conf.get('Properties')
         if properties:
             # For AWS::EC2::Instance
             if 'NetworkInterfaces' in properties.keys():
                 network_interfaces = properties['NetworkInterfaces']
                 if isinstance(network_interfaces, list):
-                    for network_interface in network_interfaces:
+                    for idx, network_interface in enumerate(network_interfaces):
                         if 'AssociatePublicIpAddress' in network_interface.keys():
                             if network_interface['AssociatePublicIpAddress'] is True:
+                                self.evaluated_keys = [f'Properties/NetworkInterfaces/[{idx}]/AssociatePublicIpAddress']
                                 return CheckResult.FAILED
                         else:
                             # If not made explicit then default is true if default subnet and false otherwise.
@@ -35,9 +37,10 @@ class EC2PublicIP(BaseResourceCheck):
                 if 'NetworkInterfaces' in properties['LaunchTemplateData'].keys():
                     network_interfaces = properties['LaunchTemplateData']['NetworkInterfaces']
                     if isinstance(network_interfaces, list):
-                        for network_interface in network_interfaces:
+                        for idx, network_interface in enumerate(network_interfaces):
                             if 'AssociatePublicIpAddress' in network_interface.keys():
                                 if network_interface['AssociatePublicIpAddress'] is True:
+                                    self.evaluated_keys = [f'Properties/LaunchTemplateData/NetworkInterfaces/[{idx}]/AssociatePublicIpAddress']
                                     return CheckResult.FAILED
                             else:
                                 return CheckResult.UNKNOWN

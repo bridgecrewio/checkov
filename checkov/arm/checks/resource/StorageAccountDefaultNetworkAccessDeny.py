@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -37,6 +37,9 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
                     if conf["properties"]["networkAcls"]["defaultAction"] == "Deny":
                         return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["apiVersion", "properties", "properties/networkAcls"]
 
 
 check = StorageAccountDefaultNetworkAccessDeny()

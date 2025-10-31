@@ -1,0 +1,15 @@
+metadata:
+  id: "complex_jsonpath_if_condition"
+  name: "cfn-if"
+  severity: "high"
+  guidelines: "MGUIFDE"
+  category: "general"
+scope:
+  provider: "aws"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "AWS::ECS::TaskDefinition"
+      attribute: "ContainerDefinitions[?(!@.LogConfiguration)]"
+      operator: "jsonpath_not_exists"

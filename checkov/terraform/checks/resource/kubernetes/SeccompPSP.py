@@ -14,7 +14,9 @@ class SeccompPSP(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if "metadata" in conf:
+            self.evaluated_keys = ["metadata"]
             if "annotations" in conf["metadata"][0]:
+                self.evaluated_keys = ["metadata/[0]/annotations"]
                 metadata = conf["metadata"][0]
                 if metadata.get("annotations"):
                     annotations = metadata["annotations"][0]

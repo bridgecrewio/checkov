@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces/sqlPools",
+      "apiVersion": "2021-06-01",
+      "name": "pass",
+      "location": "East US",
+      "properties": {
+        "sku": {
+          "name": "DW200c",
+          "tier": "Dedicated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/securityAlertPolicies",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('sqlServerName'), '/', 'Default')]",
+      "properties": {
+        "state": "Enabled",
+        "emailAccountAdmins": true,
+        "emailAddresses": [
+          "admin@example.com"
+        ],
+        "disabledAlerts": [],
+        "retentionDays": 0
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', parameters('workspaceName'), parameters('sqlPoolName'))]"
+      ]
+    }
+  ],
+  "parameters": {
+    "workspaceName": {
+      "defaultValue": "pass",
+      "type": "string"
+    },
+    "sqlPoolName": {
+      "type": "string"
+    },
+    "skuName": {
+      "type": "string"
+    },
+    "skuTier": {
+      "type": "string"
+    },
+    "skuCapacity": {
+      "type": "int"
+    },
+    "sqlServerName": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "workspaceName",
+      "location": "location",
+      "properties": {
+        "defaultDataLakeStorage": {
+          "accountUrl": "dataLakeStorageAccountUrl",
+          "filesystem": "dataLakeStorageFileSystem"
+        },
+        "sqlAdministratorLogin": "sqlAdministratorLogin",
+        "sqlAdministratorLoginPassword": "sqlAdministratorLoginPassword",
+        "managedVirtualNetwork": "managedVirtualNetwork",
+        "managedResourceGroupName": "managedResourceGroupName"
+      }
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/sqlPools",
+      "apiVersion": "2021-06-01",
+      "name": "pass",
+      "location": "location",
+      "properties": {
+        "sku": {
+          "name": "skuName",
+          "tier": "skuTier",
+          "capacity": "skuCapacity"
+        },
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "268435456000"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', workspaceName)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
+      "apiVersion": "2021-02-01-preview",
+      "name": "[concat(workspaceName, '/', pass, '/default')]",
+      "properties": {
+        "recurringScans": {
+          "isEnabled": true,
+          "emailSubscriptionAdmins": true
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', securityAlertPoliciesName, pass)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/securityAlertPolicies",
+      "apiVersion": "2021-02-01-preview",
+      "name": "securityAlertPoliciesName",
+      "properties": {
+        "state": "Enabled",
+        "emailAccountAdmins": true,
+        "storageEndpoint": "[concat('https://', storageAccountName, '.blob.core.windows.net')]",
+        "storageAccountAccessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', storageAccountName), '2021-02-01').keys[0].value]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', pass, pass)]"
+      ]
+    }
+  ],
+  "parameters": {
+  }
+}

@@ -315,6 +315,7 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
     cve_table.align = "l"
     cve_table.min_width = column_width
     cve_table.max_width = column_width
+    cve_table.header = False  # Python 3.12 reverts the header setting
 
     cve_table_lines = [f"\t{line}" for line in cve_table.get_string().splitlines(keepends=True)]
     # hack to make multiple tables look like one
@@ -341,6 +342,7 @@ def create_fixable_cve_summary_table_part(
         fixable_table.add_row(
             [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to your Prisma Cloud account"])
         fixable_table.align = "l"
+        fixable_table.header = False  # Python 3.12 reverts the header setting
     else:
         return []
 

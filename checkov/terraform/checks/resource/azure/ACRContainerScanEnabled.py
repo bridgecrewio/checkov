@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -28,6 +28,9 @@ class ACRContainerScanEnabled(BaseResourceCheck):
             return CheckResult.PASSED
 
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["sku"]
 
 
 check = ACRContainerScanEnabled()

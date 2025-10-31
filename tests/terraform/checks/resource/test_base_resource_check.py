@@ -13,7 +13,14 @@ class TestStaticCheck(BaseResourceCheck):
         id = "CKV_TEST_1"
         supported_resources = ["ckv_test"]
         categories = [CheckCategories.CONVENTION]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-resource-check"
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline
+        )
 
     def scan_resource_conf(self, conf):
         if "check_result" in conf.keys():

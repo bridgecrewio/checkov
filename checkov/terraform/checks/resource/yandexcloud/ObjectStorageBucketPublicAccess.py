@@ -23,10 +23,12 @@ class ObjectStorageBucketPublicAccess(BaseResourceCheck):
         if "acl" in conf.keys():
             acl_block = conf["acl"]
             if acl_block in [["public-read"], ["public-read-write"]]:
+                self.evaluated_keys = ["acl"]
                 return CheckResult.FAILED
         if "grant" in conf.keys():
             grant_uri_block = conf["grant"][0]["uri"]
             if grant_uri_block == ["http://acs.amazonaws.com/groups/global/AllUsers"]:
+                self.evaluated_keys = ["grant"]
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
