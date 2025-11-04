@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.489...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.490...HEAD)
+
+## [3.2.490](https://github.com/bridgecrewio/checkov/compare/3.2.489...3.2.490) - 2025-11-04
+
+### Feature
+
+- **general:** Fix downloading of the external modules when ref is a shortened Git hash - [#7278](https://github.com/bridgecrewio/checkov/pull/7278)
 
 ## [3.2.489](https://github.com/bridgecrewio/checkov/compare/3.2.488...3.2.489) - 2025-10-29
 
