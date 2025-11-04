@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.485...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.489...HEAD)
+
+## [3.2.489](https://github.com/bridgecrewio/checkov/compare/3.2.488...3.2.489) - 2025-10-29
+
+### Bug Fix
+
+- **helm:** Check HELM_NAMESPACE env var in CKV_K8S_21  - [#7355](https://github.com/bridgecrewio/checkov/pull/7355)
+
+## [3.2.488](https://github.com/bridgecrewio/checkov/compare/3.2.487...3.2.488) - 2025-10-27
+
+### Feature
+
+- **terraform_plan:** add new cases for foreach in the presence of skips - [#7351](https://github.com/bridgecrewio/checkov/pull/7351)
+
+## [3.2.487](https://github.com/bridgecrewio/checkov/compare/3.2.486...3.2.487) - 2025-10-23
+
+### Bug Fix
+
+- **general:** CKV_AWS_174 should-allow-higher-then-TLSv1.2 - terraform and cloudformation - [#7352](https://github.com/bridgecrewio/checkov/pull/7352)
+
+## [3.2.486](https://github.com/bridgecrewio/checkov/compare/3.2.485...3.2.486) - 2025-10-22
+
+### Feature
+
+- **general:** update setuptools version 78.1.1 - [#7347](https://github.com/bridgecrewio/checkov/pull/7347)
 
 ## [3.2.485](https://github.com/bridgecrewio/checkov/compare/3.2.484...3.2.485) - 2025-10-20
 
