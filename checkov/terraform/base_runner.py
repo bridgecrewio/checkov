@@ -31,6 +31,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
+from checkov.terraform.tag_providers import get_resource_tags
 from checkov.terraform.tf_parser import TFParser
 from checkov.common.util.env_vars_config import env_vars_config
 
@@ -187,7 +188,7 @@ class BaseTerraformRunner(
                             entity_context.get("end_line", 1),
                         ],
                         resource=resource,
-                        entity_tags=entity.get("tags", {}),
+                        entity_tags=get_resource_tags(resource, entity_config),
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
