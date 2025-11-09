@@ -4,7 +4,8 @@ from checkov.terraform.tag_providers import aws
 from checkov.terraform.tag_providers import azure
 from checkov.terraform.tag_providers import gcp
 
-provider_tag_mapping = {"aws": aws.get_resource_tags, "azure": azure.get_resource_tags, "gcp": gcp.get_resource_tags}
+provider_tag_mapping = {"aws": aws.get_resource_tags, "azure": azure.get_resource_tags, "gcp": gcp.get_resource_tags,
+                        "google": gcp.get_resource_tags}
 
 
 def get_resource_tags(resource_type: str, entity_config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
