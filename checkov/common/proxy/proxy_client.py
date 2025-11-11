@@ -34,7 +34,8 @@ class ProxyClient:
         session = self.get_session()
         self.update_request_header(request=request)
         prepared_request = session.prepare_request(request)
-        return session.send(prepared_request, verify=self.proxy_ca_path)
+        settings = session.merge_environment_settings(prepared_request.url, {}, None, self.proxy_ca_path, None)
+        return session.send(prepared_request, **settings)
 
 
 def call_http_request_with_proxy(request: requests.Request) -> Any:
