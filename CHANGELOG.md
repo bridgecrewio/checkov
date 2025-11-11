@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.491...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.492...HEAD)
+
+## [3.2.492](https://github.com/bridgecrewio/checkov/compare/3.2.491...3.2.492) - 2025-11-10
+
+### Bug Fix
+
+- **terraform:** get_resource_tags handles more cases - [#7365](https://github.com/bridgecrewio/checkov/pull/7365)
 
 ## [3.2.491](https://github.com/bridgecrewio/checkov/compare/3.2.490...3.2.491) - 2025-11-09
 
