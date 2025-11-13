@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import math
 import os
 from typing import Any, TYPE_CHECKING, Optional
 
@@ -43,6 +44,39 @@ _TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 
+
+node_weights_map = {
+    "resource": 3,
+    "module": 3,
+    "provider": 1,
+    "variable": 1,
+    "output": 1,
+    "data": 1,
+    "locals": 1,
+    "terraform": 1,
+}
+
+def compute_node_score(G, node, visited=None):
+    if visited is None:
+        visited = set()
+    if node in visited:
+        return 0  # prevent cycles
+    visited.add(node)
+    
+    try:
+        base_weight = node_weights_map[G.nodes[node]["type"]]
+        children = list(G.successors(node))
+        
+        # Branch factor: 1 + log(children_count)
+        branch_factor = 1 + math.log(1 + len(children))
+        
+        downstream_weight = 0
+        for child in children:
+            downstream_weight += compute_node_score(child, visited.copy())
+        
+        return base_weight + downstream_weight * branch_factor
+    except Exception as e:
+        return 1 + 1 * 1
 
 class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDefinitionKey]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
@@ -105,8 +139,52 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         external_modules_download_path=runner_filter.external_modules_download_path,
                         vars_files=runner_filter.var_files,
                     )
+
+                    vertices = [str(i) for i in list(range(0, len(single_graph.vertices)))]
+                    edges = [(i.origin, i.dest)for i in single_graph.edges]
+
+                    import networkx as nx
+
+                    G = nx.DiGraph()
+                    i = 0
+                    for n in single_graph.vertices:
+                        G.add_node(vertices[i], type=n.block_type)
+                        i += 1
+
+                    for src, dst in edges:
+                        G.add_edge(src, dst)
+
+                    total_score = sum(compute_node_score(G, n) for n in G.nodes)
+                    
+                    from graphviz import Digraph
+
+                    dot = Digraph("G")
+
+                    # Add all vertices
+                    for v in vertices:
+                        dot.node(v)
+
+                    # Add edges
+                    for src, dst in edges:
+                        dot.edge(vertices[src], vertices[dst])
+
+                    # Print DOT source code
+                    with open("./graph.dot", "w") as f:
+                        f.write(dot.source)
+
+                    output_file = dot.render("graph_image", view=True)  # creates graph_image.png and opens it
+                    print(f"Graph saved as {output_file}")
+
+                    block_type_counter = {}
+                    for i in single_graph.vertices:
+                        if i.block_type not in block_type_counter:
+                            block_type_counter[i.block_type] = 0
+                        block_type_counter[i.block_type] += 1
+                    print(block_type_counter)
+
                     # Make graph a list to allow single processing method for all cases
                     local_graphs = [(None, single_graph)]
+                    print('---------------------')
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
