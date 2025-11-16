@@ -4,14 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-#
-# REMINDER: Update "dev" deps on setup.py when changing
-#
 pytest = "<8.0.0"
 pytest-xdist = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-mock = "*"
+pytest-benchmark = "*"
+exceptiongroup = {version = "*", markers="python_version < '3.11'"}
 coverage ="==7.6.1"
 coverage-badge = "*"
 bandit = "*"
@@ -37,11 +36,11 @@ parameterized = "*"
 time-machine = "*"
 boto3-stubs-lite = {extras = ["s3"], version = "*"}
 types-colorama = "<0.5.0,>=0.4.3"
+tomli = "*"
+setuptools = "==78.1.1"
+iniconfig = "*"
 
 [packages]
-#
-# REMINDER: Update "install_requires" deps on setup.py when changing
-#
 bc-jsonpath-ng = "==1.6.1"
 pycep-parser = "==0.5.1"
 tabulate = ">=0.9.0,<0.10.0"
@@ -82,10 +81,10 @@ spdx-tools = ">=0.8.0,<0.9.0"
 license-expression = ">=30.1.0,<31.0.0"
 rustworkx = ">=0.13.0,<1.0.0"
 pydantic = ">=2.0.0,<3.0.0"
-asteval = "==1.0.5"
+asteval = "==1.0.6"
 bc-detect-secrets = "==1.5.45"
-urllib3 = "==1.26.20"
+urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.3"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

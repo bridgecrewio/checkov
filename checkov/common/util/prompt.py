@@ -177,11 +177,11 @@ class Check(Prompt):
 
         self.chosen_action = user_responses.get("chosen_action", None)
         self.title = user_responses.get("title", None)
-        self.category = user_responses.get("category", None)
+        self.category = user_responses.get("category", '')
         self.desc = user_responses.get("desc", None)
-        self.check_class = user_responses.get("check_class", None)
-        self.provider = user_responses.get("provider", None)
-        self.context = user_responses.get("context", None)
+        self.check_class = user_responses.get("check_class", '')
+        self.provider = user_responses.get("provider", '')
+        self.context = user_responses.get("context", '')
         self.supported_resource = user_responses.get("supported_resource", None)
 
     def action(self) -> None:
