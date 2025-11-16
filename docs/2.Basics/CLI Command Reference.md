@@ -81,3 +81,4 @@ nav_order: 2
 | `ENABLE_CONFIG_FILE_VALIDATION` | If the conf-file explicitly set using the `--config-file` command does not exist, skip rather than throw an error (default) | `False` |
 | `CHECKOV_MAX_IAC_FILE_SIZE` | Set the max size for CloudFormation file scans. | `50_000_000` or 50MB |
 | `CHECKOV_MAX_FILE_SIZE` | Set the max file size for Secrets scans. | `5000000` or 5MB |
+| `JAVA_FULL_DT` | Enables a deeper SCA scan for Java projects to resolve the full dependency tree, including transitive dependencies. | `False` |

@@ -1,12 +1,16 @@
+import copy
 import os
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
-from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown
+from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown, \
+    _update_after_unknown_in_complex_types
 from checkov.common.parsers.node import StrNode
 
 
@@ -144,7 +148,51 @@ class TestPlanFileParser(unittest.TestCase):
             }
         ]
         _handle_complex_after_unknown(key, resource, value)
-        assert resource == {'tags': [[{'custom_tags': ['true_after_unknown']}]]}
+        assert resource["tags"] == [value]
+
+    def test_handle_complex_after_unknown_with_empty_list(self):
+        resource = {"network_configuration": [
+            {
+                "endpoint_configuration": [
+                ]
+            }
+        ]}
+        key: str = 'network_configuration'
+        value = [{"endpoint_configuration": []}]
+        _handle_complex_after_unknown(key, resource, value)
+        assert resource == {'network_configuration': [{"endpoint_configuration": []}]}
+
+    def test_handle_complex_after_unknown_with_some_known_values(self):
+        original_resource = {
+            "tags": [
+                {"tag1": "my_tag"},
+                {"tag2": "true"},
+            ]
+        }
+        _update_after_unknown_in_complex_types("tags", original_resource)
+        assert original_resource == {
+            "tags": [
+                {"tag1": "my_tag"},
+                {"tag2": ["true_after_unknown"]},
+            ]
+        }
+
+
+
+@pytest.mark.parametrize("inner_key, k, is_inner_list", [
+    ("endpoint_configuration", "network_configuration", False),
+    ("endpoint_configuration", "network_configuration", True)
+])
+def test_handle_complex_after_unknown(inner_key: str, k: str, is_inner_list: bool) -> None:
+    if is_inner_list:
+        # We cannot parametrize a dict object, so we use a boolean to decide which conf to use
+        resource_conf = {'network_configuration': [[{"endpoint_configuration": []}]]}
+    else:
+        resource_conf = {'network_configuration': [{"endpoint_configuration": []}]}
+    value = [{"endpoint_configuration": []}]
+    resource_conf_copy = copy.deepcopy(resource_conf)
+    _handle_complex_after_unknown(k, resource_conf, value)
+    assert resource_conf == resource_conf_copy
 
 
 def test_large_file(mocker: MockerFixture):

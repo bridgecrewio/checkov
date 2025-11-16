@@ -15,7 +15,7 @@ try:
 except ImportError as e:
     git_import_error = e
 
-COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{40}))")
+COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{5,40}))")
 TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')  # technically should be with ?ref=tags/ but this catches both
 BRANCH_PATTERN = re.compile(r'\?(ref=heads/)(?P<branch>(.*))')
 
