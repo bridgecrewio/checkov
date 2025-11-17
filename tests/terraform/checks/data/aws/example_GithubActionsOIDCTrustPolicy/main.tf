@@ -235,3 +235,30 @@ data "aws_iam_policy_document" "pass-org-only" {
     }
   }
 }
+
+#pass github org
+data "aws_iam_policy_document" "pass-gh-org" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch"]
+      variable = "token.actions.githubusercontent.com/github-org:sub"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+  }
+}

@@ -4,6 +4,7 @@ import itertools
 import json
 import logging
 import os
+import re
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -21,6 +22,8 @@ TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 
+COUNT_PATTERN = re.compile(r"\[?\d+\]?$")
+
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
     "aws_ecs_task_definition": "container_definitions",
@@ -31,6 +34,7 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
     "azurerm_portal_dashboard": "dashboard_properties",
+    "aws_vpc_endpoint": "policy",
     "aws_vpc_endpoint_policy": "policy",
     "aws_ecr_registry_policy": "policy",
     "aws_acmpca_policy": "policy",
@@ -257,8 +261,64 @@ def _handle_complex_after_unknown(k: str, resource_conf: dict[str, Any], v: Any)
         if inner_key in (START_LINE, END_LINE):
             # skip inner checkov keys
             continue
-        if inner_key not in resource_conf[k]:
-            resource_conf[k][0][inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+        resource_conf_value = resource_conf[k]
+        if inner_key not in resource_conf_value and isinstance(resource_conf_value, list):
+            for i in range(len(resource_conf_value)):
+                if isinstance(resource_conf_value[i], dict):
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i])
+                elif isinstance(resource_conf_value[i], list) and isinstance(resource_conf_value[i][0], dict):
+                    _update_after_unknown_in_complex_types(inner_key, resource_conf_value[i][0])
+
+
+def _update_after_unknown_in_complex_types(inner_key: str, value: dict[str, Any]) -> None:
+    """
+    Based on terraform docs, in complex types like list/dict some values might be known while others are not.
+    So when trying to update the info shared from the `after_unknown`, we only want to update the specific items in
+    those objects which are unknown.
+    For example, in the conf:
+    ```
+    "after": {
+        "outer": [
+            {"tag1": 1}
+        ]
+    },
+    "after_unknown": {
+        "outer": [
+            {},  -> the value is known from the "after" section, we don't want to touch it
+            true -> the value is unknown, we want to replace it with `TRUE_AFTER_UNKNOWN`
+        ]
+    }.
+
+    Full result for resource conf:
+    ```
+    "outer": [{"tag1": 1}, `TRUE_AFTER_UNKNOWN`]
+    ```
+    ```
+    """
+    if inner_key not in value:
+        value[inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+        return
+    inner_value = value[inner_key]
+    if isinstance(inner_value, str) and inner_value.lower() == "true":
+        value[inner_key] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+    if isinstance(inner_value, list):
+        for i, v in enumerate(inner_value):
+            if isinstance(v, str) and v.lower() == "true":
+                inner_value[i] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            if isinstance(v, dict):
+                _handle_after_unknown_dict(v)
+    if isinstance(inner_value, dict):
+        for k, v in inner_value.items():
+            if isinstance(v, str) and v.lower() == "true":
+                inner_value[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
+            if isinstance(v, dict):
+                _handle_after_unknown_dict(v)
+    return
+
+
+def _handle_after_unknown_dict(v: dict[str, Any]) -> None:
+    for k in v.keys():
+        _update_after_unknown_in_complex_types(k, v)
 
 
 def _find_child_modules(
@@ -323,9 +383,22 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
         if module_name == "module":
             # module names are always prefixed with 'module.', therefore skip it
             continue
-        root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+        found_root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+        if not found_root_module_conf:
+            sanitized_module_name = _sanitize_count_from_name(module_name)
+            found_root_module_conf = root_module_conf.get("module_calls", {}).get(sanitized_module_name, {}).get("module", {})
+        root_module_conf = found_root_module_conf
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
+
+
+def _sanitize_count_from_name(name: str) -> str:
+    """Sanitize the count from the resource name"""
+    if re.search(COUNT_PATTERN, name):
+        name_parts = re.split(COUNT_PATTERN, name)
+        if len(name_parts) == 2:
+            return name_parts[0]
+    return name
 
 
 def _is_provider_key(key: str) -> bool:

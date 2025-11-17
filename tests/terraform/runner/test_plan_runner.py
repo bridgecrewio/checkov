@@ -20,6 +20,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform import TFDefinitionKey
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.plan_runner import Runner, resource_registry
+from checkov.terraform.plan_utils import get_entity_id
 
 
 @parameterized_class([
@@ -960,6 +961,12 @@ class TestRunnerValid(unittest.TestCase):
     def tearDown(self) -> None:
         resource_registry.checks = deepcopy(self.orig_checks)
         BaseCheckRegistry._BaseCheckRegistry__all_registered_checks = deepcopy(self.orig_all_registered_checks)
+
+    def test_get_entity_id(self):
+        resource_type_dict = {'__address__': 'azure.storage_use_azuread', '__end_line__': [14], '__start_line__': [0],
+         'alias': ['storage_use_azuread'], 'end_line': [14], 'start_line': [0], 'storage_use_azuread': True}
+        resource_name = "storage_use_azuread"
+        assert get_entity_id(resource_type_dict, resource_name) == 'azure.storage_use_azuread'
 
 
 if __name__ == "__main__":

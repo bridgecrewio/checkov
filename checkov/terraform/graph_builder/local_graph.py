@@ -274,20 +274,31 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        module_lookup = {}
+        for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
+            module_vertex = self.vertices[module_idx]
+            composed_key = (
+                module_vertex.name,
+                module_vertex.path,
+                module_vertex.source_module_object,
+                module_vertex.for_each_index,
+            )
+            module_lookup[composed_key] = module_idx
+
+        # Match vertices using the lookup
         for vertex in self.vertices:
-            if not vertex.source_module_object:
+            source_module_object = vertex.source_module_object
+            if not source_module_object or not source_module_object.name:
                 continue
-            for idx in self.vertices_by_block_type[BlockType.MODULE]:
-                if vertex.source_module_object.name != self.vertices[idx].name:
-                    continue
-                if vertex.source_module_object.path != self.vertices[idx].path:
-                    continue
-                if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
-                    continue
-                if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
-                    continue
-                vertex.source_module.add(idx)
-                break
+            composed_key = (
+                source_module_object.name,
+                source_module_object.path,
+                source_module_object.nested_tf_module,
+                source_module_object.foreach_idx,
+            )
+            module_vertice_idx = module_lookup.get(composed_key)
+            if module_vertice_idx is not None:
+                vertex.source_module.add(module_vertice_idx)
         return
 
     def _build_edges(self) -> None:
@@ -370,14 +381,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if target_variable is not None:
                     self.create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
         elif vertex.block_type == BlockType.TF_VARIABLE:
-            # Assuming the tfvars file is in the same directory as the variables file (best practice)
-            target_variable = 0
-            for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, []):
-                if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path):
-                    target_variable = index
-                    break
-            if target_variable:
-                self.create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
+            # Match tfvars based on the directory for which they were loaded
+            target_variable = None
+            ldir = vertex.attributes.get('load_dir', None)
+            if ldir:
+                for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, []):
+                    if self.get_dirname(self.vertices[index].path) == ldir:
+                        target_variable = index
+                        break
+
+                if target_variable is not None:
+                    self.create_edge(target_variable, origin_node_index, 'default', cross_variable_edges)
+            return
 
     def _create_edge_from_reference(self, attribute_key: Any, origin_node_index: int, dest_node_index: int,
                                     sub_values: List[Any], vertex_reference: TerraformVertexReference,
@@ -555,6 +570,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if relative_module_idx is None:
             module_dependency_by_name_key = source_module_object
         else:
+            if isinstance(relative_module_idx, str) and relative_module_idx.isnumeric():
+                relative_module_idx = int(relative_module_idx)
+
             vertex = self.vertices[relative_module_idx]
             module_dependency_by_name_key = vertex.source_module_object
 
@@ -597,10 +615,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if origin_vertex_index is not None:
                 vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
                 origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
-                    split_module_name = vertex_module_name.split('.')[1]
-                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
-                        common_prefix = f"{common_prefix} {BlockType.MODULE}.{split_module_name}"
+                common_prefix = self._get_common_prefix_name(origin_module_name, vertex_module_name, common_prefix)
 
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
@@ -617,6 +632,24 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
                                                               vertex_index_with_longest_common_prefix)
         return vertex_index_with_longest_common_prefix
+
+    @staticmethod
+    def _get_common_prefix_name(origin_module_name: str, vertex_module_name: str, common_prefix: str) -> str:
+        if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+            origin_parts = origin_module_name.split('.')
+            vertex_parts = vertex_module_name.split('.')
+
+            common_parts = []
+            for o, v in zip(origin_parts, vertex_parts):  # noqa: B905
+                if o == v:
+                    common_parts.append(o)
+                else:
+                    break
+
+            if common_parts:
+                common_prefix = f"{common_prefix} {'.'.join(common_parts)}"
+
+        return common_prefix.strip()
 
     def _find_best_match_based_on_foreach_key(
             self,
