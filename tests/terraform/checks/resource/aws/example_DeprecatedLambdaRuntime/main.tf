@@ -3,7 +3,7 @@ resource "aws_lambda_function" "pass" {
   function_name = "lambda_function_name"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "index.test"
-  runtime       = "nodejs18.x"
+  runtime       = "python3.14"
 
   ephemeral_storage {
     size = 10240 # Min 512 MB and the Max 10240 MB
