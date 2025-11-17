@@ -132,7 +132,7 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
         wrapped_str_to_replace = f'"{str_to_replace}"'
         if wrapped_str_to_replace in string_without_interpolation:
             str_to_replace = wrapped_str_to_replace
-    res =  string_without_interpolation.replace(str_to_replace, str(replaced_value))
+    res = string_without_interpolation.replace(str_to_replace, str(replaced_value))
     return res
 
 
