@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.492...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.493...HEAD)
+
+## [3.2.493](https://github.com/bridgecrewio/checkov/compare/3.2.492...3.2.493) - 2025-11-12
+
+### Feature
+
+- **general:** support skips for module for_each and count - [#7368](https://github.com/bridgecrewio/checkov/pull/7368)
 
 ## [3.2.492](https://github.com/bridgecrewio/checkov/compare/3.2.491...3.2.492) - 2025-11-10
 

@@ -132,12 +132,11 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
-        # TODO: after fixing module enrichment with skipped checks the failed checks will become skipped
-        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 0)
 
         self.assertEqual(len(report.passed_checks), 0)
 
-        self.assertEqual(len(report.skipped_checks), 2)
+        self.assertEqual(len(report.skipped_checks), 5)
 
 
     def test_skip_check(self):
