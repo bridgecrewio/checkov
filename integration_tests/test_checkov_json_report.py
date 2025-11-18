@@ -54,6 +54,9 @@ class TestCheckovJsonReport(unittest.TestCase):
                 self.validate_report_not_empty(data)
 
     def validate_report_not_empty(self, report):
+        if "summary" not in report:
+            print("ERROR - summary not found in report, found keys: {keys}".format(keys=report))
+            self.assertEqual(list(report.keys()), ["summary", "results"])
         self.assertEqual(report["summary"]["parsing_errors"], 0,
                          f"expecting 0 parsing errors but got: {report['results']['parsing_errors']}")
         self.assertGreater(report["summary"]["failed"], 1,
