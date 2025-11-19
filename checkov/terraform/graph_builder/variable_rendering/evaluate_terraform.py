@@ -126,7 +126,14 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
         return original_str if keep_origin else str_to_replace
 
     string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
-    return string_without_interpolation.replace(str_to_replace, str(replaced_value))
+    if (isinstance(replaced_value, (list, dict)) and not str_to_replace.startswith('"')):
+        # In cases we are rendering a variable of list/dict, it might result in mistakenly transforming them to str.
+        # By adding the wrap with `"` we make sure that we replace them as well and thus preserve the original type.
+        wrapped_str_to_replace = f'"{str_to_replace}"'
+        if wrapped_str_to_replace in string_without_interpolation:
+            str_to_replace = wrapped_str_to_replace
+    res = string_without_interpolation.replace(str_to_replace, str(replaced_value))
+    return res
 
 
 def _string_changed_except_interpolation(str_before: str, str_after: str) -> bool:
@@ -155,7 +162,7 @@ def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_
             return new_value
 
         # Second part - checking if escaped is valid
-        escaped_new_value = f"'{new_value}'"
+        escaped_new_value = f'"{new_value}"'
         escaped = origin_str.replace(str_to_replace, escaped_new_value)
         first_evaluated = evaluate_terraform(escaped)
         if escaped != first_evaluated and _string_changed_except_interpolation(escaped, first_evaluated):

@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.493...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.494...HEAD)
+
+## [3.2.494](https://github.com/bridgecrewio/checkov/compare/3.2.493...3.2.494) - 2025-11-18
+
+### Bug Fix
+
+- **general:** Fixed build workflows of integration test by locking helm version - [#7371](https://github.com/bridgecrewio/checkov/pull/7371)
+- **terraform:** Fixed variable rendering of complex variables to avoid changing type - [#7369](https://github.com/bridgecrewio/checkov/pull/7369)
 
 ## [3.2.493](https://github.com/bridgecrewio/checkov/compare/3.2.492...3.2.493) - 2025-11-12
 
