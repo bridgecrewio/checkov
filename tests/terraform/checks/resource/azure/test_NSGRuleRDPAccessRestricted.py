@@ -31,6 +31,8 @@ class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
             "azurerm_network_security_group.ranges",
             "azurerm_network_security_rule.ranges_prefixes_lower_case",
             "azurerm_network_security_rule.range_prefix_lower_case",
+            "azurerm_network_security_rule.f_source_slash_zero",
+            "azurerm_network_security_rule.f_ranges_udp_lower_case",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
