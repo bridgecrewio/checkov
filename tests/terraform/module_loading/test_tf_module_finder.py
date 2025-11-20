@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 import logging
+import tempfile
 from pathlib import Path
 from unittest import mock
 
@@ -47,6 +48,44 @@ class TestModuleFinder(unittest.TestCase):
         modules = find_modules(src_dir)
         self.assertEqual(1, len(modules))
         self.assertEqual("3.14.0", modules[0].version)
+
+    def test_excluded_paths_regex_with_character_classes(self):
+        """Test that excluded_paths with regex character classes work correctly (issue #7290)"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create test directory structure
+            charts_dir = os.path.join(temp_dir, "charts", "app-123", "charts")
+            os.makedirs(charts_dir, exist_ok=True)
+            
+            # Create terraform files
+            with open(os.path.join(charts_dir, "main.tf"), 'w') as f:
+                f.write('module "test" { source = "terraform-aws-modules/vpc/aws" }')
+            with open(os.path.join(temp_dir, "main.tf"), 'w') as f:
+                f.write('module "included" { source = "terraform-aws-modules/s3-bucket/aws" }')
+            
+            # Test with character class regex pattern that caused the original issue
+            excluded_paths = [r"charts/[a-z0-9-]+/charts/.*"]
+            
+            # This should not raise a regex compilation error
+            modules = find_modules(temp_dir, excluded_paths=excluded_paths)
+            
+            # Should find only the included module, not the excluded one
+            self.assertEqual(1, len(modules))
+            
+    def test_excluded_paths_invalid_regex_handling(self):
+        """Test that invalid regex patterns in excluded_paths are handled gracefully (issue #7290)"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create terraform file
+            with open(os.path.join(temp_dir, "main.tf"), 'w') as f:
+                f.write('module "test" { source = "terraform-aws-modules/vpc/aws" }')
+            
+            # Test with invalid regex pattern (backslash escapes that don't work)
+            excluded_paths = [r"charts\[a-z0-9-]+\charts\.*"]
+            
+            # This should not raise a regex compilation error, just skip the invalid pattern
+            modules = find_modules(temp_dir, excluded_paths=excluded_paths)
+            
+            # Should still find the module since the invalid pattern is ignored
+            self.assertEqual(1, len(modules))
 
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
