@@ -36,7 +36,7 @@ class DefaultNamespace(BaseK8Check):
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         metadata = conf.get("metadata")
         if metadata:
-            if metadata.get("namespace") != "default":
+            if "namespace" in metadata and metadata["namespace"] != "default":
                 return CheckResult.PASSED
             if os.getenv('HELM_NAMESPACE') and os.getenv('HELM_NAMESPACE') != "default":
                 return CheckResult.PASSED
