@@ -94,7 +94,8 @@ class RegistryLoader(ModuleLoader):
             else:
                 session = requests.Session()
                 prepared_request = session.prepare_request(request)
-                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
+                settings = session.merge_environment_settings(prepared_request.url, {}, None, None, None)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT, **settings)
 
             response.raise_for_status()
         except HTTPError as e:
@@ -167,7 +168,8 @@ class RegistryLoader(ModuleLoader):
             else:
                 session = requests.Session()
                 prepared_request = session.prepare_request(request)
-                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
+                settings = session.merge_environment_settings(prepared_request.url, {}, None, None, None)
+                response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT, **settings)
             response.raise_for_status()
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
@@ -209,7 +211,8 @@ class RegistryLoader(ModuleLoader):
                 else:
                     session = requests.Session()
                     prepared_request = session.prepare_request(request)
-                    response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT)
+                    settings = session.merge_environment_settings(prepared_request.url, {}, None, None, None)
+                    response = session.send(prepared_request, timeout=DEFAULT_TIMEOUT, **settings)
                 response.raise_for_status()
             except HTTPError as e:
                 self.logger.debug(e)
