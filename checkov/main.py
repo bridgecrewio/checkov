@@ -59,6 +59,7 @@ from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_c
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool, convert_str_to_optional_bool
 from checkov.common.util.env_vars_config import env_vars_config
+from checkov.common.util.api_key_warnings import check_for_api_key_usage_warnings, warn_about_missing_metadata_without_api_key
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.docs_generator import print_checks
@@ -306,14 +307,12 @@ class Checkov:
             # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
             self.config.bc_api_key = bc_integration.persist_bc_api_key(self.config)
 
-            if not self.config.bc_api_key:
-                # check, if someone tries to use a severity filter without an API key
-                severities = {severity for severity in BcSeverities.__dict__.values() if isinstance(severity, str)}
-                if (
-                    (self.config.check and any(check in severities for check in self.config.check))
-                    or (self.config.skip_check and any(check in severities for check in self.config.skip_check))
-                ):
-                    logging.warning("Filtering checks by severity is only possible with an API key")
+            # Check for CLI parameters that require or are enhanced by an API key
+            check_for_api_key_usage_warnings(self.config, bool(self.config.bc_api_key))
+            
+            # Inform about limited metadata without API key
+            if not self.config.bc_api_key and not self.config.quiet:
+                warn_about_missing_metadata_without_api_key(False)
 
             excluded_paths = self.config.skip_path or []
 
