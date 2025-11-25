@@ -1,6 +1,79 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.483...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.495...HEAD)
+
+## [3.2.495](https://github.com/bridgecrewio/checkov/compare/3.2.494...3.2.495) - 2025-11-23
+
+### Bug Fix
+
+- **kubernetes:** Fix CKV_K8S_21 - [#7378](https://github.com/bridgecrewio/checkov/pull/7378)
+
+## [3.2.494](https://github.com/bridgecrewio/checkov/compare/3.2.493...3.2.494) - 2025-11-18
+
+### Bug Fix
+
+- **general:** Fixed build workflows of integration test by locking helm version - [#7371](https://github.com/bridgecrewio/checkov/pull/7371)
+- **terraform:** Fixed variable rendering of complex variables to avoid changing type - [#7369](https://github.com/bridgecrewio/checkov/pull/7369)
+
+## [3.2.493](https://github.com/bridgecrewio/checkov/compare/3.2.492...3.2.493) - 2025-11-12
+
+### Feature
+
+- **general:** support skips for module for_each and count - [#7368](https://github.com/bridgecrewio/checkov/pull/7368)
+
+## [3.2.492](https://github.com/bridgecrewio/checkov/compare/3.2.491...3.2.492) - 2025-11-10
+
+### Bug Fix
+
+- **terraform:** get_resource_tags handles more cases - [#7365](https://github.com/bridgecrewio/checkov/pull/7365)
+
+## [3.2.491](https://github.com/bridgecrewio/checkov/compare/3.2.490...3.2.491) - 2025-11-09
+
+### Bug Fix
+
+- **terraform:** Graph report tags should be dict - [#7363](https://github.com/bridgecrewio/checkov/pull/7363)
+
+## [3.2.490](https://github.com/bridgecrewio/checkov/compare/3.2.489...3.2.490) - 2025-11-04
+
+### Feature
+
+- **general:** Fix downloading of the external modules when ref is a shortened Git hash - [#7278](https://github.com/bridgecrewio/checkov/pull/7278)
+
+## [3.2.489](https://github.com/bridgecrewio/checkov/compare/3.2.488...3.2.489) - 2025-10-29
+
+### Bug Fix
+
+- **helm:** Check HELM_NAMESPACE env var in CKV_K8S_21  - [#7355](https://github.com/bridgecrewio/checkov/pull/7355)
+
+## [3.2.488](https://github.com/bridgecrewio/checkov/compare/3.2.487...3.2.488) - 2025-10-27
+
+### Feature
+
+- **terraform_plan:** add new cases for foreach in the presence of skips - [#7351](https://github.com/bridgecrewio/checkov/pull/7351)
+
+## [3.2.487](https://github.com/bridgecrewio/checkov/compare/3.2.486...3.2.487) - 2025-10-23
+
+### Bug Fix
+
+- **general:** CKV_AWS_174 should-allow-higher-then-TLSv1.2 - terraform and cloudformation - [#7352](https://github.com/bridgecrewio/checkov/pull/7352)
+
+## [3.2.486](https://github.com/bridgecrewio/checkov/compare/3.2.485...3.2.486) - 2025-10-22
+
+### Feature
+
+- **general:** update setuptools version 78.1.1 - [#7347](https://github.com/bridgecrewio/checkov/pull/7347)
+
+## [3.2.485](https://github.com/bridgecrewio/checkov/compare/3.2.484...3.2.485) - 2025-10-20
+
+### Bug Fix
+
+- **general:** fix urllib3 dependency - [#7345](https://github.com/bridgecrewio/checkov/pull/7345)
+
+## [3.2.484](https://github.com/bridgecrewio/checkov/compare/3.2.483...3.2.484) - 2025-10-15
+
+### Bug Fix
+
+- **terraform_plan:** Correctly handle complex types for after_unknown - [#7333](https://github.com/bridgecrewio/checkov/pull/7333)
 
 ## [3.2.483](https://github.com/bridgecrewio/checkov/compare/3.2.479...3.2.483) - 2025-10-12
 

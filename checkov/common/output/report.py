@@ -574,6 +574,10 @@ class Report:
 
             if record.resource_address and record.resource_address.startswith("module."):
                 module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
+                # For module with for_each or count, the module path will be module.module_name[(.*)]. We can
+                # ignore the index and the for_each value and just use the module name as it's not possible to
+                # skip checks for a specific instance of a module
+                module_path = module_path.split('[')[0]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:
@@ -593,10 +597,17 @@ class Report:
         return the resource raw id without the modules and the indexes
         example: from resource_id='module.module_name.type.name[1]' return 'type.name'
         example: from resource_id='type.name['some.long.address']' return 'type.name'
+        example: from resource_id='module.module_name['some.long.address']'.type.name return 'type.name'
+        example: from resource_id='module.module_name['some.long.address']'.type.name[1] return 'type.name'
         """
         if '[' in resource_id:
-            resource_id = resource_id[:resource_id.index('[')]
+            # remove any information inside brackets
+            resource_id = resource_id[:resource_id.index('[')] + resource_id[resource_id.index(']') + 1:]
+        # take last two elements
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
+        if '[' in resource_raw_id:
+            # cut string at bracket start
+            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
         return resource_raw_id
 
     @classmethod

@@ -122,7 +122,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(enriched_data, expected_enriched_data)
 
     def test_enrichment_of_plan_report_with_for_each(self):
-        allowed_checks = ["CKV2_AWS_38"]
+        allowed_checks = ["CKV2_AWS_38", "CKV_AWS_277"]
         runner_registry = RunnerRegistry(
             banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
         )
@@ -136,7 +136,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         self.assertEqual(len(report.passed_checks), 0)
 
-        self.assertEqual(len(report.skipped_checks), 2)
+        self.assertEqual(len(report.skipped_checks), 5)
 
 
     def test_skip_check(self):
@@ -157,6 +157,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         self.assertEqual(len(failed_check_ids), 0)
         self.assertEqual(len(skipped_check_ids), 2)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
+
 
     def test_skip_check_in_module(self):
         allowed_checks = ["CKV_AWS_19", "CKV2_AWS_6"]
