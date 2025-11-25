@@ -30,7 +30,37 @@ class TestApiKeyWarnings(unittest.TestCase):
         mock_logger.warning.assert_called_once()
         warning_message = mock_logger.warning.call_args[0][0]
         self.assertIn('--check HIGH', warning_message)
-        self.assertIn('estimated defaults', warning_message)
+        self.assertIn('cannot be used without an API key', warning_message)
+    
+    @patch('checkov.common.util.api_key_warnings.logger')
+    def test_severity_filtering_with_csv_string(self, mock_logger):
+        """Test warning when using comma-separated values in --check"""
+        config = MockConfig(check=['HIGH,CKV_AWS_1,MEDIUM'], skip_check=None, hard_fail_on=None, soft_fail_on=None)
+        result = check_for_severity_filtering_without_api_key(config, has_api_key=False)
+        
+        self.assertTrue(result)
+        mock_logger.warning.assert_called_once()
+        warning_message = mock_logger.warning.call_args[0][0]
+        self.assertIn('--check HIGH', warning_message)
+        self.assertIn('--check MEDIUM', warning_message)
+        self.assertNotIn('CKV_AWS_1', warning_message)
+    
+    @patch('checkov.common.util.api_key_warnings.logger')
+    def test_severity_filtering_with_mixed_csv(self, mock_logger):
+        """Test warning with mix of IDs and severities in CSV format"""
+        config = MockConfig(
+            check=None,
+            skip_check=None,
+            hard_fail_on=['CKV_AWS_1,CRITICAL,HIGH'],
+            soft_fail_on=None
+        )
+        result = check_for_severity_filtering_without_api_key(config, has_api_key=False)
+        
+        self.assertTrue(result)
+        warning_message = mock_logger.warning.call_args[0][0]
+        self.assertIn('--hard-fail-on CRITICAL', warning_message)
+        self.assertIn('--hard-fail-on HIGH', warning_message)
+        self.assertNotIn('CKV_AWS_1', warning_message)
     
     @patch('checkov.common.util.api_key_warnings.logger')
     def test_severity_filtering_with_skip_check_parameter(self, mock_logger):
@@ -74,6 +104,20 @@ class TestApiKeyWarnings(unittest.TestCase):
         mock_logger.warning.assert_not_called()
     
     @patch('checkov.common.util.api_key_warnings.logger')
+    def test_no_warning_with_only_check_ids_in_csv(self, mock_logger):
+        """Test no warning when CSV contains only check IDs"""
+        config = MockConfig(
+            check=['CKV_AWS_1,CKV_AWS_2'],
+            skip_check=None,
+            hard_fail_on=['CKV_AWS_18,CKV_AWS_19'],
+            soft_fail_on=None
+        )
+        result = check_for_severity_filtering_without_api_key(config, has_api_key=False)
+        
+        self.assertFalse(result)
+        mock_logger.warning.assert_not_called()
+    
+    @patch('checkov.common.util.api_key_warnings.logger')
     def test_multiple_severity_parameters(self, mock_logger):
         """Test warning with multiple severity parameters"""
         config = MockConfig(
@@ -90,6 +134,26 @@ class TestApiKeyWarnings(unittest.TestCase):
         self.assertIn('--skip-check LOW', warning_message)
         self.assertIn('--hard-fail-on CRITICAL', warning_message)
         self.assertIn('--soft-fail-on MEDIUM', warning_message)
+    
+    @patch('checkov.common.util.api_key_warnings.logger')
+    def test_complex_csv_combination(self, mock_logger):
+        """Test warning with complex CSV combinations across all parameters"""
+        config = MockConfig(
+            check=['HIGH,CKV_AWS_1'],
+            skip_check=['LOW,CKV_AWS_2'],
+            hard_fail_on=['CRITICAL'],
+            soft_fail_on=['MEDIUM,CKV_AWS_3']
+        )
+        result = check_for_severity_filtering_without_api_key(config, has_api_key=False)
+        
+        self.assertTrue(result)
+        warning_message = mock_logger.warning.call_args[0][0]
+        self.assertIn('--check HIGH', warning_message)
+        self.assertIn('--skip-check LOW', warning_message)
+        self.assertIn('--hard-fail-on CRITICAL', warning_message)
+        self.assertIn('--soft-fail-on MEDIUM', warning_message)
+        # Check IDs should not appear in the warning
+        self.assertNotIn('CKV_AWS', warning_message)
     
     @patch('checkov.common.util.api_key_warnings.logger')
     def test_policy_metadata_filter_warning(self, mock_logger):

@@ -1,15 +1,17 @@
-"""
-Utility module to warn users when they use CLI parameters that require an API key but none is provided.
-"""
+from __future__ import annotations
+
 import logging
-from typing import Any
+from typing import TYPE_CHECKING
+
+from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+
+if TYPE_CHECKING:
+    from argparse import Namespace
 
 logger = logging.getLogger(__name__)
 
-
 # Severity codes that can be used for filtering
 SEVERITY_CODES = {'CRITICAL', 'HIGH', 'MEDIUM', 'MODERATE', 'LOW', 'INFO', 'NONE'}
-
 
 # Parameters that require an API key to function properly
 API_KEY_REQUIRED_PARAMS = {
@@ -48,7 +50,7 @@ API_KEY_ENHANCED_PARAMS = {
 }
 
 
-def check_for_severity_filtering_without_api_key(config: Any, has_api_key: bool) -> bool:
+def check_for_severity_filtering_without_api_key(config: Namespace, has_api_key: bool) -> bool:
     """
     Check if the user is trying to filter by severity without an API key.
     
@@ -64,46 +66,52 @@ def check_for_severity_filtering_without_api_key(config: Any, has_api_key: bool)
     
     # Check in --check parameter
     if hasattr(config, 'check') and config.check:
-        for check_id in config.check:
+        check_list = convert_csv_string_arg_to_list(config.check)
+        for check_id in check_list:
             if check_id.upper() in SEVERITY_CODES:
                 severity_codes_used.append(f"--check {check_id}")
                 severity_filtering_attempted = True
     
     # Check in --skip-check parameter
     if hasattr(config, 'skip_check') and config.skip_check:
-        for check_id in config.skip_check:
+        skip_check_list = convert_csv_string_arg_to_list(config.skip_check)
+        for check_id in skip_check_list:
             if check_id.upper() in SEVERITY_CODES:
                 severity_codes_used.append(f"--skip-check {check_id}")
                 severity_filtering_attempted = True
     
     # Check in --hard-fail-on parameter
     if hasattr(config, 'hard_fail_on') and config.hard_fail_on:
-        for severity in config.hard_fail_on:
+        hard_fail_list = convert_csv_string_arg_to_list(config.hard_fail_on)
+        for severity in hard_fail_list:
             if severity.upper() in SEVERITY_CODES:
                 severity_codes_used.append(f"--hard-fail-on {severity}")
                 severity_filtering_attempted = True
     
     # Check in --soft-fail-on parameter
     if hasattr(config, 'soft_fail_on') and config.soft_fail_on:
-        for severity in config.soft_fail_on:
+        soft_fail_list = convert_csv_string_arg_to_list(config.soft_fail_on)
+        for severity in soft_fail_list:
             if severity.upper() in SEVERITY_CODES:
                 severity_codes_used.append(f"--soft-fail-on {severity}")
                 severity_filtering_attempted = True
     
     if severity_filtering_attempted:
         logger.warning(
-            f"⚠️  Severity-based filtering was used without an API key:\n"
+            f"⚠️  Severity codes cannot be used without an API key:\n"
             f"   {', '.join(severity_codes_used)}\n"
             f"   \n"
-            f"   Without an API key, severity information comes from estimated defaults based on check categories.\n"
-            f"   For accurate severity filtering using platform-defined severities, provide an API key:\n"
+            f"   Severity codes are not available without an API key because they come from the Prisma Cloud platform.\n"
+            f"   Your filtering parameters using severity codes will be ignored during this scan.\n"
+            f"   \n"
+            f"   To enable severity-based filtering, provide an API key:\n"
             f"   --bc-api-key <your_key> or set BC_API_KEY environment variable"
         )
     
     return severity_filtering_attempted
 
 
-def check_for_api_key_usage_warnings(config: Any, has_api_key: bool) -> None:
+def check_for_api_key_usage_warnings(config: Namespace, has_api_key: bool) -> None:
     """
     Check if the user is using parameters that require or are enhanced by an API key.
     Log appropriate warnings if no API key is provided.
