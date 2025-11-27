@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List
 
 from yaml.scanner import ScannerError
 from yaml import YAMLError
@@ -86,13 +86,21 @@ def prepare_definition(definition: dict[str, Any]) -> dict[str, Any]:
         if block_type == COMMENT_FIELD_NAME or block_type in LINE_FIELD_NAMES:
             continue
 
+        if block_type == BlockType.PROVIDER and isinstance(blocks, list):
+            blocks = _normalize_provider_blocks_list(blocks)
+
         definition_new[block_type] = handle_block_type(block_type=block_type, blocks=blocks)
 
     return definition_new
 
 
+
 def handle_block_type(block_type: str, blocks: dict[str, Any]) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
+
+    if isinstance(blocks, list):
+        logger.debug("Unexpected list for block_type %s in handle_block_type: %r", block_type, blocks)
+        return result
 
     for block_name, config in blocks.items():
         if block_name == COMMENT_FIELD_NAME or block_name in LINE_FIELD_NAMES:
@@ -202,3 +210,19 @@ def _clean_simple_type_list(value_list: list[Any]) -> list[Any]:
             if lower_case_value == "false":
                 value_list[i] = False
     return value_list
+
+def _normalize_provider_blocks_list(blocks: list[Any]) -> dict[str, list[Any]]:
+    """Normalize provider blocks that are encoded as a list of dicts"""
+    normalized: dict[str, list[Any]] = {}
+
+    for item in blocks:
+        if not isinstance(item, dict):
+            continue
+
+        for name, conf in item.items():
+            if isinstance(conf, list):
+                normalized.setdefault(name, []).extend(conf)
+            else:
+                normalized.setdefault(name, []).append(conf)
+
+    return normalized
