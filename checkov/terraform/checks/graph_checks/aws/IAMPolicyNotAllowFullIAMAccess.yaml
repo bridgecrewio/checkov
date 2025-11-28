@@ -17,6 +17,12 @@ definition:
         value: "iam:*"
       - cond_type: "attribute"
         resource_types:
+        - "aws_iam_role"
+        attribute: "inline_policy[*].policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "iam:*"
+      - cond_type: "attribute"
+        resource_types:
         - "aws_ssoadmin_permission_set_inline_policy"
         attribute: "inline_policy.Statement[?(@.Effect == Allow)].Action[*]"
         operator: "jsonpath_not_equals"
@@ -35,6 +41,12 @@ definition:
         - "aws_iam_group_policy"
         - "aws_iam_user_policy"
         attribute: "policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_iam_role"
+        attribute: "inline_policy[*].policy.Statement[?(@.Effect == Allow)].Action[*]"
         operator: "jsonpath_not_equals"
         value: "*"
       - cond_type: "attribute"

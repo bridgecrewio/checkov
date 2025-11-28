@@ -439,3 +439,78 @@ data "aws_iam_policy_document" "fail1" {
     ]
   }
 }
+
+
+
+# Test Role Policy - pass
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
+resource "aws_iam_role" "pass1" {
+  name = "pass1"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:*",
+            "ec2:*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy - fail
+resource "aws_iam_role" "fail1" {
+  name = "fail1"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:*",
+            "iam:*",
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy - fail
+resource "aws_iam_role" "fail2" {
+  name = "fail2"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
