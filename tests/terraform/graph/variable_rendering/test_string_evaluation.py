@@ -504,7 +504,7 @@ class TestTerraformEvaluation(TestCase):
     "origin_str,str_to_replace,new_value,expected",
     [
 
-        ("${lookup({'a': ${local.protocol1}},\"a\",\"https\")}", '${local.protocol1}', 'local.protocol1', "'local.protocol1'"),
+        ("${lookup({'a': ${local.protocol1}},\"a\",\"https\")}", '${local.protocol1}', 'local.protocol1', '"local.protocol1"'),
         ('${length(keys(var.identity)) > 0 ? [${var.identity}] : []}', '${var.identity}', 'var.identity', 'var.identity'),
     ],
     ids=["escaped", "not escaped"],
