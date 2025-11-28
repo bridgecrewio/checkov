@@ -60,7 +60,14 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
     if parsing_errors is None:
         parsing_errors = {}
 
-    excluded_paths_regex = re.compile('|'.join(f"({excluded_paths})")) if excluded_paths else None
+    excluded_paths_compiled = []
+    if excluded_paths:
+        for path in excluded_paths:
+            try:
+                excluded_paths_compiled.append(re.compile(path))
+            except re.error:
+                # Skip invalid regex patterns
+                continue
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith(".tf"):
@@ -69,7 +76,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
                 # don't scan the modules folder used by Terraform
                 continue
             file_path = os.path.join(root, file_name)
-            if excluded_paths_regex and excluded_paths_regex.search(file_path):
+            if any(pattern.search(file_path) for pattern in excluded_paths_compiled):
                 continue
 
             data = load_or_die_quietly(file_path, parsing_errors)
