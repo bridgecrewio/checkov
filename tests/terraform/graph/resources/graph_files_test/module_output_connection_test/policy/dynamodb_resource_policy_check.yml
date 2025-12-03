@@ -1,0 +1,38 @@
+---
+metadata:
+  name: "DynamoDB resource policy should not allow wildcard access without conditions"
+  id: CKV_AWS_CUSTOM_DYNAMODB_POLICY
+  guidelines: "Ensure DynamoDB resource policies that use wildcard principals or actions include proper conditions to restrict access"
+  category: IAM
+  severity: HIGH
+scope:
+  provider: aws
+definition:
+  # This check applies to aws_dynamodb_resource_policy resources
+  # It checks if the policy uses wildcards without proper conditions
+  or:
+    # PASS Case 1: No wildcard in Principal (checking for AWS = *)
+    - cond_type: attribute
+      resource_types:
+        - aws_dynamodb_resource_policy
+      attribute: policy.Statement.Principal.AWS
+      operator: not_equals
+      value: "*"
+    
+    # PASS Case 2: No wildcard in Action (checking for dynamodb:*)
+    - cond_type: attribute
+      resource_types:
+        - aws_dynamodb_resource_policy
+      attribute: policy.Statement.Action
+      operator: not_equals
+      value: "dynamodb:*"
+    
+    # PASS Case 3: Has Condition block (even with wildcards)
+    - cond_type: attribute
+      resource_types:
+        - aws_dynamodb_resource_policy
+      attribute: policy.Statement.Condition
+      operator: exists
+    
+    # If none of the above pass, the check FAILS
+    # (has wildcards in both Principal.AWS and Action, and no Condition)

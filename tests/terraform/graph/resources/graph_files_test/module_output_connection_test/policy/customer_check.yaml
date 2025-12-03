@@ -1,0 +1,65 @@
+---
+metadata:
+  id: "CKV_AWS_CUSTOMER_DYNAMODB_POLICY"
+  name: "Custom - Ensure DynamoDB Table Has Resource Policy Attached And Allows AWS Account And Root User With Conditions"
+  guidelines: "Ensure DynamoDB Table has Resource Policy Attached. A 'Conditions' block should be added to the policy, if 'Actions' contains '*' or 'dynamodb:*', or if 'Principal' contains '*' or ':root'"
+  category: "general"
+  severity: "informational"
+scope:
+  provider: aws
+definition:
+  and:
+    #Ensure the resource is DynamoDB
+    - cond_type: "filter"
+      attribute: "resource_type"
+      value:
+        - "aws_dynamodb_table"
+      operator: "within"
+    #Ensure DynamoDB has resource policy attached
+    - cond_type: "connection"
+      resource_types:
+        - "aws_dynamodb_table"
+      connected_resource_types:
+        - "aws_dynamodb_resource_policy"
+      operator: "exists"
+    #Ensure Condition block exists or Action not equals to '*' or 'dynamodb:*'
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Condition"
+          operator: "exists"
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Action"
+          operator: "not_within"
+          value:
+            - "*"
+            - "dynamodb:*"
+    #Ensure Condition block exists or Principal not contains :root
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Condition"
+          operator: "exists"
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Principal"
+          operator: "not_contains"
+          value: ":root"
+    #Ensure Condition block exists or principal not contains '*'
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Condition"
+          operator: "exists"
+        - cond_type: attribute
+          resource_types:
+            - "aws_dynamodb_resource_policy"
+          attribute: "policy.Statement.Principal"
+          operator: "not_contains"
+          value: "*"
