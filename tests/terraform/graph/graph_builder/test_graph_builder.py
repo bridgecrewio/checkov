@@ -415,14 +415,10 @@ class TestModuleOutputConnection(TestCase):
             os.path.join(Path(__file__).parent.parent, 'resources', 'graph_files_test', 'module_output_connection_test')
         )
 
-    def test_module_output_connection_bug(self):
+    def test_module_output_connection(self):
         """
-        Test that demonstrates the bug: connection is not created between
-        aws_dynamodb_resource_policy and aws_dynamodb_table when they're
+        Test connection between aws_dynamodb_resource_policy and aws_dynamodb_table when they're
         in different modules and connected via module output.
-
-        This test currently FAILS, demonstrating the bug.
-        After the fix is implemented, this test should PASS.
         """
         # Build the graph
         graph_manager = TerraformGraphManager(NetworkxConnector())
@@ -463,13 +459,12 @@ class TestModuleOutputConnection(TestCase):
             "Edge from policy to output should exist"
         )
 
-        # Check edge from policy to table (THIS IS THE BUG - this edge doesn't exist)
+        # Check edge from policy to table
         policy_to_table_edge_exists = any(
             edge.origin == policy_idx and edge.dest == table_idx
             for edge in local_graph.edges
         )
 
-        # This assertion will FAIL before the fix, demonstrating the bug
         self.assertTrue(
             policy_to_table_edge_exists,
             "BUG: Edge from policy to table should exist (traced through output), but it doesn't. "
@@ -496,7 +491,7 @@ class TestModuleOutputConnection(TestCase):
                 dest_vertex = local_graph.vertices[edge.dest]
                 policy_edges.append((origin_vertex.name, edge.label, dest_vertex.name, dest_vertex.block_type))
 
-        # The bug: we should see an edge to aws_dynamodb_table, but we only see edge to output
+        # We should see an edge to aws_dynamodb_table, but we only see edge to output
         self.assertTrue(
             len(policy_edges) > 0,
             "Policy should have at least one outgoing edge"
