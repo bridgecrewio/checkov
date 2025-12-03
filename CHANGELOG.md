@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.494...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.495...HEAD)
+
+## [3.2.495](https://github.com/bridgecrewio/checkov/compare/3.2.494...3.2.495) - 2025-11-23
+
+### Bug Fix
+
+- **kubernetes:** Fix CKV_K8S_21 - [#7378](https://github.com/bridgecrewio/checkov/pull/7378)
 
 ## [3.2.494](https://github.com/bridgecrewio/checkov/compare/3.2.493...3.2.494) - 2025-11-18
 
