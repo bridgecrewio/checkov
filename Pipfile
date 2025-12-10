@@ -79,7 +79,6 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonschema = ">=4.6.0,<5.0.0"
 prettytable = ">=3.0.0"
-pycep-parser = "==0.4.1"
 charset-normalizer = "*"
 pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
@@ -90,6 +89,7 @@ openai = "*"
 spdx-tools = "<0.8.0"
 license-expression = "==30.1.0"
 asteval = "==1.0.6"
+pycep-parser = "==0.6.1"
 
 [requires]
 python_version = "3.7"
