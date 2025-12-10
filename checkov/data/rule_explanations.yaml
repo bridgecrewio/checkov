@@ -1,0 +1,53 @@
+# Checkov规则解释器数据源文件
+# 按规则ID索引，包含风险成因、影响面、修复示例等信息
+
+CKV_AWS_20:
+  root_cause: S3存储桶未启用版本控制，当意外删除或覆盖对象时无法恢复
+  impact_surface: 影响S3存储桶资源，可能导致数据丢失，影响依赖该存储桶的所有应用
+  fix_examples:
+    terraform:
+      bad: |
+        resource "aws_s3_bucket" "example" {
+          bucket = "example-bucket"
+          # 缺少版本控制配置
+        }
+      good: |
+        resource "aws_s3_bucket" "example" {
+          bucket = "example-bucket"
+          
+          versioning {
+            enabled = true
+          }
+        }
+    cloudformation:
+      good: |
+        ExampleBucket:
+          Type: AWS::S3::Bucket
+          Properties:
+            VersioningConfiguration:
+              Status: Enabled
+  references:
+    - https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
+    - https://checkov.io/5.Policy%20Index/aws.html#ckv_aws_20
+
+CKV_AWS_18:
+  root_cause: S3存储桶未设置访问日志记录，无法监控和审计对存储桶的访问
+  impact_surface: 影响S3存储桶资源，可能导致无法追踪未经授权的访问或数据泄露
+  fix_examples:
+    terraform:
+      good: |
+        resource "aws_s3_bucket" "log_bucket" {
+          bucket = "example-log-bucket"
+        }
+        
+        resource "aws_s3_bucket" "example" {
+          bucket = "example-bucket"
+          
+          logging {
+            target_bucket = aws_s3_bucket.log_bucket.id
+            target_prefix = "example-bucket-logs/"
+          }
+        }
+  references:
+    - https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html
+    - https://checkov.io/5.Policy%20Index/aws.html#ckv_aws_18
