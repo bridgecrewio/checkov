@@ -42,7 +42,7 @@ class TestRunnerValid(unittest.TestCase):
         scan_dir_path = os.path.join(current_dir, "runner", "resources", "infrastructure")
 
         runner = Runner()
-        filter = RunnerFilter(framework=['helm'], use_enforcement_rules=True)
+        filter = RunnerFilter(framework=['/opt/hostedtoolcache/helm/4.0.2/x64/linux-amd64/helm'], use_enforcement_rules=True)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
         filter.enforcement_rule_configs = {CheckType.HELM: Severities[BcSeverities.OFF]}
