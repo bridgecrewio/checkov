@@ -94,7 +94,7 @@ jobs:
           LOG_LEVEL: INFO
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
