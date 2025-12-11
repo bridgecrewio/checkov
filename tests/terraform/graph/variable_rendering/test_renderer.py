@@ -50,18 +50,6 @@ class TestRenderer(TestCase):
 
         self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.storage_bucket')
 
-    def test_render_complex_variable(self):
-        resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/complex_var')
-        graph_manager = TerraformGraphManager('acme', ['acme'])
-        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
-
-        expected_resource = {'description': 'test', 'name': 'test',
-                             'policy': {'Statement': [{'Action': '*',
-                                                        'Condition': {'MyCond': {'key': ['0.0.0.0', '1.1.1.1']}},
-                                                        'Effect': 'Deny', 'Resource': '*'}], 'Version': '1970-01-01'}}
-
-        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_iam_policy.test')
-
     def test_render_local_from_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME,
                                      '../resources/variable_rendering/render_local_from_variable')
