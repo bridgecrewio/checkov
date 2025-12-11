@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9"]
+        python: ["3.13"]
     env:
       working-directory: ./performance_tests
     runs-on: [self-hosted, public, linux, x64]
