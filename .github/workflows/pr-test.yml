@@ -34,8 +34,8 @@ jobs:
         run: |
           # remove venv, if exists
           pipenv --rm || true
-          pipenv run pip install websocket-client==1.9.0
           pipenv --python ${{ matrix.python }}
+          pipenv run pip install websocket-client==1.9.0
           pipenv install --dev -v
       - name: Unit tests
         env:
