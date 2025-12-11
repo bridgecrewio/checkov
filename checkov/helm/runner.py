@@ -124,7 +124,7 @@ class K8sHelmRunner(k8_runner):
 
 class Runner(BaseRunner["KubernetesGraphManager"]):
     check_type: str = CheckType.HELM  # noqa: CCE003  # a static attribute
-    helm_command = '/opt/hostedtoolcache/helm/4.0.2/x64/linux-amd64/helm'  # noqa: CCE003  # a static attribute
+    helm_command = 'helm'  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
@@ -152,7 +152,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         # Returns framework names to skip if deps fail.
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
         try:
-            proc = subprocess.Popen(['/opt/hostedtoolcache/helm/4.0.2/x64/linux-amd64/helm', 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+            proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
             oString = str(o, 'utf-8')
             if "Version:" in oString:
