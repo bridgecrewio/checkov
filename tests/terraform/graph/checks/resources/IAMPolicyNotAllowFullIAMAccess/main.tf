@@ -439,3 +439,223 @@ data "aws_iam_policy_document" "fail1" {
     ]
   }
 }
+
+
+
+# Test Role Policy - pass
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
+resource "aws_iam_role" "pass1" {
+  name = "pass1"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:*",
+            "ec2:*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy with Deny effect for iam:* - pass
+resource "aws_iam_role" "pass2" {
+  name = "pass2"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "deny-iam-access"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "iam:*"
+          ]
+          Effect   = "Deny"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy with specific IAM actions (not iam:*) - pass
+resource "aws_iam_role" "pass3" {
+  name = "pass3"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "limited-iam-access"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "iam:GetUser",
+            "iam:ListUsers",
+            "s3:*",
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy with action that includes iam:* as substring but is not iam service - pass
+resource "aws_iam_role" "pass4" {
+  name = "pass4"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "non-iam-service"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "xsiam:*",
+            "ec2:*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy with multiple inline policies, none allowing full IAM access - pass
+resource "aws_iam_role" "pass5" {
+  name = "pass5"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "s3-access"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:GetObject",
+            "s3:PutObject"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+
+  inline_policy {
+    name = "ec2-access"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "ec2:DescribeInstances",
+            "ec2:StartInstances"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy with iam:* in Deny statement and other actions in Allow - pass
+resource "aws_iam_role" "pass6" {
+  name = "pass6"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "mixed-statements"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:*",
+            "ec2:*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+        {
+          Action = [
+            "iam:*"
+          ]
+          Effect   = "Deny"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy - fail
+resource "aws_iam_role" "fail1" {
+  name = "fail1"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:*",
+            "iam:*",
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+# Test Role Policy - fail
+resource "aws_iam_role" "fail2" {
+  name = "fail2"
+  role = aws_iam_role.test_role.id
+
+  inline_policy {
+    name = "terraform-apply"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
