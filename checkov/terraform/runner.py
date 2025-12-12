@@ -174,7 +174,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     parsing_errors.update(file_parsing_errors)
 
     def parse_file(self, file: str) -> tuple[str, dict[str, Any] | None, dict[str, Exception]] | None:
-        if not (file.endswith(".tf") or file.endswith(".hcl")):
+        if not (file.endswith(".tf") or file.endswith(".tofu") or file.endswith(".hcl")):
             return None
         file_parsing_errors: dict[str, Exception] = {}
         parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)

@@ -102,7 +102,7 @@ class TFParser:
         return self.out_definitions
 
     def parse_file(self, file: str, parsing_errors: dict[str, Exception]) -> Optional[Dict[str, Any]]:
-        if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
+        if file.endswith(".tf") or file.endswith(".tofu") or file.endswith(".tf.json") or file.endswith(".tofu.json") or file.endswith(".hcl"):
             parse_result = load_or_die_quietly(file, parsing_errors)
             if parse_result:
                 parse_result = serialize_definitions(parse_result)
@@ -577,7 +577,7 @@ class TFParser:
                 hcl_tfvars = file.path
             elif file.name.endswith(".auto.tfvars.json") or file.name.endswith(".auto.tfvars"):
                 auto_vars_files.append(file.path)
-            elif file.name.endswith(".tf") or file.name.endswith('.hcl'):  # TODO: add support for .tf.json
+            elif file.name.endswith(".tf") or file.name.endswith(".tofu") or file.name.endswith('.hcl'):
                 tf_files_to_load.append(file.path)
 
         # Terraform Variable Definition Precedence
