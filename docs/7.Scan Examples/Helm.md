@@ -32,7 +32,9 @@ Check: CKV_K8S_27: "Do not expose the docker daemon socket to containers"
 ...
 ```
 
-To do this, we use the helm binary, if the helm binary (v3) is not available via the users `$PATH` for Checkov, Checkov will automatically skip the helm framework, with a message informing the user as below. Checkov will then run with exactly the same behaviour as if running with `checkov --skip-framework helm`.
+To do this, we use the helm binary.\
+If a helm binary greater than v3 is not available via the users `$PATH`, Checkov will automatically skip the helm framework, with a message informing the user.\
+Checkov will then run with exactly the same behaviour as if running with `checkov --skip-framework helm`.
 
 ```
 The following frameworks will automatically be disabled due to missing system dependencies: helm
