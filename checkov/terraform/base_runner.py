@@ -63,7 +63,7 @@ class BaseTerraformRunner(
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: TerraformGraphManager | None = None,
     ) -> None:
-        super().__init__(file_extensions=[".tf", ".hcl"])
+        super().__init__(file_extensions=[".tf", ".tofu", ".hcl"])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser or TFParser()
