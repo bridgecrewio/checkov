@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import logging
+import posixpath
 import multiprocessing
 import os
 import pathlib
@@ -193,7 +194,7 @@ class K8sKustomizeRunner(K8sRunner):
             directory_prefix_path = k8s_file_dir.parents[amount_of_parents - 1]
 
         directory_prefix = str(directory_prefix_path)
-        resolved_path = str(raw_file_path.resolve())
+        resolved_path = posixpath.normpath(str(raw_file_path))
         # Make sure the resolved path starts with the root folder, as pathlib.Path.resolve() might change it
         if directory_prefix in resolved_path and not resolved_path.startswith(directory_prefix):
             resolved_path = K8sKustomizeRunner._remove_extra_path_parts(resolved_path, directory_prefix)
