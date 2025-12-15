@@ -4,16 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-#
-# REMINDER: Update "dev" deps on setup.py when changing
-#
-pytest = "*"
-pytest-xdist = "*"
-pytest-asyncio = "*"
-pytest-cov = "*"
-pytest-mock = "*"
 mock = "*"
-coverage ="==5.5"
 coverage-badge = "*"
 bandit = "*"
 urllib3-mock = "*"
@@ -38,11 +29,14 @@ flake8-bugbear = "*"
 parameterized = "*"
 freezegun = "*"
 boto3-stubs-lite = {extras = ["s3"], version = "*"}
+pytest = "==7.4.4"
+pytest-xdist = "==3.8.0"
+pytest-cov = "==6.3.0"
+pytest-mock = "==3.15.1"
+pytest-asyncio = "==0.23.8"
+coverage = "==7.6.1"
 
 [packages]
-#
-# REMINDER: Update "install_requires" deps on setup.py when changing
-#
 bc-python-hcl2 = "==0.3.51"
 bc-detect-secrets = "==1.4.29"
 bc-jsonpath-ng = "==1.5.9"
