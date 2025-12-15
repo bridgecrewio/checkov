@@ -87,4 +87,4 @@ urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.3"
 
 [requires]
-python_version = "3.9"
+python_version = "3.13"
