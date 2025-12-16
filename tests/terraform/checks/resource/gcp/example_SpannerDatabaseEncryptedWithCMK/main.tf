@@ -23,3 +23,16 @@ resource "google_spanner_database" "pass" {
        kms_key_name= google_kms_crypto_key.example.name
      }
 }
+
+resource "google_spanner_database" "multikey_pass" {
+  instance = google_spanner_instance.example.name
+  name     = "my-database"
+  ddl = [
+    "CREATE TABLE t1 (t1 INT64 NOT NULL,) PRIMARY KEY(t1)",
+    "CREATE TABLE t2 (t2 INT64 NOT NULL,) PRIMARY KEY(t2)",
+  ]
+  deletion_protection = false
+  encryption_config {
+    kms_key_names = [google_kms_crypto_key.example.name]
+  }
+}
