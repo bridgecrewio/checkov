@@ -1,7 +1,8 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-ALLOWED_SSL_MODES = ["TRUSTED_CLIENT_CERTIFICATE_REQUIRED"]
+DEFAULT_ALLOWED_SSL_MODES = ["TRUSTED_CLIENT_CERTIFICATE_REQUIRED"]
+SQLSERVER_ALLOWED_SSL_MODES = ["ENCRYPTED_ONLY"]
 
 
 class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
@@ -28,7 +29,12 @@ class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
                 ssl_mode = ipconfiguration['ssl_mode']
                 ssl_mode = ssl_mode[0] if isinstance(ssl_mode, list) else ssl_mode
 
-                if ssl_mode in ALLOWED_SSL_MODES:
+                #SQL Server does not support DEFAULT_ALLOWED_SSL_MODES (https://docs.cloud.google.com/sql/docs/postgres/admin-api/rest/v1/instances#ipconfiguration)
+                if 'database_version' in conf.keys() and isinstance(conf['database_version'][0], str) and 'SQLSERVER' in conf['database_version'][0]:
+                    if ssl_mode in SQLSERVER_ALLOWED_SSL_MODES:
+                        return CheckResult.PASSED
+                    
+                if ssl_mode in DEFAULT_ALLOWED_SSL_MODES:
                     return CheckResult.PASSED
 
             elif 'require_ssl' in ipconfiguration:
