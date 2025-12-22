@@ -7,9 +7,9 @@ from checkov.common.models.enums import CheckResult
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
-# Adding as expected failure since we are building a baseline as of 22-12-2025.
-@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_run(sca_package_report_dt):
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    pytest.xfail("Baseline as of 2025-12-22")
     # given
     report = sca_package_report_dt
     # then

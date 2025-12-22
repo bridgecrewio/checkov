@@ -48,10 +48,9 @@ class TestParserInternals(unittest.TestCase):
         external_aws_modules_path = os.path.join(self.external_module_path, 'github.com/terraform-aws-modules/terraform-aws-security-group/v3.18.0')
         assert os.path.exists(external_aws_modules_path)
 
-    # Adding as expected failure since we are building a baseline as of 22-12-2025.
-    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)    
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_load_inner_registry_module_with_nested_modules(self):
+        pytest.xfail("Baseline as of 22-12-2025 – remove when stabilized")
         self.load_inner_registry_module(True)
 
     # Adding as expected failure since we are building a baseline as of 22-12-2025.

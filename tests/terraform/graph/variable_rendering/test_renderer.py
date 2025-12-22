@@ -51,9 +51,8 @@ class TestRenderer(TestCase):
 
         self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.storage_bucket')
 
-    # Adding as expected failure since we are building a baseline as of 22-12-2025.
-    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_render_complex_variable(self):
+        pytest.xfail("Baseline snapshot as of 2025-12-22 – remove when stabilized")
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/complex_var')
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)

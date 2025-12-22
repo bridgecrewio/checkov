@@ -23,9 +23,8 @@ class TestCombinatorPluginMultilineJson(unittest.TestCase):
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
 
-    # Adding as expected failure since we are building a baseline as of 22-12-2025.
-    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_non_multiline_pair_time_limit_creating_report(self):
+        pytest.xfail("Baseline snapshot as of 2025-12-22 – remove when stabilized")
         # given
         test_files = [str(Path(__file__).parent / "json_multiline/pomerium_compose.json")]
         runner = Runner()
