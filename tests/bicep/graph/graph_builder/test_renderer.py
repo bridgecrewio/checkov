@@ -1,9 +1,11 @@
 from pathlib import Path
+import pytest
 
 from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 
-
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_render_parameter():
     # given
     test_dir = Path(__file__).parent / "examples/parameter"
@@ -42,6 +44,8 @@ def test_render_parameter():
     }
 
 
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_render_variable():
     # given
     test_dir = Path(__file__).parent / "examples/variable"

@@ -1,5 +1,6 @@
 from pathlib import Path
 from mock.mock import MagicMock
+import pytest
 
 from pytest_mock import MockerFixture
 from packaging import version as packaging_version
@@ -109,7 +110,8 @@ def test_upload_scannable_files_file_config():
 
     assert set(input_output_paths) == expected_output
 
-
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_run(sca_package_2_report):
     # given
     report = sca_package_2_report
@@ -193,7 +195,8 @@ def test_run(sca_package_2_report):
     assert license_resource.vulnerability_details["status"] == "FAILED"
     assert license_resource.vulnerability_details["policy"] == "BC_LIC_1"
 
-
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result_2):
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"

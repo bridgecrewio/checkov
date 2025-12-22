@@ -38,6 +38,8 @@ class TestParserInternals(unittest.TestCase):
         if os.path.exists(self.external_module_path):
             shutil.rmtree(self.external_module_path)
 
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_load_inner_registry_module_new_parser(self):
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")

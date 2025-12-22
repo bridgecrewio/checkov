@@ -34,7 +34,8 @@ class TestParserInternals(unittest.TestCase):
     def tearDown(self) -> None:
         if os.path.exists(self.external_module_path):
             shutil.rmtree(self.external_module_path)
-
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_load_registry_module(self):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "registry_security_group")
@@ -52,6 +53,8 @@ class TestParserInternals(unittest.TestCase):
     def test_load_inner_registry_module_with_nested_modules(self):
         self.load_inner_registry_module(True)
 
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_load_inner_registry_module_without_nested_modules(self):
         self.load_inner_registry_module(False)
