@@ -546,7 +546,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
     @mock.patch.dict(os.environ, {"TF_SPLIT_GRAPH": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_terraform_multiple_module_versions(self):
