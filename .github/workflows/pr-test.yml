@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"]
+        python: ["3.9"] 
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
