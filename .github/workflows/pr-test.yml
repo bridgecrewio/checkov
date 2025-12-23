@@ -42,13 +42,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m pytest tests
+          pipenv run python -m pytest tests -q --tb=short --show-capture=no
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"]
+        python: ["3.9"] 
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -63,10 +63,6 @@ jobs:
         with:
           version: 'v3.19.2'
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug helm
-        run: |
-          which helm || echo "helm not found"
-          helm version || echo "helm command failed"
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
         with:
@@ -108,7 +104,7 @@ jobs:
         python: ["3.9"]
     env:
       working-directory: ./performance_tests
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
@@ -167,10 +163,6 @@ jobs:
         with:
           version: 'v3.19.2'
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug helm
-        run: |
-          which helm || echo "helm not found"
-          helm version || echo "helm command failed"
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

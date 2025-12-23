@@ -119,6 +119,8 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 @pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
 def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     # given

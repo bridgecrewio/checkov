@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import pytest
 from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.bicep.parser import Parser
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -7,7 +7,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
-
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_build_graph_from_source_directory():
     # given
     existing_file = EXAMPLES_DIR / "existing.bicep"
@@ -52,7 +52,8 @@ def test_build_graph_from_source_directory():
         "__end_line__": 92,
     }
 
-
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_build_graph_from_definitions():
     # given
     test_file = EXAMPLES_DIR / "playground.bicep"

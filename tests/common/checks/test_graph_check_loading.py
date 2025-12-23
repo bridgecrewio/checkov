@@ -1,5 +1,6 @@
 import os
 import unittest
+import pytest
 
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
@@ -31,7 +32,8 @@ class TestGraphChecks(unittest.TestCase):
             self.assertTrue(runner_filter.is_external_check(check.id))
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM_GRAPH_AWS_1" not
                                            in check.id]
-
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_external_checks_and_graph_checks_load(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))

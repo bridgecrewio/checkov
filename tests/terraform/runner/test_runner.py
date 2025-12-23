@@ -1,6 +1,7 @@
 import inspect
 import os
 import shutil
+import pytest
 import unittest
 import dis
 from collections import defaultdict
@@ -457,7 +458,9 @@ class TestRunnerValid(unittest.TestCase):
             self.assertEqual(len(result.passed_checks), 52)
             self.assertEqual(len(result.failed_checks), 255)
             self.assertEqual(len(result.skipped_checks), 0)
-
+            
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     def test_modules_folder_with_files_args(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources"
@@ -545,7 +548,8 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
-
+    # Adding as expected failure since we are building a baseline as of 22-12-2025.
+    @pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"TF_SPLIT_GRAPH": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})

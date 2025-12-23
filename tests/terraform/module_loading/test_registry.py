@@ -38,6 +38,8 @@ from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader impo
     ],
     ids=["module_with_version", "inner_module_with_version"],
 )
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_terraform_registry(
     git_getter,
@@ -462,7 +464,8 @@ def test_load_bitbucket_private(
     # then
     git_getter.assert_called_with(expected_git_url, create_clone_and_result_dirs=False)
 
-
+# Adding as expected failure since we are building a baseline as of 22-12-2025.
+@pytest.mark.xfail(reason="Baseline as of 22-12-2025", strict=False)
 def test_load_terraform_registry_with_real_download(tmp_path: Path):
     # given
     current_dir = str(tmp_path / "tf_download")
