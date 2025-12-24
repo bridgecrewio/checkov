@@ -19,6 +19,7 @@ class TestStorageAccountDisablePublicAccess(unittest.TestCase):
 
         passing_resources = {
             "azurerm_storage_account.pass",
+            "azurerm_storage_account.pass2",
 
         }
         failing_resources = {
