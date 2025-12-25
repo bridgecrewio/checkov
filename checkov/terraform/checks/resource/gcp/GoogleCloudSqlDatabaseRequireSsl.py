@@ -29,11 +29,11 @@ class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
                 ssl_mode = ipconfiguration['ssl_mode']
                 ssl_mode = ssl_mode[0] if isinstance(ssl_mode, list) else ssl_mode
 
-                #SQL Server does not support DEFAULT_ALLOWED_SSL_MODES (https://docs.cloud.google.com/sql/docs/postgres/admin-api/rest/v1/instances#ipconfiguration)
+                # SQL Server does not support DEFAULT_ALLOWED_SSL_MODES (https://docs.cloud.google.com/sql/docs/postgres/admin-api/rest/v1/instances#ipconfiguration)
                 if 'database_version' in conf.keys() and isinstance(conf['database_version'][0], str) and 'SQLSERVER' in conf['database_version'][0]:
                     if ssl_mode in SQLSERVER_ALLOWED_SSL_MODES:
                         return CheckResult.PASSED
-                    
+
                 if ssl_mode in DEFAULT_ALLOWED_SSL_MODES:
                     return CheckResult.PASSED
 
