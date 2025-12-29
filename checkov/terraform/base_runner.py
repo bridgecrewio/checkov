@@ -108,7 +108,7 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str) \
+    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str | None) \
             -> Optional[Dict[str, Any]]:
         if not connected_node:
             return None

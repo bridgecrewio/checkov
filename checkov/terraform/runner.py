@@ -298,7 +298,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         definition: dict[str, list[dict[str, Any]]],
         definitions_context: _TerraformContext,
         full_file_path: TFDefinitionKey,
-        root_folder: str,
+        root_folder: str | None,
         report: Report,
         scanned_file: str,
         runner_filter: RunnerFilter,
