@@ -131,7 +131,7 @@ class BaseTerraformRunner(
         return connected_node_data
 
     def get_graph_checks_report(
-        self, root_folder: str, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
+        self, root_folder: str | None, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
     ) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)

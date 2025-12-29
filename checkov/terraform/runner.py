@@ -206,7 +206,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
     def check_tf_definition(
         self,
         report: Report,
-        root_folder: str,
+        root_folder: str | None,
         runner_filter: RunnerFilter,
         collect_skip_comments: bool = True,
     ) -> None:
