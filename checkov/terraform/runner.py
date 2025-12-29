@@ -127,7 +127,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
-            if root_folder is None:
+            if root_folder is None and files is None:
                 # this shouldn't happen
                 raise Exception("Root directory was not specified")
 
