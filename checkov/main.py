@@ -156,7 +156,7 @@ class Checkov:
     def parse_config(self, argv: list[str] = sys.argv[1:]) -> None:
         """Parses the user defined config via CLI flags"""
 
-        default_config_paths = get_default_config_paths(sys.argv[1:])
+        default_config_paths = [] # support for file based config is removed 
         self.parser = ExtArgumentParser(
             description='Infrastructure as code static analysis',
             default_config_files=default_config_paths,
