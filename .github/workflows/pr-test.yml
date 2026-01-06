@@ -35,7 +35,7 @@ jobs:
       PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Get changed CFN test files
@@ -78,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -130,7 +130,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -186,7 +186,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -242,7 +242,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -290,7 +290,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -338,7 +338,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -380,7 +380,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -420,7 +420,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -475,7 +475,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
-      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
