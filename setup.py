@@ -87,7 +87,7 @@ setup(
         "configargparse>=1.5.3,<2.0.0",
         "argcomplete<4.0.0,>=3.0.0",
         "typing-extensions<5.0.0,>=4.5.0",
-        "importlib-metadata>=6.0.0,<8.0.0",
+        "importlib-metadata>=6.0.0,<9.0.0",
         "cachetools>=5.2.0,<6.0.0",
         "cyclonedx-python-lib<8.0.0,>=6.0.0",
         "packageurl-python<0.14.0,>=0.11.1",
