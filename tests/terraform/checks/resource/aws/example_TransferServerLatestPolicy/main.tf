@@ -15,7 +15,7 @@ resource "aws_transfer_server" "pass_new" {
   identity_provider_type = "SERVICE_MANAGED"
 
   # Using the latest security policy (as of this example)
-  security_policy_name = "TransferSecurityPolicy-2024-01"
+  security_policy_name = "TransferSecurityPolicy-2025-03"
 
   tags = {
     Name = "LatestTransferServer"
@@ -39,7 +39,7 @@ resource "aws_transfer_server" "pass_fips" {
   identity_provider_type = "SERVICE_MANAGED"
 
   # Using the latest security policy (as of this example)
-  security_policy_name = "TransferSecurityPolicy-FIPS-2024-01"
+  security_policy_name = "TransferSecurityPolicy-FIPS-2025-03"
 
   tags = {
     Name = "LatestTransferServer"
