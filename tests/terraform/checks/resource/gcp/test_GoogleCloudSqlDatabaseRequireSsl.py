@@ -31,6 +31,10 @@ class GoogleCloudSqlDatabaseRequireSsl(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_sqlserver_sslmode_encryptedonly(self):
+        resource_conf = {'database_version': ["SQLSERVER_2022_STANDARD"],'settings': [{'tier': ['1'], 'ip_configuration': [{'ssl_mode': ["ENCRYPTED_ONLY"]}]}]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()
