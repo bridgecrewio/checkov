@@ -41,3 +41,16 @@ Resources:
       Subnets:
         - SubnetID0
         - SubnetID1
+  CloudWatchLogsDisabled:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyNLB
+      Type: network
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: "false"
+        - Key: access_logs.cloudwatch.enabled
+          Value: "false"
+      Subnets:
+        - SubnetID0
+        - SubnetID1

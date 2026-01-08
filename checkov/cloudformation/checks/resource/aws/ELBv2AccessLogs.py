@@ -18,7 +18,7 @@ class ELBv2AccessLogs(BaseResourceCheck):
                 if isinstance(conf['Properties']['LoadBalancerAttributes'], list):
                     for item in conf['Properties']['LoadBalancerAttributes']:
                         if 'Key' in item.keys() and 'Value' in item.keys():
-                            if item['Key'] == "access_logs.s3.enabled":
+                            if item['Key'] in ("access_logs.s3.enabled", "access_logs.cloudwatch.enabled"):
                                 value = item['Value']
                                 if isinstance(value, bool):
                                     value = str(value).lower()
