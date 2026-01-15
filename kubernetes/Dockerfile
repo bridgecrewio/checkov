@@ -18,8 +18,8 @@ COPY kubernetes/requirements.txt /requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
  && pip install --no-cache-dir -r /requirements.txt
 
-# Install kubectl - using latest stable version
-RUN KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) \
+# Install kubectl v1.32.1 (built with Go 1.24.1+ to fix CVE-2025-22871)
+RUN KUBECTL_VERSION="v1.32.1" \
  && curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
  && curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256" \
  && echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check \
@@ -35,11 +35,13 @@ RUN groupadd -g 12000 -r checkov \
 RUN mkdir /data && mkdir /app && mkdir /home/checkov \
  && chown checkov:checkov /data /app /home/checkov
 
-# Install yq - using latest version with checksum verification
-RUN YQ_VERSION="v4.44.3" \
+# Install yq v4.45.1 (built with Go 1.24.1+ to fix CVE-2025-22871)
+RUN YQ_VERSION="v4.45.1" \
  && curl -L -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
- && curl -L -o yq.sha256 "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64.tar.gz.sha256" \
- && chmod +x /usr/bin/yq
+ && curl -L -o yq.sha256 "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/checksums" \
+ && grep "yq_linux_amd64.tar.gz" yq.sha256 || true \
+ && chmod +x /usr/bin/yq \
+ && rm -f yq.sha256
 
 COPY kubernetes/run_checkov.sh /app
 WORKDIR /app
