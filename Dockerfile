@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV RUN_IN_DOCKER=True
 
@@ -12,7 +12,8 @@ RUN set -eux; \
             openssh-client \
     ; \
     \
-    pip install setuptools==78.1.1 urllib3==2.2.2;  \
+    pip install --no-cache-dir --upgrade pip setuptools wheel; \
+    pip install --no-cache-dir setuptools==78.1.1 urllib3==2.2.2;  \
     curl -sSLo get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \
     chmod 700 get_helm.sh; \
     VERIFY_CHECKSUM=true ./get_helm.sh; \
