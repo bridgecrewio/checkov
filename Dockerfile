@@ -12,12 +12,12 @@ RUN apt-get update \
         openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install Python dependencies (fixes CVE-2026-21441, CVE-2025-66471, CVE-2025-66418)
+# Upgrade pip and install Python dependencies (fixes CVE-2026-21441, CVE-2025-66471, CVE-2025-66418, GHSA-58pv-8j8x-9vj2)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir setuptools==78.1.1 urllib3==2.3.0
+    && pip install --no-cache-dir setuptools==79.0.0 urllib3==2.6.3
 
-# Install Helm v3.17.0 (built with Go 1.24.1+ to fix CVE-2025-22871)
-RUN HELM_VERSION="v3.17.0" \
+# Install Helm v3.17.2 (built with Go 1.25.5+ to fix CVE-2024-25621, CVE-2025-22869, CVE-2025-22868, and Go stdlib CVEs)
+RUN HELM_VERSION="v3.17.2" \
     && curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" -o helm.tar.gz \
     && curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz.sha256sum" -o helm.sha256 \
     && cat helm.sha256 \
@@ -28,8 +28,8 @@ RUN HELM_VERSION="v3.17.0" \
     && chmod +x /usr/local/bin/helm \
     && rm -rf helm.tar.gz helm.sha256 linux-amd64
 
-# Install Kustomize v5.5.0 (built with Go 1.24.1+ to fix CVE-2025-22871)
-RUN KUSTOMIZE_VERSION="v5.5.0" \
+# Install Kustomize v5.7.1 (built with Go 1.25.5+ to fix Go stdlib CVEs: CVE-2025-47907, CVE-2025-58183, CVE-2025-61729)
+RUN KUSTOMIZE_VERSION="v5.7.1" \
     && curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -o kustomize.tar.gz \
     && tar -zxf kustomize.tar.gz \
     && mv kustomize /usr/bin/kustomize \
