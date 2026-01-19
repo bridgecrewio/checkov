@@ -175,10 +175,13 @@ class TestGitGetter(unittest.TestCase):
         self.assertEqual("Unable to load git module (is the git executable available?)", str(context.exception))
 
     @patch('checkov.common.goget.github.get_git.Repo')
-    @patch.dict(os.environ, {'BC_CA_BUNDLE': '/path/to/ca-bundle.crt'}, clear=False)
-    def test_clone_with_bc_ca_bundle(self, mock_repo):
+    @patch('checkov.common.goget.github.get_git.env_vars_config')
+    def test_clone_with_bc_ca_bundle(self, mock_env_vars_config, mock_repo):
         """Test that BC_CA_BUNDLE env var sets GIT_SSL_CAINFO for git clone."""
         # Arrange
+        mock_env_vars_config.BC_CA_BUNDLE = '/path/to/ca-bundle.crt'
+        mock_env_vars_config.PROXY_URL = None
+
         url = "https://my-git.com/repo"
         getter = GitGetter(url, create_clone_and_result_dirs=False)
         getter.temp_dir = "/tmp/test"
@@ -201,14 +204,13 @@ class TestGitGetter(unittest.TestCase):
         mock_repo.clone_from.assert_called_once()
 
     @patch('checkov.common.goget.github.get_git.Repo')
-    @patch.dict(os.environ, {}, clear=False)
-    def test_clone_without_bc_ca_bundle(self, mock_repo):
+    @patch('checkov.common.goget.github.get_git.env_vars_config')
+    def test_clone_without_bc_ca_bundle(self, mock_env_vars_config, mock_repo):
         """Test that clone works without BC_CA_BUNDLE env var."""
-        # Ensure BC_CA_BUNDLE is not set
-        if 'BC_CA_BUNDLE' in os.environ:
-            del os.environ['BC_CA_BUNDLE']
-
         # Arrange
+        mock_env_vars_config.BC_CA_BUNDLE = None
+        mock_env_vars_config.PROXY_URL = None
+
         url = "https://my-git.com/repo"
         getter = GitGetter(url, create_clone_and_result_dirs=False)
         getter.temp_dir = "/tmp/test"
@@ -231,16 +233,16 @@ class TestGitGetter(unittest.TestCase):
         mock_repo.clone_from.assert_called_once()
 
     @patch('checkov.common.goget.github.get_git.Repo')
-    @patch.dict(os.environ, {
-        'PROXY_URL': 'http://proxy.example.com:8080',
-        'PROXY_CA_PATH': '/path/to/proxy-ca.crt',
-        'PROXY_HEADER_KEY': 'X-Custom-Header',
-        'PROXY_HEADER_VALUE': 'custom-value',
-        'BC_CA_BUNDLE': '/path/to/ca-bundle.crt'
-    }, clear=False)
-    def test_clone_proxy_takes_precedence_over_bc_ca_bundle(self, mock_repo):
+    @patch('checkov.common.goget.github.get_git.env_vars_config')
+    def test_clone_proxy_takes_precedence_over_bc_ca_bundle(self, mock_env_vars_config, mock_repo):
         """Test that PROXY_URL settings take precedence over BC_CA_BUNDLE."""
         # Arrange
+        mock_env_vars_config.PROXY_URL = 'http://proxy.example.com:8080'
+        mock_env_vars_config.PROXY_CA_PATH = '/path/to/proxy-ca.crt'
+        mock_env_vars_config.PROXY_HEADER_KEY = 'X-Custom-Header'
+        mock_env_vars_config.PROXY_HEADER_VALUE = 'custom-value'
+        mock_env_vars_config.BC_CA_BUNDLE = '/path/to/ca-bundle.crt'
+
         url = "https://my-git.com/repo"
         getter = GitGetter(url, create_clone_and_result_dirs=False)
         getter.temp_dir = "/tmp/test"
