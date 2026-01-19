@@ -174,5 +174,96 @@ class TestGitGetter(unittest.TestCase):
             getter.do_get()
         self.assertEqual("Unable to load git module (is the git executable available?)", str(context.exception))
 
+    @patch('checkov.common.goget.github.get_git.Repo')
+    @patch.dict(os.environ, {'BC_CA_BUNDLE': '/path/to/ca-bundle.crt'}, clear=False)
+    def test_clone_with_bc_ca_bundle(self, mock_repo):
+        """Test that BC_CA_BUNDLE env var sets GIT_SSL_CAINFO for git clone."""
+        # Arrange
+        url = "https://my-git.com/repo"
+        getter = GitGetter(url, create_clone_and_result_dirs=False)
+        getter.temp_dir = "/tmp/test"
+        mock_repo_instance = Mock()
+        mock_repo.clone_from.return_value = mock_repo_instance
+
+        captured_env = {}
+
+        def capture_env(*args, **kwargs):
+            captured_env['GIT_SSL_CAINFO'] = os.environ.get('GIT_SSL_CAINFO')
+            return mock_repo_instance
+
+        mock_repo.clone_from.side_effect = capture_env
+
+        # Act
+        getter.do_get()
+
+        # Assert
+        self.assertEqual('/path/to/ca-bundle.crt', captured_env.get('GIT_SSL_CAINFO'))
+        mock_repo.clone_from.assert_called_once()
+
+    @patch('checkov.common.goget.github.get_git.Repo')
+    @patch.dict(os.environ, {}, clear=False)
+    def test_clone_without_bc_ca_bundle(self, mock_repo):
+        """Test that clone works without BC_CA_BUNDLE env var."""
+        # Ensure BC_CA_BUNDLE is not set
+        if 'BC_CA_BUNDLE' in os.environ:
+            del os.environ['BC_CA_BUNDLE']
+
+        # Arrange
+        url = "https://my-git.com/repo"
+        getter = GitGetter(url, create_clone_and_result_dirs=False)
+        getter.temp_dir = "/tmp/test"
+        mock_repo_instance = Mock()
+        mock_repo.clone_from.return_value = mock_repo_instance
+
+        captured_env = {}
+
+        def capture_env(*args, **kwargs):
+            captured_env['GIT_SSL_CAINFO'] = os.environ.get('GIT_SSL_CAINFO')
+            return mock_repo_instance
+
+        mock_repo.clone_from.side_effect = capture_env
+
+        # Act
+        getter.do_get()
+
+        # Assert
+        self.assertIsNone(captured_env.get('GIT_SSL_CAINFO'))
+        mock_repo.clone_from.assert_called_once()
+
+    @patch('checkov.common.goget.github.get_git.Repo')
+    @patch.dict(os.environ, {
+        'PROXY_URL': 'http://proxy.example.com:8080',
+        'PROXY_CA_PATH': '/path/to/proxy-ca.crt',
+        'PROXY_HEADER_KEY': 'X-Custom-Header',
+        'PROXY_HEADER_VALUE': 'custom-value',
+        'BC_CA_BUNDLE': '/path/to/ca-bundle.crt'
+    }, clear=False)
+    def test_clone_proxy_takes_precedence_over_bc_ca_bundle(self, mock_repo):
+        """Test that PROXY_URL settings take precedence over BC_CA_BUNDLE."""
+        # Arrange
+        url = "https://my-git.com/repo"
+        getter = GitGetter(url, create_clone_and_result_dirs=False)
+        getter.temp_dir = "/tmp/test"
+        mock_repo_instance = Mock()
+        mock_repo.clone_from.return_value = mock_repo_instance
+
+        captured_env = {}
+
+        def capture_env(*args, **kwargs):
+            captured_env['GIT_SSL_CAINFO'] = os.environ.get('GIT_SSL_CAINFO')
+            captured_env['https_proxy'] = os.environ.get('https_proxy')
+            return mock_repo_instance
+
+        mock_repo.clone_from.side_effect = capture_env
+
+        # Act
+        getter.do_get()
+
+        # Assert - PROXY_CA_PATH should be used, not BC_CA_BUNDLE
+        self.assertEqual('/path/to/proxy-ca.crt', captured_env.get('GIT_SSL_CAINFO'))
+        self.assertEqual('http://proxy.example.com:8080', captured_env.get('https_proxy'))
+        mock_repo.clone_from.assert_called_once()
+
+
 if __name__ == '__main__':
     unittest.main()

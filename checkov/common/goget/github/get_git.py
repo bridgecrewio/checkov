@@ -85,6 +85,13 @@ class GitGetter(BaseGetter):
                                   https_proxy=os.getenv('PROXY_URL'),
                                   GIT_CONFIG_PARAMETERS=f"'http.extraHeader={os.getenv('PROXY_HEADER_KEY')}:{os.getenv('PROXY_HEADER_VALUE')}'"):
                     self._clone_helper(clone_dir, git_url)
+                return
+            ca_bundle = os.getenv('BC_CA_BUNDLE')
+            if ca_bundle:
+                self.logger.info(f'Using custom CA bundle from BC_CA_BUNDLE: {ca_bundle}')
+                with temp_environ(GIT_SSL_CAINFO=ca_bundle):
+                    self._clone_helper(clone_dir, git_url)
+                return
             self._clone_helper(clone_dir, git_url)
 
     def _clone_helper(self, clone_dir: str, git_url: str) -> None:
