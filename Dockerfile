@@ -30,11 +30,13 @@ RUN HELM_VERSION="v3.17.2" \
 
 # Install Kustomize v5.7.1 (built with Go 1.25.5+ to fix Go stdlib CVEs: CVE-2025-47907, CVE-2025-58183, CVE-2025-61729)
 RUN KUSTOMIZE_VERSION="v5.7.1" \
-    && curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -o kustomize.tar.gz \
-    && tar -zxf kustomize.tar.gz \
+    && curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -o kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz \
+    && curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/checksums.txt" -o kustomize.checksums.txt \
+    && grep "kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize.checksums.txt | sha256sum --check \
+    && tar -zxf kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz \
     && mv kustomize /usr/bin/kustomize \
     && chmod +x /usr/bin/kustomize \
-    && rm kustomize.tar.gz
+    && rm kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz kustomize.checksums.txt
 
 # Install checkov
 RUN pip install --no-cache-dir -U checkov
