@@ -38,7 +38,7 @@ RUN mkdir /data && mkdir /app && mkdir /home/checkov \
 RUN YQ_VERSION="v4.49.2" \
  && curl -fL -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
  && curl -fL -o yq.sha256 "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/checksums" \
- && grep "yq_linux_amd64.tar.gz" yq.sha256 || true \
+ && echo "$(grep 'yq_linux_amd64$' yq.sha256 | awk '{print $1}')  /usr/bin/yq" | sha256sum --check \
  && chmod +x /usr/bin/yq \
  && rm -f yq.sha256
 

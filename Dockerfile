@@ -22,7 +22,7 @@ RUN HELM_VERSION="v3.17.2" \
     && curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz.sha256sum" -o helm.sha256 \
     && cat helm.sha256 \
     && sha256sum helm.tar.gz \
-    && grep $(sha256sum helm.tar.gz | awk '{print $1}') helm.sha256 || echo "Checksum verification skipped" \
+    && grep $(sha256sum helm.tar.gz | awk '{print $1}') helm.sha256 \
     && tar -zxf helm.tar.gz \
     && mv linux-amd64/helm /usr/local/bin/helm \
     && chmod +x /usr/local/bin/helm \
