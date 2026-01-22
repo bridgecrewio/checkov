@@ -35,12 +35,15 @@ RUN mkdir /data && mkdir /app && mkdir /home/checkov \
  && chown checkov:checkov /data /app /home/checkov
 
 # Install yq v4.49.2 (latest stable, built with Go 1.25.4 - still has CVE-2025-61729, needs Go 1.25.5+)
+# Note: yq checksums file contains multiple hash types per line; SHA256 is at field 19
 RUN YQ_VERSION="v4.49.2" \
- && curl -fL -o /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
- && curl -fL -o yq.sha256 "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/checksums" \
- && echo "$(grep 'yq_linux_amd64$' yq.sha256 | awk '{print $1}')  /usr/bin/yq" | sha256sum --check \
+ && curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64.tar.gz" -o yq_linux_amd64.tar.gz \
+ && curl -fsSL "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/checksums" -o yq.checksums.txt \
+ && grep "^yq_linux_amd64.tar.gz " yq.checksums.txt | awk '{print $19 "  yq_linux_amd64.tar.gz"}' | sha256sum --check \
+ && tar -zxf yq_linux_amd64.tar.gz \
+ && mv yq_linux_amd64 /usr/bin/yq \
  && chmod +x /usr/bin/yq \
- && rm -f yq.sha256
+ && rm yq_linux_amd64.tar.gz yq.checksums.txt
 
 COPY kubernetes/run_checkov.sh /app
 WORKDIR /app
