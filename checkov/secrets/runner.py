@@ -78,6 +78,8 @@ BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
 RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
 ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
 GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_AWS_CHECK_ID = 'CKV_SECRET_2'
+SPECIFIC_AWS_CHECK_IDS = {'CKV_SECRET_380', 'CKV_SECRET_381'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -441,6 +443,9 @@ class Runner(BaseRunner[None, None, None]):
             if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
                 secret_records.pop(secret_key)
                 return True
+        if secret_records[secret_key].check_id == GENERIC_AWS_CHECK_ID and check_id in SPECIFIC_AWS_CHECK_IDS:
+            secret_records.pop(secret_key)
+            return True
         return False
 
     @staticmethod
