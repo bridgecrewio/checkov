@@ -37,7 +37,7 @@ time-machine = "*"
 boto3-stubs-lite = {extras = ["s3"], version = "*"}
 types-colorama = "<0.5.0,>=0.4.3"
 tomli = "*"
-setuptools = "==78.1.1"
+setuptools = "==79.0.0"
 iniconfig = "*"
 
 [packages]
