@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 import re
 import shutil
-import os
 
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.contextmanagers import temp_environ
+from checkov.common.util.env_vars_config import env_vars_config
 
 try:
     from git import Repo
@@ -79,12 +79,19 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.info(f"cloning {git_url} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
-            if os.getenv('PROXY_URL'):
-                self.logger.info(f'Performing clone through proxy - {os.getenv("PROXY_URL")}')
-                with temp_environ(GIT_SSL_CAINFO=os.getenv('PROXY_CA_PATH'),
-                                  https_proxy=os.getenv('PROXY_URL'),
-                                  GIT_CONFIG_PARAMETERS=f"'http.extraHeader={os.getenv('PROXY_HEADER_KEY')}:{os.getenv('PROXY_HEADER_VALUE')}'"):
+            if env_vars_config.PROXY_URL:
+                self.logger.info(f'Performing clone through proxy - {env_vars_config.PROXY_URL}')
+                with temp_environ(GIT_SSL_CAINFO=env_vars_config.PROXY_CA_PATH,
+                                  https_proxy=env_vars_config.PROXY_URL,
+                                  GIT_CONFIG_PARAMETERS=f"'http.extraHeader={env_vars_config.PROXY_HEADER_KEY}:{env_vars_config.PROXY_HEADER_VALUE}'"):
                     self._clone_helper(clone_dir, git_url)
+                return
+            ca_bundle = env_vars_config.BC_CA_BUNDLE
+            if ca_bundle:
+                self.logger.info(f'Using custom CA bundle from BC_CA_BUNDLE: {ca_bundle}')
+                with temp_environ(GIT_SSL_CAINFO=ca_bundle):
+                    self._clone_helper(clone_dir, git_url)
+                return
             self._clone_helper(clone_dir, git_url)
 
     def _clone_helper(self, clone_dir: str, git_url: str) -> None:

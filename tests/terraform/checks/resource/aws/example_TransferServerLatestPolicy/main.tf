@@ -16,7 +16,6 @@ resource "aws_transfer_server" "pass_new" {
 
   # Using the latest security policy (as of this example)
   security_policy_name = "TransferSecurityPolicy-2025-03"
-
   tags = {
     Name = "LatestTransferServer"
   }
@@ -40,7 +39,6 @@ resource "aws_transfer_server" "pass_fips" {
 
   # Using the latest security policy (as of this example)
   security_policy_name = "TransferSecurityPolicy-FIPS-2025-03"
-
   tags = {
     Name = "LatestTransferServer"
   }
