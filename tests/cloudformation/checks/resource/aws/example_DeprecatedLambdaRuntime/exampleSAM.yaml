@@ -32,7 +32,7 @@ Resources:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'index.handler'
-      Runtime: 'python3.14'
+      Runtime: 'python3.13'
       CodeUri: './code/' # This should be the directory path where your Lambda code is.
       Events:
         MyApi:
