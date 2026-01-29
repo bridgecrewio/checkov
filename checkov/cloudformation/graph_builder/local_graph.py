@@ -16,8 +16,10 @@ from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.data_structures_utils import search_deep_keys
+from checkov.common.util.data_structures_utils import search_deep_keys, pickle_deepcopy
 from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.terraform.graph_builder.utils import join_double_quote_surrounded_dot_split
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -56,6 +58,7 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
+            self.update_vertices_configs()
             self.update_vertices_breadcrumbs()
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
 
@@ -391,18 +394,89 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
         return False
 
     def update_vertices_configs(self) -> None:
-        # not used
-        pass
+        for vertex in self.vertices:
+            changed_attributes = list(vertex.changed_attributes.keys())
+            if changed_attributes:
+                self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
     def update_vertex_config(
         vertex: Block, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False
     ) -> None:
-        # not used
-        pass
+        if not changed_attributes:
+            return
+
+        if not isinstance(vertex.config, dict):
+            return
+
+        updated_config = pickle_deepcopy(vertex.config)
+        attributes_to_update = changed_attributes
+        if isinstance(changed_attributes, dict):
+            attributes_to_update = list(changed_attributes.keys())
+
+        attributes_to_update = filter_sub_keys(attributes_to_update)
+
+        for attribute in attributes_to_update:
+            if attribute not in vertex.attributes:
+                continue
+
+            new_value = vertex.attributes[attribute]
+            key_path = attribute.split(".")
+            key_path = join_double_quote_surrounded_dot_split(key_path)
+
+            update_dictionary_attribute(updated_config, key_path, new_value)
+
+        vertex.config = updated_config
 
 
 def get_only_dict_items(origin_dict: Union[Dict[str, Any], Any]) -> Dict[str, Dict[str, Any]]:
     if not isinstance(origin_dict, dict):
         return {}
     return {key: value for key, value in origin_dict.items() if isinstance(value, dict)}
+
+
+def update_dictionary_attribute(
+    config: dict[str, Any], key_path: list[str], value: Any
+) -> dict[str, Any]:
+    if not key_path:
+        return config
+
+    key = key_path[0]
+    if len(key_path) == 1:
+        config[key] = value
+        return config
+
+    if key not in config:
+        return config
+
+    if isinstance(config[key], dict):
+        config[key] = update_dictionary_attribute(config[key], key_path[1:], value)
+    elif isinstance(config[key], list):
+        config[key] = update_list_attribute(config[key], key_path[1:], value)
+
+    return config
+
+
+def update_list_attribute(
+    config: list[Any], key_path: list[str], value: Any
+) -> list[Any]:
+    if not key_path:
+        return config
+
+    try:
+        idx = int(key_path[0])
+    except ValueError:
+        return config
+
+    if len(key_path) == 1:
+        if 0 <= idx < len(config):
+            config[idx] = value
+        return config
+
+    if 0 <= idx < len(config):
+        if isinstance(config[idx], dict):
+            config[idx] = update_dictionary_attribute(config[idx], key_path[1:], value)
+        elif isinstance(config[idx], list):
+            config[idx] = update_list_attribute(config[idx], key_path[1:], value)
+
+    return config

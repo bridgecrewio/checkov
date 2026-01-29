@@ -156,6 +156,9 @@ class TestRenderer(TestCase):
         self.compare_vertex_attributes(local_graph, cidr_block_associations_expected_attributes, BlockType.OUTPUTS, 'CidrBlockAssociations')
         self.compare_vertex_attributes(local_graph, default_db_name_expected_attributes, BlockType.OUTPUTS, 'DefaultDBName')
 
+        # Check that config is updated as well
+        self.compare_vertex_config(local_graph, web_vpc_expected_attributes, BlockType.RESOURCE, 'AWS::EC2::VPC.WebVPC')
+
         company_name_expected_breadcrumbs = {}
         environment_expected_breadcrumbs = {}
         web_vpc_expected_breadcrumbs = {}
@@ -339,3 +342,40 @@ class TestRenderer(TestCase):
                 self.assertEqual(expected_value, actual_value, f'actual breadcrumbs of vertex {vertex.id} different from'
                                                                f' expected. expected = {expected_breadcrumbs}'
                                                                f' and actual = {actual_value}')
+
+    def compare_vertex_config(self, local_graph, expected_config, block_type, block_name):
+        vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
+        vertex_config = vertex.config
+        for attribute_key, expected_value in expected_config.items():
+            # For attributes, we often test against flattened keys like "SecurityGroupIngress.CidrIp"
+            # For config, which is the original nested structure (Properties), we need to traverse
+            if "." in attribute_key:
+                actual_value = vertex_config
+                keys = attribute_key.split(".")
+                found = True
+                for k in keys:
+                    if isinstance(actual_value, dict) and k in actual_value:
+                        actual_value = actual_value[k]
+                    elif isinstance(actual_value, list) and k.isdigit():
+                         idx = int(k)
+                         if 0 <= idx < len(actual_value):
+                             actual_value = actual_value[idx]
+                         else:
+                             found = False
+                             break
+                    else:
+                        found = False
+                        break
+                if not found:
+                     actual_value = None # Or however we want to handle missing keys
+            else:
+                actual_value = vertex_config.get(attribute_key)
+
+            if not isinstance(expected_value, dict):
+                self.assertEqual(expected_value, actual_value, f'error during comparing {block_type} in config key: {attribute_key}')
+            else:
+                if actual_value is None:
+                     self.fail(f'Config key {attribute_key} not found')
+                for cfn_func, evaluated_value in expected_value.items():
+                    self.assertIn(cfn_func, actual_value, f'error during comparing {block_type} in config key: {attribute_key}')
+                    self.assertIn(actual_value[cfn_func], evaluated_value, f'error during comparing {block_type} in config key: {attribute_key}')
