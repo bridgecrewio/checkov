@@ -8,7 +8,7 @@ Resources:
       Code:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'
-      Runtime: 'python3.13'
+      Runtime: 'nodejs22.x'
   Fail:
     Type: 'AWS::Lambda::Function'
     Metadata:
