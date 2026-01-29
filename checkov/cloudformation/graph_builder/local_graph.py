@@ -410,9 +410,10 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
             return
 
         updated_config = pickle_deepcopy(vertex.config)
-        attributes_to_update = changed_attributes
         if isinstance(changed_attributes, dict):
             attributes_to_update = list(changed_attributes.keys())
+        else:
+            attributes_to_update = changed_attributes
 
         attributes_to_update = filter_sub_keys(attributes_to_update)
 
