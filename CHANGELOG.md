@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.497...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.499...HEAD)
+
+## [3.2.499](https://github.com/bridgecrewio/checkov/compare/3.2.497...3.2.499) - 2026-01-25
+
+### Feature
+
+- **general:** Add BC_CA_BUNDLE environment variable support for custom CA certificates - [#7419](https://github.com/bridgecrewio/checkov/pull/7419)
+- **secrets:** Override AWS generic check with cortex specific checks - [#7420](https://github.com/bridgecrewio/checkov/pull/7420)
+
+### Bug Fix
+
+- **terraform:** test dates - [#7422](https://github.com/bridgecrewio/checkov/pull/7422)
 
 ## [3.2.497](https://github.com/bridgecrewio/checkov/compare/3.2.496...3.2.497) - 2025-12-30
 
