@@ -6,18 +6,18 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, overload, TypedDict, cast
+from typing import List, Optional, Union, Any, Dict, TypedDict, cast
 
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
+from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys, \
+    update_dictionary_attribute
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.foreach.consts import VIRTUAL_RESOURCE
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
@@ -31,8 +31,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
-    remove_index_pattern_from_str,
-    join_double_quote_surrounded_dot_split, )
+    remove_index_pattern_from_str, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
     get_sanitized_terraform_resource_id
 from checkov.terraform.graph_builder.utils import is_local_path
@@ -855,99 +854,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             for i, v in enumerate(self.vertices):
                 if v.name in vertex.config[CustomAttributes.VIRTUAL_RESOURCES]:
                     self.create_edge(i, origin_node_index, VIRTUAL_RESOURCE)
-
-
-def to_list(data: Any) -> list[Any] | dict[str, Any]:
-    if isinstance(data, list) and len(data) == 1 and (isinstance(data[0], str) or isinstance(data[0], int)):
-        return data
-    elif isinstance(data, list):
-        return [to_list(x) for x in data]
-    elif isinstance(data, dict):
-        return {key: to_list(val) for key, val in data.items()}
-    else:
-        return [data]
-
-
-@overload
-def update_dictionary_attribute(
-        config: dict[str, Any], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
-) -> dict[str, Any]:
-    ...
-
-
-@overload
-def update_dictionary_attribute(
-        config: list[Any], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
-) -> list[Any]:
-    ...
-
-
-def update_dictionary_attribute(
-    config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
-) -> Union[List[Any], Dict[str, Any]]:
-    key_parts = key_to_update.split(".")
-    if '"' in key_to_update:
-        key_parts = join_double_quote_surrounded_dot_split(str_parts=key_parts)
-
-    if isinstance(config, dict) and isinstance(key_parts, list):
-        key = key_parts[0]
-        inner_config = config.get(key)
-
-        if inner_config is not None:
-            if len(key_parts) == 1:
-                if isinstance(inner_config, list) and not isinstance(new_value, list):
-                    new_value = [new_value]
-                config[key] = to_list(new_value) if dynamic_blocks else new_value
-                return config
-            else:
-                config[key] = update_dictionary_attribute(
-                    inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks
-                )
-        else:
-            for key in config:
-                config[key] = update_dictionary_attribute(
-                    config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks
-                )
-    if isinstance(config, list):
-        return update_list_attribute(
-            config=config,
-            key_parts=key_parts,
-            key_to_update=key_to_update,
-            new_value=new_value,
-            dynamic_blocks=dynamic_blocks,
-        )
-    return config
-
-
-def update_list_attribute(
-    config: list[Any], key_parts: list[str], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
-) -> list[Any] | dict[str, Any]:
-    """Updates a list attribute in the given config"""
-
-    if not config:
-        # happens when we can't correctly evaluate something, because of strange defaults or 'for_each' blocks
-        return config
-
-    if len(key_parts) == 1 and len(config) == 1:
-        idx = force_int(key_parts[0])
-        # Avoid changing the config and cause side effects
-        inner_config = pickle_deepcopy(config[0])
-
-        if idx is not None and isinstance(inner_config, list):
-            if not inner_config:
-                # happens when config = [[]]
-                return config
-
-            inner_config[idx] = new_value
-            return [inner_config]
-    entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
-    for i, config_value in enumerate(config):
-        if entry_to_update == -1:
-            config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
-        elif entry_to_update == i:
-            config[i] = update_dictionary_attribute(config=config_value, key_to_update=".".join(key_parts[1:]), new_value=new_value, dynamic_blocks=dynamic_blocks)
-
-    return config
 
 
 def get_vertex_as_tf_module(block: TerraformBlock) -> TFModule:
