@@ -39,7 +39,7 @@ from checkov.common.graph.graph_builder.utils import update_dictionary_attribute
 def test_join_double_quote_surrounded_dot_split(input_parts, expected_parts):
     assert join_double_quote_surrounded_dot_split(str_parts=input_parts) == expected_parts
 
-def test_update_dictionary_attribute_nested(self):
+def test_update_dictionary_attribute_nested():
     origin_config = {'aws_s3_bucket': {
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'],
                         'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
@@ -49,11 +49,10 @@ def test_update_dictionary_attribute_nested(self):
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'],
                         'versioning': [{'enabled': [False]}]}}}
     actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-    self.assertEqual(expected_config, actual_config,
-                     f'failed to update config. expected: {expected_config}, got: {actual_config}')
+    assert expected_config == actual_config, f'failed to update config. expected: {expected_config}, got: {actual_config}'
 
 
-def test_update_dictionary_attribute(self):
+def test_update_dictionary_attribute():
     origin_config = {'aws_s3_bucket': {
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'],
                         'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
@@ -63,11 +62,10 @@ def test_update_dictionary_attribute(self):
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'],
                         'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
     actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-    self.assertEqual(expected_config, actual_config,
-                     f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
+    assert expected_config == actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}'
 
 
-def test_update_dictionary_locals(self):
+def test_update_dictionary_locals():
     origin_config = {'aws_s3_bucket': {
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'],
                         'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
@@ -77,5 +75,4 @@ def test_update_dictionary_locals(self):
         'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'],
                         'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
     actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-    self.assertEqual(expected_config, actual_config,
-                     f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
+    assert expected_config == actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}'
