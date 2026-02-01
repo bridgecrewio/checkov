@@ -164,6 +164,7 @@ def update_list_attribute(
 
     return config
 
+
 def join_double_quote_surrounded_dot_split(str_parts: list[str]) -> list[str]:
     """Joins back split strings which enclosed a dot by double quotes
 

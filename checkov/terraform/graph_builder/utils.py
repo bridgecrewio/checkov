@@ -382,6 +382,3 @@ def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
         if other in attribute_is_leaf:
             attribute_is_leaf[other] = False
     return attribute_is_leaf
-
-
-
