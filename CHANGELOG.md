@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.499...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.500...HEAD)
+
+## [3.2.500](https://github.com/bridgecrewio/checkov/compare/3.2.499...3.2.500) - 2026-02-01
+
+### Bug Fix
+
+- **cloudformation:** render variables in cfn vertices config - [#7423](https://github.com/bridgecrewio/checkov/pull/7423)
 
 ## [3.2.499](https://github.com/bridgecrewio/checkov/compare/3.2.497...3.2.499) - 2026-01-25
 
