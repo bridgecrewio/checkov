@@ -5,6 +5,7 @@ from unittest.case import TestCase
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.util.json_utils import get_jsonpath_from_evaluated_key
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -350,24 +351,12 @@ class TestRenderer(TestCase):
             # For attributes, we often test against flattened keys like "SecurityGroupIngress.CidrIp"
             # For config, which is the original nested structure (Properties), we need to traverse
             if "." in attribute_key:
-                actual_value = vertex_config
-                keys = attribute_key.split(".")
-                found = True
-                for k in keys:
-                    if isinstance(actual_value, dict) and k in actual_value:
-                        actual_value = actual_value[k]
-                    elif isinstance(actual_value, list) and k.isdigit():
-                         idx = int(k)
-                         if 0 <= idx < len(actual_value):
-                             actual_value = actual_value[idx]
-                         else:
-                             found = False
-                             break
-                    else:
-                        found = False
-                        break
-                if not found:
-                     actual_value = None # Or however we want to handle missing keys
+                jsonpath_expression = get_jsonpath_from_evaluated_key(attribute_key)
+                match = jsonpath_expression.find(vertex_config)
+                if match:
+                    actual_value = match[0].value
+                else:
+                    actual_value = None
             else:
                 actual_value = vertex_config.get(attribute_key)
 
