@@ -181,6 +181,9 @@ echo "BC_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}""
 # This is meant to be a last resort, if our internal mechanism doesn't work
 if [ -n "$GITHUB_OVERRIDE_URL" ] && [ "$GITHUB_OVERRIDE_URL" = "true" ]; then
   git config --global url."https://x-access-token:${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
+  git config --global --add url."https://x-access-token:${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+  git config --global --add url."https://x-access-token:${GITHUB_PAT}@github.com/".insteadOf "git::ssh://git@github.com/"
+  git config --global --add url."https://x-access-token:${GITHUB_PAT}@github.com/".insteadOf "ssh://git@github.com/"
 fi
 
 # If Docker image is used, default to that
