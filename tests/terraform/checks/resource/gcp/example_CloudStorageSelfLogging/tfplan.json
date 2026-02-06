@@ -1,0 +1,524 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.13.3",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_storage_bucket.plan_pass",
+          "mode": "managed",
+          "type": "google_storage_bucket",
+          "name": "plan_pass",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "schema_version": 4,
+          "values": {
+            "autoclass": [],
+            "cors": [],
+            "custom_placement_config": [],
+            "default_event_based_hold": false,
+            "effective_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "enable_object_retention": false,
+            "encryption": [],
+            "force_destroy": true,
+            "hierarchical_namespace": [
+              {
+                "enabled": false
+              }
+            ],
+            "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+            "ip_filter": [],
+            "labels": {},
+            "lifecycle_rule": [],
+            "location": "EU",
+            "logging": [],
+            "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+            "project": "example-project",
+            "project_number": 123456789012,
+            "public_access_prevention": "enforced",
+            "requester_pays": false,
+            "retention_policy": [],
+            "rpo": null,
+            "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+            "soft_delete_policy": [
+              {
+                "effective_time": "2025-12-16T18:51:25.798Z",
+                "retention_duration_seconds": 604800
+              }
+            ],
+            "storage_class": "STANDARD",
+            "terraform_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "time_created": "2025-12-16T18:51:25.798Z",
+            "timeouts": null,
+            "uniform_bucket_level_access": true,
+            "updated": "2025-12-16T18:51:25.798Z",
+            "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+            "versioning": [],
+            "website": []
+          },
+          "sensitive_values": {
+            "autoclass": [],
+            "cors": [],
+            "custom_placement_config": [],
+            "effective_labels": {},
+            "encryption": [],
+            "hierarchical_namespace": [
+              {}
+            ],
+            "ip_filter": [],
+            "labels": {},
+            "lifecycle_rule": [],
+            "logging": [],
+            "retention_policy": [],
+            "soft_delete_policy": [
+              {}
+            ],
+            "terraform_labels": {},
+            "versioning": [],
+            "website": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_drift": [
+    {
+      "address": "google_storage_bucket.plan_pass",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "plan_pass",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "default_event_based_hold": false,
+          "effective_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "enable_object_retention": false,
+          "encryption": [],
+          "force_destroy": true,
+          "hierarchical_namespace": [
+            {
+              "enabled": false
+            }
+          ],
+          "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "ip_filter": [],
+          "labels": null,
+          "lifecycle_rule": [],
+          "location": "EU",
+          "logging": [],
+          "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "project": "example-project",
+          "project_number": 123456789012,
+          "public_access_prevention": "enforced",
+          "requester_pays": false,
+          "retention_policy": [],
+          "rpo": null,
+          "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "soft_delete_policy": [
+            {
+              "effective_time": "2025-12-16T18:51:25.798Z",
+              "retention_duration_seconds": 604800
+            }
+          ],
+          "storage_class": "STANDARD",
+          "terraform_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "time_created": "2025-12-16T18:51:25.798Z",
+          "timeouts": null,
+          "uniform_bucket_level_access": true,
+          "updated": "2025-12-16T18:51:25.798Z",
+          "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "versioning": [],
+          "website": []
+        },
+        "after": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "default_event_based_hold": false,
+          "effective_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "enable_object_retention": false,
+          "encryption": [],
+          "force_destroy": true,
+          "hierarchical_namespace": [
+            {
+              "enabled": false
+            }
+          ],
+          "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "location": "EU",
+          "logging": [],
+          "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "project": "example-project",
+          "project_number": 123456789012,
+          "public_access_prevention": "enforced",
+          "requester_pays": false,
+          "retention_policy": [],
+          "rpo": null,
+          "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "soft_delete_policy": [
+            {
+              "effective_time": "2025-12-16T18:51:25.798Z",
+              "retention_duration_seconds": 604800
+            }
+          ],
+          "storage_class": "STANDARD",
+          "terraform_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "time_created": "2025-12-16T18:51:25.798Z",
+          "timeouts": null,
+          "uniform_bucket_level_access": true,
+          "updated": "2025-12-16T18:51:25.798Z",
+          "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "versioning": [],
+          "website": []
+        },
+        "after_unknown": {},
+        "before_sensitive": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "effective_labels": {},
+          "encryption": [],
+          "hierarchical_namespace": [
+            {}
+          ],
+          "ip_filter": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "retention_policy": [],
+          "soft_delete_policy": [
+            {}
+          ],
+          "terraform_labels": {},
+          "versioning": [],
+          "website": []
+        },
+        "after_sensitive": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "effective_labels": {},
+          "encryption": [],
+          "hierarchical_namespace": [
+            {}
+          ],
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "logging": [],
+          "retention_policy": [],
+          "soft_delete_policy": [
+            {}
+          ],
+          "terraform_labels": {},
+          "versioning": [],
+          "website": []
+        }
+      }
+    }
+  ],
+  "resource_changes": [
+    {
+      "address": "google_storage_bucket.plan_pass",
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "plan_pass",
+      "provider_name": "registry.terraform.io/hashicorp/google",
+      "change": {
+        "actions": [
+          "no-op"
+        ],
+        "before": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "default_event_based_hold": false,
+          "effective_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "enable_object_retention": false,
+          "encryption": [],
+          "force_destroy": true,
+          "hierarchical_namespace": [
+            {
+              "enabled": false
+            }
+          ],
+          "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "location": "EU",
+          "logging": [],
+          "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "project": "example-project",
+          "project_number": 123456789012,
+          "public_access_prevention": "enforced",
+          "requester_pays": false,
+          "retention_policy": [],
+          "rpo": null,
+          "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "soft_delete_policy": [
+            {
+              "effective_time": "2025-12-16T18:51:25.798Z",
+              "retention_duration_seconds": 604800
+            }
+          ],
+          "storage_class": "STANDARD",
+          "terraform_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "time_created": "2025-12-16T18:51:25.798Z",
+          "timeouts": null,
+          "uniform_bucket_level_access": true,
+          "updated": "2025-12-16T18:51:25.798Z",
+          "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "versioning": [],
+          "website": []
+        },
+        "after": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "default_event_based_hold": false,
+          "effective_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "enable_object_retention": false,
+          "encryption": [],
+          "force_destroy": true,
+          "hierarchical_namespace": [
+            {
+              "enabled": false
+            }
+          ],
+          "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "location": "EU",
+          "logging": [],
+          "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "project": "example-project",
+          "project_number": 123456789012,
+          "public_access_prevention": "enforced",
+          "requester_pays": false,
+          "retention_policy": [],
+          "rpo": null,
+          "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "soft_delete_policy": [
+            {
+              "effective_time": "2025-12-16T18:51:25.798Z",
+              "retention_duration_seconds": 604800
+            }
+          ],
+          "storage_class": "STANDARD",
+          "terraform_labels": {
+            "goog-terraform-provisioned": "true"
+          },
+          "time_created": "2025-12-16T18:51:25.798Z",
+          "timeouts": null,
+          "uniform_bucket_level_access": true,
+          "updated": "2025-12-16T18:51:25.798Z",
+          "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+          "versioning": [],
+          "website": []
+        },
+        "after_unknown": {},
+        "before_sensitive": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "effective_labels": {},
+          "encryption": [],
+          "hierarchical_namespace": [
+            {}
+          ],
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "logging": [],
+          "retention_policy": [],
+          "soft_delete_policy": [
+            {}
+          ],
+          "terraform_labels": {},
+          "versioning": [],
+          "website": []
+        },
+        "after_sensitive": {
+          "autoclass": [],
+          "cors": [],
+          "custom_placement_config": [],
+          "effective_labels": {},
+          "encryption": [],
+          "hierarchical_namespace": [
+            {}
+          ],
+          "ip_filter": [],
+          "labels": {},
+          "lifecycle_rule": [],
+          "logging": [],
+          "retention_policy": [],
+          "soft_delete_policy": [
+            {}
+          ],
+          "terraform_labels": {},
+          "versioning": [],
+          "website": []
+        }
+      }
+    }
+  ],
+  "prior_state": {
+    "format_version": "1.0",
+    "terraform_version": "1.13.3",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "google_storage_bucket.plan_pass",
+            "mode": "managed",
+            "type": "google_storage_bucket",
+            "name": "plan_pass",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 4,
+            "values": {
+              "autoclass": [],
+              "cors": [],
+              "custom_placement_config": [],
+              "default_event_based_hold": false,
+              "effective_labels": {
+                "goog-terraform-provisioned": "true"
+              },
+              "enable_object_retention": false,
+              "encryption": [],
+              "force_destroy": true,
+              "hierarchical_namespace": [
+                {
+                  "enabled": false
+                }
+              ],
+              "id": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+              "ip_filter": [],
+              "labels": {},
+              "lifecycle_rule": [],
+              "location": "EU",
+              "logging": [],
+              "name": "5bc85a21-7150-48f7-be36-0a8570c6209f",
+              "project": "example-project",
+              "project_number": 123456789012,
+              "public_access_prevention": "enforced",
+              "requester_pays": false,
+              "retention_policy": [],
+              "rpo": null,
+              "self_link": "https://www.googleapis.com/storage/v1/b/5bc85a21-7150-48f7-be36-0a8570c6209f",
+              "soft_delete_policy": [
+                {
+                  "effective_time": "2025-12-16T18:51:25.798Z",
+                  "retention_duration_seconds": 604800
+                }
+              ],
+              "storage_class": "STANDARD",
+              "terraform_labels": {
+                "goog-terraform-provisioned": "true"
+              },
+              "time_created": "2025-12-16T18:51:25.798Z",
+              "timeouts": null,
+              "uniform_bucket_level_access": true,
+              "updated": "2025-12-16T18:51:25.798Z",
+              "url": "gs://5bc85a21-7150-48f7-be36-0a8570c6209f",
+              "versioning": [],
+              "website": []
+            },
+            "sensitive_values": {
+              "autoclass": [],
+              "cors": [],
+              "custom_placement_config": [],
+              "effective_labels": {},
+              "encryption": [],
+              "hierarchical_namespace": [
+                {}
+              ],
+              "ip_filter": [],
+              "labels": {},
+              "lifecycle_rule": [],
+              "logging": [],
+              "retention_policy": [],
+              "soft_delete_policy": [
+                {}
+              ],
+              "terraform_labels": {},
+              "versioning": [],
+              "website": []
+            }
+          }
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "google": {
+        "name": "google",
+        "full_name": "registry.terraform.io/hashicorp/google",
+        "version_constraint": "~> 7.0"
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_storage_bucket.plan_pass",
+          "mode": "managed",
+          "type": "google_storage_bucket",
+          "name": "plan_pass",
+          "provider_config_key": "google",
+          "expressions": {
+            "force_destroy": {
+              "constant_value": true
+            },
+            "location": {
+              "constant_value": "EU"
+            },
+            "name": {
+              "constant_value": "5bc85a21-7150-48f7-be36-0a8570c6209f"
+            },
+            "public_access_prevention": {
+              "constant_value": "enforced"
+            },
+            "storage_class": {
+              "constant_value": "STANDARD"
+            },
+            "uniform_bucket_level_access": {
+              "constant_value": true
+            }
+          },
+          "schema_version": 4
+        }
+      ]
+    }
+  },
+  "timestamp": "2025-12-16T18:51:36Z",
+  "applyable": false,
+  "complete": true,
+  "errored": false
+}
