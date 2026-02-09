@@ -46,6 +46,7 @@ from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES,
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 from checkov.secrets.context_parser import ContextParser
+from checkov.secrets.log_prefix_stripper import create_stripped_content
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -478,8 +479,41 @@ class Runner(BaseRunner[None, None, None]):
                 return file_path, []
 
             start_time = datetime.datetime.now()
-            file_results = [*scan.scan_file(full_file_path)]
-            logging.debug(f'file {full_file_path} results len {len(file_results)}')
+
+            # Check if the file has build log prefixes (timestamps, log levels, etc.)
+            # before scanning. If detected, strip the prefixes and scan the cleaned
+            # content instead. This ensures all detectors can match secrets that span
+            # multiple log lines (e.g., private keys) without scanning the file twice.
+            scan_file_path = full_file_path
+            tmp_file_path = None
+            was_stripped, stripped_content = create_stripped_content(full_file_path)
+            if was_stripped:
+                logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
+                try:
+                    _, ext = os.path.splitext(full_file_path)
+                    with tempfile.NamedTemporaryFile(
+                        mode='w', suffix=ext, delete=False
+                    ) as tmp_file:
+                        tmp_file.write(stripped_content)
+                        tmp_file_path = tmp_file.name
+                    scan_file_path = tmp_file_path
+                except Exception as e:
+                    logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
+
+            try:
+                file_results = [*scan.scan_file(scan_file_path)]
+                # If we scanned a temp file, map results back to the original file path
+                if tmp_file_path is not None:
+                    for secret in file_results:
+                        secret.filename = full_file_path
+                logging.debug(f'file {full_file_path} results len {len(file_results)}')
+            finally:
+                if tmp_file_path is not None:
+                    try:
+                        os.remove(tmp_file_path)
+                    except OSError:
+                        pass
+
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
