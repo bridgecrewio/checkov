@@ -466,6 +466,36 @@ class Runner(BaseRunner[None, None, None]):
             pbar.update()
 
     @staticmethod
+    def _prepare_scan_file(full_file_path: str) -> Tuple[str, Optional[str]]:
+        """Check if a file has build log prefixes and prepare a stripped version for scanning.
+
+        Build log files often have timestamps/log-level prefixes on each line that break
+        multiline secret detection (e.g., private keys split across prefixed log lines).
+        This method detects such prefixes and creates a temporary file with the prefixes
+        stripped, so all detectors can match secrets that span multiple log lines.
+
+        Returns:
+            A tuple of (scan_file_path, tmp_file_path).
+            - scan_file_path: the path to scan (original or temp stripped file)
+            - tmp_file_path: path to the temp file if created (caller must clean up), or None
+        """
+        was_stripped, stripped_content = create_stripped_content(full_file_path)
+        if not was_stripped:
+            return full_file_path, None
+
+        logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
+        try:
+            _, ext = os.path.splitext(full_file_path)
+            with tempfile.NamedTemporaryFile(
+                mode='w', suffix=ext, delete=False
+            ) as tmp_file:
+                tmp_file.write(stripped_content)
+                return tmp_file.name, tmp_file.name
+        except Exception as e:
+            logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
+            return full_file_path, None
+
+    @staticmethod
     def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
         try:
             full_file_path = os.path.join(base_path, file_path)
@@ -480,25 +510,7 @@ class Runner(BaseRunner[None, None, None]):
 
             start_time = datetime.datetime.now()
 
-            # Check if the file has build log prefixes (timestamps, log levels, etc.)
-            # before scanning. If detected, strip the prefixes and scan the cleaned
-            # content instead. This ensures all detectors can match secrets that span
-            # multiple log lines (e.g., private keys) without scanning the file twice.
-            scan_file_path = full_file_path
-            tmp_file_path = None
-            was_stripped, stripped_content = create_stripped_content(full_file_path)
-            if was_stripped:
-                logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
-                try:
-                    _, ext = os.path.splitext(full_file_path)
-                    with tempfile.NamedTemporaryFile(
-                        mode='w', suffix=ext, delete=False
-                    ) as tmp_file:
-                        tmp_file.write(stripped_content)
-                        tmp_file_path = tmp_file.name
-                    scan_file_path = tmp_file_path
-                except Exception as e:
-                    logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
+            scan_file_path, tmp_file_path = Runner._prepare_scan_file(full_file_path)
 
             try:
                 file_results = [*scan.scan_file(scan_file_path)]
