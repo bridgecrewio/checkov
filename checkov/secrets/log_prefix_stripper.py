@@ -12,7 +12,7 @@ secret detection across all detectors when scanning build log files.
 from __future__ import annotations
 
 import re
-from typing import Tuple
+from typing import Optional
 
 # Common build log prefix patterns:
 # - Timestamps: 2026-01-07 09:41:37.553, 2026-01-07T09:41:37.553Z
@@ -118,19 +118,28 @@ def strip_log_prefixes_from_content(content: str) -> str:
     return '\n'.join(stripped_lines)
 
 
-def create_stripped_content(file_path: str) -> Tuple[bool, str]:
+def create_stripped_content(file_path: str) -> Optional[str]:
     """Read a file and return its content with log prefixes stripped.
 
-    Returns a tuple of (was_stripped, stripped_content).
-    If the file doesn't appear to have log prefixes, returns (False, '').
+    Returns a string of the stripped content, or None if the file doesn't appear to have log prefixes.
     """
+    try:
+        # To avoid reading large files entirely into memory just for a check,
+        # we first read a sample of the file to check for log prefixes.
+        with open(file_path, 'r') as f:
+            sample = f.read(8000)  # Read first 8KB, should be enough for several lines
+    except (OSError, UnicodeDecodeError):
+        return None
+
+    if not has_log_prefixes(sample):
+        return None
+
+    # Prefixes were found in the sample, so now we process the whole file.
+    # The runner that calls this already limits the file size, so we don't
+    # expect to be reading huge files here.
     try:
         with open(file_path, 'r') as f:
             content = f.read()
+        return strip_log_prefixes_from_content(content)
     except (OSError, UnicodeDecodeError):
-        return False, ''
-
-    if not has_log_prefixes(content):
-        return False, ''
-
-    return True, strip_log_prefixes_from_content(content)
+        return None

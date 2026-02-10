@@ -466,7 +466,7 @@ class Runner(BaseRunner[None, None, None]):
             pbar.update()
 
     @staticmethod
-    def _prepare_scan_file(full_file_path: str) -> Tuple[str, Optional[str]]:
+    def _prepare_scan_file(full_file_path: str) -> Optional[str]:
         """Check if a file has build log prefixes and prepare a stripped version for scanning.
 
         Build log files often have timestamps/log-level prefixes on each line that break
@@ -475,25 +475,23 @@ class Runner(BaseRunner[None, None, None]):
         stripped, so all detectors can match secrets that span multiple log lines.
 
         Returns:
-            A tuple of (scan_file_path, tmp_file_path).
-            - scan_file_path: the path to scan (original or temp stripped file)
-            - tmp_file_path: path to the temp file if created (caller must clean up), or None
+            path to the temp file if created (caller must clean up), or None
         """
-        was_stripped, stripped_content = create_stripped_content(full_file_path)
-        if not was_stripped:
-            return full_file_path, None
+        stripped_content = create_stripped_content(full_file_path)
+        if not stripped_content:
+            return None
 
         logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
         try:
             _, ext = os.path.splitext(full_file_path)
             with tempfile.NamedTemporaryFile(
-                mode='w', suffix=ext, delete=False
+                    mode='w', suffix=ext, delete=False
             ) as tmp_file:
                 tmp_file.write(stripped_content)
-                return tmp_file.name, tmp_file.name
+                return tmp_file.name
         except Exception as e:
             logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
-            return full_file_path, None
+            return None
 
     @staticmethod
     def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
@@ -510,7 +508,8 @@ class Runner(BaseRunner[None, None, None]):
 
             start_time = datetime.datetime.now()
 
-            scan_file_path, tmp_file_path = Runner._prepare_scan_file(full_file_path)
+            tmp_file_path = Runner._prepare_scan_file(full_file_path)
+            scan_file_path = tmp_file_path or full_file_path
 
             try:
                 file_results = [*scan.scan_file(scan_file_path)]
@@ -524,7 +523,7 @@ class Runner(BaseRunner[None, None, None]):
                     try:
                         os.remove(tmp_file_path)
                     except OSError:
-                        pass
+                        logging.warning(f"Failed to remove temp file: {tmp_file_path}")
 
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
