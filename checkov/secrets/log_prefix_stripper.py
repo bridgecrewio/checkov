@@ -12,7 +12,7 @@ secret detection across all detectors when scanning build log files.
 from __future__ import annotations
 
 import re
-from typing import List, Tuple
+from typing import Tuple
 
 # Common build log prefix patterns:
 # - Timestamps: 2026-01-07 09:41:37.553, 2026-01-07T09:41:37.553Z
