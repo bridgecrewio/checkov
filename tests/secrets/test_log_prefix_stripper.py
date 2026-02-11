@@ -143,33 +143,32 @@ class TestCreateStrippedContent(unittest.TestCase):
 
     def test_build_log_file(self) -> None:
         test_file = str(Path(__file__).parent / "build_log_prefix" / "build_log_with_private_key.log")
-        was_stripped, content = create_stripped_content(test_file)
-        self.assertTrue(was_stripped)
+        content = create_stripped_content(test_file)
+        self.assertIsNotNone(content)
         self.assertIn("-----BEGIN RSA PRIVATE KEY-----", content)
         # Verify prefixes are removed
         self.assertNotIn("2026-01-07 09:41:37.553 | DEBUG | crypto      | -----BEGIN", content)
 
     def test_plain_file_not_stripped(self) -> None:
         test_file = str(Path(__file__).parent / "build_log_prefix" / "plain_private_key.txt")
-        was_stripped, content = create_stripped_content(test_file)
-        self.assertFalse(was_stripped)
+        content = create_stripped_content(test_file)
+        self.assertIsNone(content)
 
     def test_nonexistent_file(self) -> None:
-        was_stripped, content = create_stripped_content("/nonexistent/file.log")
-        self.assertFalse(was_stripped)
-        self.assertEqual(content, "")
+        content = create_stripped_content("/nonexistent/file.log")
+        self.assertIsNone(content)
 
     def test_bracket_log_file(self) -> None:
         test_file = str(Path(__file__).parent / "build_log_prefix" / "bracket_log_with_private_key.log")
-        was_stripped, content = create_stripped_content(test_file)
-        self.assertTrue(was_stripped)
+        content = create_stripped_content(test_file)
+        self.assertIsNotNone(content)
         self.assertIn("-----BEGIN RSA PRIVATE KEY-----", content)
         self.assertNotIn("[2026-01-07 09:41:37]", content)
 
     def test_putty_key_log_file(self) -> None:
         test_file = str(Path(__file__).parent / "build_log_prefix" / "build_log_with_putty_key.log")
-        was_stripped, content = create_stripped_content(test_file)
-        self.assertTrue(was_stripped)
+        content = create_stripped_content(test_file)
+        self.assertIsNotNone(content)
         self.assertIn("PuTTY-User-Key-File-2: ssh-rsa", content)
         self.assertNotIn("2026-01-07 09:41:37.552 | DEBUG | ssh         | PuTTY", content)
 
