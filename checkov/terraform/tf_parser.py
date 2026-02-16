@@ -505,9 +505,10 @@ class TFParser:
         if not self.external_variables_data:
             return
         for var_name, default, path in self.external_variables_data:
-            if Path(source_dir) in Path(path).parents and ".tfvars" in path:
-                block = [{var_name: {"default": default}}]
-                module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
+            if ".tfvars" in path:
+                if Path(source_dir) in Path(path).parents:
+                    block = [{var_name: {"default": default}}]
+                    module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
     def get_dirname(self, path: TFDefinitionKeyType) -> str:
         if isinstance(path, TFDefinitionKey):
