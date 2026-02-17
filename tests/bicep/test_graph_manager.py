@@ -14,13 +14,14 @@ def test_build_graph_from_source_directory():
     playground_file = EXAMPLES_DIR / "playground.bicep"
     graph_file = EXAMPLES_DIR / "graph.bicep"
     loop_file = EXAMPLES_DIR / "loop.bicep"
+    imports_file = EXAMPLES_DIR / "imports.bicep"
     graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, definitions = graph_manager.build_graph_from_source_directory(source_dir=str(EXAMPLES_DIR))
 
     # then
-    assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file}  # should not include 'malformed.bicep' file
+    assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file, imports_file}  # should not include 'malformed.bicep' file
 
     assert len(local_graph.vertices) == 48
     assert len(local_graph.edges) == 47
