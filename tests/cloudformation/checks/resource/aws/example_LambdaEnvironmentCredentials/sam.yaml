@@ -4,14 +4,14 @@ Transform: AWS::Serverless-2016-10-31
 Globals:
   Function:
     Handler: app.lambdaHandler
-    Runtime: python3.9
+    Runtime: python3.13
 
 Resources:
   NoSecret:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       Environment:
         Variables:
           key: value
@@ -20,7 +20,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
 
   NoProperties:
     Type: AWS::Serverless::Function
@@ -29,7 +29,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       Environment:
         Variables:
           key: value
