@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.501...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.502...HEAD)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
 
 ## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
 
