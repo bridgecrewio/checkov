@@ -46,6 +46,7 @@ from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES,
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 from checkov.secrets.context_parser import ContextParser
+from checkov.secrets.log_prefix_stripper import create_stripped_content
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -78,6 +79,8 @@ BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
 RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
 ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
 GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_AWS_CHECK_ID = 'CKV_SECRET_2'
+SPECIFIC_AWS_CHECK_IDS = {'CKV_SECRET_380', 'CKV_SECRET_381'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -441,6 +444,9 @@ class Runner(BaseRunner[None, None, None]):
             if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
                 secret_records.pop(secret_key)
                 return True
+        if secret_records[secret_key].check_id == GENERIC_AWS_CHECK_ID and check_id in SPECIFIC_AWS_CHECK_IDS:
+            secret_records.pop(secret_key)
+            return True
         return False
 
     @staticmethod
@@ -460,6 +466,34 @@ class Runner(BaseRunner[None, None, None]):
             pbar.update()
 
     @staticmethod
+    def _prepare_scan_file(full_file_path: str) -> Optional[str]:
+        """Check if a file has build log prefixes and prepare a stripped version for scanning.
+
+        Build log files often have timestamps/log-level prefixes on each line that break
+        multiline secret detection (e.g., private keys split across prefixed log lines).
+        This method detects such prefixes and creates a temporary file with the prefixes
+        stripped, so all detectors can match secrets that span multiple log lines.
+
+        Returns:
+            path to the temp file if created (caller must clean up), or None
+        """
+        stripped_content = create_stripped_content(full_file_path)
+        if not stripped_content:
+            return None
+
+        logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
+        try:
+            _, ext = os.path.splitext(full_file_path)
+            with tempfile.NamedTemporaryFile(
+                    mode='w', suffix=ext, delete=False
+            ) as tmp_file:
+                tmp_file.write(stripped_content)
+                return tmp_file.name
+        except Exception as e:
+            logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
+            return None
+
+    @staticmethod
     def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
         try:
             full_file_path = os.path.join(base_path, file_path)
@@ -473,8 +507,24 @@ class Runner(BaseRunner[None, None, None]):
                 return file_path, []
 
             start_time = datetime.datetime.now()
-            file_results = [*scan.scan_file(full_file_path)]
-            logging.debug(f'file {full_file_path} results len {len(file_results)}')
+
+            tmp_file_path = Runner._prepare_scan_file(full_file_path)
+            scan_file_path = tmp_file_path or full_file_path
+
+            try:
+                file_results = [*scan.scan_file(scan_file_path)]
+                # If we scanned a temp file, map results back to the original file path
+                if tmp_file_path is not None:
+                    for secret in file_results:
+                        secret.filename = full_file_path
+                logging.debug(f'file {full_file_path} results len {len(file_results)}')
+            finally:
+                if tmp_file_path is not None:
+                    try:
+                        os.remove(tmp_file_path)
+                    except OSError:
+                        logging.warning(f"Failed to remove temp file: {tmp_file_path}")
+
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):

@@ -1,6 +1,47 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.495...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.502...HEAD)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
+
+## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
+
+### Bug Fix
+
+- **general:**  secret detection in build log files with line prefixes - [#7431](https://github.com/bridgecrewio/checkov/pull/7431)
+
+## [3.2.500](https://github.com/bridgecrewio/checkov/compare/3.2.499...3.2.500) - 2026-02-01
+
+### Bug Fix
+
+- **cloudformation:** render variables in cfn vertices config - [#7423](https://github.com/bridgecrewio/checkov/pull/7423)
+
+## [3.2.499](https://github.com/bridgecrewio/checkov/compare/3.2.497...3.2.499) - 2026-01-25
+
+### Feature
+
+- **general:** Add BC_CA_BUNDLE environment variable support for custom CA certificates - [#7419](https://github.com/bridgecrewio/checkov/pull/7419)
+- **secrets:** Override AWS generic check with cortex specific checks - [#7420](https://github.com/bridgecrewio/checkov/pull/7420)
+
+### Bug Fix
+
+- **terraform:** test dates - [#7422](https://github.com/bridgecrewio/checkov/pull/7422)
+
+## [3.2.497](https://github.com/bridgecrewio/checkov/compare/3.2.496...3.2.497) - 2025-12-30
+
+### Bug Fix
+
+- **terraform:** handle file path instead of directory - [#7408](https://github.com/bridgecrewio/checkov/pull/7408)
+
+## [3.2.496](https://github.com/bridgecrewio/checkov/compare/3.2.495...3.2.496) - 2025-12-28
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_6 - Added special handling for MSSQL SERVER database type - [#7405](https://github.com/bridgecrewio/checkov/pull/7405)
 
 ## [3.2.495](https://github.com/bridgecrewio/checkov/compare/3.2.494...3.2.495) - 2025-11-23
 

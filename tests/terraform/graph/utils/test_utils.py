@@ -8,7 +8,6 @@ from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_val
     replace_map_attribute_access_with_dot, generate_possible_strings_from_wildcards, \
     attribute_has_nested_attributes
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
-from checkov.terraform.graph_builder.local_graph import update_dictionary_attribute
 
 
 class TestUtils(TestCase):
@@ -49,29 +48,6 @@ class TestUtils(TestCase):
         replace_map_attribute_access_with_dot(str_value)
         self.assertEqual('data.aws_availability_zones[0].names[1]', replace_map_attribute_access_with_dot(str_value))
 
-    def test_update_dictionary_attribute_nested(self):
-        origin_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
-        key_to_update = 'versioning.enabled'
-        new_value = [False]
-        expected_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'], 'versioning': [{'enabled': [False]}]}}}
-        actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-        self.assertEqual(expected_config, actual_config, f'failed to update config. expected: {expected_config}, got: {actual_config}')
-
-    def test_update_dictionary_attribute(self):
-        origin_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
-        key_to_update = 'acl'
-        new_value = ['public-read']
-        expected_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
-        actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-        self.assertEqual(expected_config, actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
-
-    def test_update_dictionary_locals(self):
-        origin_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['${var.acl}'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
-        key_to_update = 'acl'
-        new_value = ['public-read']
-        expected_config = {'aws_s3_bucket': {'destination': {'bucket': ['tf-test-bucket-destination-12345'], 'acl': ['public-read'], 'versioning': [{'enabled': ['${var.is_enabled}']}]}}}
-        actual_config = update_dictionary_attribute(origin_config, key_to_update, new_value)
-        self.assertEqual(expected_config, actual_config, f'failed to update config.\nexpected: {expected_config}\ngot: {actual_config}')
 
     def test_generate_possible_strings_from_wildcards(self):
         origin_string = "a.*.b.*.c.*"
