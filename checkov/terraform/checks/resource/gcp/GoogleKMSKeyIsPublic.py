@@ -3,7 +3,7 @@ from typing import Dict, Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-DISALLOWED_MEMBERS = {"allUsers", "allAuthenticatedUsers"}
+DISALLOWED_MEMBERS = ["allUsers", "allAuthenticatedUsers"]
 
 
 class GoogleKMSKeyIsPublic(BaseResourceCheck):
