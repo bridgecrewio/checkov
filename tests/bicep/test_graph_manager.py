@@ -23,8 +23,8 @@ def test_build_graph_from_source_directory():
     # then
     assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file, imports_file}  # should not include 'malformed.bicep' file
 
-    assert len(local_graph.vertices) == 48
-    assert len(local_graph.edges) == 47
+    assert len(local_graph.vertices) == 54
+    assert len(local_graph.edges) == 51
 
     storage_account_idx = local_graph.vertices_by_name["diagsAccount"]  # vertices_by_name exists for BicepGraphManager
     storage_account = local_graph.vertices[storage_account_idx]
