@@ -9,4 +9,9 @@ class Registry(BaseCheckRegistry):
         resource_name = list(list(entity.values())[0].keys())[0]
         resource_object = entity[resource_type]
         resource_configuration = resource_object[resource_name]
-        return resource_type, resource_name, resource_configuration
+        full_resource_name = (
+            resource_configuration["__address__"].split(".", 1)[1]
+            if "__address__" in resource_configuration
+            else resource_name
+        )
+        return resource_type, full_resource_name, resource_configuration
