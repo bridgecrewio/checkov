@@ -104,7 +104,7 @@ setup(
         "requests<3.0.0,>=2.28.0",
         "yarl<2.0.0,>=1.9.1",
         "spdx-tools>=0.8.0,<0.9.0",
-        "license-expression<31.0.0,>=30.1.0",
+        "license-expression<=30.4.3",
         "rustworkx>=0.13.0,<1.0.0",
         "pydantic<3.0.0,>=2.0.0",
         "asteval==1.0.6",
