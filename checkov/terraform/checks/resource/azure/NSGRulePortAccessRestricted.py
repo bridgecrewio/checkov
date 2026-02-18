@@ -5,16 +5,17 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.util.type_forcers import force_list
 import re
 
-INTERNET_ADDRESSES = ("*", "0.0.0.0", "<nw>/0", "/0", "internet", "any")  # nosec
+INTERNET_ADDRESSES = re.compile(r"^(\*|internet|any|0\.0\.0\.0|.*/0)$", re.IGNORECASE)
 PORT_RANGE = re.compile(r"\d+-\d+")
 
 
 class NSGRulePortAccessRestricted(BaseResourceCheck):
-    def __init__(self, name: str, check_id: str, port: int) -> None:
+    def __init__(self, name: str, check_id: str, port: int, additional_protocols: Union[List[str]] = []) -> None:
         supported_resources = ("azurerm_network_security_rule", "azurerm_network_security_group")
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
         self.port = port
+        self.additional_protocols = additional_protocols
 
     def is_port_in_range(self, ports: Union[int, str, List[Union[int, str]]]) -> bool:
         for range in force_list(ports):
@@ -53,7 +54,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
                 and direction
                 and direction[0].lower() == "inbound"
                 and protocol
-                and protocol[0].lower() in ("tcp", "*")
+                and protocol[0].lower() in (("tcp", "*") + tuple(self.additional_protocols))
                 and (
                     (
                         destination_port_range
@@ -69,14 +70,13 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
                     (
                         source_address_prefix
                         and isinstance(source_address_prefix[0], str)
-                        and source_address_prefix[0].lower() in INTERNET_ADDRESSES  # fmt: skip
+                        and bool(INTERNET_ADDRESSES.match(source_address_prefix[0]))
                     )
                     or (
                         source_address_prefixes
                         and source_address_prefixes[0]
                         and isinstance(source_address_prefixes[0], list)
-                        and any((isinstance(prefix, str) and prefix.lower()) in INTERNET_ADDRESSES for prefix in
-                                source_address_prefixes[0])
+                        and any(isinstance(prefix, str) and INTERNET_ADDRESSES.match(prefix) for prefix in source_address_prefixes[0])
                     )
                 )
             ):
