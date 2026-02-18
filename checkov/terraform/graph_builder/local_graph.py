@@ -536,7 +536,79 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     added_edge = self.create_edge(origin_node_index, vertex_index, attribute_key, cross_variable_edges)
                     if added_edge:
                         self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
+                        # Trace the output's value back to the actual resource it references
+                        self._trace_output_to_source_resource(
+                            origin_node_index,
+                            vertex_index,
+                            attribute_key,
+                            cross_variable_edges
+                        )
                     break
+
+    def _trace_output_to_source_resource(
+        self,
+        origin_node_index: int,
+        output_vertex_index: int,
+        attribute_key: str,
+        cross_variable_edges: bool = False
+    ) -> None:
+        """
+        Trace an output's value back to the source resource it references.
+        
+        When a resource references module.X.output_name, we create an edge to the output block.
+        This method continues the trace by examining the output's value attribute and creating
+        edges to any resources referenced in that value.
+        
+        Example:
+            resource "aws_dynamodb_resource_policy" "policy" {
+                resource_arn = module.dynamodb.table_arn  # References output
+            }
+            
+            output "table_arn" {
+                value = aws_dynamodb_table.this.arn  # References actual resource
+            }
+        
+        This method creates the edge: policy → table (in addition to policy → output)
+        
+        :param origin_node_index: Index of the vertex that references the module output
+        :param output_vertex_index: Index of the output vertex
+        :param attribute_key: The attribute name that references the output
+        :param cross_variable_edges: Whether this is a cross-variable edge
+        """
+        output_vertex = self.vertices[output_vertex_index]
+        
+        # Get the output's value attribute
+        value_attr = output_vertex.attributes.get('value')
+        if not value_attr:
+            return
+        
+        # Find resources referenced in the value
+        aliases = self._get_aliases()
+        resources_types = self.get_resources_types_in_graph()
+        
+        referenced_vertices = get_referenced_vertices_in_value(
+            value=value_attr,
+            aliases=aliases,
+            resources_types=resources_types,
+        )
+        
+        # Create edges to the referenced resources
+        for vertex_reference in referenced_vertices:
+            sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
+            for i in range(len(sub_values)):
+                reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
+                
+                # Find the actual resource vertex
+                dest_node_index = self._find_vertex_index_relative_to_path(
+                    vertex_reference.block_type,
+                    reference_name,
+                    output_vertex.path,
+                    source_module_object=output_vertex.source_module_object
+                )
+                
+                if dest_node_index > -1:
+                    # Create edge from origin to destination
+                    self.create_edge(origin_node_index, dest_node_index, attribute_key, cross_variable_edges)
 
     def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
         """
