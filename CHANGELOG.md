@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.502...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.504...HEAD)
+
+## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
+
+### Feature
+
+- **bicep:** bump pycep to support better bicep syntax - [#7441](https://github.com/bridgecrewio/checkov/pull/7441)
+- **terraform:** deprecate dotnet v6 and support v9 and v10 - [#7442](https://github.com/bridgecrewio/checkov/pull/7442)
 
 ## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
 
