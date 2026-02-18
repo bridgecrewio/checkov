@@ -74,6 +74,8 @@ class EnrichedPotentialSecretMetadata(TypedDict, total=False):
     added_by: Optional[str]
     removed_date: Optional[str]
     added_date: Optional[str]
+    line_before: Optional[str]
+    line_after: Optional[str]
 
 
 class EnrichedPotentialSecret(EnrichedPotentialSecretMetadata):

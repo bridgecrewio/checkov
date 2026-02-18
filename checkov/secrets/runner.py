@@ -326,15 +326,16 @@ class Runner(BaseRunner[None, None, None]):
                 continue
             secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
             # secret history
+            secret_history_details = None
             added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
             if runner_filter.enable_git_history_secret_scan and history_store is not None:
-                enriched_potential_secret = history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
-                added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
-                removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
-                code_line = enriched_potential_secret.get('code_line') or ''
-                added_by = enriched_potential_secret.get('added_by') or ''
-                removed_date = enriched_potential_secret.get('removed_date') or ''
-                added_date = enriched_potential_secret.get('added_date') or ''
+                secret_history_details = history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
+                added_commit_hash = secret_history_details.get('added_commit_hash') or ''
+                removed_commit_hash = secret_history_details.get('removed_commit_hash') or ''
+                code_line = secret_history_details.get('code_line') or ''
+                added_by = secret_history_details.get('added_by') or ''
+                removed_date = secret_history_details.get('removed_date') or ''
+                added_date = secret_history_details.get('added_date') or ''
             # run over secret key
             if isinstance(secret.secret_value, str) and secret.secret_value:
                 stripped = secret.secret_value.strip(',";\'')
@@ -378,7 +379,8 @@ class Runner(BaseRunner[None, None, None]):
                 severity=severity,
                 secret=secret,
                 runner_filter=runner_filter,
-                root_folder=root_folder
+                root_folder=root_folder,
+                secret_history_details=secret_history_details
             ) or result
 
             relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
@@ -542,7 +544,8 @@ class Runner(BaseRunner[None, None, None]):
             severity: Severity | None,
             secret: PotentialSecret,
             runner_filter: RunnerFilter,
-            root_folder: str | None
+            root_folder: str | None,
+            secret_history_details: dict | None,
     ) -> _CheckResult | None:
         if not runner_filter.should_run_check(
                 check_id=check_id,
@@ -559,7 +562,15 @@ class Runner(BaseRunner[None, None, None]):
 
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
-            lt = linecache.getline(secret.filename, line_number)
+            if secret_history_details:
+                if line_number == secret.line_number:
+                    lt = secret_history_details['code_line'] or ''
+                elif line_number == secret.line_number - 1:
+                    lt = secret_history_details['line_before'] or ''
+                elif line_number == secret.line_number + 1:
+                    lt = secret_history_details['line_after'] or ''
+            else:
+                lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
             if skip_search and (skip_search.group(2) == check_id or skip_search.group(2) == bc_check_id):
                 comment: str = skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
