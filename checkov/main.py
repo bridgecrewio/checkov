@@ -529,15 +529,27 @@ class Checkov:
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
                     file = self.config.file
-                    self.scan_reports = runner_registry.run(
+
+                    # Create new runners for each directory to avoid shared state
+                    new_directory_runners = []
+                    for runner in self.runners:
+                        new_directory_runner = runner.__class__()
+                        new_directory_runners.append(new_directory_runner)
+                    new_directory_runner_registry = RunnerRegistry(banner, runner_filter, *new_directory_runners, tool=tool)
+                    current_scan_reports = new_directory_runner_registry.run(
                         root_folder=root_folder,
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
-                    self.graphs = runner_registry.check_type_to_graph
-                    self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
-                    if runner_registry.is_error_in_reports(self.scan_reports):
-                        self.exit_run()
+
+                    # Accumulate results from all directories instead of replacing
+                    if not hasattr(self, 'scan_reports') or self.scan_reports is None:
+                        self.scan_reports = []
+                    self.scan_reports.extend(current_scan_reports)
+                    self.graphs = new_directory_runner_registry.check_type_to_graph
+                    self.resource_subgraph_maps = new_directory_runner_registry.check_type_to_resource_subgraph_map
+                    if new_directory_runner_registry.is_error_in_reports(current_scan_reports):
+                        logger.warning(f'Errors detected in scan reports for directory {root_folder}, continuing with next directory')
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
 
@@ -563,13 +575,15 @@ class Checkov:
 
                     if self.config.create_baseline:
                         overall_baseline = Baseline()
-                        for report in self.scan_reports:
+                        for report in current_scan_reports:
                             overall_baseline.add_findings_from_report(report)
                         created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                         with open(created_baseline_path, 'w') as f:
                             json.dump(overall_baseline.to_dict(), f, indent=4)
-                    exit_codes.append(self.print_results(
-                        runner_registry=runner_registry,
+                    # Print results for this directory only
+                    exit_codes.append(new_directory_runner_registry.print_reports(
+                        scan_reports=current_scan_reports,
+                        config=self.config,
                         url=self.url,
                         created_baseline_path=created_baseline_path,
                         baseline=baseline,
