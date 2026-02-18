@@ -503,6 +503,89 @@ def _add_references(obj: dict[str, Any], conf: dict[str, Any], return_resource: 
             return_resource.setdefault(CustomAttributes.REFERENCES, []).append(conf_value["references"])
 
 
+def _process_deleted_resources(
+    template: dict[str, Any],
+    resource_changes: dict[str, dict[str, Any]],
+    processed_addresses: set[str],
+) -> list[dict[str, dict[str, Any]]]:
+    """
+    Process resources that have pure delete actions and don't appear in planned_values.
+
+    When a resource is being purely deleted (not replaced), it doesn't appear in the
+    plan's planned_values section. However, it does exist in resource_changes with its
+    "before" state. This function extracts these resources so they can be checked by
+    policy rules that need to validate deletion conditions (e.g., ensuring a resource
+    is in an acceptable state before deletion).
+
+    :param template: The full terraform plan template
+    :param resource_changes: Map of resource addresses to their change information
+    :param processed_addresses: Set of resource addresses already processed from planned_values
+    :return: List of resource blocks for deleted resources, formatted for checkov checks
+    """
+    deleted_blocks: list[dict[str, dict[str, Any]]] = []
+
+    for address, change_info in resource_changes.items():
+        # Avoid duplicate processing - resources in planned_values are already handled
+        if address in processed_addresses:
+            continue
+
+        actions = change_info.get("change", {}).get("actions", [])
+
+        # Only process pure deletes - other change types should already be in planned_values
+        if actions != ["delete"]:
+            continue
+
+        resource_type = change_info.get("type")
+        resource_name = change_info.get("name")
+        mode = change_info.get("mode")
+
+        if not resource_type or not resource_name:
+            continue
+
+        # Data sources are not managed and don't need deletion validation
+        if mode != "managed":
+            continue
+
+        # Use the "before" state to populate resource config for policy checks
+        before_values = change_info.get("change", {}).get("before")
+        if not before_values or not isinstance(before_values, dict):
+            continue
+
+        # Find configuration to get expressions for proper value transformation
+        conf = next(
+            (
+                x
+                for x in template.get("configuration", {}).get("root_module", {}).get("resources", [])
+                if x.get("type") == resource_type and x.get("name") == resource_name
+            ),
+            None,
+        )
+
+        # Transform before state using _hclify to match the format used for other resources
+        expressions = conf.get("expressions") if conf else None
+        resource_conf = _hclify(
+            obj=before_values,
+            conf=expressions,
+            resource_type=resource_type,
+        )
+
+        # Add special attributes for policy checks to detect and validate deletions
+        resource_conf[TF_PLAN_RESOURCE_ADDRESS] = address  # e.g., "aws_s3_bucket.example"
+        resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = actions  # ["delete"]
+        resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = resource_changes.get(address, {}).get(TF_PLAN_RESOURCE_CHANGE_KEYS, [])
+
+        # Create the nested dict structure: { "resource_type": { "resource_name": { ...config... } } }
+        resource_block = {
+            resource_type: {
+                resource_name: resource_conf
+            }
+        }
+
+        deleted_blocks.append(resource_block)
+
+    return deleted_blocks
+
+
 def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tuple[Optional[Dict[str, Any]], Optional[List[Tuple[int, str]]]]:
     """
     :type tf_plan_file: str - path to plan file
@@ -516,6 +599,9 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     tf_definition["provider"] = _get_providers(template=template)
 
     resource_changes = _get_resource_changes(template=template)
+
+    # Track which resources we've already processed from planned_values
+    processed_addresses = set()
 
     for resource in template.get("planned_values", {}).get("root_module", {}).get("resources", []):
         conf = next(
@@ -536,6 +622,12 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
                 tf_definition["resource"].append(resource_block)
             elif block_type == "data":
                 tf_definition["data"].append(resource_block)
+
+        # Track this resource address as processed (regardless of preparation status)
+        # to prevent duplicate processing as a pure delete
+        if resource.get("address"):
+            processed_addresses.add(resource["address"])
+
     child_modules = template.get("planned_values", {}).get("root_module", {}).get("child_modules", [])
     root_module_conf = template.get("configuration", {}).get("root_module", {})
     # Terraform supports modules within modules so we need to search
@@ -547,6 +639,18 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     )
     for block_type, resource_blocks in module_blocks.items():
         tf_definition[block_type].extend(resource_blocks)
+
+    # Process deleted resources that weren't in planned_values
+    # Note: Module resource addresses from planned_values are not explicitly tracked above.
+    # Based on Terraform's plan structure, resources in planned_values should not simultaneously
+    # appear as pure deletes, but the deduplication check handles any edge cases.
+    deleted_blocks = _process_deleted_resources(
+        template=template,
+        resource_changes=resource_changes,
+        processed_addresses=processed_addresses,
+    )
+    tf_definition["resource"].extend(deleted_blocks)
+
     return tf_definition, template_lines
 
 
