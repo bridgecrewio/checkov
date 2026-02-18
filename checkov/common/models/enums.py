@@ -68,6 +68,7 @@ class ParallelizationType(str, Enum):
     SPAWN = "spawn"
     THREAD = "thread"
     NONE = "none"
+    FORK_WITH_POOL = "fork_with_pool"
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
