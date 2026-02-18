@@ -292,6 +292,25 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="store_true",
         )
         self.add(
+            "--explain",
+            action="store_true",
+            default=False,
+            help="Enable rule explainer and visualization. Adds risk cause, impact surface, and fix examples to the output.",
+        )
+        self.add(
+            "--explain-lang",
+            choices=["en", "zh"],
+            default="en",
+            help="Select explanation language. Default is English (en). If Chinese (zh) is selected but not available, it will fall back to English.",
+        )
+        self.add(
+            "--html-report",
+            nargs="?",
+            const="./checkov_explain.html",
+            default=None,
+            help="Generate HTML report with rule explanations. Requires --explain flag. If no path is specified, the report will be saved to ./checkov_explain.html.",
+        )
+        self.add(
             "--soft-fail-on",
             help="Exits with a 0 exit code if only the specified items fail. Enter one or more items "
                  "separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC "
