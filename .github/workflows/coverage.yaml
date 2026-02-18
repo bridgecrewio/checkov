@@ -27,7 +27,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
