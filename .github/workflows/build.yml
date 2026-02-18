@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v3
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           version: "v3.19.1"
@@ -106,7 +106,7 @@ jobs:
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v3
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           version: "v3.19.1"
