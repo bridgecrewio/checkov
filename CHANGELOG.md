@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.500...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.504...HEAD)
+
+## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
+
+### Feature
+
+- **bicep:** bump pycep to support better bicep syntax - [#7441](https://github.com/bridgecrewio/checkov/pull/7441)
+- **terraform:** deprecate dotnet v6 and support v9 and v10 - [#7442](https://github.com/bridgecrewio/checkov/pull/7442)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
+
+## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
+
+### Bug Fix
+
+- **general:**  secret detection in build log files with line prefixes - [#7431](https://github.com/bridgecrewio/checkov/pull/7431)
 
 ## [3.2.500](https://github.com/bridgecrewio/checkov/compare/3.2.499...3.2.500) - 2026-02-01
 
