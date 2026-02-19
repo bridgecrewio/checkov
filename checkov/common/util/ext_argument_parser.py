@@ -377,7 +377,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--download-external-modules",
-            help="download external terraform modules from public git repositories and terraform registry",
+            help="download external terraform modules from public git repositories, terraform registry, and S3 buckets",
             default=None,
             env_var="DOWNLOAD_EXTERNAL_MODULES",
         )

@@ -533,12 +533,12 @@ def test_loader_equality():
 
 def test_multiple_similar_loaders():
     registry = ModuleLoaderRegistry(download_external_modules=True)
-    assert len(registry.loaders) == 7
+    assert len(registry.loaders) == 8
     GithubLoader()
     GithubLoader()
     GenericGitLoader()
     BitbucketLoader()
-    assert len(registry.loaders) == 7
+    assert len(registry.loaders) == 8
 
 @mock.patch.object(env_vars_config, 'CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES', True)
 def test_latest_tf_managed(tmp_path: Path):
