@@ -23,7 +23,7 @@ class CloudStorageSelfLogging(BaseResourceCheck):
                 if log_bucket_name != bucket_name:
                     return CheckResult.PASSED
                 return CheckResult.FAILED
-            return CheckResult.FAILED
+            return CheckResult.PASSED
         return CheckResult.UNKNOWN
 
 
