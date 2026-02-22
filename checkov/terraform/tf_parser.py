@@ -196,7 +196,7 @@ class TFParser:
             else:
                 files_to_parse.append(file)
 
-        results = list(parallel_runner.run_function(_load_file, files_to_parse)) if files_to_parse else []
+        results = [_load_file(f) for f in files_to_parse]
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)

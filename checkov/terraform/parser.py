@@ -6,7 +6,6 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, TYP
 
 import deep_merge
 
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -341,8 +340,8 @@ class Parser:
                 files_to_data.append((file.path, data))
             else:
                 files_to_parse.append(file)
-
-        results = list(parallel_runner.run_function(_load_file, files_to_parse)) if files_to_parse else []
+        
+        results = [_load_file(f) for f in files_to_parse]
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
