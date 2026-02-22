@@ -8,6 +8,7 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cas
 
 import deep_merge
 
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
@@ -96,7 +97,7 @@ class TFParser:
         default_ml_registry.download_external_modules = download_external_modules
         default_ml_registry.external_modules_folder_name = external_modules_download_path
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
-        load_tf_modules(directory)
+        load_tf_modules(directory, run_parallel=True)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
         self._update_resolved_modules()
         return self.out_definitions
@@ -195,7 +196,7 @@ class TFParser:
             else:
                 files_to_parse.append(file)
 
-        results = [_load_file(f) for f in files_to_parse]
+        results = list(parallel_runner.run_function(_load_file, files_to_parse)) if files_to_parse else []
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
             files_to_data.append(result)
