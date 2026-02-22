@@ -8,7 +8,6 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cas
 
 import deep_merge
 
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
