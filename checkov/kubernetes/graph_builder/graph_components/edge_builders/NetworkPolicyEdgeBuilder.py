@@ -7,9 +7,11 @@ from checkov.kubernetes.kubernetes_utils import remove_metadata_from_attribute
 
 class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
 
+    NETWORK_POLICY_KINDS = {"NetworkPolicy", "CiliumNetworkPolicy"}
+
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        return bool(vertex.attributes.get("kind") == "NetworkPolicy")
+        return vertex.attributes.get("kind") in NetworkPolicyEdgeBuilder.NETWORK_POLICY_KINDS
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
