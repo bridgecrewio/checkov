@@ -75,6 +75,14 @@ class RegistryLoader(ModuleLoader):
             if self._cache_available_versions(module_params):
                 module_params.best_version = self._find_best_version(module_params)
         if os.path.exists(module_params.dest_dir):
+            # If there's an inner module, return the path to the inner module directory
+            # instead of the base dest_dir. This fixes an issue where multiple modules
+            # from the same base source but different inner modules would all return
+            # the base directory, causing only the first module to be scanned.
+            # This issue only occurs on Linux because Windows uses MD5 hashes for paths,
+            # which creates unique directories for each full module source.
+            if module_params.inner_module:
+                return ModuleContent(dir=os.path.join(module_params.dest_dir, module_params.inner_module))
             return ModuleContent(dir=module_params.dest_dir)
         elif not module_params.tf_modules_endpoint:
             return ModuleContent(dir=None)
