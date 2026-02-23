@@ -44,7 +44,7 @@ jobs:
           pipenv run pip install "setuptools==78.1.1"
           pipenv install --dev -v
           # temporarily as a test
-          pipenv run pip install pytest==8.0.0 pytest-xdist
+          pipenv run pip install pytest==7.3.2 pytest-xdist
       - name: Check what dependencies are installed in the pipenv
         run: |
           pipenv run pip freeze
@@ -95,7 +95,7 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==8.0.0 pytest-xdist
+          pipenv run pip install pytest==7.3.2 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -151,7 +151,7 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==8.0.0 pytest-benchmark py
+          pipenv run pip install pytest==7.3.2 pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
@@ -199,7 +199,7 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==8.0.0 pytest-xdist
+          pipenv run pip install pytest==7.3.2 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Run dogfood tests
