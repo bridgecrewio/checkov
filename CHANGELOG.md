@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.504...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.505...HEAD)
+
+## [3.2.505](https://github.com/bridgecrewio/checkov/compare/3.2.504...3.2.505) - 2026-02-22
+
+### Feature
+
+- **bicep:** revert bump pycep to support better bicep syntax - [#7446](https://github.com/bridgecrewio/checkov/pull/7446)
 
 ## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
 
