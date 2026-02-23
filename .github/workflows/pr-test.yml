@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"]
+        python: ["3.9", "3.14"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -40,7 +40,8 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install "setuptools==81.0.0"
+          # setuptools pinned for Python 3.9 compatibility
+          pipenv run pip install "setuptools==78.1.1"
           pipenv install --dev -v
       - name: Unit tests
         env:
@@ -52,7 +53,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"] 
+        python: ["3.9", "3.14"] 
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -80,7 +81,8 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install "setuptools==81.0.0"
+          # setuptools pinned for Python 3.9 compatibility
+          pipenv run pip install "setuptools==78.1.1"
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -106,7 +108,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9"]
+        python: ["3.9", "3.14"]
     env:
       working-directory: ./performance_tests
     runs-on: [ubuntu-latest]
@@ -133,9 +135,10 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
+          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install "setuptools==81.0.0"
+          # setuptools pinned for Python 3.9 compatibility
+          pipenv run pip install "setuptools==78.1.1"
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -182,7 +185,8 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ env.PYTHON_VERSION }}  
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install "setuptools==81.0.0"
+          # setuptools pinned for Python 3.9 compatibility
+          pipenv run pip install "setuptools==78.1.1"
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
