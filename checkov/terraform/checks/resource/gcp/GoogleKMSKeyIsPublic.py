@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -52,6 +52,9 @@ class GoogleKMSKeyIsPublic(BaseResourceCheck):
             return CheckResult.PASSED
 
         return CheckResult.UNKNOWN
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['member', 'members', 'policy_data']
 
 
 check = GoogleKMSKeyIsPublic()
