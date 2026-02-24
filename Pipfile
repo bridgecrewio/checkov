@@ -7,7 +7,7 @@ verify_ssl = true
 #
 # REMINDER: Update "dev" deps on setup.py when changing
 #
-pytest = "==7.4.4"
+pytest = "*"
 pytest-xdist = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"

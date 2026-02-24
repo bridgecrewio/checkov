@@ -56,7 +56,7 @@ setup(
     ],
     extras_require={
         "dev": [
-            "pytest==7.4.4",
+            "pytest==5.3.1",
             "coverage==5.5",
             "coverage-badge",
             "GitPython==3.1.41",
