@@ -14,7 +14,7 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.9", "3.14"]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
@@ -41,10 +41,10 @@ jobs:
           pipenv --python ${{ matrix.python }}
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
-          pipenv run pip install "setuptools==78.1.1"
+          pipenv run pip install "setuptools==81.0.0"
           pipenv install --dev -v
           # temporarily as a test
-          pipenv run pip install pytest==7.3.2 pytest-xdist
+          pipenv run pip install pytest==7.4.4 pytest-xdist
       - name: Check what dependencies are installed in the pipenv
         run: |
           pipenv run pip freeze
@@ -65,9 +65,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9", "3.14"] 
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        python: ["3.9", "3.14"]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
@@ -94,8 +93,8 @@ jobs:
           pipenv --python ${{ matrix.python }}
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
-          pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==7.3.2 pytest-xdist
+          pipenv run pip install "setuptools==81.0.0"
+          pipenv run pip install pytest==7.4.4 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -150,8 +149,8 @@ jobs:
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
-          pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==7.3.2 pytest-benchmark py
+          pipenv run pip install "setuptools==81.0.0"
+          pipenv run pip install pytest==7.4.4 pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
@@ -198,8 +197,8 @@ jobs:
           pipenv --python ${{ env.PYTHON_VERSION }}  
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
-          pipenv run pip install "setuptools==78.1.1"
-          pipenv run pip install pytest==7.3.2 pytest-xdist
+          pipenv run pip install "setuptools==81.0.0"
+          pipenv run pip install pytest==7.4.4 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Run dogfood tests
