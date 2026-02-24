@@ -4,9 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
+pytest = ">=7,<8"
 pytest-xdist = "*"
-pytest-asyncio = "*"
+pytest-asyncio = ">=0.21,<0.24"
 pytest-cov = "*"
 pytest-mock = "*"
 mock = "*"
