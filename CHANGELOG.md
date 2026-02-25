@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.501...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.506...HEAD)
+
+## [3.2.506](https://github.com/bridgecrewio/checkov/compare/3.2.505...3.2.506) - 2026-02-23
+
+### Bug Fix
+
+- **terraform:** return inner module path when dest_dir already exists on Linux - [#7436](https://github.com/bridgecrewio/checkov/pull/7436)
+
+## [3.2.505](https://github.com/bridgecrewio/checkov/compare/3.2.504...3.2.505) - 2026-02-22
+
+### Feature
+
+- **bicep:** revert bump pycep to support better bicep syntax - [#7446](https://github.com/bridgecrewio/checkov/pull/7446)
+
+## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
+
+### Feature
+
+- **bicep:** bump pycep to support better bicep syntax - [#7441](https://github.com/bridgecrewio/checkov/pull/7441)
+- **terraform:** deprecate dotnet v6 and support v9 and v10 - [#7442](https://github.com/bridgecrewio/checkov/pull/7442)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
 
 ## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
 
