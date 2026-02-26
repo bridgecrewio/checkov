@@ -340,7 +340,7 @@ class Parser:
                 files_to_data.append((file.path, data))
             else:
                 files_to_parse.append(file)
-        
+
         results = [_load_file(f) for f in files_to_parse]
         for result, parsing_errors in results:
             self.out_parsing_errors.update(parsing_errors)
