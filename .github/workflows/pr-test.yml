@@ -139,6 +139,7 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
+          pipenv run pip sync --dev
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
@@ -186,6 +187,7 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
+          pipenv run pip sync --dev
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Run dogfood tests
