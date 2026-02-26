@@ -354,19 +354,12 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         self.runner_filter = runner_filter
         self.target_folder_path = tempfile.mkdtemp()
         chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, runner_filter)
+        chart_items = [
+            (chart_item, self.root_folder, self.target_folder_path, self.helm_command, runner_filter, self.template_mapping)
+            for chart_item in chart_dir_and_meta
+        ]
 
-        list(
-            parallel_runner.run_function(
-                lambda cd: Runner._convert_chart_to_k8s(
-                    chart_item=cd,
-                    root_folder=self.root_folder,
-                    target_folder_path=self.target_folder_path,
-                    helm_command=self.helm_command,
-                    runner_filter=runner_filter,
-                ),
-                chart_dir_and_meta,
-            )
-        )
+        list(parallel_runner.run_function(func=Runner._convert_chart_to_k8s, items=chart_items))
         return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
     def run(
