@@ -357,8 +357,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         list(
             parallel_runner.run_function(
-                lambda chart_dir, meta: Runner._convert_chart_to_k8s(
-                    chart_item=(chart_dir, meta),
+                lambda cd: Runner._convert_chart_to_k8s(
+                    chart_item=cd,
                     root_folder=self.root_folder,
                     target_folder_path=self.target_folder_path,
                     helm_command=self.helm_command,
