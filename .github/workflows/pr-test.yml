@@ -43,18 +43,9 @@ jobs:
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
           pipenv install --dev -v
-          # temporarily as a test
-          pipenv run pip install pytest==7.4.4 pytest-xdist
       - name: Check what dependencies are installed in the pipenv
         run: |
-          pipenv run pip freeze
           pipenv run pip list
-          pipenv run pip show pytest
-          pipenv run pip show pytest-xdist
-          pipenv run pip show setuptools
-          pipenv run pip show websocket-client
-          pipenv run pip show boto3
-          pipenv run pip show gitpython
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -94,7 +85,6 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
-          pipenv run pip install pytest==7.4.4 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -146,11 +136,9 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
-          pipenv run pip install pytest==7.4.4 pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
@@ -198,7 +186,6 @@ jobs:
           pipenv run pip install websocket-client==1.9.0
           # setuptools pinned for Python 3.9 compatibility
           pipenv run pip install "setuptools==81.0.0"
-          pipenv run pip install pytest==7.4.4 pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Run dogfood tests
