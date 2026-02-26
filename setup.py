@@ -100,7 +100,7 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonschema<5.0.0,>=4.6.0",
-        "prettytable==3.16.0",
+        "prettytable>=3.0.0",
         "pycep-parser==0.6.1",
         "charset-normalizer",
         "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
