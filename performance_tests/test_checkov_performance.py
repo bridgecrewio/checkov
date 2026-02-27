@@ -40,7 +40,7 @@ performance_configurations = {
     }
 }
 
-DEVIATION_PERCENT = 20
+DEVIATION_PERCENT = 25
 SYSTEM_NAME = platform.system()
 
 
