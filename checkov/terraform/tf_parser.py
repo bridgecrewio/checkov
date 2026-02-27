@@ -98,7 +98,7 @@ class TFParser:
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         
         run_parallel = os.getenv("AIKIDO_PARALLELIZE_TERRAFORM_MODULE_LOADER", "").lower() == "true"
-        load_tf_modules(directory)
+        load_tf_modules(directory, run_parallel=run_parallel)
 
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
         self._update_resolved_modules()

@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.14"]
+        python: ["3.9", "3.14"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.14"]
+        python: ["3.9", "3.14"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.14"]
+        python: ["3.9", "3.14"]
     env:
       working-directory: ./performance_tests
     runs-on: [ubuntu-latest]
@@ -150,15 +150,18 @@ jobs:
         working-directory: ${{ env.working-directory }}
 
   dogfood-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.9", "3.14"]
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.14"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
@@ -175,7 +178,7 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --rm || true
-          pipenv --python ${{ env.PYTHON_VERSION }}
+          pipenv --python ${{ matrix.python }}
           pipenv sync --dev
           pipenv run pip install websocket-client==1.9.0
           pipenv run python setup.py sdist bdist_wheel
