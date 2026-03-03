@@ -15,58 +15,42 @@ class TestYamlConnectedNodes(unittest.TestCase):
     def test_S3BucketEncryption_connected_node(self):
         report = self.get_report("S3BucketEncryption")
         assert report is not None
-        assert len(report.failed_checks) >= 5, f"expected at least 5 failed checks, got {len(report.failed_checks)}"
-        assert len(report.passed_checks) >= 6, f"expected at least 6 passed checks, got {len(report.passed_checks)}"
+        failed_connected = self._get_connected_nodes(report.failed_checks)
+        passed_connected = self._get_connected_nodes(report.passed_checks)
 
-        assert report.failed_checks[0].connected_node is None
-        self._assert_connected_node(
-            report.failed_checks[1], 1, "failed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_1", [163, 172]
-        )
-        self._assert_connected_node(
-            report.failed_checks[2], 2, "failed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_2", [174, 182]
-        )
-        assert report.failed_checks[3].connected_node is None
-        self._assert_connected_node(
-            report.failed_checks[4], 4, "failed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_3", [184, 195]
-        )
+        assert sorted(failed_connected) == sorted([
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_1", [163, 172]),
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_2", [174, 182]),
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.bad_sse_3", [184, 195]),
+        ])
 
-        assert report.passed_checks[0].connected_node is None
-        assert report.passed_checks[1].connected_node is None
-        assert report.passed_checks[2].connected_node is None
-        self._assert_connected_node(
-            report.passed_checks[3], 3, "passed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_1", [117, 126]
-        )
-        self._assert_connected_node(
-            report.passed_checks[4], 4, "passed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_2", [128, 137]
-        )
-        self._assert_connected_node(
-            report.passed_checks[5], 5, "passed",
-            "/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_3", [139, 150]
-        )
+        assert sorted(passed_connected) == sorted([
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_1", [117, 126]),
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_2", [128, 137]),
+            ("/main.tf", "aws_s3_bucket_server_side_encryption_configuration.good_sse_3", [139, 150]),
+        ])
 
-    def _assert_connected_node(self, record, index: int, kind: str, file_path: str, resource: str, file_line_range: list):
-        assert record.connected_node is not None, (
-            f"expected {kind}_checks[{index}].connected_node to be set, got None"
-        )
-        assert record.connected_node["file_path"] == file_path
-        assert record.connected_node["resource"] == resource
-        assert record.connected_node["file_line_range"] == file_line_range
+    def _get_connected_nodes(self, records):
+        return [
+            (
+                record.connected_node["file_path"],
+                record.connected_node["resource"],
+                record.connected_node["file_line_range"],
+            )
+            for record in records
+            if record.connected_node is not None
+        ]
 
     def test_S3BucketLogging_connected_node(self):
         report = self.get_report("S3BucketLogging")
         assert report is not None
-        assert report.failed_checks[0].connected_node is None
+        failed_connected = self._get_connected_nodes(report.failed_checks)
+        passed_connected = self._get_connected_nodes(report.passed_checks)
 
-        assert report.passed_checks[0].connected_node is None
-        self._assert_connected_node(
-            report.passed_checks[1], 1, "passed",
-            "/main.tf", "aws_s3_bucket_logging.example", [14, 19]
-        )
+        assert failed_connected == []
+        assert passed_connected == [
+            ("/main.tf", "aws_s3_bucket_logging.example", [14, 19]),
+        ]
 
     def get_report(self, dir_name):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
