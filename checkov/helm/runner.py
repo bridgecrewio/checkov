@@ -161,7 +161,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             oString = str(o, 'utf-8')
             if "Version:" in oString:
                 helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
-                if helmVersionOutput in ("v3", "v4"):
+                if any(helmVersionOutput.startswith(s) for s in ("v3.", "v4.")):
                     logging.info(f"Found working version of {self.check_type} dependencies: {helmVersionOutput}")
                     return None
             else:
@@ -169,6 +169,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         except Exception as e:
             logging.info(f"Error running necessary tools to process {self.check_type} checks.")
             logging.debug(e)
+            raise
         return self.check_type
 
     @staticmethod

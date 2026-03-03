@@ -233,10 +233,12 @@ class TestRunnerValid(unittest.TestCase):
 
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_check_system_deps(self):
-        self.assertIsNone(Runner().check_system_deps())
+        o = Runner().check_system_deps()
+        assert o == None
         r = Runner()
-        r.helm_command = 'thisshouldfail'
-        self.assertRaises(Exception, r.check_system_deps())
+        with self.assertRaises(Exception):
+            r.helm_command = 'thisshouldfail'
+            r.check_system_deps()
 
 if __name__ == "__main__":
     unittest.main()
