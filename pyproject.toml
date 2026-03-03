@@ -136,3 +136,8 @@ forbidden_modules = [
 [tool.pytest.ini_options]
 addopts = "-n 2 --dist loadfile"
 
+[dependency-groups]
+dev = [
+    "setuptools>=82.0.0",
+]
+

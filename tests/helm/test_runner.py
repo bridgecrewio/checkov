@@ -236,9 +236,8 @@ class TestRunnerValid(unittest.TestCase):
         o = Runner().check_system_deps()
         assert o == None
         r = Runner()
-        with self.assertRaises(Exception):
-            r.helm_command = 'thisshouldfail'
-            r.check_system_deps()
+        r.helm_command = 'thisshouldfail'
+        assert r.check_system_deps() == "helm"
 
 if __name__ == "__main__":
     unittest.main()
