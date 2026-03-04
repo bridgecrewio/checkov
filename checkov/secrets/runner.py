@@ -6,8 +6,11 @@ import logging
 import os
 import re
 import tempfile
+import threading
+from contextlib import contextmanager
+from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tuple, Callable
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tuple, Callable, Generator
 from collections import defaultdict
 
 import requests
@@ -22,7 +25,6 @@ from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -85,6 +87,61 @@ SPECIFIC_AWS_CHECK_IDS = {'CKV_SECRET_380', 'CKV_SECRET_381'}
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
+
+# ── BCE-56937: thread-safe replacement for transient_settings ─────────────────
+_detect_secrets_settings_lock = threading.Lock()
+
+
+@contextmanager
+def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', None, None]:
+    """Thread-safe replacement for detect_secrets.settings.transient_settings.
+
+    The original transient_settings calls cache_bust() which clears the
+    get_settings() LRU cache, creating a race window where get_settings()
+    returns a fresh empty Settings() object. Sub-threads can then cache
+    a corrupted (empty) plugin mapping, resulting in 0 findings.
+
+    This implementation never clears get_settings() from the LRU cache.
+    Instead it modifies the Settings singleton in-place and only clears
+    the dependent caches (get_plugins, get_filters,
+    get_mapping_from_secret_type_to_class).
+
+    The lock is held only for microseconds during setup and teardown —
+    never during the actual scan — so there is no performance impact.
+    """
+    from detect_secrets.settings import (
+        get_settings,
+        configure_settings_from_baseline,
+        get_plugins,
+        get_filters,
+    )
+    from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
+
+    with _detect_secrets_settings_lock:
+        settings = get_settings()
+        original_plugins = deepcopy(dict(settings.plugins))
+        original_filters = deepcopy(dict(settings.filters))
+
+        # Clear ONLY the dependent caches — NOT get_settings itself.
+        # This is the key difference from the original transient_settings:
+        # the singleton object is never evicted from the LRU cache.
+        get_plugins.cache_clear()
+        get_filters.cache_clear()
+        get_mapping_from_secret_type_to_class.cache_clear()
+
+        settings.clear()
+        configure_settings_from_baseline(config)
+
+    # Lock released — scan runs freely here with no contention
+    try:
+        yield settings
+    finally:
+        with _detect_secrets_settings_lock:
+            get_plugins.cache_clear()
+            get_filters.cache_clear()
+            get_mapping_from_secret_type_to_class.cache_clear()
+            settings.plugins = original_plugins
+            settings.filters = original_filters
 
 
 def should_filter_vault_secret(secret_value: str, check_id: str) -> bool:
@@ -259,7 +316,7 @@ class Runner(BaseRunner[None, None, None]):
         if runner_filter.enable_git_history_secret_scan:
             git_history_scanner = GitHistoryScanner(str(root_folder), secrets, self.history_secret_store, runner_filter.git_history_timeout)
 
-        with transient_settings({
+        with _thread_safe_transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
         }) as settings:
@@ -760,7 +817,7 @@ class Runner(BaseRunner[None, None, None]):
 
         self._add_custom_detectors_to_metadata_integration()
         secrets = SecretsCollection()
-        with transient_settings({
+        with _thread_safe_transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
         }) as settings:
