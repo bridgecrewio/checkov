@@ -15,6 +15,13 @@ from collections import defaultdict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
+from detect_secrets.settings import (
+    get_settings,
+    configure_settings_from_baseline,
+    get_plugins,
+    get_filters,
+)
+from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -109,14 +116,6 @@ def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', 
     The lock is held only for microseconds during setup and teardown —
     never during the actual scan — so there is no performance impact.
     """
-    from detect_secrets.settings import (
-        get_settings,
-        configure_settings_from_baseline,
-        get_plugins,
-        get_filters,
-    )
-    from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
-
     with _detect_secrets_settings_lock:
         settings = get_settings()
         original_plugins = deepcopy(dict(settings.plugins))
