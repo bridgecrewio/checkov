@@ -45,7 +45,6 @@ class TFParser:
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map: dict[str, dict[str, list[dict[str, Any]]] | None] = {}
         self.external_variables_data: list[tuple[str, Any, str]] = []
-        self.module_dir_cache: dict[str, dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]] = {}
 
     def _init(self, directory: str,
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None,
@@ -70,7 +69,6 @@ class TFParser:
         self.visited_definition_keys: set[TFDefinitionKey] = set()
         self.module_to_resolved: dict[tuple[TFDefinitionKey | None, str], list[TFDefinitionKey]] = {}
         self.keys_to_remove: set[TFDefinitionKey] = set()
-        self.module_dir_cache.clear()
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -259,41 +257,23 @@ class TFParser:
                         content_path = self.get_content_path(module_loader_registry, root_dir, source, version)
                         if not content_path:
                             continue
+                        new_nested_modules_data = {'module_name': module_call_name, 'file': file, 'nested_modules_data': nested_modules_data}
+                        self._internal_dir_load(
+                            directory=content_path,
+                            module_loader_registry=module_loader_registry,
+                            dir_filter=dir_filter, specified_vars=specified_vars,
+                            keys_referenced_as_modules=keys_referenced_as_modules,
+                            nested_modules_data=new_nested_modules_data
+                        )
 
-                        # reuse cached module directory definitions when possible to avoid
-                        # re-processing the same module source directory for many calls
-                        base_module_definitions = self.module_dir_cache.get(content_path)
-                        if base_module_definitions is None:
-                            new_nested_modules_data = {
-                                'module_name': module_call_name,
-                                'file': file,
-                                'nested_modules_data': nested_modules_data,
-                            }
-                            self._internal_dir_load(
-                                directory=content_path,
-                                module_loader_registry=module_loader_registry,
-                                dir_filter=dir_filter,
-                                specified_vars=specified_vars,
-                                keys_referenced_as_modules=keys_referenced_as_modules,
-                                nested_modules_data=new_nested_modules_data,
-                            )
-
-                            base_module_definitions = {
-                                path: definition
-                                for path, definition in self.out_definitions.items()
-                                if self.get_dirname(path) == content_path and not path.tf_source_modules
-                            }
-                            # store a deep copy so later mutations to out_definitions
-                            # don't affect the cached snapshot
-                            base_module_definitions = pickle_deepcopy(base_module_definitions)
-                            self.module_dir_cache[content_path] = base_module_definitions
-
-                        if not base_module_definitions:
+                        module_definitions = {
+                            path: definition
+                            for path, definition in self.out_definitions.items()
+                            if self.get_dirname(path) == content_path and not path.tf_source_modules
+                        }
+                        if not module_definitions:
                             continue
 
-                        # work on a shallow copy so we can mutate per-call without
-                        # touching the cached base definitions
-                        module_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]] = dict(base_module_definitions)
                         keys = list(module_definitions.keys())
                         for key in keys:
                             if not self.should_process_key(key, file):
@@ -301,9 +281,13 @@ class TFParser:
                             keys_referenced_as_modules.add(key)
                             new_key = self.get_new_nested_module_key(key, file, module_call_name, nested_modules_data)
                             if new_key in self.visited_definition_keys:
+                                del module_definitions[key]
+                                del self.out_definitions[key]
                                 continue
 
                             module_definitions[new_key] = module_definitions[key]
+                            del module_definitions[key]
+                            del self.out_definitions[key]
                             self.keys_to_remove.add(key)
 
                             self.visited_definition_keys.add(new_key)
