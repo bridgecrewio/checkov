@@ -1,6 +1,9 @@
 name: PR Test
 
-on: pull_request
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 permissions:
   contents: read
@@ -10,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"]
+        python: ["3.9", "3.14"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -36,19 +39,22 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+          pipenv run python -m pip install --upgrade pip "setuptools==81.0.0"
           pipenv run pip install websocket-client==1.9.0
           pipenv install --dev -v
+      - name: Check what dependencies are installed in the pipenv
+        run: |
+          pipenv run pip list
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pipenv run python -m pytest tests -q --tb=short --show-capture=no
-
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.9"] 
+        python: ["3.9", "3.14"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -72,13 +78,12 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
-          # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+          pipenv sync --dev
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          pipenv run pip install dist/checkov-*.whl
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -92,16 +97,15 @@ jobs:
           LOG_LEVEL: INFO
         run: |
           # Just making sure the API key tests don't run on PRs
-          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.9'
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.14'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
-
   performance-tests:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9"]
+        python: ["3.9", "3.14"]
     env:
       working-directory: ./performance_tests
     runs-on: [ubuntu-latest]
@@ -125,14 +129,13 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
-          # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
+          pipenv sync --dev
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install pytest pytest-benchmark py
+          pipenv run pip install pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          pipenv run pip install dist/checkov-*.whl
       - name: Clone terraform-aws-components
         run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
         working-directory: ${{ env.working-directory }}
@@ -143,20 +146,22 @@ jobs:
         run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
         working-directory: ${{ env.working-directory }}
       - name: Run performance tests
-        run: |
-          pipenv run pytest
+        run: pipenv run pytest
         working-directory: ${{ env.working-directory }}
 
   dogfood-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.9", "3.14"]
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.9"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
@@ -172,14 +177,12 @@ jobs:
 
       - name: Build & install checkov package
         run: |
-          # remove venv, if exists
           pipenv --rm || true
-          pipenv --python ${{ env.PYTHON_VERSION }}  
+          pipenv --python ${{ matrix.python }}
+          pipenv sync --dev
           pipenv run pip install websocket-client==1.9.0
-          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          pipenv run pip install dist/checkov-*.whl
       - name: Run dogfood tests
-        run: |
-          pipenv run pytest
+        run: pipenv run pytest
         working-directory: ${{ env.WORKING_DIRECTORY }}

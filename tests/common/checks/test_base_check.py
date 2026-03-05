@@ -1,5 +1,6 @@
 import os
 import unittest
+from textwrap import dedent
 
 import mock
 from parameterized import parameterized
@@ -74,11 +75,15 @@ class TestBaseCheck(unittest.TestCase):
         # noinspection PyArgumentList
         scan_result = check.scan_entity_conf({}, "Some name")
         self.assertEqual(CheckResult.PASSED, scan_result)
-        self.assertEqual(check.scan_entity_conf.__doc__, """
-        My documentation
-        :param conf:
-        :return:
-        """)
+        # Compare normalized docstring so indentation (e.g. 4 vs 8 spaces) does not vary by env
+        self.assertEqual(
+            dedent(check.scan_entity_conf.__doc__ or "").strip(),
+            dedent("""
+                My documentation
+                :param conf:
+                :return:
+            """).strip(),
+        )
 
     def test_invalid_signature_is_detected(self):
         with self.assertRaises(NotImplementedError) as context:

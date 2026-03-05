@@ -36,7 +36,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                 continue
 
             try:
-                content = read_file_with_any_encoding(file_path=os.path.join(path, root, file_name))
+                content = read_file_with_any_encoding(file_path=os.path.join(root, file_name))
                 if "module " not in content:
                     # if there is no "module " ref in the whole file, then no need to search line by line
                     continue
