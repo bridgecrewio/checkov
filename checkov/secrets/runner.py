@@ -95,7 +95,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
-# ── BCE-56937: thread-safe replacement for transient_settings ─────────────────
+# ── thread-safe replacement for transient_settings ─────────────────
 _detect_secrets_settings_lock = threading.Lock()
 
 
