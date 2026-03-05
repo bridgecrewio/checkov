@@ -100,7 +100,7 @@ _detect_secrets_settings_lock = threading.Lock()
 
 
 @contextmanager
-def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', None, None]:
+def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator[Any, None, None]:
     """Thread-safe replacement for detect_secrets.settings.transient_settings.
 
     The original transient_settings calls cache_bust() which clears the
@@ -147,7 +147,7 @@ def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', 
         mapping = get_mapping_from_secret_type_to_class()
         plugins = get_plugins()
         logging.debug(
-            f"_thread_safe_transient_settings v2 (with pre-warming): settings_id={id(settings)} plugins_count={len(plugins)} mapping_count={len(mapping)} thread={__import__('threading').current_thread().name}")
+            f"_thread_safe_transient_settings (with pre-warming): settings_id={id(settings)} plugins_count={len(plugins)} mapping_count={len(mapping)} thread={__import__('threading').current_thread().name}")
 
     # Lock released — scan runs freely here with warm, stable caches
     try:
