@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from typing import List
 
 
-class EKSControlPlaneLogging(BaseResourceCheck):
+class EKSControlPlaneLogging(BaseResourceCheck): 
     def __init__(self):
         name = "Ensure Amazon EKS control plane logging enabled for all log types"
         id = "CKV_AWS_37"
