@@ -31,7 +31,17 @@ class EKSControlPlaneLogging(BaseResourceCheck):
                 if cluster_logging and isinstance(cluster_logging, dict):
                     enabled_types = cluster_logging.get("EnabledTypes")
                     if enabled_types and isinstance(enabled_types, list):
-                        if all(elem in enabled_types for elem in log_types):
+                        # This normalizes the type, as either a dict or a list of strings could be passed down to `EnabledTypes`
+                        normalized: list[str] = []
+                        for t in enabled_types:
+                            if isinstance(t, str):
+                                normalized.append(t)
+                            elif isinstance(t, dict):
+                                type_value = t.get("Type")
+                                if isinstance(type_value, str):
+                                    normalized.append(type_value)
+
+                        if all(elem in normalized for elem in log_types):
                             return CheckResult.PASSED
         
         # By default, no logging is enabled
