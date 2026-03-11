@@ -1,6 +1,55 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.499...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.508...HEAD)
+
+## [3.2.508](https://github.com/bridgecrewio/checkov/compare/3.2.507...3.2.508) - 2026-03-08
+
+### Bug Fix
+
+- **secrets:** eliminate race condition in secrets scanner when running concurrently with other scanners - [#7456](https://github.com/bridgecrewio/checkov/pull/7456)
+
+## [3.2.507](https://github.com/bridgecrewio/checkov/compare/3.2.506...3.2.507) - 2026-03-05
+
+### Bug Fix
+
+- **secrets:** add _thread_safe_transient_settings( to secret runner - [#7455](https://github.com/bridgecrewio/checkov/pull/7455)
+
+## [3.2.506](https://github.com/bridgecrewio/checkov/compare/3.2.505...3.2.506) - 2026-02-23
+
+### Bug Fix
+
+- **terraform:** return inner module path when dest_dir already exists on Linux - [#7436](https://github.com/bridgecrewio/checkov/pull/7436)
+
+## [3.2.505](https://github.com/bridgecrewio/checkov/compare/3.2.504...3.2.505) - 2026-02-22
+
+### Feature
+
+- **bicep:** revert bump pycep to support better bicep syntax - [#7446](https://github.com/bridgecrewio/checkov/pull/7446)
+
+## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
+
+### Feature
+
+- **bicep:** bump pycep to support better bicep syntax - [#7441](https://github.com/bridgecrewio/checkov/pull/7441)
+- **terraform:** deprecate dotnet v6 and support v9 and v10 - [#7442](https://github.com/bridgecrewio/checkov/pull/7442)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
+
+## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
+
+### Bug Fix
+
+- **general:**  secret detection in build log files with line prefixes - [#7431](https://github.com/bridgecrewio/checkov/pull/7431)
+
+## [3.2.500](https://github.com/bridgecrewio/checkov/compare/3.2.499...3.2.500) - 2026-02-01
+
+### Bug Fix
+
+- **cloudformation:** render variables in cfn vertices config - [#7423](https://github.com/bridgecrewio/checkov/pull/7423)
 
 ## [3.2.499](https://github.com/bridgecrewio/checkov/compare/3.2.497...3.2.499) - 2026-01-25
 
