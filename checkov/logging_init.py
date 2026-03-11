@@ -4,11 +4,14 @@ from io import StringIO
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 
-LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
+FALLBACK_LOG_LEVEL = logging.WARNING
+
+LOG_LEVEL = os.getenv('LOG_LEVEL', logging.getLevelName(FALLBACK_LOG_LEVEL)).upper()
 try:
     logging.basicConfig(level=LOG_LEVEL)
 except (ValueError, TypeError):
-    logging.basicConfig(level='WARNING')
+    LOG_LEVEL = FALLBACK_LOG_LEVEL
+    logging.basicConfig(level=LOG_LEVEL)
 log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 root_logger = logging.getLogger()
 add_resource_code_filter_to_logger(root_logger)
