@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 from unittest import TestCase, mock
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -396,6 +397,105 @@ class TestGraphBuilder(TestCase):
         common_prefix_2 = tf_plan_local_graph._get_common_prefix_name(origin_module_name, vertex_module_name_2, origin_path)
         assert(common_prefix_1 == 'modules_edges_tfplan/tfplan.json module.test.test.s3-bucket-1')
         assert(common_prefix_2 == 'modules_edges_tfplan/tfplan.json module.test')
+
+
+class TestModuleOutputConnection(TestCase):
+    """
+    Detect connections between resources when one resource references another through a module output.
+    When a resource, references another resource via a module output.
+
+    Expected Behavior:
+    - Edge should exist: policy -> output
+    - Edge should exist: policy -> table (traced through output)
+    """
+
+    def setUp(self) -> None:
+        self.source = "TERRAFORM"
+        self.resources_dir = os.path.realpath(
+            os.path.join(Path(__file__).parent.parent, 'resources', 'graph_files_test', 'module_output_connection_test')
+        )
+
+    def test_module_output_connection(self):
+        """
+        Test connection between aws_dynamodb_resource_policy and aws_dynamodb_table when they're
+        in different modules and connected via module output.
+        """
+        # Build the graph
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            self.resources_dir,
+            render_variables=True
+        )
+
+        # Find the vertices
+        policy_vertex = None
+        table_vertex = None
+        output_vertex = None
+
+        for vertex in local_graph.vertices:
+            if vertex.block_type == BlockType.RESOURCE and 'aws_dynamodb_resource_policy' in vertex.name:
+                policy_vertex = vertex
+            elif vertex.block_type == BlockType.RESOURCE and 'aws_dynamodb_table' in vertex.name:
+                table_vertex = vertex
+            elif vertex.block_type == BlockType.OUTPUT and 'table_arn' in vertex.name:
+                output_vertex = vertex
+
+        # Verify vertices were found
+        self.assertIsNotNone(policy_vertex, "aws_dynamodb_resource_policy vertex not found")
+        self.assertIsNotNone(table_vertex, "aws_dynamodb_table vertex not found")
+        self.assertIsNotNone(output_vertex, "table_arn output vertex not found")
+
+        policy_idx = local_graph.vertices.index(policy_vertex)
+        table_idx = local_graph.vertices.index(table_vertex)
+        output_idx = local_graph.vertices.index(output_vertex)
+
+        # Check edge from policy to output (this should exist)
+        policy_to_output_edge_exists = any(
+            edge.origin == policy_idx and edge.dest == output_idx
+            for edge in local_graph.edges
+        )
+        self.assertTrue(
+            policy_to_output_edge_exists,
+            "Edge from policy to output should exist"
+        )
+
+        # Check edge from policy to table
+        policy_to_table_edge_exists = any(
+            edge.origin == policy_idx and edge.dest == table_idx
+            for edge in local_graph.edges
+        )
+
+        self.assertTrue(
+            policy_to_table_edge_exists,
+            "BUG: Edge from policy to table should exist (traced through output), but it doesn't. "
+            "The graph builder creates an edge to the OUTPUT block but doesn't follow the output's "
+            "value back to the actual resource (aws_dynamodb_table)."
+        )
+
+    def test_module_output_connection_details(self):
+        """
+        Additional test to examine the graph structure in detail.
+        This helps understand what edges are actually created.
+        """
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            self.resources_dir,
+            render_variables=True
+        )
+
+        # Find relevant vertices
+        policy_edges = []
+        for edge in local_graph.edges:
+            origin_vertex = local_graph.vertices[edge.origin]
+            if 'aws_dynamodb_resource_policy' in origin_vertex.name:
+                dest_vertex = local_graph.vertices[edge.dest]
+                policy_edges.append((origin_vertex.name, edge.label, dest_vertex.name, dest_vertex.block_type))
+
+        # We should see an edge to aws_dynamodb_table, but we only see edge to output
+        self.assertTrue(
+            len(policy_edges) > 0,
+            "Policy should have at least one outgoing edge"
+        )
 
 
 def build_new_key_for_tf_definition(key):
