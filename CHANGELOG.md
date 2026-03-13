@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.506...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.508...HEAD)
+
+## [3.2.508](https://github.com/bridgecrewio/checkov/compare/3.2.507...3.2.508) - 2026-03-08
+
+### Bug Fix
+
+- **secrets:** eliminate race condition in secrets scanner when running concurrently with other scanners - [#7456](https://github.com/bridgecrewio/checkov/pull/7456)
+
+## [3.2.507](https://github.com/bridgecrewio/checkov/compare/3.2.506...3.2.507) - 2026-03-05
+
+### Bug Fix
+
+- **secrets:** add _thread_safe_transient_settings( to secret runner - [#7455](https://github.com/bridgecrewio/checkov/pull/7455)
 
 ## [3.2.506](https://github.com/bridgecrewio/checkov/compare/3.2.505...3.2.506) - 2026-02-23
 
