@@ -54,7 +54,9 @@ class Record:
         connected_node: Optional[Dict[str, Any]] = None,
         details: Optional[List[str]] = None,
         check_len: int | None = None,
-        definition_context_file_path: Optional[str] = None
+        definition_context_file_path: Optional[str] = None,
+        explain: Optional[Dict[str, Any]] = None,
+        explain_lang: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -90,6 +92,8 @@ class Record:
         self.details: List[str] = details or []
         self.check_len = check_len
         self.definition_context_file_path = definition_context_file_path
+        self.explain = explain
+        self.explain_lang = explain_lang
 
     @staticmethod
     @lru_cache(maxsize=None)
@@ -216,13 +220,25 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
 
+        # 添加规则解释信息
+        explain_message = ""
+        if self.explain:
+            explain = self.explain
+            explain_message += colored("\tRule Explanation:\n", "cyan")
+            if "risk_cause" in explain:
+                explain_message += f"\t\tRisk Cause: {explain['risk_cause']}\n"
+            if "impact" in explain:
+                explain_message += f"\t\tImpact: {explain['impact']}\n"
+            if "fix_example" in explain:
+                explain_message += f"\t\tFix Example: {explain['fix_example']}\n"
+
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{explain_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}{explain_message}"
         else:
-            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}{explain_message}"
 
     def __str__(self) -> str:
         return self.to_string()

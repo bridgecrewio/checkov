@@ -418,6 +418,58 @@ class RunnerRegistry:
             pass
 
         data_outputs: dict[str, str] = defaultdict(str)
+        
+        # 检查是否启用了解释功能
+        enable_explain = getattr(config, 'explain', False)
+        explain_lang = getattr(config, 'explain_lang', 'en')
+        
+        # 如果启用了解释功能，导入解释器模块
+        if enable_explain:
+            from checkov.common.explainer.resolve import RuleExplanationResolver
+            resolver = RuleExplanationResolver(lang=explain_lang)
+            
+            # 为每个报告中的每个检查结果添加解释信息
+            for report in scan_reports:
+                # 处理失败的检查结果
+                for check in report.failed_checks:
+                    # 获取检查的详细信息
+                    check_id = check.check_id
+                    runner_type = report.check_type.lower()
+                    
+                    # 解析规则解释
+                    explanation = resolver.resolve_explanation(check_id, check, runner_type)
+                    
+                    # 将解释信息添加到检查结果中
+                    check.explain = explanation
+                    check.explain_lang = explain_lang
+                
+                # 处理通过的检查结果
+                for check in report.passed_checks:
+                    # 获取检查的详细信息
+                    check_id = check.check_id
+                    runner_type = report.check_type.lower()
+                    
+                    # 解析规则解释
+                    explanation = resolver.resolve_explanation(check_id, check, runner_type)
+                    
+                    # 将解释信息添加到检查结果中
+                    check.explain = explanation
+                    check.explain_lang = explain_lang
+                
+                # 处理跳过的检查结果
+                for check in report.skipped_checks:
+                    # 获取检查的详细信息
+                    check_id = check.check_id
+                    runner_type = report.check_type.lower()
+                    
+                    # 解析规则解释
+                    explanation = resolver.resolve_explanation(check_id, check, runner_type)
+                    
+                    # 将解释信息添加到检查结果中
+                    check.explain = explanation
+                    check.explain_lang = explain_lang
+        
+        # 生成报告
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
@@ -446,6 +498,26 @@ class RunnerRegistry:
             logging.debug(f'Getting exit code for report {report.check_type}')
             exit_code_thresholds = self.get_fail_thresholds(config, report.check_type)
             exit_codes.append(report.get_exit_code(exit_code_thresholds))
+        
+        # 如果启用了解释功能且需要生成HTML报告
+        if enable_explain and hasattr(config, 'html_report') and config.html_report:
+            from checkov.common.explainer.html_report import HTMLReportGenerator
+            
+            # 准备报告数据
+            report_data = []
+            for report in scan_reports:
+                if not report.is_empty():
+                    report_data.append(report.get_dict(is_quiet=config.quiet, url=url, s3_setup_failed=bc_integration.s3_setup_failed, support_path=bc_integration.support_repo_path))
+            
+            # 生成HTML报告
+            html_generator = HTMLReportGenerator(output_path=config.html_report)
+            html_content = html_generator.generate_report(report_data, explain_lang)
+            
+            # 保存HTML报告到文件
+            with open(config.html_report, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            
+            logging.info(f'HTML report generated successfully at {config.html_report}')
 
         if "github_failed_only" in config.output:
             github_output = "".join(github_reports)
