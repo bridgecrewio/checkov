@@ -16,8 +16,11 @@ from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.data_structures_utils import search_deep_keys
+from checkov.common.util.data_structures_utils import search_deep_keys, pickle_deepcopy
 from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
+from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.terraform.graph_builder.local_graph import update_dictionary_attribute
+
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
@@ -56,6 +59,7 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
+            self.update_vertices_configs()
             self.update_vertices_breadcrumbs()
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
 
@@ -391,15 +395,37 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
         return False
 
     def update_vertices_configs(self) -> None:
-        # not used
-        pass
+        for vertex in self.vertices:
+            changed_attributes = list(vertex.changed_attributes.keys())
+            if changed_attributes:
+                self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
     def update_vertex_config(
         vertex: Block, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False
     ) -> None:
-        # not used
-        pass
+        if not changed_attributes:
+            return
+
+        if not isinstance(vertex.config, dict):
+            return
+
+        updated_config = pickle_deepcopy(vertex.config)
+        if isinstance(changed_attributes, dict):
+            attributes_to_update = list(changed_attributes.keys())
+        else:
+            attributes_to_update = changed_attributes
+
+        attributes_to_update = filter_sub_keys(attributes_to_update)
+
+        for attribute in attributes_to_update:
+            if attribute not in vertex.attributes:
+                continue
+
+            new_value = vertex.attributes[attribute]
+            update_dictionary_attribute(updated_config, attribute, new_value)
+
+        vertex.config = updated_config
 
 
 def get_only_dict_items(origin_dict: Union[Dict[str, Any], Any]) -> Dict[str, Dict[str, Any]]:

@@ -6,12 +6,22 @@ import logging
 import os
 import re
 import tempfile
+import threading
+from contextlib import contextmanager
+from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tuple, Callable
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict, Tuple, Callable, Generator
 from collections import defaultdict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
+from detect_secrets.settings import (
+    get_settings,
+    configure_settings_from_baseline,
+    get_plugins,
+    get_filters,
+)
+from detect_secrets.core.plugins.util import get_mapping_from_secret_type_to_class
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -22,7 +32,6 @@ from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -46,6 +55,7 @@ from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES,
 from checkov.secrets.scan_git_history import GitHistoryScanner
 from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 from checkov.secrets.context_parser import ContextParser
+from checkov.secrets.log_prefix_stripper import create_stripped_content
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -78,10 +88,77 @@ BASE64_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_6'
 RANDOM_HIGH_ENTROPY_CHECK_ID = 'CKV_SECRET_80'
 ENTROPY_CHECK_IDS = {BASE64_HIGH_ENTROPY_CHECK_ID, 'CKV_SECRET_19', RANDOM_HIGH_ENTROPY_CHECK_ID}
 GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_4', 'CKV_SECRET_9', 'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_192'}
+GENERIC_AWS_CHECK_ID = 'CKV_SECRET_2'
+SPECIFIC_AWS_CHECK_IDS = {'CKV_SECRET_380', 'CKV_SECRET_381'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
+
+# ── thread-safe replacement for transient_settings ─────────────────
+_detect_secrets_settings_lock = threading.Lock()
+
+
+@contextmanager
+def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator[Any, None, None]:
+    """Thread-safe replacement for detect_secrets.settings.transient_settings.
+
+    The original transient_settings calls cache_bust() which clears the
+    get_settings() LRU cache, creating a race window where get_settings()
+    returns a fresh empty Settings() object. Sub-threads can then cache
+    a corrupted (empty) plugin mapping, resulting in 0 findings.
+
+    This implementation never clears get_settings() from the LRU cache.
+    Instead it modifies the Settings singleton in-place and only clears
+    the dependent caches (get_plugins, get_filters,
+    get_mapping_from_secret_type_to_class).
+
+    The lock is held only for microseconds during setup and teardown —
+    never during the actual scan — so there is no performance impact.
+
+    Pre-warming: after reconfiguring, we call get_mapping_from_secret_type_to_class()
+    and get_plugins() while still holding the lock. This populates both LRU caches
+    with the correct plugin set before any inner worker thread can observe them.
+    Without pre-warming, inner threads race to rebuild the caches concurrently after
+    the lock is released — Python's @lru_cache is not thread-safe for concurrent
+    cache misses, so two threads can simultaneously enter the function body and one
+    can overwrite the other's result with a corrupted (empty) mapping.
+    """
+    with _detect_secrets_settings_lock:
+        settings = get_settings()
+        original_plugins = deepcopy(dict(settings.plugins))
+        original_filters = deepcopy(dict(settings.filters))
+
+        # Clear ONLY the dependent caches — NOT get_settings itself.
+        # This is the key difference from the original transient_settings:
+        # the singleton object is never evicted from the LRU cache.
+        get_plugins.cache_clear()
+        get_filters.cache_clear()
+        get_mapping_from_secret_type_to_class.cache_clear()
+
+        settings.clear()
+        configure_settings_from_baseline(config)
+
+        # Pre-warm both caches while the lock is still held so that inner
+        # worker threads spawned by parallel_runner always get cache hits
+        # during the scan phase and never need to rebuild the mapping.
+        # Without this, concurrent cache misses in @lru_cache (not thread-safe)
+        # can produce a corrupted empty mapping → TypeError → 0 findings.
+        mapping = get_mapping_from_secret_type_to_class()
+        plugins = get_plugins()
+        logging.debug(
+            f"_thread_safe_transient_settings (with pre-warming): settings_id={id(settings)} plugins_count={len(plugins)} mapping_count={len(mapping)} thread={__import__('threading').current_thread().name}")
+
+    # Lock released — scan runs freely here with warm, stable caches
+    try:
+        yield settings
+    finally:
+        with _detect_secrets_settings_lock:
+            get_plugins.cache_clear()
+            get_filters.cache_clear()
+            get_mapping_from_secret_type_to_class.cache_clear()
+            settings.plugins = original_plugins
+            settings.filters = original_filters
 
 
 def should_filter_vault_secret(secret_value: str, check_id: str) -> bool:
@@ -256,7 +333,7 @@ class Runner(BaseRunner[None, None, None]):
         if runner_filter.enable_git_history_secret_scan:
             git_history_scanner = GitHistoryScanner(str(root_folder), secrets, self.history_secret_store, runner_filter.git_history_timeout)
 
-        with transient_settings({
+        with _thread_safe_transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
         }) as settings:
@@ -441,6 +518,9 @@ class Runner(BaseRunner[None, None, None]):
             if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
                 secret_records.pop(secret_key)
                 return True
+        if secret_records[secret_key].check_id == GENERIC_AWS_CHECK_ID and check_id in SPECIFIC_AWS_CHECK_IDS:
+            secret_records.pop(secret_key)
+            return True
         return False
 
     @staticmethod
@@ -460,6 +540,34 @@ class Runner(BaseRunner[None, None, None]):
             pbar.update()
 
     @staticmethod
+    def _prepare_scan_file(full_file_path: str) -> Optional[str]:
+        """Check if a file has build log prefixes and prepare a stripped version for scanning.
+
+        Build log files often have timestamps/log-level prefixes on each line that break
+        multiline secret detection (e.g., private keys split across prefixed log lines).
+        This method detects such prefixes and creates a temporary file with the prefixes
+        stripped, so all detectors can match secrets that span multiple log lines.
+
+        Returns:
+            path to the temp file if created (caller must clean up), or None
+        """
+        stripped_content = create_stripped_content(full_file_path)
+        if not stripped_content:
+            return None
+
+        logging.debug(f'Detected log prefixes in {full_file_path}, scanning with prefixes stripped')
+        try:
+            _, ext = os.path.splitext(full_file_path)
+            with tempfile.NamedTemporaryFile(
+                    mode='w', suffix=ext, delete=False
+            ) as tmp_file:
+                tmp_file.write(stripped_content)
+                return tmp_file.name
+        except Exception as e:
+            logging.debug(f'Failed to create stripped temp file for {full_file_path}: {e}')
+            return None
+
+    @staticmethod
     def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
         try:
             full_file_path = os.path.join(base_path, file_path)
@@ -473,8 +581,24 @@ class Runner(BaseRunner[None, None, None]):
                 return file_path, []
 
             start_time = datetime.datetime.now()
-            file_results = [*scan.scan_file(full_file_path)]
-            logging.debug(f'file {full_file_path} results len {len(file_results)}')
+
+            tmp_file_path = Runner._prepare_scan_file(full_file_path)
+            scan_file_path = tmp_file_path or full_file_path
+
+            try:
+                file_results = [*scan.scan_file(scan_file_path)]
+                # If we scanned a temp file, map results back to the original file path
+                if tmp_file_path is not None:
+                    for secret in file_results:
+                        secret.filename = full_file_path
+                logging.debug(f'file {full_file_path} results len {len(file_results)}')
+            finally:
+                if tmp_file_path is not None:
+                    try:
+                        os.remove(tmp_file_path)
+                    except OSError:
+                        logging.warning(f"Failed to remove temp file: {tmp_file_path}")
+
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
@@ -710,7 +834,7 @@ class Runner(BaseRunner[None, None, None]):
 
         self._add_custom_detectors_to_metadata_integration()
         secrets = SecretsCollection()
-        with transient_settings({
+        with _thread_safe_transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
         }) as settings:
