@@ -143,6 +143,7 @@ class Checkov:
         self.resource_subgraph_maps: dict[str, dict[str, str]] = {}
         self.url: str | None = None
         self.sast_data: SastData = SastData()
+        self._internal_error_occurred: bool = False
 
         self.parse_config(argv=argv)
 
@@ -448,6 +449,7 @@ class Checkov:
             try:
                 bc_integration.get_platform_run_config()
             except Exception:
+                self._internal_error_occurred = True
                 if not self.config.include_all_checkov_policies:
                     # stack trace gets printed in the exception handlers above
                     # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
@@ -457,6 +459,10 @@ class Checkov:
                           '(but note that this will not include any custom platform configurations or policy metadata).',
                           file=sys.stderr)
                     self.exit_run()
+
+            # check if get_public_run_config or similar had a non-fatal internal error
+            if bc_integration.internal_error_occurred:
+                self._internal_error_occurred = True
 
             # bc_integration.get_runtime_run_config()
             bc_integration.setup_on_prem()
@@ -537,7 +543,7 @@ class Checkov:
                     self.graphs = runner_registry.check_type_to_graph
                     self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
-                        self.exit_run()
+                        self._internal_error_occurred = True
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
 
@@ -585,6 +591,9 @@ class Checkov:
                         logger.warning(f"Unable to report contributor metrics due to: {e}")
 
                 exit_code = 1 if 1 in exit_codes else 0
+                if self._internal_error_occurred:
+                    internal_exit = self._get_exit_code_for_internal_error()
+                    exit_code = internal_exit if internal_exit != 0 else exit_code
                 return exit_code
             elif self.config.docker_image:
                 if self.config.bc_api_key is None:
@@ -606,7 +615,7 @@ class Checkov:
                 )
                 self.scan_reports = result if isinstance(result, list) else [result]
                 if runner_registry.is_error_in_reports(self.scan_reports):
-                    self.exit_run()
+                    self._internal_error_occurred = True
                 if len(self.scan_reports) > 1:
                     # this shouldn't happen, but if it happens, then it is intended or something is broke
                     logger.error(f"SCA image runner returned {len(self.scan_reports)} reports; expected 1")
@@ -640,6 +649,9 @@ class Checkov:
                         logger.warning(f"Unable to report contributor metrics due to: {e}")
 
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
+                if self._internal_error_occurred:
+                    internal_exit = self._get_exit_code_for_internal_error()
+                    exit_code = internal_exit if internal_exit != 0 else exit_code
                 return exit_code
             elif self.config.file:
                 bc_integration.scan_file = self.config.file
@@ -652,7 +664,7 @@ class Checkov:
                 self.graphs = runner_registry.check_type_to_graph
                 self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):
-                    self.exit_run()
+                    self._internal_error_occurred = True
                 if baseline:
                     baseline.compare_and_reduce_reports(self.scan_reports)
                 if self.config.create_baseline:
@@ -698,6 +710,9 @@ class Checkov:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                 )
+                if self._internal_error_occurred:
+                    internal_exit = self._get_exit_code_for_internal_error()
+                    exit_code = internal_exit if internal_exit != 0 else exit_code
                 return exit_code
             elif not self.config.quiet:
                 print(f"{banner}")
@@ -710,16 +725,16 @@ class Checkov:
             # we don't want to print all of these stack traces in normal output, as these could be user error
             # and stack traces look like checkov bugs
             logging.debug("Exception traceback:", exc_info=True)
-            self.exit_run()
-            return None
-        except SystemExit:
-            # calling exit_run from an exception handler causes another exception that is caught here, so we just need to re-exit
-            self.exit_run()
-            return None
+            self._internal_error_occurred = True
+            return self._get_exit_code_for_internal_error()
+        except SystemExit as e:
+            # exit_run() or other code raised SystemExit - propagate the exit code
+            self._internal_error_occurred = True
+            return e.code if isinstance(e.code, int) else self._get_exit_code_for_internal_error()
         except BaseException:  # noqa: B036 # we need to catch any failure and exit properly
             logging.error("Exception traceback:", exc_info=True)
-            self.exit_run()
-            return None
+            self._internal_error_occurred = True
+            return self._get_exit_code_for_internal_error()
 
         finally:
             if bc_integration.support_flag_enabled:
@@ -745,8 +760,21 @@ class Checkov:
                 else:
                     bc_integration.persist_all_logs_streams(logger_streams.get_streams())
 
+    def _get_exit_code_for_internal_error(self) -> int:
+        """Return the appropriate exit code when an internal error has occurred.
+
+        Returns 2 to signal an internal error (distinct from exit code 1 for failed checks),
+        or 0 if --no-fail-on-crash is set.
+        """
+        if self.config.no_fail_on_crash:
+            logging.debug("Internal error occurred but --no-fail-on-crash is set, returning exit code 0")
+            return 0
+        logging.warning("Returning exit code 2 due to an internal error during the scan")
+        return 2
+
     def exit_run(self) -> None:
-        exit(0) if self.config.no_fail_on_crash else exit(2)
+        self._internal_error_occurred = True
+        exit(self._get_exit_code_for_internal_error())
 
     def commit_repository(self) -> str | None:
         try:

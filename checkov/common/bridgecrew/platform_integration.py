@@ -145,6 +145,7 @@ class BcPlatformIntegration:
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
+        self.internal_error_occurred = False
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
@@ -1282,6 +1283,7 @@ class BcPlatformIntegration:
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
         except Exception:
+            self.internal_error_occurred = True
             logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
 
