@@ -19,7 +19,13 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
             "aws_ssoadmin_permission_set_inline_policy",
         )
         categories = (CheckCategories.IAM,)
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline="https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-iam-47",
+        )
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "policy" in conf.keys():

@@ -9,7 +9,13 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
         id = "CKV_AWS_62"
         supported_resources = ['AWS::IAM::Policy', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::User']
         categories = [CheckCategories.IAM]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline="https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-iam-policies/bc-aws-iam-47",
+        )
 
     def scan_resource_conf(self, conf):
         my_properties = conf.get("Properties")
