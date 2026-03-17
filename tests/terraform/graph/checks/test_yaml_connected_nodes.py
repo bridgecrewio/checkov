@@ -17,30 +17,48 @@ class TestYamlConnectedNodes(unittest.TestCase):
 
     def test_S3BucketEncryption_connected_node(self):
         report = get_report("S3BucketEncryption")
-        assert report.failed_checks[0].connected_node is None
-        assert report.failed_checks[1].connected_node['file_path'] == '/main.tf'
-        assert report.failed_checks[1].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_1'
-        assert report.failed_checks[1].connected_node['file_line_range'] == [163, 172]
-        assert report.failed_checks[2].connected_node['file_path'] == '/main.tf'
-        assert report.failed_checks[2].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_2'
-        assert report.failed_checks[2].connected_node['file_line_range'] == [174, 182]
-        assert report.failed_checks[3].connected_node is None
-        assert report.failed_checks[4].connected_node['file_path'] == '/main.tf'
-        assert report.failed_checks[4].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_3'
-        assert report.failed_checks[4].connected_node['file_line_range'] == [184, 195]
 
-        assert report.passed_checks[0].connected_node is None
-        assert report.passed_checks[1].connected_node is None
-        assert report.passed_checks[2].connected_node is None
-        assert report.passed_checks[3].connected_node['file_path'] == '/main.tf'
-        assert report.passed_checks[3].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_1'
-        assert report.passed_checks[3].connected_node['file_line_range'] == [117, 126]
-        assert report.passed_checks[4].connected_node['file_path'] == '/main.tf'
-        assert report.passed_checks[4].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_2'
-        assert report.passed_checks[4].connected_node['file_line_range'] == [128, 137]
-        assert report.passed_checks[5].connected_node['file_path'] == '/main.tf'
-        assert report.passed_checks[5].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_3'
-        assert report.passed_checks[5].connected_node['file_line_range'] == [139, 150]
+        # Sort checks by resource name to ensure deterministic ordering
+        failed = sorted(report.failed_checks, key=lambda c: c.resource)
+        passed = sorted(report.passed_checks, key=lambda c: c.resource)
+
+        # Failed checks: 2 without connected_node, 3 with connected_node
+        failed_without_node = [c for c in failed if c.connected_node is None]
+        failed_with_node = sorted(
+            [c for c in failed if c.connected_node is not None],
+            key=lambda c: c.connected_node['resource']
+        )
+        assert len(failed_without_node) == 2
+        assert len(failed_with_node) == 3
+
+        assert failed_with_node[0].connected_node['file_path'] == '/main.tf'
+        assert failed_with_node[0].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_1'
+        assert failed_with_node[0].connected_node['file_line_range'] == [163, 172]
+        assert failed_with_node[1].connected_node['file_path'] == '/main.tf'
+        assert failed_with_node[1].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_2'
+        assert failed_with_node[1].connected_node['file_line_range'] == [174, 182]
+        assert failed_with_node[2].connected_node['file_path'] == '/main.tf'
+        assert failed_with_node[2].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.bad_sse_3'
+        assert failed_with_node[2].connected_node['file_line_range'] == [184, 195]
+
+        # Passed checks: 3 without connected_node, 3 with connected_node
+        passed_without_node = [c for c in passed if c.connected_node is None]
+        passed_with_node = sorted(
+            [c for c in passed if c.connected_node is not None],
+            key=lambda c: c.connected_node['resource']
+        )
+        assert len(passed_without_node) == 3
+        assert len(passed_with_node) == 3
+
+        assert passed_with_node[0].connected_node['file_path'] == '/main.tf'
+        assert passed_with_node[0].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_1'
+        assert passed_with_node[0].connected_node['file_line_range'] == [117, 126]
+        assert passed_with_node[1].connected_node['file_path'] == '/main.tf'
+        assert passed_with_node[1].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_2'
+        assert passed_with_node[1].connected_node['file_line_range'] == [128, 137]
+        assert passed_with_node[2].connected_node['file_path'] == '/main.tf'
+        assert passed_with_node[2].connected_node['resource'] == 'aws_s3_bucket_server_side_encryption_configuration.good_sse_3'
+        assert passed_with_node[2].connected_node['file_line_range'] == [139, 150]
 
     def test_S3BucketLogging_connected_node(self):
         report = get_report("S3BucketLogging")
