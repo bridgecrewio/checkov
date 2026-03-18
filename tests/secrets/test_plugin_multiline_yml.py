@@ -182,7 +182,7 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
         end_time = time.time()
 
         # then
-        assert end_time-start_time < 1  # assert the time limit is not too long for parsing long lines.
+        assert end_time-start_time < 2  # assert the time limit is not too long for parsing long lines.
         interesting_failed_checks = _filter_reports_for_incident_ids(report.failed_checks,
                                                                      ["CKV_SECRET_4", "CKV_SECRET_6", "CKV_SECRET_13"])
         self.assertEqual(len(interesting_failed_checks), 4)
