@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.508...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.510...HEAD)
+
+## [3.2.510](https://github.com/bridgecrewio/checkov/compare/3.2.508...3.2.510) - 2026-03-18
+
+### Bug Fix
+
+- **terraform:** support modern TLS security policies in CKV_AWS_206 - [#7466](https://github.com/bridgecrewio/checkov/pull/7466)
+- **terraform:** update CKV_AWS_339 supported EKS Kubernetes versions - [#7465](https://github.com/bridgecrewio/checkov/pull/7465)
+- **terraform:** update CKV_GCP_79 latest Postgres version from 17 to 18 - [#7464](https://github.com/bridgecrewio/checkov/pull/7464)
 
 ## [3.2.508](https://github.com/bridgecrewio/checkov/compare/3.2.507...3.2.508) - 2026-03-08
 
