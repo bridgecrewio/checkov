@@ -80,7 +80,7 @@ class Registry(BaseRegistry):
                                     RunnerFilter.notify_external_check(check.id)
                                 self.checks.append(check)
                         except Exception as e:
-                            self.logger.warning(f"Failed to parse external check {file}: {e}. Skipping.")
+                            self.logger.warning(f"Failed to parse external check {file}: {e}, Skipping.")
                             continue
         if not external_check:
             self.internal_checks_dir_loaded = True
