@@ -33,6 +33,7 @@ class TestRegistry(unittest.TestCase):
         # The registry must not have loaded the broken check
         self.assertEqual(r.checks, [])
 
-        # A warning mentioning the offending file must have been emitted
+        # A warning mentioning the offending file and check id must have been emitted
         warning_messages = "\n".join(cm.output)
         self.assertIn("check.yaml", warning_messages)
+        self.assertIn("CUSTOM_INVALID_LIST", warning_messages)

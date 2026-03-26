@@ -70,6 +70,7 @@ class Registry(BaseRegistry):
                             # proper log messages are generated inside the method
                             continue
                         try:
+                            check_id = check_json.get("metadata", {}).get("id", "")
                             check = self.parser.parse_raw_check(
                                 check_json, resources_types=self._get_resource_types(check_json),
                                 check_path=f'{root}/{file}'
@@ -80,7 +81,7 @@ class Registry(BaseRegistry):
                                     RunnerFilter.notify_external_check(check.id)
                                 self.checks.append(check)
                         except Exception as e:
-                            self.logger.warning(f"Failed to parse external check {file}: {e}, Skipping.")
+                            self.logger.warning(f"Failed to parse external check {file} check_id - {check_id}: {e}, Skipping.")
                             continue
         if not external_check:
             self.internal_checks_dir_loaded = True
