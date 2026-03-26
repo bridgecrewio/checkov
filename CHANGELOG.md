@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.510...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.511...HEAD)
+
+## [3.2.511](https://github.com/bridgecrewio/checkov/compare/3.2.510...3.2.511) - 2026-03-26
+
+### Bug Fix
+
+- **general:** Prevent run failure invalid policy - [#7476](https://github.com/bridgecrewio/checkov/pull/7476)
 
 ## [3.2.510](https://github.com/bridgecrewio/checkov/compare/3.2.508...3.2.510) - 2026-03-18
 
