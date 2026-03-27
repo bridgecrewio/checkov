@@ -304,13 +304,13 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
         with:
-          token: ${{ secrets.GH_PAT_SECRET }}
+          token: ${{ secrets.GH_PAT_SECRET_2 }}
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec  # v5
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY_2 }}
+          passphrase: ${{ secrets.PASSPHRASE_2 }}
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
@@ -355,8 +355,6 @@ jobs:
           echo "major_version=$major_version" >> "$GITHUB_OUTPUT"
         id: calculateVersion
       - name: version
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           ## update docs
           export PYTHONPATH='.'
@@ -425,8 +423,8 @@ jobs:
     secrets:
       BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
       PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME_2 }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD_2 }}
   publish-checkov-k8s-dockerhub:
     needs: bump-version
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/publish-image.yaml@main
@@ -444,8 +442,8 @@ jobs:
     secrets:
       BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
       PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME_2 }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD_2 }}
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
@@ -457,10 +455,7 @@ jobs:
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
 
           # trigger checkov-action update
-          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
-
-          # trigger bridgecrew-py update
-          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/bridgecrew-py/dispatches --data '{"event_type": "build"}'
+          curl -XPOST -u "${{ secrets.GH_PAT_USER_2}}:${{secrets.GH_PAT_SECRET_2}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
 
           # trigger whorf update
-          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/whorf/dispatches --data '{"event_type": "release"}'
+          curl -XPOST -u "${{ secrets.GH_PAT_USER_2}}:${{secrets.GH_PAT_SECRET_2}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/whorf/dispatches --data '{"event_type": "release"}'
