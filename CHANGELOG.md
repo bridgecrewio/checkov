@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.511...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.513...HEAD)
+
+## [3.2.513](https://github.com/bridgecrewio/checkov/compare/3.2.511...3.2.513) - 2026-03-27
+
+### Bug Fix
+
+- **general:** Log update - [#7482](https://github.com/bridgecrewio/checkov/pull/7482)
 
 ## [3.2.511](https://github.com/bridgecrewio/checkov/compare/3.2.510...3.2.511) - 2026-03-26
 
