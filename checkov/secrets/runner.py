@@ -100,7 +100,7 @@ _detect_secrets_settings_lock = threading.Lock()
 
 
 @contextmanager
-def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', None, None]:
+def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator[Any, None, None]:
     """Thread-safe replacement for detect_secrets.settings.transient_settings.
 
     The original transient_settings calls cache_bust() which clears the
@@ -115,6 +115,14 @@ def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', 
 
     The lock is held only for microseconds during setup and teardown —
     never during the actual scan — so there is no performance impact.
+
+    Pre-warming: after reconfiguring, we call get_mapping_from_secret_type_to_class()
+    and get_plugins() while still holding the lock. This populates both LRU caches
+    with the correct plugin set before any inner worker thread can observe them.
+    Without pre-warming, inner threads race to rebuild the caches concurrently after
+    the lock is released — Python's @lru_cache is not thread-safe for concurrent
+    cache misses, so two threads can simultaneously enter the function body and one
+    can overwrite the other's result with a corrupted (empty) mapping.
     """
     with _detect_secrets_settings_lock:
         settings = get_settings()
@@ -131,7 +139,17 @@ def _thread_safe_transient_settings(config: Dict[str, Any]) -> Generator['Any', 
         settings.clear()
         configure_settings_from_baseline(config)
 
-    # Lock released — scan runs freely here with no contention
+        # Pre-warm both caches while the lock is still held so that inner
+        # worker threads spawned by parallel_runner always get cache hits
+        # during the scan phase and never need to rebuild the mapping.
+        # Without this, concurrent cache misses in @lru_cache (not thread-safe)
+        # can produce a corrupted empty mapping → TypeError → 0 findings.
+        mapping = get_mapping_from_secret_type_to_class()
+        plugins = get_plugins()
+        logging.debug(
+            f"_thread_safe_transient_settings (with pre-warming): settings_id={id(settings)} plugins_count={len(plugins)} mapping_count={len(mapping)} thread={__import__('threading').current_thread().name}")
+
+    # Lock released — scan runs freely here with warm, stable caches
     try:
         yield settings
     finally:
@@ -696,11 +714,11 @@ class Runner(BaseRunner[None, None, None]):
                 'tenantConfig', {}).get('secretsValidate')
 
         if validate_secrets_tenant_config is None and not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
-            logging.debug('Secrets verification is off, enable it via code configuration screen')
+            logging.debug('Secrets verification is off. enable it via code configuration screen')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if validate_secrets_tenant_config is False:
-            logging.debug('Secrets verification is off, enable it via code configuration screen')
+            logging.debug('Secrets verification is off. enable it via code configuration screen')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         request_body = {

@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.507...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.513...HEAD)
+
+## [3.2.513](https://github.com/bridgecrewio/checkov/compare/3.2.511...3.2.513) - 2026-03-27
+
+### Bug Fix
+
+- **general:** Log update - [#7482](https://github.com/bridgecrewio/checkov/pull/7482)
+
+## [3.2.511](https://github.com/bridgecrewio/checkov/compare/3.2.510...3.2.511) - 2026-03-26
+
+### Bug Fix
+
+- **general:** Prevent run failure invalid policy - [#7476](https://github.com/bridgecrewio/checkov/pull/7476)
+
+## [3.2.510](https://github.com/bridgecrewio/checkov/compare/3.2.508...3.2.510) - 2026-03-18
+
+### Bug Fix
+
+- **terraform:** support modern TLS security policies in CKV_AWS_206 - [#7466](https://github.com/bridgecrewio/checkov/pull/7466)
+- **terraform:** update CKV_AWS_339 supported EKS Kubernetes versions - [#7465](https://github.com/bridgecrewio/checkov/pull/7465)
+- **terraform:** update CKV_GCP_79 latest Postgres version from 17 to 18 - [#7464](https://github.com/bridgecrewio/checkov/pull/7464)
+
+## [3.2.508](https://github.com/bridgecrewio/checkov/compare/3.2.507...3.2.508) - 2026-03-08
+
+### Bug Fix
+
+- **secrets:** eliminate race condition in secrets scanner when running concurrently with other scanners - [#7456](https://github.com/bridgecrewio/checkov/pull/7456)
 
 ## [3.2.507](https://github.com/bridgecrewio/checkov/compare/3.2.506...3.2.507) - 2026-03-05
 
