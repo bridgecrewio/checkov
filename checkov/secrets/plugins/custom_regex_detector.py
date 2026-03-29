@@ -169,11 +169,24 @@ class CustomRegexDetector(RegexBasedDetector):
                 if multiline_regex is None:
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
-                for mm in multiline_matches:
+                multiline_match_positions = [(m.start(), m.group(0)) for m in multiline_regex.finditer(file_content)]
+                for idx_mm, mm in enumerate(multiline_matches):
                     mm = self._extract_real_regex_match(mm)
                     if isinstance(mm, tuple):
                         mm = mm[0]
-                    line_num = find_line_number(file_content, mm, line_number)
+                    # Use finditer positions to get the correct line number for each match.
+                    # Within each match, find the prerun pattern to anchor to the specific line
+                    # (e.g. the private_key line) rather than the start of the full match.
+                    if idx_mm < len(multiline_match_positions):
+                        match_start, _ = multiline_match_positions[idx_mm]
+                        prerun_in_match = re.search(regex.pattern, mm)
+                        if prerun_in_match:
+                            prerun_abs_offset = match_start + prerun_in_match.start()
+                            line_num = file_content[:prerun_abs_offset].count('\n') + 1
+                        else:
+                            line_num = file_content[:match_start].count('\n') + 1
+                    else:
+                        line_num = find_line_number(file_content, mm, line_number)
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
