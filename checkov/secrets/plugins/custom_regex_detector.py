@@ -169,22 +169,22 @@ class CustomRegexDetector(RegexBasedDetector):
                 if multiline_regex is None:
                     continue
                 multiline_matches = multiline_regex.findall(file_content)
-                multiline_match_positions = [(m.start(), m.group(0)) for m in multiline_regex.finditer(file_content)]
+                multiline_match_iter = list(multiline_regex.finditer(file_content))
                 for idx_mm, mm in enumerate(multiline_matches):
                     mm = self._extract_real_regex_match(mm)
                     if isinstance(mm, tuple):
                         mm = mm[0]
-                    # Use finditer positions to get the correct line number for each match.
-                    # Within each match, find the prerun pattern to anchor to the specific line
-                    # (e.g. the private_key line) rather than the start of the full match.
-                    if idx_mm < len(multiline_match_positions):
-                        match_start, _ = multiline_match_positions[idx_mm]
-                        prerun_in_match = re.search(regex.pattern, mm)
-                        if prerun_in_match:
-                            prerun_abs_offset = match_start + prerun_in_match.start()
-                            line_num = file_content[:prerun_abs_offset].count('\n') + 1
+                    # Find the line number of the actual captured secret value within the file.
+                    # We search for mm inside the full match span to get the correct absolute offset.
+                    if idx_mm < len(multiline_match_iter):
+                        full_match = multiline_match_iter[idx_mm]
+                        full_match_text = full_match.group(0)
+                        mm_in_match = full_match_text.find(mm)
+                        if mm_in_match != -1:
+                            abs_offset = full_match.start() + mm_in_match
+                            line_num = file_content[:abs_offset].count('\n') + 1
                         else:
-                            line_num = file_content[:match_start].count('\n') + 1
+                            line_num = file_content[:full_match.start()].count('\n') + 1
                     else:
                         line_num = find_line_number(file_content, mm, line_number)
                     quoted_mm = f"'{mm}'"
