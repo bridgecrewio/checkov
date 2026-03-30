@@ -168,25 +168,12 @@ class CustomRegexDetector(RegexBasedDetector):
                 multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
-                multiline_matches = multiline_regex.findall(file_content)
-                multiline_match_iter = list(multiline_regex.finditer(file_content))
-                for idx_mm, mm in enumerate(multiline_matches):
-                    mm = self._extract_real_regex_match(mm)
+                for match_obj in multiline_regex.finditer(file_content):
+                    mm = self._extract_real_regex_match(match_obj.groups() or match_obj.group(0))
                     if isinstance(mm, tuple):
                         mm = mm[0]
-                    # Find the line number of the actual captured secret value within the file.
-                    # We search for mm inside the full match span to get the correct absolute offset.
-                    if idx_mm < len(multiline_match_iter):
-                        full_match = multiline_match_iter[idx_mm]
-                        full_match_text = full_match.group(0)
-                        mm_in_match = full_match_text.find(mm)
-                        if mm_in_match != -1:
-                            abs_offset = full_match.start() + mm_in_match
-                            line_num = file_content[:abs_offset].count('\n') + 1
-                        else:
-                            line_num = file_content[:full_match.start()].count('\n') + 1
-                    else:
-                        line_num = find_line_number(file_content, mm, line_number)
+                    mm_offset = match_obj.start() + match_obj.group(0).find(mm)
+                    line_num = file_content[:mm_offset].count('\n') + 1
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
