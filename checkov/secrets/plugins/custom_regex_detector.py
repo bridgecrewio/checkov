@@ -228,15 +228,3 @@ class CustomRegexDetector(RegexBasedDetector):
                     return match
 
         return regex_matches
-
-
-def find_line_number(file_string: str, substring: str, default_line_number: int) -> int:
-    try:
-        lines = file_string.splitlines()
-
-        for line_number, line in enumerate(lines, start=1):
-            if substring in line:
-                return line_number
-        return default_line_number
-    except Exception:
-        return default_line_number
