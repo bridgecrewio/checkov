@@ -169,7 +169,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 if multiline_regex is None:
                     continue
                 for match_obj in multiline_regex.finditer(file_content):
-                    mm = self._extract_real_regex_match(match_obj.groups() or match_obj.group(0))
+                    mm = self._extract_real_regex_match(cast(Tuple[str], match_obj.groups()) or match_obj.group(0))
                     if isinstance(mm, tuple):
                         mm = mm[0]
                     mm_offset = match_obj.start() + match_obj.group(0).find(mm)
