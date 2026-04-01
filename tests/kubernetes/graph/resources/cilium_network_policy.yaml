@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-cilium-policy
+  labels:
+    app: test-app
+spec:
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: test-cilium-policy
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels:
+      app: test-app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: allowed-client
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-clusterwide-policy
+  labels:
+    app: cluster-app
+spec:
+  selector:
+    matchLabels:
+      app: cluster-app
+  template:
+    metadata:
+      labels:
+        app: cluster-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: test-clusterwide-policy
+spec:
+  endpointSelector:
+    matchLabels:
+      app: cluster-app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: allowed-client
