@@ -874,6 +874,46 @@ class TestRunnerFilter(unittest.TestCase):
         assert filter.enable_git_history_secret_scan is True
         assert filter.framework == [CheckType.SECRETS]
 
+    # --protect-check tests
+
+    def test_protect_check_overrides_skip(self):
+        instance = RunnerFilter(skip_checks=["CHECK_1"], protect_checks=["CHECK_1"])
+        self.assertTrue(instance.should_run_check(check_id="CHECK_1"))
+
+    def test_protect_check_overrides_skip_bc_id(self):
+        instance = RunnerFilter(skip_checks=["BC_CHECK_1"], protect_checks=["BC_CHECK_1"])
+        self.assertTrue(instance.should_run_check(check_id="CHECK_1", bc_check_id="BC_CHECK_1"))
+
+    def test_protect_check_does_not_affect_other_checks(self):
+        instance = RunnerFilter(skip_checks=["CHECK_2"], protect_checks=["CHECK_1"])
+        self.assertFalse(instance.should_run_check(check_id="CHECK_2"))
+
+    def test_protect_check_does_not_force_run_non_skipped_check(self):
+        # protect_check on a check that is not skipped should still run normally
+        instance = RunnerFilter(protect_checks=["CHECK_1"])
+        self.assertTrue(instance.should_run_check(check_id="CHECK_1"))
+
+    def test_protect_check_wildcard_overrides_wildcard_skip(self):
+        # Wildcard skip of CHECK_AWS_*, but protect a specific one
+        instance = RunnerFilter(skip_checks=["CHECK_AWS_*"], protect_checks=["CHECK_AWS_1"])
+        self.assertTrue(instance.should_run_check(check_id="CHECK_AWS_1"))
+        self.assertFalse(instance.should_run_check(check_id="CHECK_AWS_2"))
+
+    def test_protect_check_overrides_skip_check_object(self):
+        from checkov.terraform.checks.resource.aws.LambdaEnvironmentCredentials import check
+        instance = RunnerFilter(skip_checks=[check.id], protect_checks=[check.id])
+        self.assertTrue(instance.should_run_check(check=check))
+
+    def test_protect_check_csv_string(self):
+        # protect_checks accepts a comma-separated string like CLI input
+        instance = RunnerFilter(skip_checks="CHECK_1,CHECK_2", protect_checks="CHECK_1,CHECK_2")
+        self.assertTrue(instance.should_run_check(check_id="CHECK_1"))
+        self.assertTrue(instance.should_run_check(check_id="CHECK_2"))
+
+    def test_protect_check_default_is_empty(self):
+        instance = RunnerFilter()
+        self.assertEqual(instance.protect_checks, [])
+
 
 if __name__ == '__main__':
     unittest.main()
