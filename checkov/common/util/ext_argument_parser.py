@@ -100,6 +100,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                 config_items["check"] = config_items["check"][0].split(",")
             if "skip-check" in config_items.keys():
                 config_items["skip-check"] = config_items["skip-check"][0].split(",")
+            if "protect-check" in config_items.keys():
+                config_items["protect-check"] = config_items["protect-check"][0].split(",")
             if "soft-fail-on" in config_items.keys():
                 config_items["soft-fail-on"] = config_items["soft-fail-on"][0].split(",")
             if "hard-fail-on" in config_items.keys():
@@ -275,6 +277,16 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="append",
             default=None,
             env_var="CKV_SKIP_CHECK",
+        )
+        self.add(
+            "--protect-check",
+            help="Checks that will always be run, even if they are skipped via --skip-check, the config file, or "
+                 "inline skip comments (e.g. #checkov:skip=). Enter one or more items separated by commas. "
+                 "Each item may be a Checkov check ID (CKV_AWS_123) or a BC check ID (BC_AWS_GENERAL_123). "
+                 "This option takes precedence over all skip mechanisms.",
+            action="append",
+            default=None,
+            env_var="CKV_PROTECT_CHECK",
         )
         self.add(
             "--run-all-external-checks",

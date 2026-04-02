@@ -34,6 +34,7 @@ class RunnerFilter(object):
             framework: Optional[List[str]] = None,
             checks: Union[str, List[str], None] = None,
             skip_checks: Union[str, List[str], None] = None,
+            protect_checks: Union[str, List[str], None] = None,
             include_all_checkov_policies: bool = True,
             download_external_modules: Optional[bool] = False,
             external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
@@ -64,6 +65,9 @@ class RunnerFilter(object):
 
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
+        protect_checks = convert_csv_string_arg_to_list(protect_checks)
+
+        self.protect_checks: List[str] = protect_checks or []
 
         self.skip_invalid_secrets = skip_checks and any(skip_check.capitalize() == ValidationStatus.INVALID.value
                                                         for skip_check in skip_checks)
@@ -265,11 +269,17 @@ class RunnerFilter(object):
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
             (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
+
+        is_protected = self.protect_checks and self.check_matches(check_id, bc_check_id, self.protect_checks)
+
         logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
         logging.debug(
-            f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}')
+            f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}, is_protected: {is_protected}')
 
-        if should_skip_check:
+        if is_protected:
+            result = True
+            logging.debug(f'protect_check override {check_id}: {result}')
+        elif should_skip_check:
             result = False
             logging.debug(f'should_skip_check {check_id}: {should_skip_check}')
         elif should_run_check:

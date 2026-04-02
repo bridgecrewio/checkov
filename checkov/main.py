@@ -325,6 +325,7 @@ class Checkov:
                 skip_framework=self.config.skip_framework,
                 checks=self.config.check,
                 skip_checks=self.config.skip_check,
+                protect_checks=self.config.protect_check,
                 include_all_checkov_policies=self.config.include_all_checkov_policies,
                 download_external_modules=convert_str_to_optional_bool(self.config.download_external_modules),
                 external_modules_download_path=self.config.external_modules_download_path,

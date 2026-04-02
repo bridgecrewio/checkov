@@ -135,7 +135,11 @@ class BaseCheckRegistry:
                     report_type=report_type or self.report_type,
                     file_origin_paths=[scanned_file]
             ):
-                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                is_protected = runner_filter.protect_checks and runner_filter.check_matches(
+                    check.id, check.bc_id, runner_filter.protect_checks
+                )
+                effective_skip_info = {} if is_protected else skip_info
+                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, effective_skip_info)
                 results[check] = result
         return results
 
