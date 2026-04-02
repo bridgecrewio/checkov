@@ -14,7 +14,9 @@ Some policies can return **UNKNOWN** when they cannot determine pass or fail—f
 - **Summary:** The scan summary includes an **Unknown checks** count.
 - **CLI:** Unknown results are listed (in yellow when not using `--quiet`) with check ID, resource, file, and guide link.
 - **JSON:** The report includes a top-level `unknown_checks` array and `summary.unknown`.
-- **Other formats:** SARIF, CSV, JUnit XML, and platform uploads include unknown checks where applicable.
+- **SARIF:** Unknown results use the `note` level.
+- **JUnit XML:** Because the JUnit schema has no native "unknown" state, unknown checks are represented as `<skipped>` elements with a descriptive message (e.g. `Check result unknown: <check name>`). JUnit consumers will therefore report these alongside skipped tests.
+- **CSV and platform uploads:** Include unknown checks where applicable.
 
 ## Example CLI output
 
@@ -96,4 +98,4 @@ Example (abbreviated):
 
 ## Exit code
 
-UNKNOWN results do **not** affect the exit code. Only **failed** checks (and your `--soft-fail` / `--hard-fail-on` settings) determine a non-zero exit code.
+UNKNOWN results do **not** affect the exit code. Only **failed** checks (and your `--soft-fail` / `--hard-fail-on` settings) determine a non-zero exit code. A scan that produces only passed and unknown results will still exit with code `0`.
