@@ -172,13 +172,19 @@ class CustomRegexDetector(RegexBasedDetector):
                     mm = self._extract_real_regex_match(cast(Tuple[str], match_obj.groups()) or match_obj.group(0))
                     if isinstance(mm, tuple):
                         mm = mm[0]
-                    # Use the prerun pattern position within the match for the line number,
-                    # as it points to the meaningful secret line rather than the block start.
-                    prerun_search = regex.search(file_content, match_obj.start(), match_obj.end())
-                    if prerun_search:
-                        line_num = file_content[:prerun_search.start()].count('\n') + 1
+                    # Line number strategy:
+                    # - If mm is a single-line value (no \n), locate it within the match
+                    #   and compute its line directly — this gives the exact secret line.
+                    # - If mm spans multiple lines (e.g. a full JSON block or PGP key body),
+                    #   no single line contains it, so fall back to the prerun pattern's line,
+                    #   which is the most meaningful trigger line (e.g. "BEGIN PRIVATE KEY").
+                    if '\n' not in mm:
+                        inner_offset = match_obj.group(0).find(mm)
+                        mm_offset = match_obj.start() + (inner_offset if inner_offset >= 0 else 0)
+                        line_num = file_content[:mm_offset].count('\n') + 1
                     else:
-                        mm_offset = match_obj.start() + max(match_obj.group(0).find(mm), 0)
+                        prerun_search = regex.search(file_content, match_obj.start(), match_obj.end())
+                        mm_offset = prerun_search.start() if prerun_search else match_obj.start()
                         line_num = file_content[:mm_offset].count('\n') + 1
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
