@@ -168,23 +168,17 @@ class CustomRegexDetector(RegexBasedDetector):
                 multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
-                prerun_compiled = regex  # the prerun pattern that triggered this check
                 for match_obj in multiline_regex.finditer(file_content):
                     mm = self._extract_real_regex_match(cast(Tuple[str], match_obj.groups()) or match_obj.group(0))
                     if isinstance(mm, tuple):
                         mm = mm[0]
-                    full_match = match_obj.group(0)
-                    inner_offset = full_match.find(mm)
-                    mm_offset = match_obj.start() + (inner_offset if inner_offset >= 0 else 0)
-                    if '\n' in mm:
-                        # mm spans multiple lines - find the line of the prerun pattern
-                        # within the match span for a more meaningful line number
-                        prerun_search = prerun_compiled.search(file_content, match_obj.start(), match_obj.end())
-                        if prerun_search:
-                            line_num = file_content[:prerun_search.start()].count('\n') + 1
-                        else:
-                            line_num = file_content[:mm_offset].count('\n') + 1
+                    # Use the prerun pattern position within the match for the line number,
+                    # as it points to the meaningful secret line rather than the block start.
+                    prerun_search = regex.search(file_content, match_obj.start(), match_obj.end())
+                    if prerun_search:
+                        line_num = file_content[:prerun_search.start()].count('\n') + 1
                     else:
+                        mm_offset = match_obj.start() + max(match_obj.group(0).find(mm), 0)
                         line_num = file_content[:mm_offset].count('\n') + 1
                     quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
