@@ -1,6 +1,7 @@
 import os
 import re
 import unittest
+from unittest.mock import patch
 
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -105,6 +106,50 @@ class TestUtils(unittest.TestCase):
         with self.assertRaises(SystemExit) as ctx:
             _validate_api_url_domain('not-a-url', 'test')
         self.assertEqual(ctx.exception.code, 2)
+
+    # --- CHECKOV_ALLOW_API_DOMAINS env var override tests ---
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': '.execute-api.us-west-2.amazonaws.com'})
+    def test_env_var_allows_custom_domain(self):
+        """Verify CHECKOV_ALLOW_API_DOMAINS extends the allowlist for local dev."""
+        result = normalize_prisma_url('https://zff3s5gfse.execute-api.us-west-2.amazonaws.com/v1')
+        self.assertEqual('https://zff3s5gfse.execute-api.us-west-2.amazonaws.com/v1', result)
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': '.execute-api.us-west-2.amazonaws.com'})
+    def test_env_var_still_allows_default_domains(self):
+        """Verify default domains still work when env var is set."""
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
+        self.assertEqual('https://api.prismacloud.cn', normalize_prisma_url('https://api.prismacloud.cn'))
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': '.execute-api.us-west-2.amazonaws.com'})
+    def test_env_var_does_not_allow_unlisted_domains(self):
+        """Verify domains not in default or env var list are still rejected."""
+        with self.assertRaises(SystemExit) as ctx:
+            normalize_prisma_url('https://evil.com/api')
+        self.assertEqual(ctx.exception.code, 2)
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': '.example.dev, .staging.internal'})
+    def test_env_var_multiple_domains(self):
+        """Verify comma-separated domains are all accepted."""
+        result1 = normalize_prisma_url('https://api.example.dev')
+        self.assertEqual('https://api.example.dev', result1)
+        result2 = normalize_prisma_url('https://api.staging.internal')
+        self.assertEqual('https://api.staging.internal', result2)
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': 'execute-api.us-west-2.amazonaws.com'})
+    def test_env_var_auto_adds_leading_dot(self):
+        """Verify leading dot is added automatically if missing."""
+        result = normalize_prisma_url('https://abc123.execute-api.us-west-2.amazonaws.com/v1')
+        self.assertEqual('https://abc123.execute-api.us-west-2.amazonaws.com/v1', result)
+
+    @patch.dict(os.environ, {'CHECKOV_ALLOW_API_DOMAINS': ''})
+    def test_env_var_empty_uses_defaults_only(self):
+        """Verify empty env var doesn't change behavior."""
+        with self.assertRaises(SystemExit) as ctx:
+            normalize_prisma_url('https://evil.com')
+        self.assertEqual(ctx.exception.code, 2)
+        # Default domains still work
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
 
     def test_skip_comment_regex(self):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145: ADD REASON'))

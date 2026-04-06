@@ -44,11 +44,38 @@ add_resource_code_filter_to_logger(logger)
 ALLOWED_API_DOMAINS = ('.prismacloud.io', '.prismacloud.cn', '.bridgecrew.cloud')
 
 
+def _get_allowed_domains() -> tuple[str, ...]:
+    """Return the effective domain allowlist, extended by CHECKOV_ALLOW_API_DOMAINS if set.
+
+    The env var accepts a comma-separated list of domain suffixes, e.g.:
+        CHECKOV_ALLOW_API_DOMAINS=".execute-api.us-west-2.amazonaws.com,.example.dev"
+
+    A leading dot is added automatically if missing.
+    This is intended for local development / testing only.
+    """
+    extra = os.getenv('CHECKOV_ALLOW_API_DOMAINS', '').strip()
+    if not extra:
+        return ALLOWED_API_DOMAINS
+    extra_domains = tuple(
+        d if d.startswith('.') else f'.{d}'
+        for d in (s.strip() for s in extra.split(','))
+        if d
+    )
+    if extra_domains:
+        logger.warning(
+            "CHECKOV_ALLOW_API_DOMAINS is set — domain allowlist extended with: %s. "
+            "This bypasses production security controls and should only be used for local development.",
+            ', '.join(extra_domains),
+        )
+    return ALLOWED_API_DOMAINS + extra_domains
+
+
 def _is_allowed_domain(hostname: str) -> bool:
     """Check if hostname matches an allowed domain (exact or subdomain)."""
+    allowed = _get_allowed_domains()
     return any(
         hostname == d.lstrip('.') or hostname.endswith(d)
-        for d in ALLOWED_API_DOMAINS
+        for d in allowed
     )
 
 
@@ -56,15 +83,16 @@ def _validate_api_url_domain(url: str, param_name: str) -> None:
     """Validate that a URL belongs to an allowed Prisma Cloud / Bridgecrew domain.
 
     Exits the process with a clear error message if the domain is not allowed.
+    The allowlist can be extended via the CHECKOV_ALLOW_API_DOMAINS env var
+    for local development / testing.
     """
     parsed = urlparse(url)
     if not parsed.hostname or not _is_allowed_domain(parsed.hostname):
         message = (
-            f"Error: {param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
+            f"{param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
             f"got: {url}"
         )
         logging.error(message)
-        print(message, file=sys.stderr)
         sys.exit(2)
 
 
