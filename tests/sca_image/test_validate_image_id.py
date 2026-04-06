@@ -11,24 +11,29 @@ from checkov.sca_image.runner import Runner
 
 
 class TestImageIdPattern:
-    """Tests for IMAGE_ID_PATTERN — matches Docker image SHA IDs."""
+    """Tests for IMAGE_ID_PATTERN — matches Docker image SHA IDs (3-64 hex chars, optionally prefixed with sha256:)."""
 
     @pytest.mark.parametrize("image_id", [
         "sha256:" + "a" * 64,
         "sha256:" + "0123456789abcdef" * 4,
         "a" * 64,
         "0" * 64,
+        "sha256:abc",                # 3 hex chars with prefix
+        "abc",                       # 3 hex chars raw
+        "a" * 12,                    # shortened SHA (12 chars)
+        "sha256:" + "a" * 12,       # shortened SHA with prefix
+        "a" * 63,                    # 63 hex chars
     ])
     def test_valid_image_ids(self, image_id: str) -> None:
         assert IMAGE_ID_PATTERN.fullmatch(image_id), f"Expected match for: {image_id}"
 
     @pytest.mark.parametrize("image_id", [
-        "sha256:" + "g" * 64,
-        "a" * 63,
-        "a" * 65,
-        "",
-        "sha256:",
-        "sha256:abc",
+        "sha256:" + "g" * 64,       # non-hex chars
+        "a" * 65,                    # too long
+        "",                          # empty
+        "sha256:",                   # prefix only, no hex
+        "ab",                        # too short (2 chars)
+        "sha256:ab",                 # too short with prefix
     ])
     def test_invalid_image_ids(self, image_id: str) -> None:
         assert not IMAGE_ID_PATTERN.fullmatch(image_id), f"Expected no match for: {image_id}"
