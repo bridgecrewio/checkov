@@ -19,7 +19,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.models.enums import ErrorStatus
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
-from checkov.common.sca.commons import should_run_scan
+from checkov.common.sca.commons import should_run_scan, validate_image_id
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_dockerfile
@@ -82,8 +82,12 @@ class Runner(PackageRunner):
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:
+        if not validate_image_id(image_id):
+            logging.error(f"Invalid image_id format: {image_id}")
+            return {}
+
         command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {image_id}"
-        process = await asyncio.create_subprocess_shell(
+        process = await asyncio.create_subprocess_exec(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
