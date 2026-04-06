@@ -41,16 +41,6 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 
-@overload
-def normalize_bc_url(url: None) -> None:
-    ...
-
-
-@overload
-def normalize_bc_url(url: str) -> str:
-    ...
-
-
 ALLOWED_API_DOMAINS = ('.prismacloud.io', '.prismacloud.cn', '.bridgecrew.cloud')
 
 
@@ -77,6 +67,16 @@ def _validate_api_url_domain(url: str, param_name: str) -> None:
         logging.error(message)
         print(message, file=sys.stderr)
         sys.exit(2)
+
+
+@overload
+def normalize_bc_url(url: None) -> None:
+    ...
+
+
+@overload
+def normalize_bc_url(url: str) -> str:
+    ...
 
 
 def normalize_bc_url(url: str | None) -> str | None:
