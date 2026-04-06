@@ -588,22 +588,24 @@ class TestUrlValidation(unittest.TestCase):
     def test_setup_bridgecrew_credentials_rejects_invalid_prisma_url(self):
         """setup_bridgecrew_credentials() must reject attacker-controlled Prisma URLs."""
         instance = BcPlatformIntegration()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             instance.setup_bridgecrew_credentials(
                 repo_id="org/repo",
                 prisma_api_url="https://attacker.example/capture",
                 source=get_source_type('disabled'),
             )
+        self.assertEqual(ctx.exception.code, 2)
 
     def test_setup_bridgecrew_credentials_rejects_invalid_bc_url(self):
         """setup_bridgecrew_credentials() must reject attacker-controlled BC URLs."""
         instance = BcPlatformIntegration()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             instance.setup_bridgecrew_credentials(
                 repo_id="org/repo",
                 bc_api_url="https://evil.com",
                 source=get_source_type('disabled'),
             )
+        self.assertEqual(ctx.exception.code, 2)
 
     def test_setup_bridgecrew_credentials_accepts_valid_prisma_url(self):
         """Legitimate Prisma Cloud URLs must still work."""
@@ -622,20 +624,23 @@ class TestUrlValidation(unittest.TestCase):
         # Bypass normalize_prisma_url by setting the URL directly
         instance.prisma_api_url = 'https://attacker.example/capture'
         instance.setup_http_manager()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             instance.get_auth_token()
+        self.assertEqual(ctx.exception.code, 2)
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'https://evil.com'})
     def test_clean_rejects_invalid_bc_api_url_env(self):
         """clean() must reject invalid BC_API_URL environment variable."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             BcPlatformIntegration()
+        self.assertEqual(ctx.exception.code, 2)
 
     @mock.patch.dict(os.environ, {'PRISMA_API_URL': 'https://evil.com'})
     def test_clean_rejects_invalid_prisma_api_url_env(self):
         """clean() must reject invalid PRISMA_API_URL environment variable."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             BcPlatformIntegration()
+        self.assertEqual(ctx.exception.code, 2)
 
 
 if __name__ == '__main__':

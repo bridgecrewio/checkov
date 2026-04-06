@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import ssl
+import sys
 import uuid
 from urllib.parse import urlparse
 import requests
@@ -62,13 +63,20 @@ def _is_allowed_domain(hostname: str) -> bool:
 
 
 def _validate_api_url_domain(url: str, param_name: str) -> None:
-    """Validate that a URL belongs to an allowed Prisma Cloud / Bridgecrew domain."""
+    """Validate that a URL belongs to an allowed Prisma Cloud / Bridgecrew domain.
+
+    Exits the process with a clear error message if the domain is not allowed,
+    preventing credential exfiltration via URL redirect attacks (F-04).
+    """
     parsed = urlparse(url)
     if not parsed.hostname or not _is_allowed_domain(parsed.hostname):
-        raise ValueError(
-            f"{param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
+        message = (
+            f"Error: {param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
             f"got: {url}"
         )
+        logging.error(message)
+        print(message, file=sys.stderr)
+        sys.exit(2)
 
 
 def normalize_bc_url(url: str | None) -> str | None:

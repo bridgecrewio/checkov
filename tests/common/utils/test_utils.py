@@ -59,17 +59,21 @@ class TestUtils(unittest.TestCase):
 
     def test_normalize_prisma_url_rejects_attacker_domain(self):
         """PoC rejection: the exact payload from the reproduction steps must be rejected."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             normalize_prisma_url('https://attacker.example/capture')
+        self.assertEqual(ctx.exception.code, 2)
 
     def test_normalize_prisma_url_rejects_invalid_domains(self):
         """Verify various attacker-controlled or spoofed domains are rejected."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             normalize_prisma_url('https://evil.com')
-        with self.assertRaises(ValueError):
+        self.assertEqual(ctx.exception.code, 2)
+        with self.assertRaises(SystemExit) as ctx:
             normalize_prisma_url('https://api0.prismacloud.io.evil.com')
-        with self.assertRaises(ValueError):
+        self.assertEqual(ctx.exception.code, 2)
+        with self.assertRaises(SystemExit) as ctx:
             normalize_prisma_url('https://prismacloud.io.evil.com')
+        self.assertEqual(ctx.exception.code, 2)
 
     # --- Bridgecrew URL normalization + domain validation ---
 
@@ -88,16 +92,19 @@ class TestUtils(unittest.TestCase):
 
     def test_normalize_bc_url_rejects_invalid_domains(self):
         """Verify attacker-controlled or spoofed Bridgecrew domains are rejected."""
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             normalize_bc_url('https://evil-bridgecrew.cloud')
-        with self.assertRaises(ValueError):
+        self.assertEqual(ctx.exception.code, 2)
+        with self.assertRaises(SystemExit) as ctx:
             normalize_bc_url('https://bridgecrew.cloud.evil.com')
+        self.assertEqual(ctx.exception.code, 2)
 
     # --- _validate_api_url_domain direct tests ---
 
     def test_validate_api_url_domain_rejects_no_hostname(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(SystemExit) as ctx:
             _validate_api_url_domain('not-a-url', 'test')
+        self.assertEqual(ctx.exception.code, 2)
 
     def test_skip_comment_regex(self):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145: ADD REASON'))
