@@ -93,7 +93,6 @@ class TestDeserializeCacheRejectsInvalid:
 
 
 class TestPicklePayloadRejected:
-    """Verify the exact PoC from finding F-08 is rejected."""
 
     def test_malicious_pickle_in_tmp_is_not_loaded(self, tmp_path: Any) -> None:
         """A pickle file at the legacy path must never be deserialized."""
