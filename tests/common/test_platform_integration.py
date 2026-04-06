@@ -14,10 +14,10 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 class TestBCApiUrl(unittest.TestCase):
 
-    @mock.patch.dict(os.environ, {'BC_API_URL': 'foo'})
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'https://www.bridgecrew.cloud'})
     def test_overriding_bc_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.api_url, "foo")
+        self.assertEqual(instance.api_url, "https://www.bridgecrew.cloud")
 
     @staticmethod
     def get_random_string():
@@ -580,6 +580,77 @@ def mock_prisma_policies_response():
             "remediable": False
         }
     ]
+
+
+class TestUrlValidation(unittest.TestCase):
+    """Integration tests for Prisma API URL domain validation."""
+
+    def test_setup_bridgecrew_credentials_rejects_invalid_prisma_url(self):
+        """setup_bridgecrew_credentials() must reject non-allowlisted Prisma URLs."""
+        instance = BcPlatformIntegration()
+        with self.assertRaises(SystemExit) as ctx:
+            instance.setup_bridgecrew_credentials(
+                repo_id="org/repo",
+                prisma_api_url="https://example.com/api",
+                source=get_source_type('disabled'),
+            )
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_setup_bridgecrew_credentials_rejects_invalid_bc_url(self):
+        """setup_bridgecrew_credentials() must reject non-allowlisted BC URLs."""
+        instance = BcPlatformIntegration()
+        with self.assertRaises(SystemExit) as ctx:
+            instance.setup_bridgecrew_credentials(
+                repo_id="org/repo",
+                bc_api_url="https://example.com",
+                source=get_source_type('disabled'),
+            )
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_setup_bridgecrew_credentials_accepts_valid_prisma_url(self):
+        """Legitimate Prisma Cloud URLs must still work."""
+        instance = BcPlatformIntegration()
+        instance.setup_bridgecrew_credentials(
+            repo_id="org/repo",
+            prisma_api_url="https://api0.prismacloud.io",
+            source=get_source_type('disabled'),
+        )
+        self.assertEqual(instance.prisma_api_url, "https://api0.prismacloud.io")
+
+    def test_setup_bridgecrew_credentials_accepts_gov_prisma_url(self):
+        """FedRAMP / gov Prisma Cloud URLs must still work."""
+        instance = BcPlatformIntegration()
+        instance.setup_bridgecrew_credentials(
+            repo_id="org/repo",
+            prisma_api_url="https://api.gov.prismacloud.io",
+            source=get_source_type('disabled'),
+        )
+        self.assertEqual(instance.prisma_api_url, "https://api.gov.prismacloud.io")
+
+    def test_get_auth_token_rejects_invalid_prisma_url(self):
+        """get_auth_token() must reject non-allowlisted Prisma URL."""
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '00000000-0000-0000-0000-000000000000::dGVzdA=='
+        # Bypass normalize_prisma_url by setting the URL directly
+        instance.prisma_api_url = 'https://example.com/api'
+        instance.setup_http_manager()
+        with self.assertRaises(SystemExit) as ctx:
+            instance.get_auth_token()
+        self.assertEqual(ctx.exception.code, 2)
+
+    @mock.patch.dict(os.environ, {'BC_API_URL': 'https://example.com'})
+    def test_clean_rejects_invalid_bc_api_url_env(self):
+        """clean() must reject invalid BC_API_URL environment variable."""
+        with self.assertRaises(SystemExit) as ctx:
+            BcPlatformIntegration()
+        self.assertEqual(ctx.exception.code, 2)
+
+    @mock.patch.dict(os.environ, {'PRISMA_API_URL': 'https://example.com'})
+    def test_clean_rejects_invalid_prisma_api_url_env(self):
+        """clean() must reject invalid PRISMA_API_URL environment variable."""
+        with self.assertRaises(SystemExit) as ctx:
+            BcPlatformIntegration()
+        self.assertEqual(ctx.exception.code, 2)
 
 
 if __name__ == '__main__':
