@@ -73,8 +73,8 @@ class TestSerializeCache:
         assert deserialized[("checkov", "3.0")][1].available_version == "3.1"  # type: ignore[union-attr]
 
 
-class TestDeserializeCacheWithMalformedInput:
-    @pytest.mark.parametrize("bad_data", [
+class TestDeserializeCacheWithInvalidInput:
+    @pytest.mark.parametrize("data", [
         "not a dict",
         42,
         None,
@@ -84,13 +84,13 @@ class TestDeserializeCacheWithMalformedInput:
         {f"a{KEY_SEPARATOR}b": ["not_a_number", None]},
         {f"a{KEY_SEPARATOR}b": [1.0]},
     ])
-    def test_returns_empty_for_malformed_data(self, bad_data: Any) -> None:
-        assert _deserialize_cache(bad_data) == {}
+    def test_returns_empty_for_invalid_data(self, data: Any) -> None:
+        assert _deserialize_cache(data) == {}
 
 
 class TestPicklePayloadSafety:
 
-    def test_malicious_pickle_in_tmp_is_not_loaded(self, tmp_path: Any) -> None:
+    def test_pickle_in_tmp_is_not_loaded(self, tmp_path: Any) -> None:
         class Pwn:
             def __reduce__(self) -> tuple[Any, ...]:
                 return (os.system, ("echo PICKLE-CANARY-FIRED",))
