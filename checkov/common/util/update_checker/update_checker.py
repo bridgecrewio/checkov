@@ -1,18 +1,96 @@
 """Module that checks if there is an updated version of a package available."""
 from __future__ import annotations
 
+import json
 import os
-import pickle  # nosec
 import re
-from collections.abc import Generator, Callable
-from typing import Any
-
-import requests
 import sys
 import time
+from collections.abc import Generator, Callable
 from datetime import datetime
 from functools import wraps
 from tempfile import gettempdir
+from typing import Any
+
+import platformdirs
+import requests
+
+CACHE_DIR_NAME = "checkov"
+CACHE_FILENAME = "update_checker_cache.json"
+LEGACY_CACHE_FILENAME = "update_checker_cache.pkl"
+CACHE_EXPIRE_SECONDS = 3600
+KEY_SEPARATOR = "||"
+DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
+def _get_cache_dir() -> str:
+    """Return a per-user cache directory, creating it if needed."""
+    cache_dir = platformdirs.user_cache_dir(CACHE_DIR_NAME)
+    os.makedirs(cache_dir, exist_ok=True)
+    return cache_dir
+
+
+def _remove_legacy_cache() -> None:
+    try:
+        legacy_path = os.path.join(gettempdir(), LEGACY_CACHE_FILENAME)
+        if os.path.exists(legacy_path):
+            os.remove(legacy_path)
+    except OSError:
+        pass
+
+
+def _serialize_result(result: UpdateResult | None) -> dict[str, Any] | None:
+    if result is None:
+        return None
+    return {
+        "package_name": result.package_name,
+        "running_version": result.running_version,
+        "available_version": result.available_version,
+        "release_date": result.release_date.strftime(DATE_FORMAT) if result.release_date else None,
+    }
+
+
+def _deserialize_result(data: Any) -> UpdateResult | None:
+    if not isinstance(data, dict):
+        return None
+    required = {"package_name", "running_version", "available_version", "release_date"}
+    if not required.issubset(data.keys()):
+        return None
+    return UpdateResult(
+        package=str(data["package_name"]),
+        running=str(data["running_version"]),
+        available=str(data["available_version"]),
+        release_date=data.get("release_date"),
+    )
+
+
+def _serialize_cache(cache: dict[tuple[str, str], tuple[float, UpdateResult | None]]) -> dict[str, Any]:
+    return {
+        f"{pkg}{KEY_SEPARATOR}{ver}": [ts, _serialize_result(result)]
+        for (pkg, ver), (ts, result) in cache.items()
+    }
+
+
+def _deserialize_cache(data: Any) -> dict[tuple[str, str], tuple[float, UpdateResult | None]]:
+    cache: dict[tuple[str, str], tuple[float, UpdateResult | None]] = {}
+    if not isinstance(data, dict):
+        return cache
+    for key, value in data.items():
+        if not isinstance(key, str) or KEY_SEPARATOR not in key:
+            continue
+        parts = key.split(KEY_SEPARATOR, 1)
+        if not isinstance(value, list) or len(value) != 2 or not isinstance(value[0], (int, float)):
+            continue
+        cache[(parts[0], parts[1])] = (float(value[0]), _deserialize_result(value[1]))
+    return cache
+
+
+def _write_json_atomic(path: str, data: Any) -> None:
+    """Write JSON to *path* atomically via a temp file to avoid corruption."""
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w") as fp:
+        json.dump(data, fp)
+    os.replace(tmp_path, path)
 
 
 def cache_results(
@@ -21,42 +99,32 @@ def cache_results(
     """Return decorated function that caches the results."""
 
     def save_to_permacache() -> None:
-        """Save the in-memory cache data to the permacache.
-
-        There is a race condition here between two processes updating at the
-        same time. It's perfectly acceptable to lose and/or corrupt the
-        permacache information as each process's in-memory cache will remain
-        in-tact.
-
-        """
+        """Merge in-memory cache into the on-disk permacache."""
         update_from_permacache()
         try:
             if filename is None:
                 return
-
-            with open(filename, "wb") as fp:
-                pickle.dump(cache, fp, pickle.HIGHEST_PROTOCOL)
+            _write_json_atomic(filename, _serialize_cache(cache))
         except IOError:
-            pass  # Ignore permacache saving exceptions
+            pass
 
     def update_from_permacache() -> None:
-        """Attempt to update newer items from the permacache."""
+        """Load newer entries from the on-disk permacache into memory."""
         try:
             if filename is None:
                 return
-
-            with open(filename, "rb") as fp:
-                permacache = pickle.load(fp)  # nosec
-        except Exception:  # TODO: Handle specific exceptions
-            return  # It's okay if it cannot load
+            with open(filename, "r") as fp:
+                permacache = _deserialize_cache(json.load(fp))
+        except Exception:
+            return
         for key, value in permacache.items():
             if key not in cache or value[0] > cache[key][0]:
                 cache[key] = value
 
     cache: dict[tuple[str, str], tuple[float, UpdateResult | None]] = {}
-    cache_expire_time = 3600
     try:
-        filename = os.path.join(gettempdir(), "update_checker_cache.pkl")
+        _remove_legacy_cache()
+        filename = os.path.join(_get_cache_dir(), CACHE_FILENAME)
         update_from_permacache()
     except NotImplementedError:
         filename = None
@@ -66,9 +134,9 @@ def cache_results(
         """Return cached results if available."""
         now = time.time()
         key = (package_name, package_version)
-        if not obj._bypass_cache and key in cache:  # Check the in-memory cache
+        if not obj._bypass_cache and key in cache:
             cache_time, retval = cache[key]
-            if now - cache_time < cache_expire_time:
+            if now - cache_time < CACHE_EXPIRE_SECONDS:
                 return retval
         retval = function(obj, package_name, package_version, **extra_data)
         cache[key] = now, retval
@@ -110,20 +178,16 @@ def standard_release(version: str) -> bool:
     return version.replace(".", "").isdigit()
 
 
-# This class must be defined before UpdateChecker in order to unpickle objects
-# of this type
 class UpdateResult:
     """Contains the information for a package that has an update."""
 
     def __init__(self, package: str, running: str, available: str, release_date: str | None) -> None:
-        """Initialize an UpdateResult instance."""
         self.available_version = available
         self.package_name = package
         self.running_version = running
-        if release_date:
-            self.release_date: datetime | None = datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S")
-        else:
-            self.release_date = None
+        self.release_date: datetime | None = (
+            datetime.strptime(release_date, DATE_FORMAT) if release_date else None
+        )
 
     def __str__(self) -> str:
         """Return a printable UpdateResult string."""
