@@ -50,17 +50,42 @@ def normalize_bc_url(url: str) -> str:
     ...
 
 
+ALLOWED_API_DOMAINS = ('.prismacloud.io', '.prismacloud.cn', '.bridgecrew.cloud')
+
+
+def _is_allowed_domain(hostname: str) -> bool:
+    """Check if hostname matches an allowed domain (exact or subdomain)."""
+    return any(
+        hostname == d.lstrip('.') or hostname.endswith(d)
+        for d in ALLOWED_API_DOMAINS
+    )
+
+
+def _validate_api_url_domain(url: str, param_name: str) -> None:
+    """Validate that a URL belongs to an allowed Prisma Cloud / Bridgecrew domain."""
+    parsed = urlparse(url)
+    if not parsed.hostname or not _is_allowed_domain(parsed.hostname):
+        raise ValueError(
+            f"{param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
+            f"got: {url}"
+        )
+
+
 def normalize_bc_url(url: str | None) -> str | None:
     if not url:
         return None
-    return url.lower().replace('http:', 'https:').strip().rstrip('/')
+    normalized = url.lower().replace('http:', 'https:').strip().rstrip('/')
+    _validate_api_url_domain(normalized, 'BC_API_URL')
+    return normalized
 
 
 def normalize_prisma_url(url: str | None) -> str | None:
-    """ Correct common Prisma Cloud API URL misconfigurations """
+    """Correct common Prisma Cloud API URL misconfigurations and validate domain."""
     if not url:
         return None
-    return url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
+    normalized = url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
+    _validate_api_url_domain(normalized, 'prisma-api-url')
+    return normalized
 
 
 def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:

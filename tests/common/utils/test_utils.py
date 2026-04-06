@@ -4,7 +4,7 @@ import unittest
 
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, normalize_bc_url
+from checkov.common.util.http_utils import normalize_prisma_url, normalize_bc_url, _validate_api_url_domain
 
 
 class TestUtils(unittest.TestCase):
@@ -38,6 +38,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(res['a'], '1')
         self.assertEqual(res['b'], '2')
 
+    # --- Prisma URL normalization + domain validation ---
+
     def test_normalize_prisma_url(self):
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://app0.prismacloud.io'))
@@ -47,6 +49,30 @@ class TestUtils(unittest.TestCase):
         self.assertIsNone(normalize_prisma_url(''))
         self.assertIsNone(normalize_prisma_url(None))
 
+    def test_normalize_prisma_url_valid_domains(self):
+        """Verify all legitimate Prisma Cloud API URL patterns are accepted."""
+        self.assertEqual('https://api.prismacloud.io', normalize_prisma_url('https://api.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
+        self.assertEqual('https://api2.eu.prismacloud.io', normalize_prisma_url('https://api2.eu.prismacloud.io'))
+        self.assertEqual('https://api.gov.prismacloud.io', normalize_prisma_url('https://api.gov.prismacloud.io'))
+        self.assertEqual('https://api.prismacloud.cn', normalize_prisma_url('https://api.prismacloud.cn'))
+
+    def test_normalize_prisma_url_rejects_attacker_domain(self):
+        """PoC rejection: the exact payload from the reproduction steps must be rejected."""
+        with self.assertRaises(ValueError):
+            normalize_prisma_url('https://attacker.example/capture')
+
+    def test_normalize_prisma_url_rejects_invalid_domains(self):
+        """Verify various attacker-controlled or spoofed domains are rejected."""
+        with self.assertRaises(ValueError):
+            normalize_prisma_url('https://evil.com')
+        with self.assertRaises(ValueError):
+            normalize_prisma_url('https://api0.prismacloud.io.evil.com')
+        with self.assertRaises(ValueError):
+            normalize_prisma_url('https://prismacloud.io.evil.com')
+
+    # --- Bridgecrew URL normalization + domain validation ---
+
     def test_normalize_bc_url(self):
         self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('https://www.bridgecrew.cloud'))
         self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('http://www.bridgecrew.cloud'))
@@ -54,6 +80,24 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url(' https://www.bridgecrew.cloud'))
         self.assertIsNone(normalize_bc_url(''))
         self.assertIsNone(normalize_bc_url(None))
+
+    def test_normalize_bc_url_valid_domains(self):
+        """Verify legitimate Bridgecrew URLs are accepted."""
+        self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('https://www.bridgecrew.cloud'))
+        self.assertEqual('https://bridgecrew.cloud', normalize_bc_url('https://bridgecrew.cloud'))
+
+    def test_normalize_bc_url_rejects_invalid_domains(self):
+        """Verify attacker-controlled or spoofed Bridgecrew domains are rejected."""
+        with self.assertRaises(ValueError):
+            normalize_bc_url('https://evil-bridgecrew.cloud')
+        with self.assertRaises(ValueError):
+            normalize_bc_url('https://bridgecrew.cloud.evil.com')
+
+    # --- _validate_api_url_domain direct tests ---
+
+    def test_validate_api_url_domain_rejects_no_hostname(self):
+        with self.assertRaises(ValueError):
+            _validate_api_url_domain('not-a-url', 'test')
 
     def test_skip_comment_regex(self):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145: ADD REASON'))

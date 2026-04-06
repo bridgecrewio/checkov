@@ -59,6 +59,7 @@ from checkov.common.util.http_utils import (
     REQUEST_CONNECT_TIMEOUT,
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
+    _validate_api_url_domain,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_params, convert_str_to_bool
 from checkov.version import version as checkov_version
@@ -296,6 +297,8 @@ class BcPlatformIntegration:
                 "A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
+        # Defense-in-depth: validate domain before sending credentials
+        _validate_api_url_domain(self.prisma_api_url, 'prisma-api-url')
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_api_url}/login",  # type:ignore[no-untyped-call]
                                     body=json.dumps({"username": username, "password": password}),
