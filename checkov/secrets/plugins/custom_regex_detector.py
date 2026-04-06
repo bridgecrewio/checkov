@@ -168,8 +168,8 @@ class CustomRegexDetector(RegexBasedDetector):
                 multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
-                for match in multiline_regex.finditer(file_content):
-                    secret_value = self._extract_real_regex_match(cast(Tuple[str], match.groups()) or match.group(0))
+                for regex_match in multiline_regex.finditer(file_content):
+                    secret_value = self._extract_real_regex_match(cast(Tuple[str], regex_match.groups()) or regex_match.group(0))
                     if isinstance(secret_value, tuple):
                         secret_value = secret_value[0]
                     # Line number strategy:
@@ -179,14 +179,14 @@ class CustomRegexDetector(RegexBasedDetector):
                     #   no single line contains it, so fall back to the prerun pattern's line,
                     #   which is the most meaningful trigger line (e.g. "BEGIN PRIVATE KEY").
                     if '\n' not in secret_value:
-                        inner_offset = match.group(0).find(secret_value)
+                        inner_offset = regex_match.group(0).find(secret_value)
                         if inner_offset < 0:
                             continue
-                        secret_offset = match.start() + inner_offset
+                        secret_offset = regex_match.start() + inner_offset
                         line_num = file_content[:secret_offset].count('\n') + 1
                     else:
-                        prerun_search = regex.search(file_content, match.start(), match.end())
-                        secret_offset = prerun_search.start() if prerun_search else match.start()
+                        prerun_search = regex.search(file_content, regex_match.start(), regex_match.end())
+                        secret_offset = prerun_search.start() if prerun_search else regex_match.start()
                         line_num = file_content[:secret_offset].count('\n') + 1
                     quoted_secret = f"'{secret_value}'"
                     ps = PotentialSecret(
