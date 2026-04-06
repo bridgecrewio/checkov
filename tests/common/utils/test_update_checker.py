@@ -1,3 +1,4 @@
+"""Tests for checkov.common.util.update_checker.update_checker."""
 from __future__ import annotations
 
 import json
@@ -12,7 +13,6 @@ from unittest.mock import patch
 import pytest
 
 from checkov.common.util.update_checker.update_checker import (
-    CACHE_DIR_MODE,
     CACHE_FILENAME,
     DATE_FORMAT,
     INSECURE_PERMISSION_MASK,
@@ -76,7 +76,7 @@ class TestSerializeCache:
         assert deserialized[("checkov", "3.0")][1].available_version == "3.1"  # type: ignore[union-attr]
 
 
-class TestDeserializeCacheRejectsInvalid:
+class TestDeserializeCacheWithMalformedInput:
     @pytest.mark.parametrize("bad_data", [
         "not a dict",
         42,
@@ -87,16 +87,13 @@ class TestDeserializeCacheRejectsInvalid:
         {f"a{KEY_SEPARATOR}b": ["not_a_number", None]},
         {f"a{KEY_SEPARATOR}b": [1.0]},
     ])
-    def test_rejects_malformed_data(self, bad_data: Any) -> None:
-        result = _deserialize_cache(bad_data)
-        assert result == {}
+    def test_returns_empty_for_malformed_data(self, bad_data: Any) -> None:
+        assert _deserialize_cache(bad_data) == {}
 
 
-class TestPicklePayloadRejected:
+class TestPicklePayloadSafety:
 
     def test_malicious_pickle_in_tmp_is_not_loaded(self, tmp_path: Any) -> None:
-        """A pickle file at the legacy path must never be deserialized."""
-
         class Pwn:
             def __reduce__(self) -> tuple[Any, ...]:
                 return (os.system, ("echo PICKLE-CANARY-FIRED",))
@@ -107,8 +104,6 @@ class TestPicklePayloadRejected:
 
         assert legacy_path.exists()
 
-        # The new code only reads JSON from a per-user dir — never pickle from /tmp.
-        # Attempting to deserialize the pickle as JSON must fail gracefully.
         try:
             with open(legacy_path, "r") as fp:
                 data = json.load(fp)
@@ -117,7 +112,7 @@ class TestPicklePayloadRejected:
 
         assert data is None or _deserialize_cache(data) == {}
 
-    def test_legacy_cache_is_removed(self, tmp_path: Any) -> None:
+    def test_legacy_cache_is_cleaned_up(self, tmp_path: Any) -> None:
         legacy_path = os.path.join(str(tmp_path), LEGACY_CACHE_FILENAME)
         with open(legacy_path, "wb") as f:
             pickle.dump({"x": "y"}, f)
@@ -133,29 +128,29 @@ class TestPicklePayloadRejected:
 # ---------------------------------------------------------------------------
 
 class TestFilePermissions:
-    def test_secure_permissions_accepted(self, tmp_path: Any) -> None:
-        secure_file = tmp_path / "secure.json"
-        secure_file.write_text("{}")
-        os.chmod(secure_file, 0o600)
-        assert _has_secure_permissions(str(secure_file))
+    def test_owner_only_is_secure(self, tmp_path: Any) -> None:
+        f = tmp_path / "cache.json"
+        f.write_text("{}")
+        os.chmod(f, 0o600)
+        assert _has_secure_permissions(str(f))
 
-    def test_world_readable_rejected(self, tmp_path: Any) -> None:
-        insecure_file = tmp_path / "insecure.json"
-        insecure_file.write_text("{}")
-        os.chmod(insecure_file, 0o644)
-        assert not _has_secure_permissions(str(insecure_file))
+    def test_world_readable_is_insecure(self, tmp_path: Any) -> None:
+        f = tmp_path / "cache.json"
+        f.write_text("{}")
+        os.chmod(f, 0o644)
+        assert not _has_secure_permissions(str(f))
 
-    def test_group_writable_rejected(self, tmp_path: Any) -> None:
-        insecure_file = tmp_path / "insecure.json"
-        insecure_file.write_text("{}")
-        os.chmod(insecure_file, 0o660)
-        assert not _has_secure_permissions(str(insecure_file))
+    def test_group_writable_is_insecure(self, tmp_path: Any) -> None:
+        f = tmp_path / "cache.json"
+        f.write_text("{}")
+        os.chmod(f, 0o660)
+        assert not _has_secure_permissions(str(f))
 
-    def test_world_writable_rejected(self, tmp_path: Any) -> None:
-        insecure_file = tmp_path / "insecure.json"
-        insecure_file.write_text("{}")
-        os.chmod(insecure_file, 0o666)
-        assert not _has_secure_permissions(str(insecure_file))
+    def test_world_writable_is_insecure(self, tmp_path: Any) -> None:
+        f = tmp_path / "cache.json"
+        f.write_text("{}")
+        os.chmod(f, 0o666)
+        assert not _has_secure_permissions(str(f))
 
 
 
