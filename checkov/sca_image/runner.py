@@ -86,9 +86,17 @@ class Runner(PackageRunner):
             logging.error(f"Invalid image_id format: {image_id}")
             return {}
 
-        command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {image_id}"
+        command_args = [
+            str(Path(bridgecrew_dir) / TWISTCLI_FILE_NAME),
+            "images", "scan",
+            "--address", docker_image_scanning_integration.get_proxy_address(),
+            "--token", docker_image_scanning_integration.get_bc_api_key(),
+            "--details",
+            "--output-file", str(output_path),
+            image_id,
+        ]
         process = await asyncio.create_subprocess_exec(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            *command_args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await process.communicate()
@@ -99,7 +107,7 @@ class Runner(PackageRunner):
         except UnicodeDecodeError:
             logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
                           f"file content is:\n{image_scanner.dockerfile_content}.\n"
-                          f"twistcli command is \'{command}\'", exc_info=True)
+                          f"twistcli command args are \'{command_args}\'", exc_info=True)
 
         exit_code = await process.wait()
 
