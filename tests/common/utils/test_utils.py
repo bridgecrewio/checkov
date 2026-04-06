@@ -57,22 +57,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('https://api.gov.prismacloud.io', normalize_prisma_url('https://api.gov.prismacloud.io'))
         self.assertEqual('https://api.prismacloud.cn', normalize_prisma_url('https://api.prismacloud.cn'))
 
-    def test_normalize_prisma_url_rejects_attacker_domain(self):
-        """PoC rejection: the exact payload from the reproduction steps must be rejected."""
+    def test_normalize_prisma_url_rejects_unknown_domain(self):
+        """Verify that non-allowlisted domains are rejected."""
         with self.assertRaises(SystemExit) as ctx:
-            normalize_prisma_url('https://attacker.example/capture')
+            normalize_prisma_url('https://example.com/api')
         self.assertEqual(ctx.exception.code, 2)
 
     def test_normalize_prisma_url_rejects_invalid_domains(self):
-        """Verify various attacker-controlled or spoofed domains are rejected."""
+        """Verify that spoofed or look-alike domains are rejected."""
         with self.assertRaises(SystemExit) as ctx:
-            normalize_prisma_url('https://evil.com')
+            normalize_prisma_url('https://not-prismacloud.com')
         self.assertEqual(ctx.exception.code, 2)
         with self.assertRaises(SystemExit) as ctx:
-            normalize_prisma_url('https://api0.prismacloud.io.evil.com')
+            normalize_prisma_url('https://api0.prismacloud.io.example.com')
         self.assertEqual(ctx.exception.code, 2)
         with self.assertRaises(SystemExit) as ctx:
-            normalize_prisma_url('https://prismacloud.io.evil.com')
+            normalize_prisma_url('https://prismacloud.io.example.com')
         self.assertEqual(ctx.exception.code, 2)
 
     # --- Bridgecrew URL normalization + domain validation ---
@@ -91,12 +91,12 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('https://bridgecrew.cloud', normalize_bc_url('https://bridgecrew.cloud'))
 
     def test_normalize_bc_url_rejects_invalid_domains(self):
-        """Verify attacker-controlled or spoofed Bridgecrew domains are rejected."""
+        """Verify that spoofed or look-alike Bridgecrew domains are rejected."""
         with self.assertRaises(SystemExit) as ctx:
-            normalize_bc_url('https://evil-bridgecrew.cloud')
+            normalize_bc_url('https://not-bridgecrew.cloud')
         self.assertEqual(ctx.exception.code, 2)
         with self.assertRaises(SystemExit) as ctx:
-            normalize_bc_url('https://bridgecrew.cloud.evil.com')
+            normalize_bc_url('https://bridgecrew.cloud.example.com')
         self.assertEqual(ctx.exception.code, 2)
 
     # --- _validate_api_url_domain direct tests ---

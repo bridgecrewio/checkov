@@ -55,8 +55,7 @@ def _is_allowed_domain(hostname: str) -> bool:
 def _validate_api_url_domain(url: str, param_name: str) -> None:
     """Validate that a URL belongs to an allowed Prisma Cloud / Bridgecrew domain.
 
-    Exits the process with a clear error message if the domain is not allowed,
-    preventing credential exfiltration via URL redirect attacks (F-04).
+    Exits the process with a clear error message if the domain is not allowed.
     """
     parsed = urlparse(url)
     if not parsed.hostname or not _is_allowed_domain(parsed.hostname):
