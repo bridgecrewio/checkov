@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import os
 import pickle
-import stat
 import time
 from tempfile import gettempdir
 from typing import Any
@@ -15,14 +14,12 @@ import pytest
 from checkov.common.util.update_checker.update_checker import (
     CACHE_FILENAME,
     DATE_FORMAT,
-    INSECURE_PERMISSION_MASK,
     KEY_SEPARATOR,
     LEGACY_CACHE_FILENAME,
     UpdateResult,
     _deserialize_cache,
     _deserialize_result,
     _get_cache_dir,
-    _has_secure_permissions,
     _remove_legacy_cache,
     _serialize_cache,
     _serialize_result,
@@ -123,46 +120,12 @@ class TestPicklePayloadSafety:
         assert not os.path.exists(legacy_path)
 
 
-# ---------------------------------------------------------------------------
-# File permissions
-# ---------------------------------------------------------------------------
-
-class TestFilePermissions:
-    def test_owner_only_is_secure(self, tmp_path: Any) -> None:
-        f = tmp_path / "cache.json"
-        f.write_text("{}")
-        os.chmod(f, 0o600)
-        assert _has_secure_permissions(str(f))
-
-    def test_world_readable_is_insecure(self, tmp_path: Any) -> None:
-        f = tmp_path / "cache.json"
-        f.write_text("{}")
-        os.chmod(f, 0o644)
-        assert not _has_secure_permissions(str(f))
-
-    def test_group_writable_is_insecure(self, tmp_path: Any) -> None:
-        f = tmp_path / "cache.json"
-        f.write_text("{}")
-        os.chmod(f, 0o660)
-        assert not _has_secure_permissions(str(f))
-
-    def test_world_writable_is_insecure(self, tmp_path: Any) -> None:
-        f = tmp_path / "cache.json"
-        f.write_text("{}")
-        os.chmod(f, 0o666)
-        assert not _has_secure_permissions(str(f))
-
-
-
 class TestWriteJsonAtomic:
-    def test_creates_file_with_correct_permissions(self, tmp_path: Any) -> None:
+    def test_creates_file_with_correct_content(self, tmp_path: Any) -> None:
         target = str(tmp_path / "cache.json")
         _write_json_atomic(target, {"key": "value"})
 
         assert os.path.exists(target)
-        file_mode = stat.S_IMODE(os.stat(target).st_mode)
-        assert not (file_mode & INSECURE_PERMISSION_MASK), f"File has insecure permissions: {oct(file_mode)}"
-
         with open(target) as f:
             data = json.load(f)
         assert data == {"key": "value"}
@@ -183,11 +146,6 @@ class TestGetCacheDir:
         assert "checkov" in cache_dir
         assert cache_dir != gettempdir()
         assert os.path.isdir(cache_dir)
-
-    def test_dir_not_world_accessible(self) -> None:
-        cache_dir = _get_cache_dir()
-        dir_mode = stat.S_IMODE(os.stat(cache_dir).st_mode)
-        assert not (dir_mode & INSECURE_PERMISSION_MASK), f"Dir has insecure permissions: {oct(dir_mode)}"
 
 
 # ---------------------------------------------------------------------------

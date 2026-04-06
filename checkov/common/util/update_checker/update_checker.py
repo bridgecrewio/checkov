@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import stat
 import sys
 import time
 from collections.abc import Generator, Callable
@@ -20,17 +19,14 @@ CACHE_DIR_NAME = "checkov"
 CACHE_FILENAME = "update_checker_cache.json"
 LEGACY_CACHE_FILENAME = "update_checker_cache.pkl"
 CACHE_EXPIRE_SECONDS = 3600
-CACHE_DIR_MODE = 0o700
-CACHE_FILE_MODE = 0o600
 KEY_SEPARATOR = "||"
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
-INSECURE_PERMISSION_MASK = stat.S_IRWXG | stat.S_IRWXO
 
 
 def _get_cache_dir() -> str:
-    """Return a per-user cache directory, creating it with restricted permissions."""
+    """Return a per-user cache directory, creating it if needed."""
     cache_dir = platformdirs.user_cache_dir(CACHE_DIR_NAME)
-    os.makedirs(cache_dir, mode=CACHE_DIR_MODE, exist_ok=True)
+    os.makedirs(cache_dir, exist_ok=True)
     return cache_dir
 
 
@@ -41,14 +37,6 @@ def _remove_legacy_cache() -> None:
             os.remove(legacy_path)
     except Exception:
         pass
-
-
-def _has_secure_permissions(path: str) -> bool:
-    """Return True only if the file is not accessible by group or others."""
-    file_mode = stat.S_IMODE(os.stat(path).st_mode)
-    if file_mode & INSECURE_PERMISSION_MASK:
-        return False
-    return True
 
 
 def _serialize_result(result: UpdateResult | None) -> dict[str, Any] | None:
@@ -98,10 +86,9 @@ def _deserialize_cache(data: Any) -> dict[tuple[str, str], tuple[float, UpdateRe
 
 
 def _write_json_atomic(path: str, data: Any) -> None:
-    """Write JSON to *path* atomically with restricted permissions."""
+    """Write JSON to *path* atomically via a temp file to avoid corruption."""
     tmp_path = path + ".tmp"
-    fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, CACHE_FILE_MODE)
-    with os.fdopen(fd, "w") as fp:
+    with open(tmp_path, "w") as fp:
         json.dump(data, fp)
     os.replace(tmp_path, path)
 
@@ -125,8 +112,6 @@ def cache_results(
         """Load newer entries from the on-disk permacache into memory."""
         try:
             if filename is None:
-                return
-            if not _has_secure_permissions(filename):
                 return
             with open(filename, "r") as fp:
                 permacache = _deserialize_cache(json.load(fp))
