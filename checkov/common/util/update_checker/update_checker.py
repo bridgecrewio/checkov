@@ -35,7 +35,7 @@ def _remove_legacy_cache() -> None:
         legacy_path = os.path.join(gettempdir(), LEGACY_CACHE_FILENAME)
         if os.path.exists(legacy_path):
             os.remove(legacy_path)
-    except Exception:
+    except OSError:
         pass
 
 
