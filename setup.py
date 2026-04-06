@@ -109,7 +109,7 @@ setup(
         "pydantic<3.0.0,>=2.0.0",
         "asteval==1.0.6",
         "urllib3>=1.26.20",
-        "platformdirs>=3.0.0,<5.0.0"
+        "platformdirs>=4.0.0,<5.0.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

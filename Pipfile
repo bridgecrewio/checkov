@@ -85,7 +85,7 @@ asteval = "==1.0.6"
 bc-detect-secrets = "==1.5.47"
 urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.3"
-platformdirs = ">=3.0.0,<5.0.0"
+platformdirs = ">=4.0.0,<5.0.0"
 
 [requires]
 python_version = "3.9"
