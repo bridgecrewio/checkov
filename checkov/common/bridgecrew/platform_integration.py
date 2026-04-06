@@ -297,7 +297,7 @@ class BcPlatformIntegration:
                 "A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
-        # Defense-in-depth: validate domain before sending credentials
+        # Validate API URL domain allowlist
         _validate_api_url_domain(self.prisma_api_url, 'prisma-api-url')
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_api_url}/login",  # type:ignore[no-untyped-call]

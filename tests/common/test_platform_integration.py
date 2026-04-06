@@ -628,7 +628,7 @@ class TestUrlValidation(unittest.TestCase):
         self.assertEqual(instance.prisma_api_url, "https://api.gov.prismacloud.io")
 
     def test_get_auth_token_rejects_invalid_prisma_url(self):
-        """get_auth_token() defense-in-depth: must reject invalid Prisma URL before sending credentials."""
+        """get_auth_token() must reject non-allowlisted Prisma URL."""
         instance = BcPlatformIntegration()
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::dGVzdA=='
         # Bypass normalize_prisma_url by setting the URL directly
