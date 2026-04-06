@@ -65,7 +65,7 @@ def extract_tar_archive(source_path: str, dest_path: str) -> None:
         if sys.version_info >= (3, 12):
             tar.extractall(path=dest_path, filter="data")
         else:
-            tar.extractall(path=dest_path, members=_safe_tar_members(tar, dest_path))
+            tar.extractall(path=dest_path, members=_safe_tar_members(tar, dest_path))  # nosec B202
 
 
 def extract_zip_archive(source_path: str, dest_path: str) -> None:
