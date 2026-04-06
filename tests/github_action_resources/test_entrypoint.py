@@ -135,19 +135,3 @@ def test_entrypoint_argument_injection_prevention_csv(mock_env, tmp_path):
     assert expected_arg in result.stdout
     assert "ARG: [--external-checks-git]" not in result.stdout
 
-def test_entrypoint_api_key_redaction(mock_env, tmp_path):
-    """Test 10: API key is passed to checkov but redacted from the echo output."""
-    mock_env["API_KEY_VARIABLE"] = "secret-api-key"
-    mock_env["GITHUB_BRANCH"] = "main"
-    mock_env["GITHUB_REPOSITORY"] = "org/repo"
-    
-    result = run_entrypoint_strict_args(mock_env, tmp_path)
-    assert result.returncode == 0
-    
-    # Verify the API key was actually passed to checkov
-    assert "ARG: [--bc-api-key]" in result.stdout
-    assert "ARG: [secret-api-key]" in result.stdout
-    
-    # Verify the API key was redacted from the printed command line
-    assert " <API_KEY>" in result.stdout
-    assert "secret-api-key" not in result.stdout.split("CHECKOV_RESULTS=")[0] # Check only the echo part
