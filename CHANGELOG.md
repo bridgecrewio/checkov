@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.513...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.517...HEAD)
+
+## [3.2.517](https://github.com/bridgecrewio/checkov/compare/3.2.513...3.2.517) - 2026-04-06
+
+### Bug Fix
+
+- **general:** add domain allowlist validation for Prisma Cloud and Bridgecrew API URLs - [#7496](https://github.com/bridgecrewio/checkov/pull/7496)
+- **terraform:** Harden tar and zip extraction - [#7497](https://github.com/bridgecrewio/checkov/pull/7497)
 
 ## [3.2.513](https://github.com/bridgecrewio/checkov/compare/3.2.511...3.2.513) - 2026-03-27
 
