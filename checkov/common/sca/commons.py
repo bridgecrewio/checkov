@@ -9,8 +9,8 @@ from checkov.common.output.common import SCADetails
 UNFIXABLE_VERSION = "N/A"
 OPEN_STATUS = "open"
 
-# Docker image ID: sha256:<64 hex chars> or raw <64 hex chars>
-IMAGE_ID_PATTERN = re.compile(r'^(?:sha256:)?[a-fA-F0-9]{64}$')
+# Docker image ID: sha256:<64 hex chars>, raw <64 hex chars>, or shortened SHA (3+ hex chars)
+IMAGE_ID_PATTERN = re.compile(r'^(?:sha256:)?[a-fA-F0-9]{3,64}$')
 
 # Docker image name: [registry[:port]/][namespace/]repository[:tag][@sha256:digest]
 IMAGE_NAME_PATTERN = re.compile(
