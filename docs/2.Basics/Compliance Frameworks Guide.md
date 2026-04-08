@@ -146,6 +146,113 @@ SOC 2 compliance focuses on five trust principles:
 checkov -d . --check CKV_AWS_19,CKV_AWS_20,CKV_AWS_21
 ```
 
+## China MLPS 2.0 Compliance (等保2.0)
+
+Multi-Level Protection Scheme 2.0 (MLPS 2.0) is China's cybersecurity compliance framework that requires organizations to implement security measures based on the criticality of their information systems.
+
+### MLPS 2.0 Levels
+
+| Level | Description | Use Case |
+|-------|-------------|----------|
+| **Level 1** | Basic protection | General information systems |
+| **Level 2** | Moderate protection | Systems affecting social order |
+| **Level 3** | Strict protection | Critical infrastructure |
+| **Level 4** | Strictest protection | National security systems |
+
+### Using Checkov for MLPS 2.0
+
+While Checkov doesn't have dedicated MLPS 2.0 policies yet, many existing checks map to MLPS requirements:
+
+#### Access Control (访问控制)
+
+```shell
+# Authentication and authorization checks
+checkov -d . --check CKV_AWS_1,CKV_AWS_23,CKV_AWS_40
+```
+
+| MLPS Requirement | Checkov Check | Description |
+|------------------|---------------|-------------|
+| Identity authentication | CKV_AWS_1 | Ensure IAM policies are attached to groups/roles |
+| Access control | CKV_AWS_23 | Ensure AWS SES configuration set has TLS policy |
+| Permission management | CKV_AWS_40 | Ensure IAM policies do not allow privilege escalation |
+
+#### Data Security (数据安全)
+
+```shell
+# Encryption and data protection checks
+checkov -d . --check CKV_AWS_16,CKV_AWS_17,CKV_AWS_19
+```
+
+| MLPS Requirement | Checkov Check | Description |
+|------------------|---------------|-------------|
+| Data encryption | CKV_AWS_16 | Ensure EBS volumes are encrypted |
+| Key management | CKV_AWS_17 | Ensure RDS instances have encryption enabled |
+| Data backup | CKV_AWS_19 | Ensure EBS snapshots are encrypted |
+
+#### Logging and Monitoring (安全审计)
+
+```shell
+# Audit logging checks
+checkov -d . --check CKV_AWS_18,CKV_AWS_21
+```
+
+| MLPS Requirement | Checkov Check | Description |
+|------------------|---------------|-------------|
+| Access logging | CKV_AWS_18 | Ensure S3 bucket access logging is enabled |
+| CloudTrail | CKV_AWS_21 | Ensure CloudTrail is enabled in all regions |
+
+### Example: MLPS Level 3 Baseline Scan
+
+For organizations targeting MLPS Level 3 compliance, here's a recommended baseline scan:
+
+```shell
+#!/bin/bash
+# mlps-level3-scan.sh
+# Recommended checks for MLPS 2.0 Level 3 compliance baseline
+
+checkov -d . \
+  --check \
+  CKV_AWS_1,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19,\
+  CKV_AWS_21,CKV_AWS_23,CKV_AWS_40,CKV_AWS_53,CKV_AWS_54,\
+  CKV_AWS_55,CKV_AWS_56,CKV_AWS_57,CKV_AWS_58,CKV_AWS_59 \
+  --output cli \
+  --compact
+```
+
+### Creating MLPS-Focused Reports
+
+Generate structured reports for compliance auditors:
+
+```shell
+# JSON report for automated compliance tracking
+checkov -d . \
+  --check CKV_AWS_1,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19 \
+  --output json \
+  --output-file mlps-compliance-report.json
+
+# SARIF for integration with compliance dashboards
+checkov -d . \
+  --check CKV_AWS_1,CKV_AWS_16,CKV_AWS_17,CKV_AWS_18,CKV_AWS_19 \
+  --output sarif \
+  --output-file mlps-results.sarif
+```
+
+### Contributing MLPS Policies
+
+The Checkov community welcomes contributions for MLPS 2.0-specific checks! If you're working on MLPS compliance and have developed custom policies, consider contributing them:
+
+1. Review the [Contributing Guide](https://github.com/bridgecrewio/checkov/blob/main/CONTRIBUTING.md)
+2. Map your checks to specific MLPS 2.0 requirements
+3. Submit a PR with clear documentation
+
+### Resources for Chinese Compliance
+
+- [MLPS 2.0 Official Standard (GB/T 22239-2019)](http://www.cac.gov.cn/)
+- [Checkov Custom Policies Guide](https://www.checkov.io/3.Custom%20Policies/Getting%20Started.html)
+- Community discussion: [MLPS 2.0 Support Issue #1234](https://github.com/bridgecrewio/checkov/issues) *(placeholder - actual issue number may vary)*
+
+---
+
 ## Generating Compliance Reports
 
 ### JSON Output for Automation
