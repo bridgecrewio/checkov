@@ -339,6 +339,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             env_var="PRISMA_API_URL",
             default=None,
             help="The Prisma Cloud API URL (see: https://prisma.pan.dev/api/cloud/api-urls). "
+                 "Must be a *.prismacloud.io, *.prismacloud.cn, or *.bridgecrew.cloud domain. "
                  "Requires --bc-api-key to be a Prisma Cloud Access Key in the following format: <access_key_id>::<secret_key>",
         )
         self.add(
