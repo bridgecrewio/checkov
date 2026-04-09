@@ -149,6 +149,72 @@ class TestGetCacheDir:
 
 
 # ---------------------------------------------------------------------------
+# Lazy initialization: read-only filesystem safety
+# ---------------------------------------------------------------------------
+
+class TestReadOnlyFilesystem:
+    """Verify that importing / decorating does NOT touch the filesystem.
+
+    The cache directory should only be created on the first actual call to
+    the decorated function, so that ``CKV_SKIP_PACKAGE_UPDATE_CHECK=True``
+    can prevent the call entirely and avoid the OSError on read-only mounts.
+    """
+
+    def test_import_does_not_call_makedirs(self) -> None:
+        """Applying @cache_results must not invoke _get_cache_dir / os.makedirs."""
+        from checkov.common.util.update_checker.update_checker import cache_results, UpdateChecker, UpdateResult
+
+        makedirs_called = False
+        original_makedirs = os.makedirs
+
+        def tracking_makedirs(*args: Any, **kwargs: Any) -> None:
+            nonlocal makedirs_called
+            makedirs_called = True
+            original_makedirs(*args, **kwargs)
+
+        with patch("checkov.common.util.update_checker.update_checker.os.makedirs", side_effect=tracking_makedirs):
+            # Re-apply the decorator — simulates what happens at import time
+            @cache_results
+            def dummy_check(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+                return None
+
+        # The decorator body must NOT have called makedirs
+        assert not makedirs_called, "cache_results must not call os.makedirs at decoration time"
+
+    def test_cache_results_gracefully_handles_readonly_fs(self) -> None:
+        """When _get_cache_dir raises OSError the decorated function still works."""
+        from checkov.common.util.update_checker.update_checker import cache_results, UpdateChecker, UpdateResult
+
+        @cache_results
+        def dummy_check(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="99.0", release_date=None)
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            side_effect=OSError("Read-only file system"),
+        ):
+            checker = UpdateChecker()
+            result = dummy_check(checker, "checkov", "1.0")
+
+        assert result is not None
+        assert result.available_version == "99.0"
+
+    def test_skip_update_check_never_triggers_cache_init(self) -> None:
+        """Simulates the real-world flow: skip_check=True means check() is never
+        called, so the cache directory is never created."""
+        from checkov.common.version_manager import check_for_update
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            side_effect=OSError("Read-only file system"),
+        ):
+            # skip_check=True → returns None immediately, never calls UpdateChecker.check()
+            result = check_for_update("checkov", "3.0.0", skip_check=True)
+
+        assert result is None
+
+
+# ---------------------------------------------------------------------------
 # Integration: JSON cache file is used, not pickle
 # ---------------------------------------------------------------------------
 

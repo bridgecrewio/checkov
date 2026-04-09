@@ -98,22 +98,39 @@ def cache_results(
 ) -> Callable[[UpdateChecker, str, str], UpdateResult | None]:
     """Return decorated function that caches the results."""
 
+    def _ensure_initialized() -> None:
+        """Lazily initialize the cache directory and load the permacache on first use.
+
+        This avoids calling os.makedirs() at import time, which would crash
+        on read-only filesystems even when the update check is disabled via
+        ``CKV_SKIP_PACKAGE_UPDATE_CHECK``.
+        """
+        if _state["initialized"]:
+            return
+        _state["initialized"] = True
+        try:
+            _remove_legacy_cache()
+            _state["filename"] = os.path.join(_get_cache_dir(), CACHE_FILENAME)
+            update_from_permacache()
+        except (NotImplementedError, OSError):
+            _state["filename"] = None
+
     def save_to_permacache() -> None:
         """Merge in-memory cache into the on-disk permacache."""
         update_from_permacache()
         try:
-            if filename is None:
+            if _state["filename"] is None:
                 return
-            _write_json_atomic(filename, _serialize_cache(cache))
+            _write_json_atomic(_state["filename"], _serialize_cache(cache))
         except IOError:
             pass
 
     def update_from_permacache() -> None:
         """Load newer entries from the on-disk permacache into memory."""
         try:
-            if filename is None:
+            if _state["filename"] is None:
                 return
-            with open(filename, "r") as fp:
+            with open(_state["filename"], "r") as fp:
                 permacache = _deserialize_cache(json.load(fp))
         except Exception:
             return
@@ -122,16 +139,12 @@ def cache_results(
                 cache[key] = value
 
     cache: dict[tuple[str, str], tuple[float, UpdateResult | None]] = {}
-    try:
-        _remove_legacy_cache()
-        filename = os.path.join(_get_cache_dir(), CACHE_FILENAME)
-        update_from_permacache()
-    except NotImplementedError:
-        filename = None
+    _state: dict[str, Any] = {"initialized": False, "filename": None}
 
     @wraps(function)
     def wrapped(obj: UpdateChecker, package_name: str, package_version: str, **extra_data: Any) -> UpdateResult | None:
         """Return cached results if available."""
+        _ensure_initialized()
         now = time.time()
         key = (package_name, package_version)
         if not obj._bypass_cache and key in cache:
@@ -140,7 +153,7 @@ def cache_results(
                 return retval
         retval = function(obj, package_name, package_version, **extra_data)
         cache[key] = now, retval
-        if filename:
+        if _state["filename"]:
             save_to_permacache()
         return retval
 
