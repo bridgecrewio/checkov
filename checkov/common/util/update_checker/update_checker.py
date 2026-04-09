@@ -101,9 +101,6 @@ def cache_results(
     def _ensure_initialized() -> None:
         """Lazily initialize the cache directory and load the permacache on first use.
 
-        This avoids calling os.makedirs() at import time, which would crash
-        on read-only filesystems even when the update check is disabled via
-        ``CKV_SKIP_PACKAGE_UPDATE_CHECK``.
         """
         if _state["initialized"]:
             return
