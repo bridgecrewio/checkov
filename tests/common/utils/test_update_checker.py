@@ -1,13 +1,14 @@
 """Tests for checkov.common.util.update_checker.update_checker."""
 from __future__ import annotations
 
+import errno
 import json
 import os
 import pickle
 import time
 from tempfile import gettempdir
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 
@@ -16,7 +17,9 @@ from checkov.common.util.update_checker.update_checker import (
     DATE_FORMAT,
     KEY_SEPARATOR,
     LEGACY_CACHE_FILENAME,
+    UpdateChecker,
     UpdateResult,
+    cache_results,
     _deserialize_cache,
     _deserialize_result,
     _get_cache_dir,
@@ -212,6 +215,178 @@ class TestReadOnlyFilesystem:
             result = check_for_update("checkov", "3.0.0", skip_check=True)
 
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# PermissionError / OSError graceful degradation
+# ---------------------------------------------------------------------------
+
+class TestCacheGracefulDegradation:
+    """Verify that every cache code path handles PermissionError and OSError
+    without crashing, so checkov works on read-only volumes, permission-
+    restricted home dirs, full disks, and network-mounted filesystems."""
+
+    # -- _get_cache_dir: PermissionError (e.g. non-writable home) ----------
+
+    def test_permission_error_on_makedirs(self) -> None:
+        """PermissionError in _get_cache_dir degrades to in-memory cache."""
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="9.0", release_date=None)
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            side_effect=PermissionError(errno.EACCES, "Permission denied", "/home/locked/.cache"),
+        ):
+            checker = UpdateChecker()
+            result = dummy(checker, "checkov", "1.0")
+
+        assert result is not None
+        assert result.available_version == "9.0"
+
+    # -- _get_cache_dir: OSError EROFS (read-only filesystem) ---------------
+
+    def test_readonly_fs_erofs(self) -> None:
+        """OSError with errno 30 (EROFS) degrades to in-memory cache."""
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="8.0", release_date=None)
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            side_effect=OSError(errno.EROFS, "Read-only file system", "/home/nonroot/.cache"),
+        ):
+            checker = UpdateChecker()
+            result = dummy(checker, "checkov", "2.0")
+
+        assert result is not None
+        assert result.available_version == "8.0"
+
+    # -- save_to_permacache: IOError on write (disk full, etc.) -------------
+
+    def test_disk_full_on_cache_write(self, tmp_path: Any) -> None:
+        """IOError during save_to_permacache must not crash the check."""
+        cache_dir = str(tmp_path / "checkov_cache")
+        os.makedirs(cache_dir)
+        cache_file = os.path.join(cache_dir, CACHE_FILENAME)
+
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="7.0", release_date=None)
+
+        # Let init succeed (writable dir), but make writes fail
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            return_value=cache_dir,
+        ):
+            with patch(
+                "checkov.common.util.update_checker.update_checker._write_json_atomic",
+                side_effect=IOError(errno.ENOSPC, "No space left on device"),
+            ):
+                checker = UpdateChecker()
+                result = dummy(checker, "checkov", "3.0")
+
+        # Function must still return the result despite write failure
+        assert result is not None
+        assert result.available_version == "7.0"
+
+    # -- update_from_permacache: corrupt cache file -------------------------
+
+    def test_corrupt_cache_file_does_not_crash(self, tmp_path: Any) -> None:
+        """A corrupt (non-JSON) cache file must not crash the check."""
+        cache_dir = str(tmp_path / "checkov_cache")
+        os.makedirs(cache_dir)
+        cache_file = os.path.join(cache_dir, CACHE_FILENAME)
+
+        # Write garbage to the cache file
+        with open(cache_file, "w") as f:
+            f.write("NOT VALID JSON {{{")
+
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="6.0", release_date=None)
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            return_value=cache_dir,
+        ):
+            checker = UpdateChecker()
+            result = dummy(checker, "checkov", "4.0")
+
+        assert result is not None
+        assert result.available_version == "6.0"
+
+    # -- update_from_permacache: PermissionError reading cache file ---------
+
+    def test_permission_denied_reading_cache_file(self, tmp_path: Any) -> None:
+        """PermissionError reading the cache file degrades gracefully."""
+        cache_dir = str(tmp_path / "checkov_cache")
+        os.makedirs(cache_dir)
+        cache_file = os.path.join(cache_dir, CACHE_FILENAME)
+
+        # Create a valid cache file, then make it unreadable
+        _write_json_atomic(cache_file, {})
+        os.chmod(cache_file, 0o000)
+
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            return UpdateResult(package=pkg, running=ver, available="5.0", release_date=None)
+
+        try:
+            with patch(
+                "checkov.common.util.update_checker.update_checker._get_cache_dir",
+                return_value=cache_dir,
+            ):
+                checker = UpdateChecker()
+                result = dummy(checker, "checkov", "5.0")
+
+            assert result is not None
+            assert result.available_version == "5.0"
+        finally:
+            # Restore permissions so tmp_path cleanup works
+            os.chmod(cache_file, 0o644)
+
+    # -- Multiple calls: in-memory cache works when disk is unavailable -----
+
+    def test_in_memory_cache_works_without_disk(self) -> None:
+        """When disk cache is unavailable, in-memory caching still prevents
+        redundant calls to the wrapped function."""
+        call_count = 0
+
+        @cache_results
+        def dummy(self: UpdateChecker, pkg: str, ver: str) -> UpdateResult | None:
+            nonlocal call_count
+            call_count += 1
+            return UpdateResult(package=pkg, running=ver, available="4.0", release_date=None)
+
+        with patch(
+            "checkov.common.util.update_checker.update_checker._get_cache_dir",
+            side_effect=OSError("Read-only file system"),
+        ):
+            checker = UpdateChecker()
+            result1 = dummy(checker, "checkov", "1.0")
+            result2 = dummy(checker, "checkov", "1.0")
+
+        assert call_count == 1, "Second call should use in-memory cache"
+        assert result1 is not None
+        assert result2 is not None
+        assert result1.available_version == result2.available_version == "4.0"
+
+    # -- _remove_legacy_cache: PermissionError on temp dir ------------------
+
+    def test_legacy_cache_removal_permission_error(self, tmp_path: Any) -> None:
+        """PermissionError removing legacy cache must not crash."""
+        with patch(
+            "checkov.common.util.update_checker.update_checker.gettempdir",
+            return_value=str(tmp_path),
+        ):
+            with patch("os.remove", side_effect=PermissionError("Permission denied")):
+                # Create the legacy file so the code path tries to remove it
+                legacy_path = os.path.join(str(tmp_path), LEGACY_CACHE_FILENAME)
+                with open(legacy_path, "w") as f:
+                    f.write("legacy")
+                # Must not raise
+                _remove_legacy_cache()
 
 
 # ---------------------------------------------------------------------------
