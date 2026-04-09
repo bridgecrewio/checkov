@@ -592,7 +592,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
-        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        if possible_vertices:
+            return possible_vertices
+        # Fallback for foreach/count: vertices are stored under indexed names (e.g. "aws_s3_bucket.bucket[0]")
+        # but references have their indices stripped, so we match by sanitized (un-indexed) name
+        block_type_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {})
+        sanitized_matches: list[int] = []
+        for vertex_name, vertex_indices in block_type_vertices.items():
+            if get_sanitized_terraform_resource_id(vertex_name) == name:
+                sanitized_matches.extend(vertex_indices)
+        return sanitized_matches
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
