@@ -7,7 +7,7 @@ import typing
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.data_structures_utils import find_in_dict, pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
@@ -19,6 +19,60 @@ from checkov.terraform.graph_builder.variable_rendering.renderer import Terrafor
 
 if typing.TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+
+
+def _resolve_nested_path(expr: str, key_to_change: str, val_to_change: dict[str, Any]) -> Any:
+    """Resolve nested dot-path references like ``each.value.a.b.c`` through a dict.
+
+    Handles multiple references in the same expression (e.g.
+    ``merge(each.value.tags, {Name = each.value.name})``).
+
+    If *expr* is exactly ``${key_to_change.path}``, the resolved value is
+    returned directly (preserving its type).  Otherwise each reference is
+    spliced in as a string.
+    """
+    prefix = key_to_change + "."
+    if prefix not in expr:
+        return expr
+
+    # Resolve references one at a time.  Position tracking avoids
+    # re-matching inside already-resolved text (whose str() could contain
+    # the prefix).
+    pos = 0
+    while True:
+        ref_start = expr.find(prefix, pos)
+        if ref_start == -1:
+            break
+        end = ref_start + len(prefix)
+        while end < len(expr) and (expr[end].isalnum() or expr[end] in "._-[]"):
+            end += 1
+        full_ref = expr[ref_start:end]
+
+        remaining = full_ref[len(key_to_change) + 1:]
+        path_segments = remaining.split(".")
+        resolved = find_in_dict(val_to_change, "/".join(seg.replace("[", "/[") for seg in path_segments))
+
+        # If the entire expression is just ${full_ref}, return the value directly
+        if expr == "${" + full_ref + "}":
+            return resolved
+
+        if resolved is None:
+            resolved = ""
+        resolved_str = str(resolved)
+        # Replace ${}-wrapped form only at the found position.  A bare
+        # str.replace would corrupt prefix-overlapping refs (e.g. "name"
+        # inside "name_suffix").  HCL2 always wraps interpolations in ${}.
+        target = "${" + full_ref + "}"
+        # Start searching 2 chars before the ref to catch the ${ prefix that wraps it
+        target_pos = expr.find(target, max(0, ref_start - 2))
+        if target_pos != -1:
+            expr = expr[:target_pos] + resolved_str + expr[target_pos + len(target):]
+            pos = target_pos + len(resolved_str)
+        else:
+            # Bare ref without ${} wrapper -- skip past it to avoid infinite loop
+            pos = end
+
+    return expr
 
 
 class ForeachAbstractHandler:
@@ -91,8 +145,7 @@ class ForeachAbstractHandler:
             attrs[k] = val_to_change
             return True
         elif f"{key_to_change}." in attrs[k] and isinstance(val_to_change, dict):
-            key = attrs[k].replace("}", "").split('.')[-1]
-            attrs[k] = val_to_change.get(key)
+            attrs[k] = _resolve_nested_path(attrs[k], key_to_change, val_to_change)
             return True
         else:
             attrs[k] = attrs[k].replace("${" + key_to_change + "}", str(val_to_change))
@@ -136,20 +189,8 @@ class ForeachAbstractHandler:
                         attrs[k][0] = val_to_change
                         v_changed = True
                     elif f"{key_to_change}." in attrs[k][0] and isinstance(val_to_change, dict):
-                        for inner_key, inner_value in val_to_change.items():
-                            str_to_replace = f"{key_to_change}.{inner_key}"
-                            if str_to_replace in attrs[k][0]:
-                                dollar_wrapped_str_to_replace = "${" + str_to_replace + "}"
-                                if attrs[k][0] == dollar_wrapped_str_to_replace:
-                                    attrs[k][0] = inner_value
-                                    v_changed = True
-                                    # Since we assigned a value to attrs[k][0] we don't need to check the value again for
-                                    # interpolations to replace, we can break out of the loop
-                                    break
-                                elif dollar_wrapped_str_to_replace in attrs[k][0]:
-                                    str_to_replace = dollar_wrapped_str_to_replace
-                                attrs[k][0] = attrs[k][0].replace(str_to_replace, str(inner_value))
-                                v_changed = True
+                        attrs[k][0] = _resolve_nested_path(attrs[k][0], key_to_change, val_to_change)
+                        v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
                         if self.need_to_add_quotes(attrs[k][0], key_to_change):
