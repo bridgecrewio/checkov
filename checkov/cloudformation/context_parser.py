@@ -176,7 +176,12 @@ class ContextParser:
         return keys
 
     def _set_in_dict(self, data_dict: dict[str, Any], map_list: list[Any], value: str) -> None:
-        v = self._get_from_dict(data_dict, map_list[:-1])
+        try:
+            v = self._get_from_dict(data_dict, map_list[:-1])
+        except TypeError:
+            # A previous substitution replaced a dict in this path with a scalar value,
+            # so this path is no longer traversable. Skip this substitution.
+            return
         # save the original marks so that we do not copy in the line numbers of the parameter element
         # but not all ref types will have these attributes
         start = None
