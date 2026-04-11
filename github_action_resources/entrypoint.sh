@@ -49,12 +49,29 @@ add_csv() {
   done
 }
 
+add_space_list() {
+  # add_space_list --flag "$VAL"  -> split by comma or space, all tokens
+  # as positional args after a single flag (for nargs='+' params)
+  local flag="$1" val="$2"
+  [[ -z "$val" ]] && return
+  # Replace commas with spaces, then split on whitespace
+  val="${val//,/ }"
+  local -a parts
+  read -r -a parts <<< "$val"
+  CKV_ARGS+=("$flag")
+  local p
+  for p in "${parts[@]}"; do
+    p="${p## }"; p="${p%% }"
+    [[ -n "$p" ]] && CKV_ARGS+=("$p")
+  done
+}
+
 # Scan target
 if [ -n "$INPUT_DOCKER_IMAGE" ]; then
   add_flag --docker-image    "$INPUT_DOCKER_IMAGE"
   add_flag --dockerfile-path "$INPUT_DOCKERFILE_PATH"
 elif [ -n "$INPUT_FILE" ]; then
-  CKV_ARGS+=(-f "$INPUT_FILE")
+  add_space_list -f "$INPUT_FILE"
   echo "running checkov on file: $INPUT_FILE"
 else
   CKV_ARGS+=(-d "${INPUT_DIRECTORY:-.}")
@@ -62,14 +79,9 @@ else
 fi
 
 # Single-value flags
-add_flag --skip-check                      "$INPUT_SKIP_CHECK"
-add_flag --framework                       "$INPUT_FRAMEWORK"
-add_flag --skip-framework                  "$INPUT_SKIP_FRAMEWORK"
 add_flag --output-file-path                "$INPUT_OUTPUT_FILE_PATH"
 add_flag --baseline                        "$INPUT_BASELINE"
 add_flag --config-file                     "$INPUT_CONFIG_FILE"
-add_flag --soft-fail-on                    "$INPUT_SOFT_FAIL_ON"
-add_flag --hard-fail-on                    "$INPUT_HARD_FAIL_ON"
 add_flag --repo-root-for-plan-enrichment   "$INPUT_REPO_ROOT_FOR_PLAN_ENRICHMENT"
 add_flag --policy-metadata-filter          "$INPUT_POLICY_METADATA_FILTER"
 add_flag --policy-metadata-filter-exception "$INPUT_POLICY_METADATA_FILTER_EXCEPTION"
@@ -86,10 +98,17 @@ add_bool --skip-download                "$INPUT_SKIP_DOWNLOAD"
 add_bool --deep-analysis                "$INPUT_DEEP_ANALYSIS"
 [[ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" == "true" ]] && CKV_ARGS+=(--download-external-modules true)
 
-# Comma-separated multi-value flags
+# Space-separated multi-value flags (nargs='+' in checkov CLI)
+add_space_list --framework      "$INPUT_FRAMEWORK"
+add_space_list --skip-framework "$INPUT_SKIP_FRAMEWORK"
+
+# Comma-separated multi-value flags (action='append' in checkov CLI)
+add_csv --check               "$INPUT_CHECK"
+add_csv --skip-check          "$INPUT_SKIP_CHECK"
+add_csv --soft-fail-on        "$INPUT_SOFT_FAIL_ON"
+add_csv --hard-fail-on        "$INPUT_HARD_FAIL_ON"
 add_csv --external-checks-dir "$INPUT_EXTERNAL_CHECKS_DIRS"
 add_csv --external-checks-git "$INPUT_EXTERNAL_CHECKS_REPOS"
-add_csv --check               "$INPUT_CHECK"
 add_csv --output              "$INPUT_OUTPUT_FORMAT"
 add_csv --var-file            "$INPUT_VAR_FILE"
 add_csv --skip-path           "$INPUT_SKIP_PATH"
