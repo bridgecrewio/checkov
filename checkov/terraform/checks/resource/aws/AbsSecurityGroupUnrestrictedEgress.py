@@ -68,19 +68,18 @@ class AbsSecurityGroupUnrestrictedEgress(BaseResourceCheck):
             return CheckResult.UNKNOWN
         else:
             self.evaluated_keys = ['from_port', 'to_port', 'cidr_ipv4', 'cidr_ipv6']
-            if 'from_port' in conf or 'to_port' in conf:
-                if self.contains_violation(conf):
-                    return CheckResult.FAILED
-                return CheckResult.PASSED
-
-        return CheckResult.PASSED
+            if self.contains_violation(conf):
+                return CheckResult.FAILED
+            return CheckResult.PASSED
 
     def contains_violation(self, conf: dict[str, list[Any]]) -> bool:
         from_port = force_int(force_list(conf.get('from_port', [{-1}]))[0])
         to_port = force_int(force_list(conf.get('to_port', [{-1}]))[0])
-        protocol = force_list(conf.get('protocol', [None]))[0]
+        protocol = force_list(conf.get('protocol', conf.get('ip_protocol', [None])))[0]
         if from_port == 0 and to_port == 0:
             to_port = 65535
+        if protocol == '-1' and from_port is None and to_port is None:
+            from_port, to_port = 0, 65535
 
         prefix_list_ids = conf.get('prefix_list_ids')
         if prefix_list_ids and prefix_list_ids != [[]]:
@@ -98,15 +97,19 @@ class AbsSecurityGroupUnrestrictedEgress(BaseResourceCheck):
             if "0.0.0.0/0" in cidr_blocks:
                 return True
             if conf.get('ipv6_cidr_blocks'):
-                ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [])
+                conf_ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [[]])
             else:
-                ipv6_cidr_blocks = conf.get('cidr_ipv6', [])
-            if ipv6_cidr_blocks and ipv6_cidr_blocks[0] is not None and \
-                    any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks[0]):
+                conf_ipv6_cidr_blocks = conf.get('cidr_ipv6', [[]])
+            if conf_ipv6_cidr_blocks and len(conf_ipv6_cidr_blocks) > 0:
+                conf_ipv6_cidr_blocks = conf_ipv6_cidr_blocks[0]
+            ipv6_cidr_blocks = force_list(conf_ipv6_cidr_blocks) if conf_ipv6_cidr_blocks is not None else []
+            if any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks):
                 return True
             if not ipv6_cidr_blocks and not cidr_blocks \
                     and conf.get('security_groups') is None \
-                    and conf.get('source_security_group_id') is None:
+                    and conf.get('source_security_group_id') is None \
+                    and conf.get('referenced_security_group_id') is None \
+                    and conf.get('prefix_list_id') is None:
                 return True
         return False
 
