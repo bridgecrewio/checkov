@@ -110,7 +110,7 @@ class TestMultilineFinding(unittest.TestCase):
         lines = sorted(c.file_line_range[0] for c in interesting_failed_checks)
         # The committed fix reports the prerun match line (BEGIN_SECRET) for multiline captured values.
         # First secret: BEGIN_SECRET is on line 1, second: BEGIN_SECRET is on line 8.
-        # On main (before fix), both fall back to line 1 (the first prerun match line).
+        # Before fix, both fall back to line 1 (the first prerun match line).
         self.assertEqual(lines[0], 1)
         self.assertEqual(lines[1], 8)
 
