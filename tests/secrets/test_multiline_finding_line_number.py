@@ -59,7 +59,7 @@ class TestMultilineFinding(unittest.TestCase):
         where the captured group spans multiple real lines, both must be detected with
         correct and distinct line numbers.
 
-        On main (before fix), find_line_number() cannot find a multiline substring in any
+        Before fix, find_line_number() cannot find a multiline substring in any
         single line, so it falls back to the prerun match line (line 1) for both secrets.
 
         Dockerfile.two_multiline_secrets layout:
