@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.517...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.519...HEAD)
+
+## [3.2.519](https://github.com/bridgecrewio/checkov/compare/3.2.517...3.2.519) - 2026-04-12
+
+### Bug Fix
+
+- **terraform:** add aws:VpceAccount to recognized condition keys in check CKV_AWS_70 - [#7514](https://github.com/bridgecrewio/checkov/pull/7514)
+- **terraform:** Fix crash in GoogleKMSKeyIsPublic in membership check for unhashable types - [#7440](https://github.com/bridgecrewio/checkov/pull/7440)
 
 ## [3.2.517](https://github.com/bridgecrewio/checkov/compare/3.2.513...3.2.517) - 2026-04-06
 
