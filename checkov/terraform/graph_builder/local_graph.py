@@ -66,6 +66,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency_by_sanitized_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
@@ -143,6 +144,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         self.vertices_by_module_dependency[block.source_module_object][block.block_type].append(idx)
         self.vertices_by_module_dependency_by_name[block.source_module_object][block.block_type][block.name].append(idx)
+        sanitized_name = get_sanitized_terraform_resource_id(block.name)
+        if sanitized_name != block.name:
+            self.vertices_by_module_dependency_by_sanitized_name[block.source_module_object][block.block_type][sanitized_name].append(idx)
 
         self.in_edges[idx] = []
         self.out_edges[idx] = []
@@ -250,6 +254,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.map_path_to_module = {}
         self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
         self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency_by_sanitized_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []
@@ -596,13 +601,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if possible_vertices:
             return possible_vertices
         # Fallback for foreach/count: vertices are stored under indexed names (e.g. "aws_s3_bucket.bucket[0]")
-        # but references have their indices stripped, so we match by sanitized (un-indexed) name
-        block_type_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {})
-        sanitized_matches: list[int] = []
-        for vertex_name, vertex_indices in block_type_vertices.items():
-            if get_sanitized_terraform_resource_id(vertex_name) == name:
-                sanitized_matches.extend(vertex_indices)
-        return sanitized_matches
+        # but references have their indices stripped, so we match against a precomputed sanitized-name index
+        return self.vertices_by_module_dependency_by_sanitized_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
