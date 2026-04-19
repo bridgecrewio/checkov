@@ -65,6 +65,7 @@ setup(
         ]
     },
     install_requires=[
+        "google-re2==1.1.20250805",
         "bc-python-hcl2==0.4.3",
         "bc-detect-secrets==1.5.47",
         "bc-jsonpath-ng==1.6.1",
