@@ -12,6 +12,8 @@ from asteval import Interpreter
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
+import re2  # type: ignore[import-untyped]  # google-re2: linear-time regex engine
+
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
 RANGE_PATTERN = re.compile(r'^\d+-\d+$')
 
@@ -28,11 +30,12 @@ Not all of the functions are implemented yet. If a function doesn't exist, the o
 
 
 def _find_regex_groups(pattern: str, input_str: str) -> Optional[Union[Dict[str, str], List[str]]]:
-    match = re.match(pattern, input_str)
+    match = re2.match(pattern, input_str)
     if match:
-        if match.groupdict():
+        named_groups: Dict[str, str] = match.groupdict()
+        if named_groups:
             # try to find named capturing groups
-            return match.groupdict()
+            return named_groups
         if list(match.groups()):
             # try to find unnamed capturing groups
             return list(match.groups())
@@ -45,12 +48,13 @@ def regex(pattern: str, input_str: str) -> Union[Dict[str, str], List[str], str]
         if groups is not None:
             return groups
 
-        results: List[str] = re.findall(pattern, input_str)
+        results: List[str] = re2.findall(pattern, input_str)
         # return first match
         if len(results) > 0:
             return results[0]
         return ""
-    except TypeError:
+    except Exception as e:
+        logging.warning("regex() evaluation failed for pattern %s: %s — returning unevaluated", pattern, e)
         return f"regex({pattern}, {input_str})"
 
 
@@ -60,9 +64,10 @@ def regexall(pattern: str, input_str: str) -> Union[Dict[str, str], List[str], s
         if groups is not None:
             return groups
 
-        results = re.findall(pattern, input_str)
+        results: List[str] = re2.findall(pattern, input_str)
         return results
-    except TypeError:
+    except Exception as e:
+        logging.warning("regexall() evaluation failed for pattern %s: %s — returning unevaluated", pattern, e)
         return f"regexall({pattern}, {input_str})"
 
 
