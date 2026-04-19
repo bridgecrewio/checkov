@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.521...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.522...HEAD)
+
+## [3.2.522](https://github.com/bridgecrewio/checkov/compare/3.2.521...3.2.522) - 2026-04-19
+
+### Bug Fix
+
+- **general:** Strip unnecessary control bytes from CLI code block - [#7515](https://github.com/bridgecrewio/checkov/pull/7515)
+- **general:** Switch Terraform regex eval to RE2 for better performance - [#7516](https://github.com/bridgecrewio/checkov/pull/7516)
 
 ## [3.2.521](https://github.com/bridgecrewio/checkov/compare/3.2.519...3.2.521) - 2026-04-14
 
