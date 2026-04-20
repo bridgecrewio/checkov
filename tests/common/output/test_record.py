@@ -39,3 +39,22 @@ def test_from_reduced_json(json_reduced_check):
             ],
         ]
     assert record.bc_check_id == 'BC_REPO_GITHUB_ACTION_1'
+
+
+def test_code_line_string_strips_control_chars():
+    """Embedded ANSI/OSC escape sequences in source lines should not be passed
+    through to the CLI code-block output; tab and newline must be preserved."""
+    code_block = [
+        (1, 'resource "x" "y" {\n'),
+        (2, '\tdescription = "\x1b[2J\x1b]8;;http://example/\x07link\x1b]8;;\x07"\n'),
+        (3, '}\n'),
+    ]
+
+    out = Record._code_line_string(code_block, colorized=False)
+
+    assert "\x1b" not in out
+    assert "\x07" not in out
+    # printable content, tab indentation and newlines are kept
+    assert "link" in out
+    assert "\tdescription" in out
+    assert out.count("\n") == 3
