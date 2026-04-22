@@ -50,6 +50,7 @@ class Report:
         self.passed_checks: list[Record] = []
         self.failed_checks: list[Record] = []
         self.skipped_checks: list[Record] = []
+        self.unknown_checks: list[Record] = []
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
@@ -81,12 +82,15 @@ class Report:
             self.failed_checks.append(record)
         if record.check_result["result"] == CheckResult.SKIPPED:
             self.skipped_checks.append(record)
+        if record.check_result["result"] == CheckResult.UNKNOWN:
+            self.unknown_checks.append(record)
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         return {
             "passed": len(self.passed_checks),
             "failed": len(self.failed_checks),
             "skipped": len(self.skipped_checks),
+            "unknown": len(self.unknown_checks),
             "parsing_errors": len(self.parsing_errors),
             "resource_count": len(self.resources),
             "checkov_version": version,
@@ -96,7 +100,7 @@ class Report:
         return json.dumps(self.get_dict(), indent=4, cls=CustomJSONEncoder)
 
     def get_all_records(self) -> List[Record]:
-        return self.failed_checks + self.passed_checks + self.skipped_checks
+        return self.failed_checks + self.passed_checks + self.skipped_checks + self.unknown_checks
 
     def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False, s3_setup_failed: bool = False, support_path: str | None = None) -> dict[str, Any]:
         if not url and not s3_setup_failed:
@@ -118,7 +122,8 @@ class Report:
                 "checks": {
                     "passed_checks": [check.__dict__ for check in self.passed_checks],
                     "failed_checks": [check.__dict__ for check in self.failed_checks],
-                    "skipped_checks": [check.__dict__ for check in self.skipped_checks]
+                    "skipped_checks": [check.__dict__ for check in self.skipped_checks],
+                    "unknown_checks": [check.__dict__ for check in self.unknown_checks],
                 },
                 "image_cached_results": [res.__dict__ for res in self.image_cached_results]
             }
@@ -129,6 +134,7 @@ class Report:
                     "passed_checks": [check.__dict__ for check in self.passed_checks],
                     "failed_checks": [check.__dict__ for check in self.failed_checks],
                     "skipped_checks": [check.__dict__ for check in self.skipped_checks],
+                    "unknown_checks": [check.__dict__ for check in self.unknown_checks],
                     "parsing_errors": list(self.parsing_errors),
                 },
                 "summary": self.get_summary(),
@@ -265,6 +271,7 @@ class Report:
             len(self.passed_checks)
             + len(self.failed_checks)
             + len(self.skipped_checks)
+            + len(self.unknown_checks)
             + len(self.parsing_errors)
         )
 
@@ -291,17 +298,18 @@ class Report:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
         if self.parsing_errors:
-            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Parsing errors: {}\n\n".format(
+            message = "\nPassed checks: {}, Failed checks: {}, Skipped checks: {}, Unknown checks: {}, Parsing errors: {}\n\n".format(
                 summary["passed"],
                 summary["failed"],
                 summary["skipped"],
+                summary["unknown"],
                 summary["parsing_errors"],
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE or self.check_type.lower().startswith(CheckType.SAST):
                 message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
-                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
+                message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}, Unknown checks: {summary['unknown']}\n\n"
         if summary_position == 'top':
             output_data += colored(message, "cyan")
         # output for vulnerabilities is different
@@ -328,6 +336,8 @@ class Report:
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
+                for record in self.unknown_checks:
+                    output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
                 for record in self.skipped_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
 
@@ -372,14 +382,15 @@ class Report:
         if result:
             summary = self.get_summary()
             if self.parsing_errors:
-                message = "Passed Checks: {}, Failed Checks: {}, Skipped Checks: {}, Parsing Errors: {}\n\n".format(
+                message = "Passed Checks: {}, Failed Checks: {}, Skipped Checks: {}, Unknown Checks: {}, Parsing Errors: {}\n\n".format(
                     summary["passed"],
                     summary["failed"],
                     summary["skipped"],
+                    summary["unknown"],
                     summary["parsing_errors"],
                 )
             else:
-                message = f"```\nPassed Checks: {summary['passed']}, Failed Checks: {summary['failed']}, Skipped Checks: {summary['skipped']}\n```\n\n"
+                message = f"```\nPassed Checks: {summary['passed']}, Failed Checks: {summary['failed']}, Skipped Checks: {summary['skipped']}, Unknown Checks: {summary['unknown']}\n```\n\n"
 
             table = tabulate(
                 result,
@@ -396,7 +407,7 @@ class Report:
 
         test_cases = []
 
-        records = self.passed_checks + self.failed_checks + self.skipped_checks
+        records = self.passed_checks + self.failed_checks + self.skipped_checks + self.unknown_checks
         for record in records:
             severity = BcSeverities.NONE
             if record.severity:
@@ -431,6 +442,8 @@ class Report:
                     test_case.add_skipped_info(f"{check_id} skipped for {test_name_detail}")
                 else:
                     test_case.add_skipped_info(record.check_result.get("suppress_comment", ""))
+            if record.check_result["result"] == CheckResult.UNKNOWN:
+                test_case.add_skipped_info(f"Check result unknown: {record.check_name}")
 
             test_cases.append(test_case)
 
@@ -615,9 +628,13 @@ class Report:
         report = Report(check_type)
         report.image_cached_results = json_report['image_cached_results']
 
-        all_json_records = json_report["checks"]["passed_checks"] + \
-            json_report["checks"]["failed_checks"] + \
-            json_report["checks"]["skipped_checks"]
+        checks = json_report["checks"]
+        if "unknown_checks" not in checks:
+            checks = {**checks, "unknown_checks": []}
+        all_json_records = checks["passed_checks"] + \
+            checks["failed_checks"] + \
+            checks["skipped_checks"] + \
+            checks["unknown_checks"]
 
         for json_record in all_json_records:
             report.add_record(
@@ -631,6 +648,7 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.passed_checks.extend(report_to_merge.passed_checks)
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
+    base_report.unknown_checks.extend(report_to_merge.unknown_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
     base_report.image_cached_results.extend(report_to_merge.image_cached_results)
     base_report.resources.update(report_to_merge.resources)
@@ -648,4 +666,5 @@ def remove_duplicate_results(report: Report) -> Report:
 
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)
+    report.unknown_checks = dedupe_records(report.unknown_checks)
     return report
