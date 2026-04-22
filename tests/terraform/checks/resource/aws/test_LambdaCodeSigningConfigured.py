@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.LambdaCodeSigningConfigured import ch
 from checkov.terraform.runner import Runner
 
 
-class TestWafHasAnyRules(unittest.TestCase):
+class TestLambdaCodeSigningConfigured(unittest.TestCase):
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_LambdaCodeSigningConfigured"
@@ -17,10 +17,13 @@ class TestWafHasAnyRules(unittest.TestCase):
         # then
         summary = report.get_summary()
 
+        # pass: has code_signing_config_arn; image_pass: package_type=Image (check skipped, passes)
         passing_resources = {
-            "aws_lambda_function.pass"
+            "aws_lambda_function.pass",
+            "aws_lambda_function.image_pass",
         }
 
+        # fail: Zip package type (default) without code_signing_config_arn
         failing_resources = {
             "aws_lambda_function.fail"
         }
@@ -28,7 +31,7 @@ class TestWafHasAnyRules(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
