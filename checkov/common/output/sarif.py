@@ -116,6 +116,19 @@ class Sarif:
                 "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
             }
 
+        # Adding rule explanation information if available
+        if record.explain:
+            explain = record.explain
+            # Add explanation to help text
+            help_text = rule["help"]["text"]
+            if "risk_cause" in explain:
+                help_text += f"\n\nRisk Cause: {explain['risk_cause']}"
+            if "impact" in explain:
+                help_text += f"\n\nImpact: {explain['impact']}"
+            if "fix_example" in explain:
+                help_text += f"\n\nFix Example: {explain['fix_example']}"
+            rule["help"]["text"] = help_text
+
         help_uri = record.guideline
         if valid_url(help_uri):
             rule["helpUri"] = help_uri
