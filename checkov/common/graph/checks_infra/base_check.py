@@ -33,6 +33,7 @@ class BaseGraphCheck:
         self.frameworks: List[str] = []
         self.is_jsonpath_check: bool = False
         self.check_path: str = ""
+        self.evaluation_mode: str = "all"  # "all" | "any" - controls result aggregation
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
