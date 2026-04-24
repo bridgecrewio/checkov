@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import List, Optional, Any, cast
 
 from checkov.common.output.common import SCADetails
@@ -8,10 +9,30 @@ from checkov.common.output.common import SCADetails
 UNFIXABLE_VERSION = "N/A"
 OPEN_STATUS = "open"
 
+# Docker image ID: sha256:<64 hex chars>, raw <64 hex chars>, or shortened SHA (3+ hex chars)
+IMAGE_ID_PATTERN = re.compile(r'^(?:sha256:)?[a-fA-F0-9]{3,64}$')
+
+# Docker image name: [registry[:port]/][namespace/]repository[:tag][@sha256:digest]
+IMAGE_NAME_PATTERN = re.compile(
+    r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?(?::[0-9]+)?/)*'  # optional registry/namespace segments
+    r'[a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?'                      # repository name
+    r'(?::[\w][\w.\-]{0,127})?'                                          # optional :tag
+    r'(?:@sha256:[a-fA-F0-9]{64})?$'                                     # optional @digest
+)
+
 TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION = {
     "gem": "ruby",
     "nuget": "dotNet"
 }
+
+
+def validate_image_id(image_id: str) -> bool:
+    """
+    Validate that image_id is a legitimate Docker image reference (name or SHA ID).
+
+    Returns True if image_id matches either IMAGE_ID_PATTERN or IMAGE_NAME_PATTERN.
+    """
+    return bool(IMAGE_ID_PATTERN.fullmatch(image_id) or IMAGE_NAME_PATTERN.fullmatch(image_id))
 
 
 def get_file_path_for_record(rootless_file_path: str) -> str:

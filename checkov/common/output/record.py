@@ -26,6 +26,12 @@ SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
 SCA_LICENSE_CHECK_NAME = "SCA license"
 PLACEHOLDER_LINE = "...\n"
 
+# C0 control characters (excluding \t and \n) plus DEL. These are removed from
+# source lines before they are written to the CLI code-block output so that any
+# ANSI/OSC escape sequences embedded in scanned files don't affect terminal
+# rendering (e.g. colour resets, clear-screen, OSC 8 hyperlinks).
+_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+
 
 class Record:
     def __init__(
@@ -124,6 +130,7 @@ class Record:
                    f'Please use IDE of your choice to review the file.'
 
         for line_num, line in code_block:
+            line = _CONTROL_CHARS_RE.sub("", line)
             spaces = " " * (last_line_number_len - len(str(line_num)))
             if line.lstrip().startswith("#"):
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {line}")
