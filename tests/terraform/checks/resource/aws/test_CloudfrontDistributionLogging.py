@@ -1,34 +1,42 @@
 import os
 import unittest
+from pathlib import Path
 
 import pytest
 
-from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.CloudfrontDistributionLogging import check
 from checkov.terraform.runner import Runner
 
 
 class TestCloudfrontDistributionLogging(unittest.TestCase):
+    def test_file_v1_and_v2_logging(self):
+        test_files_dir = Path(__file__).parent / "example_CloudfrontDistributionLoggingV2"
 
-    def test_failure(self):
-        resource_conf = {
-            "comment": "Example",
-        }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        report = Runner().run(
+            root_folder=str(test_files_dir),
+            runner_filter=RunnerFilter(checks=["CKV_AWS_86"]),
+        )
+        summary = report.get_summary()
 
-    def test_success(self):
-        resource_conf = {
-            "comment": "Example",
-            "logging_config": [
-                {
-                    "bucket": "some-arn"
-                }
-            ],
+        passing_resources = {
+            "aws_cloudfront_distribution.pass_v1",
+            "aws_cloudfront_distribution.pass_v2",
+            "aws_cloudfront_distribution.fail_v2_incomplete_chain",
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "aws_cloudfront_distribution.fail_no_logging",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
     @pytest.mark.skip("Need to handle null variables")
     def test_null_var_651(self):
