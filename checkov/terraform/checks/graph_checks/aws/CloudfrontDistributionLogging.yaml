@@ -1,0 +1,38 @@
+metadata:
+  name: "Ensure CloudFront distribution has Access Logging enabled"
+  id: "CKV_AWS_86"
+  category: "LOGGING"
+scope:
+  provider: "aws"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_cloudfront_distribution
+      operator: within
+    - or:
+      - cond_type: attribute
+        resource_types:
+          - aws_cloudfront_distribution
+        attribute: logging_config.bucket
+        operator: exists
+      - and:
+        - cond_type: connection
+          resource_types:
+            - aws_cloudfront_distribution
+          connected_resource_types:
+            - aws_cloudwatch_log_delivery_source
+          operator: exists
+        - cond_type: connection
+          resource_types:
+            - aws_cloudwatch_log_delivery_source
+          connected_resource_types:
+            - aws_cloudwatch_log_delivery
+          operator: exists
+        - cond_type: connection
+          resource_types:
+            - aws_cloudwatch_log_delivery
+          connected_resource_types:
+            - aws_cloudwatch_log_delivery_destination
+          operator: exists
