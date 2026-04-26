@@ -167,9 +167,8 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
     ) -> None:
         """Adds Python check results to given report"""
 
-        root_folder_str = str(root_folder) if root_folder is not None else None
         for file_path in self.definitions.keys():
-            self.pbar.set_additional_data({'Current File Scanned': safe_relpath(file_path, root_folder_str)})
+            self.pbar.set_additional_data({'Current File Scanned': safe_relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
 
             if registry.report_type == CheckType.GITLAB_CI:
@@ -196,7 +195,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=result,
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
-                        file_path=f"/{safe_relpath(file_path, root_folder_str)}",
+                        file_path=f"/{safe_relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
@@ -215,7 +214,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=result,
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
-                        file_path=f"/{safe_relpath(file_path, root_folder_str)}",
+                        file_path=f"/{safe_relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,

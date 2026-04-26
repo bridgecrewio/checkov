@@ -23,7 +23,7 @@ def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
 
 
-def safe_relpath(file_path: str, root_folder: str | None) -> str:
+def safe_relpath(file_path: str, root_folder: str | Path | None) -> str:
     """Compute os.path.relpath(file_path, root_folder) safely on Windows.
 
     On Windows ``os.path.relpath`` raises ``ValueError`` when *file_path* and
@@ -38,6 +38,10 @@ def safe_relpath(file_path: str, root_folder: str | None) -> str:
         return os.path.relpath(file_path, root_folder)
     except ValueError:
         # Cross-drive on Windows – best-effort: return the basename only
+        logger.warning(
+            f"Could not compute relative path for '{file_path}' from root '{root_folder}' "
+            f"(cross-drive path on Windows); falling back to basename."
+        )
         return os.path.basename(file_path)
 
 
