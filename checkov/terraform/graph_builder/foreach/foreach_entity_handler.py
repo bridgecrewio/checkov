@@ -95,6 +95,7 @@ class ForeachEntityHandler(ForeachAbstractHandler):
 
         self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
         idx_to_change = new_key or new_value
+        new_resource.for_each_index = idx_to_change
         self._add_index_to_resource_block_properties(new_resource, idx_to_change)
         if foreach_idx == 0:
             self.local_graph.vertices[resource_idx] = new_resource
