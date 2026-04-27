@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os.path
+import sys
 import tarfile
 import base64
 import gzip
@@ -22,14 +23,82 @@ def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
 
 
+def safe_relpath(file_path: str, root_folder: str | Path | None) -> str:
+    """Compute os.path.relpath(file_path, root_folder) safely on Windows.
+
+    On Windows ``os.path.relpath`` raises ``ValueError`` when *file_path* and
+    *root_folder* reside on different drives (e.g. ``C:\\`` vs ``D:\\``).
+    In that case we fall back to returning just the file basename so that the
+    caller still gets a usable (albeit shortened) relative path instead of
+    crashing.
+
+    On non-Windows platforms this is a thin wrapper around ``os.path.relpath``.
+    """
+    try:
+        return os.path.relpath(file_path, root_folder)
+    except ValueError:
+        # Cross-drive on Windows – best-effort: return the basename only
+        logger.warning(
+            f"Could not compute relative path for '{file_path}' from root '{root_folder}' "
+            f"(cross-drive path on Windows); falling back to basename."
+        )
+        return os.path.basename(file_path)
+
+
+def _is_within(base: str, target: str) -> bool:
+    """Return True iff target resolves inside base (both realpath'd)."""
+    base_real = os.path.realpath(base)
+    target_real = os.path.realpath(target)
+    try:
+        return os.path.commonpath([base_real, target_real]) == base_real
+    except ValueError:
+        return False
+
+
+def _safe_tar_members(tar: tarfile.TarFile, dest_path: str) -> list[tarfile.TarInfo]:
+    """Drop members that would escape dest_path via absolute path, .., or link.
+
+    Used on Python <3.12 where tarfile.data_filter is not available.
+    Mirrors PEP 706 'data' filter behavior: reject absolute paths, paths
+    resolving outside dest, links whose target resolves outside dest, and
+    device/fifo specials.
+    """
+    safe: list[tarfile.TarInfo] = []
+    dest_real = os.path.realpath(dest_path)
+    for m in tar.getmembers():
+        if m.isdev():
+            logger.warning(f"tar: dropping device/special member {m.name!r}")
+            continue
+        member_path = os.path.join(dest_real, m.name)
+        if not _is_within(dest_real, member_path):
+            logger.warning(f"tar: dropping out-of-tree member {m.name!r}")
+            continue
+        if m.islnk() or m.issym():
+            link_target = os.path.join(os.path.dirname(member_path), m.linkname)
+            if not _is_within(dest_real, link_target):
+                logger.warning(f"tar: dropping link {m.name!r} -> {m.linkname!r} (escapes dest)")
+                continue
+        safe.append(m)
+    return safe
+
+
 def extract_tar_archive(source_path: str, dest_path: str) -> None:
     with tarfile.open(source_path) as tar:
-        tar.extractall(path=dest_path)  # nosec  # only trusted source
+        if sys.version_info >= (3, 12):
+            tar.extractall(path=dest_path, filter="data")
+        else:
+            tar.extractall(path=dest_path, members=_safe_tar_members(tar, dest_path))  # nosec B202
 
 
 def extract_zip_archive(source_path: str, dest_path: str) -> None:
-    with ZipFile(source_path) as zip:
-        zip.extractall(path=dest_path)  # nosec  # only trusted source
+    with ZipFile(source_path) as zipf:
+        dest_real = os.path.realpath(dest_path)
+        for name in zipf.namelist():
+            target = os.path.join(dest_real, name)
+            if not _is_within(dest_real, target):
+                logger.warning(f"zip: dropping out-of-tree member {name!r}")
+                continue
+            zipf.extract(name, path=dest_path)
 
 
 def compress_file_gzip_base64(input_path: str) -> str:
