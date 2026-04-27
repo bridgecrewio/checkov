@@ -88,4 +88,4 @@ bc-python-hcl2 = "==0.4.3"
 platformdirs = ">=4.0.0,<5.0.0"
 
 [requires]
-python_version = "3.9"
+python_version = "3.13"

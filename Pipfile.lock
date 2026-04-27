@@ -5,7 +5,7 @@
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.9"
+            "python_version": "3.13"
         },
         "sources": [
             {
@@ -1882,6 +1882,7 @@
         },
         "regex": {
             "hashes": [
+
                 "sha256:0057de9eaef45783ff69fa94ae9f0fd906d629d0bd4c3217048f46d1daa32e9b",
                 "sha256:008b185f235acd1e53787333e5690082e4f156c44c87d894f880056089e9bc7c",
                 "sha256:05d75a668e9ea16f832390d22131fe1e8acc8389a694c8febc3e340b0f810b93",
