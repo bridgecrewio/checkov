@@ -34,25 +34,21 @@ def check_conditions(statement) -> bool:
 
     # Leaves out the NOT conditions as too broad ('StringNotEquals', 'StringNotEqualsIgnoreCase', 'StringNotLike')
     string_conditions = ['StringEquals', 'StringEqualsIgnoreCase', 'StringLike']
+
+    # Purposefully not included: 'aws:SourceIp', 'aws:UserAgent', 'aws:Referer', 'aws:RequestTime',
+    # 'aws:SourceArn', 'aws:PrincipalType', 'aws:RequestTag', 'aws:SecureTransport', 'aws:SourceIp',
+    # 'aws:MultiFactorAuthPresent', 'aws:PrincipalType', all 'Properties of the request',
+    # all 'Properties of the resource', 'aws:PrincipalTag', 'aws:PrincipalIsAWSService',
+    # 'aws:PrincipalServiceName', 'aws:PrincipalServiceNamesList', 'aws:PrincipalType', 'aws:userid',
+    # 'aws:username'
+    sources = {'aws:sourceVpce', 'aws:SourceVpc', 'aws:VpceAccount',
+               'aws:PrincipalOrgPaths', 'aws:userid','aws:PrincipalArn',
+               'aws:PrincipalAccount',  'aws:PrincipalOrgID',  'aws:Ec2InstanceSourceVpc',
+               'ec2:SourceInstanceArn', 'lambda:SourceFunctionArn', 'ssm:SourceInstanceArn'}
     if any(condition_type in condition for condition_type in string_conditions):
         for condition_type in string_conditions:
             if condition_type in condition:
-                # Purposefully not included: 'aws:SourceIp', 'aws:UserAgent', 'aws:Referer', 'aws:RequestTime',
-                # 'aws:SourceArn', 'aws:PrincipalType', 'aws:RequestTag', 'aws:SecureTransport', 'aws:SourceIp',
-                # 'aws:MultiFactorAuthPresent', 'aws:PrincipalType', all 'Properties of the request',
-                # all 'Properties of the resource', 'aws:PrincipalTag', 'aws:PrincipalIsAWSService',
-                # 'aws:PrincipalServiceName', 'aws:PrincipalServiceNamesList', 'aws:PrincipalType', 'aws:userid',
-                # 'aws:username'
-                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc',
-                                                                          'aws:VpceAccount',
-                                                                          'aws:PrincipalOrgPaths', 'aws:userid',
-                                                                          'aws:PrincipalArn',
-                                                                          'aws:PrincipalAccount',
-                                                                          'aws:PrincipalOrgID',
-                                                                          'aws:Ec2InstanceSourceVpc',
-                                                                          'ec2:SourceInstanceArn',
-                                                                          'lambda:SourceFunctionArn',
-                                                                          'ssm:SourceInstanceArn']):
+                if any(source in condition[condition_type] for source in sources):
                     return True
 
     # Default fail if none of the above conditions are met
