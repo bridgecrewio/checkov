@@ -10,7 +10,8 @@ from typing import Optional, Union, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
+from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME, \
+    redact_token_args
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer, Image
@@ -107,7 +108,7 @@ class Runner(PackageRunner):
         except UnicodeDecodeError:
             logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
                           f"file content is:\n{image_scanner.dockerfile_content}.\n"
-                          f"twistcli command args are \'{command_args}\'", exc_info=True)
+                          f"twistcli command args are \'{redact_token_args(command_args)}\'", exc_info=True)
 
         exit_code = await process.wait()
 

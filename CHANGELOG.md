@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.521...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.525...HEAD)
+
+## [3.2.525](https://github.com/bridgecrewio/checkov/compare/3.2.524...3.2.525) - 2026-04-26
+
+### Bug Fix
+
+- **terraform:** fix wrong windows path - [#7529](https://github.com/bridgecrewio/checkov/pull/7529)
+
+## [3.2.524](https://github.com/bridgecrewio/checkov/compare/3.2.522...3.2.524) - 2026-04-20
+
+### Bug Fix
+
+- **general:** Revert Switch Terraform regex eval to RE2 for better performance - [#7520](https://github.com/bridgecrewio/checkov/pull/7520)
+- **sca:** Align ImageScanner.run_image_scan with execute_scan - [#7518](https://github.com/bridgecrewio/checkov/pull/7518)
+
+## [3.2.522](https://github.com/bridgecrewio/checkov/compare/3.2.521...3.2.522) - 2026-04-19
+
+### Bug Fix
+
+- **general:** Strip unnecessary control bytes from CLI code block - [#7515](https://github.com/bridgecrewio/checkov/pull/7515)
+- **general:** Switch Terraform regex eval to RE2 for better performance - [#7516](https://github.com/bridgecrewio/checkov/pull/7516)
 
 ## [3.2.521](https://github.com/bridgecrewio/checkov/compare/3.2.519...3.2.521) - 2026-04-14
 
