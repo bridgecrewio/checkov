@@ -42,8 +42,8 @@ def check_conditions(statement) -> bool:
     # 'aws:PrincipalServiceName', 'aws:PrincipalServiceNamesList', 'aws:PrincipalType', 'aws:userid',
     # 'aws:username'
     sources = {'aws:sourceVpce', 'aws:SourceVpc', 'aws:VpceAccount',
-               'aws:PrincipalOrgPaths', 'aws:userid','aws:PrincipalArn',
-               'aws:PrincipalAccount',  'aws:PrincipalOrgID',  'aws:Ec2InstanceSourceVpc',
+               'aws:PrincipalOrgPaths', 'aws:userid', 'aws:PrincipalArn',
+               'aws:PrincipalAccount', 'aws:PrincipalOrgID', 'aws:Ec2InstanceSourceVpc',
                'ec2:SourceInstanceArn', 'lambda:SourceFunctionArn', 'ssm:SourceInstanceArn'}
     if any(condition_type in condition for condition_type in string_conditions):
         for condition_type in string_conditions:
