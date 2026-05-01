@@ -10,7 +10,8 @@ from typing import Optional, Union, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
+from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME, \
+    redact_token_args
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer, Image
@@ -19,7 +20,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.models.enums import ErrorStatus
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
-from checkov.common.sca.commons import should_run_scan
+from checkov.common.sca.commons import should_run_scan, validate_image_id
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_dockerfile
@@ -82,9 +83,21 @@ class Runner(PackageRunner):
             image_id: str,
             output_path: Path,
     ) -> Dict[str, Any]:
-        command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} images scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {image_id}"
-        process = await asyncio.create_subprocess_shell(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        if not validate_image_id(image_id):
+            logging.error(f"Invalid image_id format: {image_id}")
+            return {}
+
+        command_args = [
+            str(Path(bridgecrew_dir) / TWISTCLI_FILE_NAME),
+            "images", "scan",
+            "--address", docker_image_scanning_integration.get_proxy_address(),
+            "--token", docker_image_scanning_integration.get_bc_api_key(),
+            "--details",
+            "--output-file", str(output_path),
+            image_id,
+        ]
+        process = await asyncio.create_subprocess_exec(
+            *command_args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
 
         stdout, stderr = await process.communicate()
@@ -95,7 +108,7 @@ class Runner(PackageRunner):
         except UnicodeDecodeError:
             logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
                           f"file content is:\n{image_scanner.dockerfile_content}.\n"
-                          f"twistcli command is \'{command}\'", exc_info=True)
+                          f"twistcli command args are \'{redact_token_args(command_args)}\'", exc_info=True)
 
         exit_code = await process.wait()
 

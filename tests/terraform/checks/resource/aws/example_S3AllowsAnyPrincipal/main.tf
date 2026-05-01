@@ -485,6 +485,27 @@ resource "aws_s3_bucket" "pass_w_condition6" {
 POLICY
 }
 
+resource "aws_s3_bucket_policy" "vpce_account_condition" {
+  bucket = "example"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowVpceAccount"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "arn:aws:s3:::example/*"
+        Condition = {
+          StringEquals = {
+            "aws:VpceAccount" = "123456789012"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # Handle error
 resource "aws_s3_bucket_policy" "logs" {
   bucket = aws_s3_bucket.logs.id

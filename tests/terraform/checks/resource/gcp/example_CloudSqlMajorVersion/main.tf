@@ -93,7 +93,7 @@ resource "google_sql_database_instance" "fail2" {
   }
 }
 
-resource "google_sql_database_instance" "pass2" {
+resource "google_sql_database_instance" "fail4" {
   database_version = "POSTGRES_17"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
@@ -262,5 +262,28 @@ resource "google_sql_database_instance" "pass3" {
 
     pricing_plan = "PER_USE"
     tier         = "db-custom-1-4096"
+  }
+}
+
+resource "google_sql_database_instance" "pass4" {
+  database_version = "POSTGRES_18"
+  name             = "general-pos181"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+
+    backup_configuration {
+      enabled = false
+    }
+
+    ip_configuration {
+      ipv4_enabled = true
+    }
+
+    pricing_plan = "PER_USE"
+    tier         = "db-custom-1-3840"
   }
 }

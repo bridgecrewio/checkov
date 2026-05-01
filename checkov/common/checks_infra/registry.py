@@ -69,16 +69,22 @@ class Registry(BaseRegistry):
                         if not self.parser.validate_check_config(file_path=f.name, raw_check=check_json):
                             # proper log messages are generated inside the method
                             continue
-
-                        check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json),
-                            check_path=f'{root}/{file}'
-                        )
-                        if not any(c for c in self.checks if check.id == c.id):
-                            if external_check:
-                                # Note the external check; used in the should_run_check logic
-                                RunnerFilter.notify_external_check(check.id)
-                            self.checks.append(check)
+                        try:
+                            check_id = check_json.get("metadata", {}).get("id", "unknown")
+                            check = self.parser.parse_raw_check(
+                                check_json, resources_types=self._get_resource_types(check_json),
+                                check_path=f'{root}/{file}'
+                            )
+                            if not any(c for c in self.checks if check.id == c.id):
+                                if external_check:
+                                    # Note the external check; used in the should_run_check logic
+                                    RunnerFilter.notify_external_check(check.id)
+                                self.checks.append(check)
+                        except Exception as e:
+                            self.logger.warning(
+                                f"Failed to parse check id '{check_id}' from file {file}: {e}. Skipping."
+                            )
+                            continue
         if not external_check:
             self.internal_checks_dir_loaded = True
 

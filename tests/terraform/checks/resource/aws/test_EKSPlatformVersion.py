@@ -23,6 +23,7 @@ class TestEKSPlatformVersion(unittest.TestCase):
         }
         failing_resources = {
             "aws_eks_cluster.fail",
+            "aws_eks_cluster.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
