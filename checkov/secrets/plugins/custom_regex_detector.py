@@ -168,31 +168,17 @@ class CustomRegexDetector(RegexBasedDetector):
                 multiline_regex = self.pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
                     continue
-                for regex_match in multiline_regex.finditer(file_content):
-                    secret_value = self._extract_real_regex_match(cast(Tuple[str], regex_match.groups()) or regex_match.group(0))
-                    if isinstance(secret_value, tuple):
-                        secret_value = secret_value[0]
-                    # Line number strategy:
-                    # - If secret_value is single-line (no \n), locate it within the match
-                    #   and compute its line directly — this gives the exact secret line.
-                    # - If secret_value spans multiple lines (e.g. a full JSON block or PGP key body),
-                    #   no single line contains it, so fall back to the prerun pattern's line,
-                    #   which is the most meaningful trigger line (e.g. "BEGIN PRIVATE KEY").
-                    if '\n' not in secret_value:
-                        inner_offset = regex_match.group(0).find(secret_value)
-                        if inner_offset < 0:
-                            continue
-                        secret_offset = regex_match.start() + inner_offset
-                        line_num = file_content[:secret_offset].count('\n') + 1
-                    else:
-                        prerun_search = regex.search(file_content, regex_match.start(), regex_match.end())
-                        secret_offset = prerun_search.start() if prerun_search else regex_match.start()
-                        line_num = file_content[:secret_offset].count('\n') + 1
-                    quoted_secret = f"'{secret_value}'"
+                multiline_matches = multiline_regex.findall(file_content)
+                for mm in multiline_matches:
+                    mm = self._extract_real_regex_match(mm)
+                    if isinstance(mm, tuple):
+                        mm = mm[0]
+                    line_num = find_line_number(file_content, mm, line_number)
+                    quoted_mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
                         filename=filename,
-                        secret=quoted_secret,
+                        secret=quoted_mm,
                         line_number=line_num,
                         is_verified=is_verified,
                         is_added=is_added,
@@ -242,3 +228,15 @@ class CustomRegexDetector(RegexBasedDetector):
                     return match
 
         return regex_matches
+
+
+def find_line_number(file_string: str, substring: str, default_line_number: int) -> int:
+    try:
+        lines = file_string.splitlines()
+
+        for line_number, line in enumerate(lines, start=1):
+            if substring in line:
+                return line_number
+        return default_line_number
+    except Exception:
+        return default_line_number
