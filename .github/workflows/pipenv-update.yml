@@ -19,13 +19,13 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.GH_PAT_SECRET }}
+          token: ${{ secrets.GH_PAT_SECRET_2 }}
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec  # v5
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY_2 }}
+          passphrase: ${{ secrets.PASSPHRASE_2 }}
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -38,13 +38,10 @@ jobs:
           pipenv update
           git add -u
           git commit -m "update pipenv packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v5
         with:
-          token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'
           body: |
             bump pipenv packages

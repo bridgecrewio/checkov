@@ -162,3 +162,90 @@ def test_is_matching_loader_git_sources(source_url):
 
     # then
     assert not loader._is_matching_loader(module_params)
+
+
+def test_load_module_returns_inner_module_path_when_dest_dir_exists(tmp_path):
+    """
+    When dest_dir already exists (e.g. a previous module from the same base source
+    was already downloaded) and inner_module is set, _load_module should return
+    the inner module subdirectory, not just the base dest_dir.
+
+    This is the scenario that caused only the first set of inner modules to be
+    scanned on Linux, while subsequent inner modules from the same base source
+    were silently skipped.
+    """
+    # given
+    loader = RegistryLoader()
+    base_dir = tmp_path / "base_module"
+    inner_module_a = base_dir / "modules" / "asg"
+    inner_module_b = base_dir / "modules" / "ssm_document"
+
+    # Simulate a previously downloaded module: create the base dir and both inner module dirs
+    inner_module_a.mkdir(parents=True)
+    inner_module_b.mkdir(parents=True)
+
+    # First module: modules/asg
+    module_params_a = ModuleParams(
+        root_dir=str(tmp_path),
+        current_dir=str(tmp_path),
+        source="example.com/org/repo//modules/asg",
+        source_version="1.0.0",
+        dest_dir=str(base_dir),
+        external_modules_folder_name=".external_modules",
+        inner_module="modules/asg",
+    )
+    module_params_a.best_version = "1.0.0"
+
+    # Second module: modules/ssm_document (different inner module, same base)
+    module_params_b = ModuleParams(
+        root_dir=str(tmp_path),
+        current_dir=str(tmp_path),
+        source="example.com/org/repo//modules/ssm_document",
+        source_version="1.0.0",
+        dest_dir=str(base_dir),
+        external_modules_folder_name=".external_modules",
+        inner_module="modules/ssm_document",
+    )
+    module_params_b.best_version = "1.0.0"
+
+    # when
+    content_a = loader._load_module(module_params_a)
+    content_b = loader._load_module(module_params_b)
+
+    # then - both should return their respective inner module paths
+    assert content_a.loaded()
+    assert content_a.path() == str(inner_module_a)
+
+    assert content_b.loaded()
+    assert content_b.path() == str(inner_module_b)
+
+    # and they should be different paths
+    assert content_a.path() != content_b.path()
+
+
+def test_load_module_returns_dest_dir_when_no_inner_module(tmp_path):
+    """
+    When dest_dir already exists and there is no inner_module,
+    _load_module should return dest_dir as before (no regression).
+    """
+    # given
+    loader = RegistryLoader()
+    base_dir = tmp_path / "base_module"
+    base_dir.mkdir(parents=True)
+
+    module_params = ModuleParams(
+        root_dir=str(tmp_path),
+        current_dir=str(tmp_path),
+        source="example.com/org/repo",
+        source_version="1.0.0",
+        dest_dir=str(base_dir),
+        external_modules_folder_name=".external_modules",
+    )
+    module_params.best_version = "1.0.0"
+
+    # when
+    content = loader._load_module(module_params)
+
+    # then
+    assert content.loaded()
+    assert content.path() == str(base_dir)

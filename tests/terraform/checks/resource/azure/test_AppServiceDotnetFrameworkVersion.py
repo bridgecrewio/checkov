@@ -18,12 +18,18 @@ class TestAppServiceDotnetFrameworkVersion(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_app_service.pass',
-            'azurerm_windows_web_app.pass'
+            'azurerm_app_service.pass',    # v8.0
+            'azurerm_app_service.pass2',   # v9.0
+            'azurerm_app_service.pass3',   # v10.0
+            'azurerm_windows_web_app.pass',   # v8.0
+            'azurerm_windows_web_app.pass2',  # v9.0
+            'azurerm_windows_web_app.pass3',  # v10.0
         }
         failing_resources = {
-            'azurerm_app_service.fail',
-            'azurerm_windows_web_app.fail'
+            'azurerm_app_service.fail',    # v5.0 EOL
+            'azurerm_app_service.fail2',   # v6.0 EOL
+            'azurerm_windows_web_app.fail',   # v2.0 EOL
+            'azurerm_windows_web_app.fail2',  # v6.0 EOL
         }
         skipped_resources = {}
 

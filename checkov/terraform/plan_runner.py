@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
 import pathlib
 from typing import Type, Optional, Any, cast
 
@@ -19,6 +18,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
+from checkov.common.util.file_utils import safe_relpath
 from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -209,11 +209,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
         if isinstance(full_file_path, TFDefinitionKey):
             # It might be str for terraform-plan files
             full_file_path = full_file_path.file_path
-        if platform.system() == "Windows":
-            temp = os.path.split(full_file_path)[0]
-            scanned_file = f"/{os.path.relpath(full_file_path, temp)}"
-        else:
-            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+        scanned_file = f"/{safe_relpath(full_file_path, str(root_folder))}"
         return full_file_path, scanned_file
 
     def run_block(
