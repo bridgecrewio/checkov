@@ -204,8 +204,9 @@ class CustomRegexDetector(RegexBasedDetector):
                         )
                         ps.check_id = regex_data["Check_ID"]
                         output.add(ps)
-                    except Exception:
-                        logging.warning('Failed to process multiline match.')
+                    except Exception as e:
+                        logging.warning(
+                            f'Failed to process multiline match for check {regex_data.get("Check_ID", "unknown")} in {filename} at offset {regex_match.start()}: {type(e).__name__}')
                         continue
                 continue
 
