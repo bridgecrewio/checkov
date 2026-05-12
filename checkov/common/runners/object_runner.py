@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
 
 from abc import abstractmethod
 from collections.abc import Iterable
@@ -18,6 +17,7 @@ from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.file_utils import safe_relpath
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.graph_manager import ObjectGraphManager
 from checkov.common.typing import _CheckResult
@@ -168,7 +168,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
         """Adds Python check results to given report"""
 
         for file_path in self.definitions.keys():
-            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
+            self.pbar.set_additional_data({'Current File Scanned': safe_relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
 
             if registry.report_type == CheckType.GITLAB_CI:
@@ -188,9 +188,6 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                     if start == -1 and end == -1:
                         logging.info(f"Skipping line in file path {file_path} in key {key}")
                         continue
-                if platform.system() == "Windows":
-                    root_folder = os.path.split(file_path)[0]
-
                 if self.check_type == CheckType.GITHUB_ACTIONS:
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
@@ -198,7 +195,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=result,
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
-                        file_path=f"/{os.path.relpath(file_path, root_folder)}",
+                        file_path=f"/{safe_relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
@@ -217,7 +214,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=result,
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
-                        file_path=f"/{os.path.relpath(file_path, root_folder)}",
+                        file_path=f"/{safe_relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
@@ -240,9 +237,6 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_file_path: str = entity[CustomAttributes.FILE_PATH]
-
-                if platform.system() == "Windows":
-                    root_folder = os.path.split(entity_file_path)[0]
 
                 clean_check_result: _CheckResult = {
                     "result": check_result["result"],
@@ -273,7 +267,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=clean_check_result,
                         code_block=code_block,
-                        file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
+                        file_path=f"/{safe_relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
                         resource=entity[CustomAttributes.ID],
                         evaluations=None,
@@ -292,7 +286,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                         check_name=check.name,
                         check_result=clean_check_result,
                         code_block=code_block,
-                        file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
+                        file_path=f"/{safe_relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
                         resource=entity[CustomAttributes.ID],
                         evaluations=None,

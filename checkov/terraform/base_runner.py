@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import platform
 from abc import abstractmethod
 from typing import Dict, Optional, Any, Set, TYPE_CHECKING, TypeVar, Generic
 
@@ -18,6 +17,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.file_utils import safe_relpath
 from checkov.common.util.secrets import omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -118,7 +118,7 @@ class BaseTerraformRunner(
         full_file_path = connected_node[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data["code_block"] = connected_entity_context.get("code_lines")
-        connected_node_data["file_path"] = f"{os.sep}{os.path.relpath(full_file_path, root_folder)}"
+        connected_node_data["file_path"] = f"{os.sep}{safe_relpath(full_file_path, root_folder)}"
         connected_node_data["file_line_range"] = [
             connected_entity_context.get("start_line"),
             connected_entity_context.get("end_line"),
@@ -157,8 +157,6 @@ class BaseTerraformRunner(
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
                     connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
                                                                         root_folder)
-                    if platform.system() == "Windows":
-                        root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
                     resource = resource_id
                     definition_context_file_path = full_file_path
@@ -182,7 +180,7 @@ class BaseTerraformRunner(
                         check_name=check.name,
                         check_result=copy_of_check_result,
                         code_block=censored_code_lines,
-                        file_path=f"{os.sep}{os.path.relpath(full_file_path, root_folder)}",
+                        file_path=f"{os.sep}{safe_relpath(full_file_path, root_folder)}",
                         file_line_range=[
                             entity_context.get("start_line", 1),
                             entity_context.get("end_line", 1),
