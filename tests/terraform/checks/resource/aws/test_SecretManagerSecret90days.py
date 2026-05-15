@@ -19,6 +19,7 @@ class TestSecretManagerSecret90days(unittest.TestCase):
             "aws_secretsmanager_secret_rotation.pass",
             "aws_secretsmanager_secret_rotation.pass_scheduled_hours",
             "aws_secretsmanager_secret_rotation.pass_scheduled_days",
+            "aws_secretsmanager_secret_rotation.pass_scheduled_days_90",
             "aws_secretsmanager_secret_rotation.pass_scheduled_cron",
         }
         failing_resources = {
