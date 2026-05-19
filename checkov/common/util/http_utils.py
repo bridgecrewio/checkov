@@ -302,7 +302,8 @@ async def aiohttp_client_session_wrapper(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
             try:
                 async with session.request(
-                        method=method, url=url, headers=headers, json=payload, proxy=proxy_url, proxy_auth=proxy_auth
+                        method=method, url=url, headers=headers, json=payload, proxy=proxy_url, proxy_auth=proxy_auth,
+			timeout=aiohttp.ClientTimeout(connect=REQUEST_CONNECT_TIMEOUT, sock_read=REQUEST_READ_TIMEOUT),
                 ) as response:
                     content = await response.text()
                 if response.ok:
