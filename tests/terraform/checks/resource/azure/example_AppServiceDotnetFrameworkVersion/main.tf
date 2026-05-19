@@ -334,6 +334,33 @@ resource "azurerm_windows_web_app" "fail2" {
   }
 }
 
+# UNKNOWN - dotnet_version is a non-string value (triggers CKV_AZURE_80 crash guard)
+resource "azurerm_windows_web_app" "unknown" {
+  #checkov:skip=CKV_AZURE_16: AD might not be required
+  name                = var.name
+  location            = var.location
+  resource_group_name = var.rg_name
+  service_plan_id     = var.service_plan_id
+
+  https_only = true
+
+  site_config {
+    application_stack {
+      dotnet_version = {}
+    }
+  }
+
+  client_certificate_enabled = true
+
+  auth_settings {
+    enabled = true
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
 # IGNORE - no dotnet version specified
 resource "azurerm_windows_web_app" "ignore" {
   #checkov:skip=CKV_AZURE_16: AD might not be required
