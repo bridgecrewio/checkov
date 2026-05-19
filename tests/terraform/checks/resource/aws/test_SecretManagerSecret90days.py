@@ -26,7 +26,7 @@ class TestSecretManagerSecret90days(unittest.TestCase):
             "aws_secretsmanager_secret_rotation.fail",
             "aws_secretsmanager_secret_rotation.fail_2",
             "aws_secretsmanager_secret_rotation.fail_scheduled_days",
-            #"aws_secretsmanager_secret_rotation.fail_scheduled_cron", # Will handle later
+            "aws_secretsmanager_secret_rotation.fail_scheduled_cron", 
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

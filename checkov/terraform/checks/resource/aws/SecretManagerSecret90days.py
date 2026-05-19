@@ -29,6 +29,55 @@ class SecretManagerSecret90days(BaseResourceCheck):
                 return value <= 129600  # 90 days * 24 hours * 60 minutes
         return False
 
+    def _check_cron_expression(self, expression: str) -> bool:
+        """
+        Parse AWS EventBridge cron format: cron(minutes hours day-of-month month day-of-week year)
+        Returns True (PASS) only if the rotation is guaranteed to run at least every 90 days.
+        Fails safe — if parsing fails or is ambiguous, returns False (FAIL).
+        """
+        inner = expression[5:-1]  # strip cron( and )
+        parts = inner.split()
+        if len(parts) != 6:
+            return False  # malformed cron → fail safe
+
+        month_field = parts[3]
+
+        # Wildcard means runs every month (worst case ~31 days apart) → PASS
+        if month_field in ('*', '?'):
+            return True
+
+        # Step syntax e.g. */3 means every 3 months → check gap
+        if month_field.startswith('*/'):
+            try:
+                step = int(month_field[2:])
+                return (step * 31) <= 90
+            except ValueError:
+                return False
+
+        # Expand month list/range e.g. "1,4,7,10" or "1-3"
+        try:
+            months: list[int] = []
+            for part in month_field.split(','):
+                if '-' in part:
+                    start, end = part.split('-', 1)
+                    months.extend(range(int(start), int(end) + 1))
+                else:
+                    months.append(int(part))
+
+            months = sorted(set(months))
+            if not months:
+                return False
+
+            # Calculate the maximum gap between consecutive months (including wrap-around)
+            gaps = [months[i + 1] - months[i] for i in range(len(months) - 1)]
+            gaps.append(12 - months[-1] + months[0])  # wrap Jan→Dec gap
+            max_gap_months = max(gaps)
+
+            # Worst case: 31 days per month
+            return (max_gap_months * 31) <= 90
+        except (ValueError, IndexError):
+            return False  # parse failure → fail safe
+
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         self.evaluated_keys = ["rotation_rules"]
         rules = conf.get("rotation_rules")
@@ -52,8 +101,7 @@ class SecretManagerSecret90days(BaseResourceCheck):
                 if expression.startswith('rate('):
                     return CheckResult.PASSED if self._check_rate_expression(expression) else CheckResult.FAILED
                 elif expression.startswith('cron('):
-                    # TODO: Handle failing cron expressions
-                    return CheckResult.PASSED
+                    return CheckResult.PASSED if self._check_cron_expression(expression) else CheckResult.FAILED
 
         return CheckResult.FAILED
 
