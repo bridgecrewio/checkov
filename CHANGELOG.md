@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.524...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.529...HEAD)
+
+## [3.2.529](https://github.com/bridgecrewio/checkov/compare/3.2.528...3.2.529) - 2026-05-14
+
+### Bug Fix
+
+- **terraform:** include 90-day boundary in rotation check CKV_AWS_304 - [#7544](https://github.com/bridgecrewio/checkov/pull/7544)
+
+## [3.2.528](https://github.com/bridgecrewio/checkov/compare/3.2.527...3.2.528) - 2026-05-10
+
+### Bug Fix
+
+- **secrets:** report all multiline regex matches per file, not just first occurrence - FIX - [#7540](https://github.com/bridgecrewio/checkov/pull/7540)
+
+## [3.2.527](https://github.com/bridgecrewio/checkov/compare/3.2.526...3.2.527) - 2026-05-07
+
+### Feature
+
+- **secrets:** Revert "fix(secrets): report all multiline regex matches per file, not just first occurrence" - [#7537](https://github.com/bridgecrewio/checkov/pull/7537)
+
+## [3.2.526](https://github.com/bridgecrewio/checkov/compare/3.2.525...3.2.526) - 2026-04-30
+
+### Bug Fix
+
+- **helm:** Accept helm version greater than v3 - [#7399](https://github.com/bridgecrewio/checkov/pull/7399)
+
+## [3.2.525](https://github.com/bridgecrewio/checkov/compare/3.2.524...3.2.525) - 2026-04-26
+
+### Bug Fix
+
+- **terraform:** fix wrong windows path - [#7529](https://github.com/bridgecrewio/checkov/pull/7529)
 
 ## [3.2.524](https://github.com/bridgecrewio/checkov/compare/3.2.522...3.2.524) - 2026-04-20
 

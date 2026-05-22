@@ -169,38 +169,45 @@ class CustomRegexDetector(RegexBasedDetector):
                 if multiline_regex is None:
                     continue
                 for regex_match in multiline_regex.finditer(file_content):
-                    secret_value = self._extract_real_regex_match(cast(Tuple[str], regex_match.groups()) or regex_match.group(0))
-                    if isinstance(secret_value, tuple):
-                        secret_value = secret_value[0]
-                    # Line number strategy:
-                    # - If secret_value is single-line (no \n), locate it within the match
-                    #   and compute its line directly — this gives the exact secret line.
-                    # - If secret_value spans multiple lines (e.g. a full JSON block or PGP key body),
-                    #   no single line contains it, so fall back to the prerun pattern's line,
-                    #   which is the most meaningful trigger line (e.g. "BEGIN PRIVATE KEY").
-                    if '\n' not in secret_value:
-                        inner_offset = regex_match.group(0).find(secret_value)
-                        if inner_offset < 0:
+                    try:
+                        secret_value = self._extract_real_regex_match(cast(Tuple[str], regex_match.groups()) or regex_match.group(0))
+                        if isinstance(secret_value, tuple):
+                            secret_value = secret_value[0]
+                        if secret_value is None:
                             continue
-                        secret_offset = regex_match.start() + inner_offset
-                        line_num = file_content[:secret_offset].count('\n') + 1
-                    else:
-                        prerun_search = regex.search(file_content, regex_match.start(), regex_match.end())
-                        secret_offset = prerun_search.start() if prerun_search else regex_match.start()
-                        line_num = file_content[:secret_offset].count('\n') + 1
-                    quoted_secret = f"'{secret_value}'"
-                    ps = PotentialSecret(
-                        type=regex_data["Name"],
-                        filename=filename,
-                        secret=quoted_secret,
-                        line_number=line_num,
-                        is_verified=is_verified,
-                        is_added=is_added,
-                        is_removed=is_removed,
-                        is_multiline=True,
-                    )
-                    ps.check_id = regex_data["Check_ID"]
-                    output.add(ps)
+                        # Line number strategy:
+                        # - If secret_value is single-line (no \n), locate it within the match
+                        #   and compute its line directly — this gives the exact secret line.
+                        # - If secret_value spans multiple lines (e.g. a full JSON block or PGP key body),
+                        #   no single line contains it, so fall back to the prerun pattern's line,
+                        #   which is the most meaningful trigger line (e.g. "BEGIN PRIVATE KEY").
+                        if '\n' not in secret_value:
+                            inner_offset = regex_match.group(0).find(secret_value)
+                            if inner_offset < 0:
+                                continue
+                            secret_offset = regex_match.start() + inner_offset
+                            line_num = file_content[:secret_offset].count('\n') + 1
+                        else:
+                            prerun_search = regex.search(file_content, regex_match.start(), regex_match.end())
+                            secret_offset = prerun_search.start() if prerun_search else regex_match.start()
+                            line_num = file_content[:secret_offset].count('\n') + 1
+                        quoted_secret = f"'{secret_value}'"
+                        ps = PotentialSecret(
+                            type=regex_data["Name"],
+                            filename=filename,
+                            secret=quoted_secret,
+                            line_number=line_num,
+                            is_verified=is_verified,
+                            is_added=is_added,
+                            is_removed=is_removed,
+                            is_multiline=True,
+                        )
+                        ps.check_id = regex_data["Check_ID"]
+                        output.add(ps)
+                    except Exception as e:
+                        logging.warning(
+                            f'Failed to process multiline match for check {regex_data.get("Check_ID", "unknown")} in {filename} at offset {regex_match.start()}: {type(e).__name__}')
+                        continue
                 continue
 
             # Wrap multiline match with fstring + ''

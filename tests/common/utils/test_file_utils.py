@@ -2,10 +2,12 @@ import io
 import os
 import tarfile
 import tempfile
+from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-from checkov.common.util.file_utils import read_file_safe, get_file_size_safe, extract_tar_archive
+from checkov.common.util.file_utils import read_file_safe, get_file_size_safe, extract_tar_archive, safe_relpath
 
 def test_sanity_read_file():
     file_to_check = f"{os.path.dirname(os.path.realpath(__file__))}/resources/existing_file"
@@ -92,3 +94,28 @@ def test_extract_tar_legitimate_files_still_extracted():
         extracted = os.path.join(dest_dir, "main.tf")
         assert os.path.isfile(extracted), "Legitimate file 'main.tf' was not extracted"
         assert open(extracted).read() == "hello\n"
+
+
+def test_safe_relpath_normal() -> None:
+    """safe_relpath returns a relative path under normal conditions."""
+    result = safe_relpath("/home/user/project/main.tf", "/home/user/project")
+    assert result == "main.tf"
+
+
+def test_safe_relpath_with_path_object() -> None:
+    """safe_relpath accepts a pathlib.Path as root_folder."""
+    result = safe_relpath("/home/user/project/main.tf", Path("/home/user/project"))
+    assert result == "main.tf"
+
+
+def test_safe_relpath_cross_drive_fallback(caplog: pytest.LogCaptureFixture) -> None:
+    """safe_relpath falls back to basename and logs a warning when
+    os.path.relpath raises ValueError (simulating cross-drive on Windows)."""
+    import logging
+    file_path = "/project/main.tf"
+    with patch("checkov.common.util.file_utils.os.path.relpath", side_effect=ValueError("cross-drive")):
+        with caplog.at_level(logging.WARNING, logger="checkov.common.util.file_utils"):
+            result = safe_relpath(file_path, "/other")
+
+    assert result == os.path.basename(file_path)
+    assert any("falling back" in record.message for record in caplog.records)

@@ -2,7 +2,6 @@ import os
 import tempfile
 import unittest
 from unittest.mock import patch
-
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -232,6 +231,13 @@ class TestRunnerValid(unittest.TestCase):
                         self.assertIn("kind: Deployment", content)
                         self.assertIn("name: example-deployment", content)
 
+    @unittest.skipIf(not helm_exists(), "helm not installed")
+    def test_check_system_deps(self):
+        o = Runner().check_system_deps()
+        assert o == None
+        r = Runner()
+        r.helm_command = 'thisshouldfail'
+        assert r.check_system_deps() == "helm"
 
 if __name__ == "__main__":
     unittest.main()
