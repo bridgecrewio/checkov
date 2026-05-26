@@ -11,7 +11,6 @@ import logging
 from dataclasses import dataclass
 
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey, SECP256R1
 
 
@@ -31,6 +30,12 @@ class VerificationKey:
     The fingerprint is the SHA-256 of the SubjectPublicKeyInfo DER encoding
     of the public key. It is used only for logging / diagnostic identity;
     verification itself tries each configured key in order.
+
+    ``frozen=True`` prevents rebinding the dataclass attributes
+    (``vk.public_key = other`` raises ``FrozenInstanceError``). It does
+    **not** make the held ``EllipticCurvePublicKey`` instance immutable —
+    that immutability is provided by ``cryptography``'s public-key types,
+    which expose no setters.
     """
     public_key: EllipticCurvePublicKey
     fingerprint_hex: str

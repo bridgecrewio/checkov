@@ -1,13 +1,8 @@
 """Fixtures for external-checks verification tests.
 
-OPSEC: fixture names are opaque / outcome-oriented per the plan's testing
-strategy. No name in this file references the underlying attack class it
-exercises.
-
-Keypairs are generated in-memory at session scope to avoid committing PEM
-files to the repo (which complicates rotation in CI). All on-disk dir trees
-are built into pytest's per-test ``tmp_path`` by helper fixtures rather than
-checked in as static fixtures.
+Keypairs are generated in-memory at session scope so no PEM files are
+committed to the repo. On-disk fixture trees are built into pytest's
+per-test ``tmp_path``.
 """
 from __future__ import annotations
 
@@ -17,7 +12,7 @@ from typing import Callable
 
 import pytest
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, rsa, ed25519, padding
+from cryptography.hazmat.primitives.asymmetric import ec, rsa, ed25519
 
 
 # --- Key generation --------------------------------------------------------
@@ -73,8 +68,6 @@ def priv_b(keypair_b) -> ec.EllipticCurvePrivateKey:
 
 # --- Unsupported key fixtures ---------------------------------------------
 # The verifier rejects any key that isn't exactly secp256r1 ECDSA.
-# Parametrize IDs are intentionally opaque (``format_a/b/c``) so the public
-# repo doesn't enumerate which formats are blocked.
 
 def _rsa_pub_pem() -> bytes:
     priv = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -139,7 +132,11 @@ def valid_dir(tmp_path: Path, priv_a) -> Path:
     files = {
         "__init__.py": b"",
         "aws_check.py": b"# valid check\nCHECK_ID = 'CKV_T_1'\n",
-        "_helper.py": b"# helper module\nHELPER = True\n",
+        "_helper.py": (
+            b"# helper module\n"
+            b"HELPER = True\n"
+            + b"# padding line\n" * 200  # nontrivial size so truncation bugs surface
+        ),
     }
     for name, body in files.items():
         f = root / name
@@ -228,4 +225,27 @@ def link_escape_dir(tmp_path: Path, priv_a) -> Path:
         os.symlink(payload, link)
     except (OSError, NotImplementedError):
         pytest.skip("symlinks not supported on this platform")
+    return root
+
+
+@pytest.fixture
+def multi_extension_dir(tmp_path: Path, priv_a) -> Path:
+    """Directory exercising every entry of LOADABLE_SUFFIXES.
+
+    Bytes of .so/.pyc/.pyd are not valid ELF/bytecode — that does not
+    matter to the verifier, which treats every file as opaque bytes.
+    """
+    root = tmp_path / "multi"
+    root.mkdir()
+    files = {
+        "__init__.py": b"",
+        "check.py": b"# py source\n",
+        "compiled.pyc": b"\x55\x0d\x0d\x0a" + b"\x00" * 12 + b"# fake pyc\n",
+        "typings.pyi": b"def foo() -> int: ...\n",
+        "native.so": b"\x7fELF" + b"\x00" * 32,
+        "windows.pyd": b"MZ" + b"\x00" * 30,
+    }
+    for name, body in files.items():
+        (root / name).write_bytes(body)
+        (root / f"{name}.sig").write_bytes(_sign_p256(priv_a, body))
     return root

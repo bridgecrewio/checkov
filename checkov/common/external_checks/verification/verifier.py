@@ -53,7 +53,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 from .keys import VerificationKey
-from .signature_format import read_signature
+from .signature_format import SignatureTooLargeError, read_signature
 
 
 logger = logging.getLogger(__name__)
@@ -71,9 +71,10 @@ class VerificationResult(enum.Enum):
     """Outcome of verifying a single file."""
 
     OK = "ok"
-    NO_SIGNATURE = "no_signature"
-    BAD_SIGNATURE = "bad_signature"
-    UNKNOWN_KEY = "unknown_key"
+    NO_SIGNATURE = "no_signature"     # sidecar missing or unreadable
+    BAD_SIGNATURE = "bad_signature"   # sidecar present but cryptographically invalid
+    UNKNOWN_KEY = "unknown_key"       # well-formed signature, but no configured key verifies
+    IO_ERROR = "io_error"             # payload file present but unreadable (perms, ENAMETOOLONG, …)
 
 
 @dataclass(frozen=True)
@@ -108,17 +109,12 @@ def _verify_against_keys(
     sig_der: bytes,
     keys: "Iterable[VerificationKey]",
 ) -> VerificationResult:
-    any_tried = False
     for key in keys:
-        any_tried = True
         try:
             key.public_key.verify(sig_der, payload, ec.ECDSA(hashes.SHA256()))
             return VerificationResult.OK
         except InvalidSignature:
             continue
-    if not any_tried:
-        # No keys configured: caller should not have invoked us.
-        return VerificationResult.UNKNOWN_KEY
     return VerificationResult.UNKNOWN_KEY
 
 
@@ -128,11 +124,14 @@ def verify_bytes(
     keys: "Iterable[VerificationKey]",
 ) -> VerificationResult:
     """Verify a payload+signature pair already in memory."""
+    keys_list = list(keys)
+    if not keys_list:
+        raise ValueError("verify_bytes requires at least one key")
     if not sig_der:
         return VerificationResult.NO_SIGNATURE
     if not _signature_is_well_formed(sig_der):
         return VerificationResult.BAD_SIGNATURE
-    return _verify_against_keys(payload, sig_der, keys)
+    return _verify_against_keys(payload, sig_der, keys_list)
 
 
 def verify_file(
@@ -140,11 +139,20 @@ def verify_file(
     sig_path: str,
     keys: "Iterable[VerificationKey]",
 ) -> VerificationResult:
-    """Read ``payload_path`` and ``sig_path`` from disk and verify."""
+    """Read ``payload_path`` and ``sig_path`` from disk and verify.
+
+    Returns ``IO_ERROR`` if the payload exists but cannot be read. Returns
+    ``NO_SIGNATURE`` if the sidecar is missing or unreadable. Crypto failures
+    map to ``BAD_SIGNATURE`` (well-formed but invalid) or ``UNKNOWN_KEY``
+    (well-formed and valid for no configured key).
+    """
     if not os.path.isfile(sig_path):
         return VerificationResult.NO_SIGNATURE
     try:
         sig_der = read_signature(sig_path)
+    except SignatureTooLargeError as exc:
+        logger.debug("sidecar too large at %s: %s", sig_path, exc)
+        return VerificationResult.BAD_SIGNATURE
     except OSError as exc:
         logger.debug("cannot read sidecar %s: %s", sig_path, exc)
         return VerificationResult.NO_SIGNATURE
@@ -153,7 +161,7 @@ def verify_file(
             payload = f.read()
     except OSError as exc:
         logger.debug("cannot read payload %s: %s", payload_path, exc)
-        return VerificationResult.BAD_SIGNATURE
+        return VerificationResult.IO_ERROR
     return verify_bytes(payload, sig_der, keys)
 
 
@@ -164,19 +172,25 @@ def verify_file_with_bytes(
 ) -> FileVerification:
     """Like :func:`verify_file` but also returns the payload bytes on success.
 
-    The bytes are read exactly once. Callers that intend to load the file
-    afterwards must use these bytes rather than re-reading from disk so
-    the verified-bytes invariant holds end-to-end.
+    On any failure path the returned ``payload_bytes`` is ``b""`` — the
+    loader must check ``result == OK`` before using the bytes.
     """
     if not os.path.isfile(sig_path):
         return FileVerification(VerificationResult.NO_SIGNATURE)
     try:
         sig_der = read_signature(sig_path)
+    except SignatureTooLargeError as exc:
+        logger.debug("sidecar too large at %s: %s", sig_path, exc)
+        return FileVerification(VerificationResult.BAD_SIGNATURE)
+    except OSError as exc:
+        logger.debug("cannot read sidecar %s: %s", sig_path, exc)
+        return FileVerification(VerificationResult.NO_SIGNATURE)
+    try:
         with open(payload_path, "rb") as f:
             payload = f.read()
     except OSError as exc:
-        logger.debug("cannot read %s or %s: %s", payload_path, sig_path, exc)
-        return FileVerification(VerificationResult.NO_SIGNATURE)
+        logger.debug("cannot read payload %s: %s", payload_path, exc)
+        return FileVerification(VerificationResult.IO_ERROR)
     result = verify_bytes(payload, sig_der, keys)
     if result == VerificationResult.OK:
         return FileVerification(result, payload)

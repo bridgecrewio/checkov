@@ -34,28 +34,34 @@ def _is_loadable(name: str) -> bool:
     return name.endswith(LOADABLE_SUFFIXES)
 
 
-def _resolves_inside(path: str, root_real: str) -> bool:
-    """Whether ``path``'s real (symlink-resolved) location lives under ``root_real``."""
+def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
+    """Return ``(inside, reason)``. ``reason`` is empty on success."""
     try:
         target_real = os.path.realpath(path)
-    except OSError:
-        return False
+    except OSError as exc:
+        return False, f"realpath failed: {exc}"
     target_real = os.path.normpath(target_real)
+    if not os.path.exists(target_real):
+        return False, "symlink target does not exist"
     # Use ``os.path.commonpath`` to avoid string-prefix bugs (``/a/b`` vs ``/a/bb``).
     try:
-        return os.path.commonpath([target_real, root_real]) == root_real
-    except ValueError:
-        return False
+        if os.path.commonpath([target_real, root_real]) != root_real:
+            return False, "resolves outside the verified directory"
+    except ValueError as exc:
+        return False, f"path comparison failed: {exc}"
+    return True, ""
 
 
-def _walk_loadable_files(root: str) -> "list[str]":
-    """Yield every Python-loadable file under ``root`` whose real path stays inside.
+def _walk_loadable_files(root: str) -> "tuple[list[str], list[str]]":
+    """Walk ``root`` and partition loadable files into (inside, escaped).
 
-    Raises :class:`SignatureVerificationError` if any loadable file's
-    real path resolves outside ``root`` (path-escape rejection).
+    Returns ``(inside_paths, escape_messages)``. The caller decides whether
+    to raise; this function never raises so a single bad symlink does not
+    mask other failures in the same dir.
     """
     root_real = os.path.normpath(os.path.realpath(root))
-    found: "list[str]" = []
+    inside: "list[str]" = []
+    escape_messages: "list[str]" = []
     # ``followlinks=False`` is the default — do not change it. A symlinked
     # subdir is treated as a file entry by the walk and never recursed into.
     for dirpath, _dirnames, filenames in os.walk(root, followlinks=False):
@@ -65,12 +71,62 @@ def _walk_loadable_files(root: str) -> "list[str]":
             if not _is_loadable(name):
                 continue
             full = os.path.join(dirpath, name)
-            if not _resolves_inside(full, root_real):
-                raise SignatureVerificationError(
-                    f"signature verification failed: {full} resolves outside the verified directory"
+            ok, reason = _resolves_inside(full, root_real)
+            if not ok:
+                escape_messages.append(
+                    f"path resolves outside the verified directory "
+                    f"({reason}): {os.path.relpath(full, start=root)}"
                 )
-            found.append(full)
-    return found
+                continue
+            inside.append(full)
+    return inside, escape_messages
+
+
+def _normalise_and_dedupe(
+    dirs: "Iterable[str]",
+) -> "tuple[list[str], list[str]]":
+    """Return ``(unique_dirs, overlap_errors)``.
+
+    Overlap = the realpath of one entry is the same as or a subpath of
+    another's realpath. We refuse overlap because the verified map is
+    keyed by absolute payload path and overlap would silently double-load
+    files in the Phase-2 loader.
+
+    Errors are accumulated (not raised) so that a single config typo and
+    a duplicate dir in the same call are both reported to the customer.
+    Non-existent directories pass through untouched; the caller validates
+    them and emits its own ``does not exist`` failure line.
+    """
+    unique_dirs: "list[str]" = []
+    overlap_errors: "list[str]" = []
+    seen: "dict[str, str]" = {}  # realpath -> original directory string
+    for directory in dirs:
+        if not directory:
+            continue
+        if not os.path.isdir(directory):
+            # Caller validates non-existent dirs separately (see F1).
+            unique_dirs.append(directory)
+            continue
+        rp = os.path.normpath(os.path.realpath(directory))
+        if rp in seen:
+            overlap_errors.append(
+                f"duplicate external-checks directory: {directory}"
+            )
+            continue
+        overlap = None
+        for other_rp in seen:
+            if rp.startswith(other_rp + os.sep) or other_rp.startswith(rp + os.sep):
+                overlap = seen[other_rp]
+                break
+        if overlap is not None:
+            overlap_errors.append(
+                f"overlapping external-checks directories: "
+                f"{directory} and {overlap}"
+            )
+            continue
+        seen[rp] = directory
+        unique_dirs.append(directory)
+    return unique_dirs, overlap_errors
 
 
 def verify_external_checks_dirs(
@@ -84,6 +140,13 @@ def verify_external_checks_dirs(
     * If ``keys`` is empty: returns an empty dict and does not walk any
       directory. This is the no-key, no-op path that backwards-compat
       callers rely on.
+    * If any entry in ``dirs`` is non-empty but does not resolve to a real
+      directory: that entry is reported in the failure list and the call
+      raises after every dir has been processed. Empty strings are ignored
+      (they are an artefact of CLI default-joining).
+    * Duplicate or overlapping (nested) dirs are reported in the same
+      failure list; processing of other dirs continues so the customer sees
+      every problem in a single CI cycle.
     * If any file fails verification (missing sig, bad sig, unknown key,
       or path-escape): raises :class:`SignatureVerificationError` listing
       every failure. The exception message names offending relative paths
@@ -95,17 +158,20 @@ def verify_external_checks_dirs(
     if not keys:
         return {}
 
-    verified_sources: "dict[str, bytes]" = {}
-    failures: "list[str]" = []
+    unique_dirs, overlap_errors = _normalise_and_dedupe(dirs)
 
-    for directory in dirs:
-        if not directory or not os.path.isdir(directory):
+    verified_sources: "dict[str, bytes]" = {}
+    failures: "list[str]" = list(overlap_errors)
+
+    for directory in unique_dirs:
+        if not os.path.isdir(directory):
+            failures.append(
+                f"external-checks directory does not exist or is not a directory: {directory}"
+            )
             continue
-        try:
-            loadable = _walk_loadable_files(directory)
-        except SignatureVerificationError as exc:
-            failures.append(str(exc))
-            continue
+
+        loadable, escape_messages = _walk_loadable_files(directory)
+        failures.extend(escape_messages)
 
         for payload_path in loadable:
             sig_path = sidecar_path_for(payload_path)
@@ -115,6 +181,8 @@ def verify_external_checks_dirs(
                 verified_sources[payload_path] = verification.payload_bytes
             elif verification.result == VerificationResult.NO_SIGNATURE:
                 failures.append(f"missing signature: {rel}")
+            elif verification.result == VerificationResult.IO_ERROR:
+                failures.append(f"payload file is unreadable: {rel}")
             else:
                 failures.append(f"signature verification failed: {rel}")
 
@@ -124,6 +192,14 @@ def verify_external_checks_dirs(
             + "\n  - ".join(failures)
         )
 
+    # ``unique_dirs`` has already been filtered (empty strings dropped) and
+    # validated (every entry is an existing dir, since failures would have
+    # caused the early raise above). No extra syscalls needed.
+    logger.info(
+        "external-checks signature verification ok: %d files verified across %d directories",
+        len(verified_sources),
+        len(unique_dirs),
+    )
     return verified_sources
 
 

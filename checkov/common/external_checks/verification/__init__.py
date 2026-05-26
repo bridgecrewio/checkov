@@ -5,7 +5,7 @@ implementation detail and may change without notice.
 """
 from __future__ import annotations
 
-from .enforce import verify_external_checks_dirs
+from .enforce import LOADABLE_SUFFIXES, verify_external_checks_dirs
 from .keys import SignatureVerificationError, VerificationKey, load_public_keys
 from .verifier import (
     FileVerification,
@@ -18,6 +18,7 @@ from .verifier import (
 
 __all__ = [
     "FileVerification",
+    "LOADABLE_SUFFIXES",
     "SignatureVerificationError",
     "VerificationKey",
     "VerificationResult",
