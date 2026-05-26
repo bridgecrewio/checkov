@@ -1,8 +1,8 @@
-"""Public-key loading and primitive pinning for external-check verification.
+"""Public-key loading and primitive pinning.
 
-Only ECDSA over the NIST P-256 (``secp256r1``) curve with SHA-256 is accepted.
-Any other key type or curve is rejected up-front, before any directory walk
-happens, so an operator setup error fails fast and clearly.
+Only ECDSA over NIST P-256 (``secp256r1``) with SHA-256 is accepted; any
+other curve or key type is rejected at load time so operator
+misconfiguration fails fast.
 """
 from __future__ import annotations
 
@@ -13,53 +13,30 @@ from dataclasses import dataclass
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey, SECP256R1
 
+from .errors import SignatureVerificationError
+
 
 logger = logging.getLogger(__name__)
 
 
-class SignatureVerificationError(Exception):
-    """Raised when verification fails for any reason (bad key, bad signature,
-    missing signature, malformed input, or a directory that contains an
-    unsigned Python-loadable file)."""
-
-
 @dataclass(frozen=True)
 class VerificationKey:
-    """A loaded, validated P-256 public key plus its SHA-256 fingerprint.
-
-    The fingerprint is the SHA-256 of the SubjectPublicKeyInfo DER encoding
-    of the public key. It is used only for logging / diagnostic identity;
-    verification itself tries each configured key in order.
-
-    ``frozen=True`` prevents rebinding the dataclass attributes
-    (``vk.public_key = other`` raises ``FrozenInstanceError``). It does
-    **not** make the held ``EllipticCurvePublicKey`` instance immutable —
-    that immutability is provided by ``cryptography``'s public-key types,
-    which expose no setters.
-    """
+    """A loaded P-256 public key with its SHA-256 SPKI fingerprint."""
     public_key: EllipticCurvePublicKey
     fingerprint_hex: str
     source_path: str
 
 
 def _validate_curve(pub: object, source_path: str) -> EllipticCurvePublicKey:
-    if not isinstance(pub, EllipticCurvePublicKey):
-        raise SignatureVerificationError(
-            f"unsupported key format in {source_path}"
-        )
-    if not isinstance(pub.curve, SECP256R1):
-        raise SignatureVerificationError(
-            f"unsupported key format in {source_path}"
-        )
+    if not isinstance(pub, EllipticCurvePublicKey) or not isinstance(pub.curve, SECP256R1):
+        raise SignatureVerificationError(f"unsupported key format in {source_path}")
     return pub
 
 
 def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
-    """Read PEM-encoded public keys from disk and validate each one.
+    """Read PEM-encoded P-256 public keys from disk and validate each one.
 
-    Raises :class:`SignatureVerificationError` if any key cannot be parsed
-    or is not a P-256 ECDSA key. The error message names the offending path
-    but does not enumerate which formats are rejected.
+    Raises :class:`SignatureVerificationError` on any read or parse failure.
     """
     keys: "list[VerificationKey]" = []
     for path in paths:
@@ -74,9 +51,7 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
         try:
             pub = serialization.load_pem_public_key(pem)
         except (ValueError, TypeError) as exc:
-            raise SignatureVerificationError(
-                f"unsupported key format in {path}"
-            ) from exc
+            raise SignatureVerificationError(f"unsupported key format in {path}") from exc
 
         validated = _validate_curve(pub, path)
         spki = validated.public_bytes(
@@ -84,13 +59,11 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
         fingerprint = hashlib.sha256(spki).hexdigest()
-        keys.append(
-            VerificationKey(
-                public_key=validated,
-                fingerprint_hex=fingerprint,
-                source_path=path,
-            )
-        )
+        keys.append(VerificationKey(
+            public_key=validated,
+            fingerprint_hex=fingerprint,
+            source_path=path,
+        ))
         logger.debug("Loaded verification key %s (fp=%s)", path, fingerprint[:16])
 
     return keys

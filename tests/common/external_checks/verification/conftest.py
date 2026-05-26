@@ -155,14 +155,14 @@ def valid_dir(tmp_path: Path, priv_a) -> Path:
 
 
 @pytest.fixture
-def tampered_dir(valid_dir: Path) -> Path:
+def mutated_dir(valid_dir: Path) -> Path:
     """One file in the valid dir has had a stray line appended after the trailer.
 
     Violates the "exactly one trailing newline" rule and is the customer-
     equivalent of an end-of-file-fixer hook adding a blank line.
     """
     target = valid_dir / "aws_check.py"
-    target.write_bytes(target.read_bytes() + b"# mutated\n")
+    target.write_bytes(target.read_bytes() + b"# extra\n")
     return valid_dir
 
 
@@ -214,7 +214,7 @@ def link_escape_dir(tmp_path: Path, priv_a) -> Path:
     """
     outside = tmp_path / "outside"
     outside.mkdir()
-    payload = outside / "evil.py"
+    payload = outside / "outside_module.py"
     payload.write_bytes(b"# code outside the verified tree\n")
 
     root = tmp_path / "with_link"
@@ -222,7 +222,7 @@ def link_escape_dir(tmp_path: Path, priv_a) -> Path:
     (root / "__init__.py").write_bytes(_append_trailer(b"", priv_a))
     (root / "inside.py").write_bytes(_append_trailer(b"# inside check\n", priv_a))
 
-    link = root / "innocent.py"
+    link = root / "looks_local.py"
     try:
         os.symlink(payload, link)
     except (OSError, NotImplementedError):

@@ -1,13 +1,14 @@
 """Tests for the in-memory verified-sources loader and meta-path finder.
 
-Covers Phase 2 of the Option-B plan:
+Covers Phase 2 of the verification module:
 
 * Direct load via ``load_verified_sources_into_module`` execs the
-  in-memory bytes, not the on-disk file (TOCTOU closure for direct
-  loads).
+  in-memory bytes, not the on-disk file (verify-then-load consistency
+  for direct loads).
 * ``VerifiedSourcesFinder``, while installed, serves an ``import``
-  request from the in-memory map (TOCTOU closure for transitive imports
-  like ``import _helper`` from inside a verified check).
+  request from the in-memory map (verify-then-load consistency for
+  transitive imports like ``import _helper`` from inside a verified
+  check).
 * ``BaseCheckRegistry.load_external_checks`` with ``verified_sources``
   refuses any on-disk ``.py`` file that is absent from the allowlist.
 * The finder is fully cleaned up from ``sys.meta_path`` after
@@ -54,15 +55,15 @@ def _restore_sys_state():
 
 def test_load_verified_sources_into_module_execs_in_memory_bytes(tmp_path: Path):
     """Bytes argument is what's executed, even when the disk file differs."""
-    on_disk = tmp_path / "victim.py"
-    on_disk.write_bytes(b"ATTACKER = 'pwned'\n")
-    safe_bytes = b"ATTACKER = 'safe'\nFLAG = 42\n"
+    on_disk = tmp_path / "module_a.py"
+    on_disk.write_bytes(b"VALUE = 'disk'\n")
+    in_memory_bytes = b"VALUE = 'memory'\nFLAG = 42\n"
 
     module = load_verified_sources_into_module(
-        "victim_test_module_in_memory", str(on_disk), safe_bytes,
+        "module_a_test_in_memory", str(on_disk), in_memory_bytes,
     )
 
-    assert module.ATTACKER == "safe"  # in-memory bytes won
+    assert module.VALUE == "memory"  # in-memory bytes won
     assert module.FLAG == 42
     assert module.__file__ == str(on_disk)
 
@@ -74,31 +75,31 @@ def test_load_verified_sources_into_module_cleans_up_on_failure(tmp_path: Path):
 
     with pytest.raises(SyntaxError):
         load_verified_sources_into_module(
-            "victim_test_module_broken",
+            "module_a_test_broken",
             str(on_disk),
             b"def broken(:\n",  # SyntaxError
         )
 
-    assert "victim_test_module_broken" not in sys.modules
+    assert "module_a_test_broken" not in sys.modules
 
 
 def test_finder_resolves_imports_from_in_memory_map(tmp_path: Path):
     """A normal ``import`` call goes through the finder when active."""
-    on_disk = tmp_path / "trojan_helper.py"
+    on_disk = tmp_path / "helper_module.py"
     on_disk.write_bytes(b"raise RuntimeError('disk path was executed')\n")
-    safe_bytes = b"VALUE = 'from-map'\n"
+    in_memory_bytes = b"VALUE = 'from-map'\n"
 
     finder = install_finder(
-        {str(on_disk): safe_bytes},
+        {str(on_disk): in_memory_bytes},
         [str(tmp_path)],
     )
     try:
-        module_name = "trojan_helper_test_module_in_memory"
-        # The finder maps the import name 'trojan_helper' (via filename
-        # 'trojan_helper.py') to the in-memory bytes; we use a uniquified
+        module_name = "helper_module_test_in_memory"
+        # The finder maps the import name 'helper_module' (via filename
+        # 'helper_module.py') to the in-memory bytes; we use a uniquified
         # alias to avoid colliding with another test's sys.modules entry.
         import importlib
-        spec = finder.find_spec("trojan_helper")
+        spec = finder.find_spec("helper_module")
         assert spec is not None
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
@@ -144,10 +145,10 @@ def test_load_external_checks_with_verified_sources_runs_in_memory(
     (checks_dir / "__init__.py").write_bytes(b"")
     on_disk_check = checks_dir / "verified_check.py"
     on_disk_check.write_bytes(b"print('FROM_DISK')\n")  # would be visible if exec'd
-    safe_bytes = b"print('FROM_MEMORY')\n"
+    in_memory_bytes = b"print('FROM_MEMORY')\n"
 
     verified_sources = {
-        str(on_disk_check.resolve()): safe_bytes,
+        str(on_disk_check.resolve()): in_memory_bytes,
     }
 
     # Need a concrete subclass; the abstract method isn't called in this path.
@@ -175,9 +176,9 @@ def test_load_external_checks_refuses_unverified_file(
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
-    drop_in = checks_dir / "unverified_drop_in.py"
+    extra = checks_dir / "unverified_extra.py"
     # Bytes that would *raise* if executed — proves the loader did not exec.
-    drop_in.write_bytes(b"raise RuntimeError('unverified file was executed')\n")
+    extra.write_bytes(b"raise RuntimeError('unverified file was executed')\n")
 
     class _StubRegistry(BaseCheckRegistry):
         def extract_entity_details(self, entity):

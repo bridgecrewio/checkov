@@ -11,6 +11,14 @@ from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
+from checkov.common.external_checks.verification.sources_registry import (
+    get_verified_sources_for_directory,
+)
+from checkov.common.external_checks.verification.verified_loader import (
+    install_finder,
+    load_verified_sources_into_module,
+    uninstall_finder,
+)
 from checkov.common.models.enums import CheckResult
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
@@ -179,45 +187,70 @@ class BaseCheckRegistry:
         """ Verify if a directory entry is a non-magic Python file."""
         return entry.is_file() and not entry.name.startswith("__") and entry.name.endswith(".py")
 
+    def _resolve_verified_source(
+        self,
+        verified_sources: Dict[str, bytes],
+        check_full_path: str,
+    ) -> "bytes | None":
+        """Look up ``check_full_path`` in the allowlist via canonical path.
+
+        ``check_full_path`` from ``os.scandir`` is NOT realpath'd, but
+        the registry stores realpath-normalised keys (so the lookup
+        works even when ``--external-checks-dir`` is a symlink). We
+        also fall back to the raw scandir key for direct callers who
+        passed an un-normalised map.
+        """
+        canonical_path = os.path.normpath(os.path.realpath(check_full_path))
+        return verified_sources.get(canonical_path) or verified_sources.get(check_full_path)
+
     def load_external_checks(
         self,
         directory: str,
         verified_sources: Optional[Dict[str, bytes]] = None,
     ) -> None:
-        """ Browse a directory looking for .py files to import.
+        """Browse a directory looking for .py files to import.
 
-        Log an error when the directory does not contains an __init__.py or
-        when a .py file has syntax error.
+        Log an error when the directory does not contain an ``__init__.py``
+        or when a ``.py`` file has a syntax error.
 
-        When ``verified_sources`` is provided, every ``.py`` file under
-        ``directory`` must be present as an absolute-path key in the map
-        and is loaded by execing the in-memory bytes (no on-disk re-read).
-        Files present on disk but absent from the map are refused —
-        otherwise an attacker could drop an unverified file between
-        verify and load. A meta-path finder is also installed for the
-        duration of the load so that ``import _helper`` calls from inside
-        a verified file also resolve to in-memory bytes, closing the
-        TOCTOU window for transitive imports.
+        When ``verified_sources`` is provided OR the process-global
+        verification registry is active for ``directory``, every ``.py``
+        file under ``directory`` must be present in the allowlist and
+        is loaded by execing the in-memory bytes (no on-disk re-read).
+        Files absent from the map are refused. A meta-path finder is
+        installed for the load window so transitive imports resolve to
+        the same in-memory bytes; ``sys.dont_write_bytecode`` is also
+        set so no ``__pycache__`` files leak into the verified tree.
 
-        When ``verified_sources`` is ``None``, behaviour is byte-identical
-        to the pre-Phase-2 loader — direct ``spec.loader.exec_module``
-        from disk. This is the default and preserves backward compatibility
-        for callers that have not opted into signature verification.
+        When ``verified_sources`` is ``None`` and the registry is not
+        active, behaviour is byte-identical to the pre-Phase-2 loader:
+        direct ``spec.loader.exec_module`` from disk.
+
+        Concurrency contract: this method is NOT reentrant or
+        thread-safe. The class-level ``__loading_external_checks`` flag,
+        the ``sys.meta_path`` finder install/uninstall window, and the
+        ``sys.dont_write_bytecode`` toggle all mutate process-global
+        state without locking. Callers must serialise.
+
+        v1 limitation: external check files are imported by their bare
+        filename stem, so ``checks/aws/helper.py`` and
+        ``checks/azure/helper.py`` collide on the name ``helper``. Keep
+        helper filenames unique across a single ``--external-checks-dir``
+        tree.
         """
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")
 
+        if verified_sources is None:
+            verified_sources = get_verified_sources_for_directory(directory)
+
         finder = None
+        previous_dont_write_bytecode: "bool | None" = None
         if verified_sources is not None:
-            # Collect the unique directories that contain verified files
-            # so the finder can resolve transitive imports against any of
-            # them (a customer's tree may legitimately have helpers in
-            # subdirectories — each gets its own sys.path entry below).
             verified_dirs = sorted({os.path.dirname(p) for p in verified_sources})
-            from checkov.common.external_checks.verification.verified_loader import (
-                install_finder,
-            )
             finder = install_finder(verified_sources, verified_dirs)
+            previous_dont_write_bytecode = sys.dont_write_bytecode
+            sys.dont_write_bytecode = True
 
         try:
             for root, _, _ in os.walk(directory):
@@ -225,51 +258,46 @@ class BaseCheckRegistry:
                 with os.scandir(root) as directory_content:
                     if not self._directory_has_init_py(root):
                         self.logger.info(f"No __init__.py found in {root}. Cannot load any check here.")
-                    else:
-                        for entry in directory_content:
-                            if self._file_can_be_imported(entry):
-                                check_name = entry.name.replace(".py", "")
-                                check_full_path = entry.path
+                        continue
+                    for entry in directory_content:
+                        if not self._file_can_be_imported(entry):
+                            continue
+                        check_name = entry.name.replace(".py", "")
+                        check_full_path = entry.path
+                        try:
+                            BaseCheckRegistry.__loading_external_checks = True
+                            self.logger.debug(f"Importing external check '{check_name}'")
 
-                                # Filter is set while loading external checks so the filter can be informed
-                                # of the checks, which need to be handled specially.
-                                try:
-                                    BaseCheckRegistry.__loading_external_checks = True
-                                    self.logger.debug(f"Importing external check '{check_name}'")
-
-                                    if verified_sources is not None:
-                                        # Verified-load path: bytes the verifier hashed
-                                        # are the bytes we exec. A file present on disk
-                                        # but absent from the allowlist is an unverified
-                                        # drop-in and must not be loaded.
-                                        source_bytes = verified_sources.get(check_full_path)
-                                        if source_bytes is None:
-                                            self.logger.error(
-                                                f"Refusing to load unverified external check "
-                                                f"'{check_name}' from {check_full_path}"
-                                            )
-                                            continue
-                                        from checkov.common.external_checks.verification.verified_loader import (
-                                            load_verified_sources_into_module,
-                                        )
-                                        load_verified_sources_into_module(
-                                            check_name, check_full_path, source_bytes,
-                                        )
-                                    else:
-                                        spec = importlib.util.spec_from_file_location(check_name, check_full_path)
-                                        if spec:
-                                            module = importlib.util.module_from_spec(spec)
-                                            sys.modules[check_name] = module
-                                            spec.loader.exec_module(module)  # type: ignore[union-attr] # loader can't be None here
-                                        else:
-                                            self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
-                                except Exception:
-                                    self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
-                                finally:
-                                    BaseCheckRegistry.__loading_external_checks = False
+                            if verified_sources is not None:
+                                source_bytes = self._resolve_verified_source(
+                                    verified_sources, check_full_path,
+                                )
+                                if source_bytes is None:
+                                    self.logger.error(
+                                        f"Refusing to load unverified external check "
+                                        f"'{check_name}' from {check_full_path}"
+                                    )
+                                    continue
+                                load_verified_sources_into_module(
+                                    check_name, check_full_path, source_bytes,
+                                )
+                            else:
+                                spec = importlib.util.spec_from_file_location(check_name, check_full_path)
+                                if spec:
+                                    module = importlib.util.module_from_spec(spec)
+                                    sys.modules[check_name] = module
+                                    spec.loader.exec_module(module)  # type: ignore[union-attr]
+                                else:
+                                    self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
+                        except Exception:
+                            self.logger.error(
+                                f"Cannot load external check '{check_name}' from {check_full_path}",
+                                exc_info=True,
+                            )
+                        finally:
+                            BaseCheckRegistry.__loading_external_checks = False
         finally:
             if finder is not None:
-                from checkov.common.external_checks.verification.verified_loader import (
-                    uninstall_finder,
-                )
                 uninstall_finder(finder)
+            if previous_dont_write_bytecode is not None:
+                sys.dont_write_bytecode = previous_dont_write_bytecode

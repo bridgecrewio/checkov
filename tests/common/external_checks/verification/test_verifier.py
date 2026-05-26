@@ -55,20 +55,21 @@ def test_accepts_with_any_configured_key(
 
 
 def test_rejects_invalid_input(
-    tampered_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
 ):
     """Bytes appended after the trailer → directory is rejected.
 
     Either ``signature verification failed`` (BAD_SIG/UNKNOWN_KEY) or
     ``missing signature`` (NO_SIG) is acceptable — both are structurally
-    correct refusals of a file with garbage after the trailer's newline.
+    correct refusals of a file with extra bytes after the trailer's
+    newline.
     """
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
     keys = load_public_keys([str(key_path)])
 
     with pytest.raises(SignatureVerificationError) as exc:
-        verify_external_checks_dirs([str(tampered_dir)], keys)
+        verify_external_checks_dirs([str(mutated_dir)], keys)
 
     msg = str(exc.value).lower()
     assert "signature verification failed" in msg or "missing signature" in msg
@@ -141,7 +142,7 @@ def test_reports_offending_path_on_failure(
     valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
 ):
     """A single bad file in a directory of many produces an error that names it."""
-    (valid_dir / "_helper.py").write_bytes(b"# tampered\nHELPER = 'evil'\n")
+    (valid_dir / "_helper.py").write_bytes(b"# modified\nHELPER = 'changed'\n")
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -249,7 +250,7 @@ def test_verify_file_returns_unknown_key_when_bytes_changed(
     body = original[:-1]  # strip terminating \n
     last_nl = body.rfind(b"\n")
     trailer_with_nl = original[last_nl + 1:]  # trailer line + \n
-    target.write_bytes(b"# tampered body\n" + trailer_with_nl)
+    target.write_bytes(b"# modified body\n" + trailer_with_nl)
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -308,9 +309,9 @@ def test_path_escape_does_not_mask_other_failures_in_same_dir(
     root.mkdir()
     outside = tmp_path / "outside"
     outside.mkdir()
-    (outside / "evil.py").write_bytes(b"# outside")
+    (outside / "outside_module.py").write_bytes(b"# outside")
     try:
-        os.symlink(outside / "evil.py", root / "linked.py")
+        os.symlink(outside / "outside_module.py", root / "linked.py")
     except (OSError, NotImplementedError):
         pytest.skip("symlinks unsupported on this platform")
     (root / "unsigned.py").write_bytes(b"# no trailer\n")
@@ -399,14 +400,14 @@ def test_verify_bytes_rejects_empty_key_list():
 def test_sibling_prefix_collision_is_not_an_escape(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):
-    """``/x/checks-evil/foo.py`` must not be considered inside ``/x/checks``."""
+    """``/x/checks-other/foo.py`` must not be considered inside ``/x/checks``."""
     checks = tmp_path / "checks"
     checks.mkdir()
     (checks / "foo.py").write_bytes(make_trailer(b"# inside\n", priv_a))
 
-    checks_evil = tmp_path / "checks-evil"
-    checks_evil.mkdir()
-    (checks_evil / "bad.py").write_bytes(b"# outside\n")
+    checks_other = tmp_path / "checks-other"
+    checks_other.mkdir()
+    (checks_other / "bad.py").write_bytes(b"# outside\n")
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -606,9 +607,9 @@ def test_rejects_dir_containing_binary_loadable_file(
     """Any binary loadable file inside an external-checks dir is a hard failure.
 
     These file types cannot carry a trailer (no Python-comment concept
-    in ELF/PE/bytecode containers); silently skipping would let an
-    attacker drop one next to a verified ``.py`` and have it loaded
-    transitively.
+    in ELF/PE/bytecode containers); silently skipping would leave the
+    import machinery free to load an unverified compiled module that
+    shares a stem with a signed ``.py``.
     """
     (binary_loadable_dir / f"native{extension}").write_bytes(b"\x00\x01\x02")
 
@@ -677,13 +678,13 @@ def test_init_py_signed_as_empty_loads_as_empty_package(
     assert user_keys == []
 
 
-def test_ignores_trailer_smuggle_in_middle_of_file(
+def test_ignores_extra_trailer_line_in_middle_of_file(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):
     """A bogus ``# checkov-digest:`` line in the middle of the file is ignored.
 
     Only the last line is checked. The real trailer covers the whole
-    body — including any fake digest-looking line inside it.
+    body — including any earlier digest-looking line inside it.
     """
     body = (
         b"# example trailer below for documentation:\n"
@@ -736,14 +737,14 @@ def test_rejects_formatter_simulated_trailer_mutation(
 ):
     """Format-on-save style mutations all fail with a non-OK result.
 
-    Pins the threat that an IDE format-on-save hook will corrupt the
+    Pins the scenario where an IDE format-on-save hook corrupts the
     trailer. We assert only that the result is non-OK — the wire-format
-    rules fail closed in several ways for these mutations, and pinning
-    the exact result per mutation would over-fit the test to parser
-    internals.
+    rules return a non-OK result in several ways for these mutations,
+    and pinning the exact result per mutation would over-fit the test
+    to parser internals.
 
     If any mutation ever returns OK silently, customers' signed files
-    will start failing verification randomly in CI; this is the canary
+    would start failing verification randomly in CI; this is the canary
     test for that regression.
     """
     body = b"def check():\n    return 'ok'\n"

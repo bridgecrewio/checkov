@@ -32,6 +32,8 @@ from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError, PlatformConnectionError
+from checkov.common.external_checks.verification.errors import SignatureVerificationError
+from checkov.common.external_checks.verification.sources_registry import verify_and_register
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -97,6 +99,11 @@ outer_registry = None
 
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
+
+# Max inline failure lines printed to stderr on an external-checks
+# verification failure; the full list is written to the log file below.
+_VERIFICATION_FAILURE_INLINE_LIMIT = 20
+_VERIFICATION_FAILURE_LOG_FILENAME = "checkov-verification-failures.log"
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
@@ -746,6 +753,14 @@ class Checkov:
                     bc_integration.persist_all_logs_streams(logger_streams.get_streams())
 
     def exit_run(self) -> None:
+        # Security failures (signature verification, etc.) set the
+        # sticky flag below and MUST exit non-zero regardless of
+        # --no-fail-on-crash. The flag stays set for the rest of the
+        # process so the outer except-SystemExit handler in run() does
+        # not silently downgrade the security exit to 0 by re-routing
+        # through exit_run().
+        if getattr(self, "_security_failure_exit_pending", False):
+            exit(2)
         exit(0) if self.config.no_fail_on_crash else exit(2)
 
     def commit_repository(self) -> str | None:
@@ -756,12 +771,63 @@ class Checkov:
             self.exit_run()
             return ""
 
+    def _report_verification_failure_and_exit(
+        self, exc: SignatureVerificationError,
+    ) -> None:
+        """Print a truncated failure list to stderr, dump full list, exit 2.
+
+        Sets the sticky security-failure flag so the outer
+        except-SystemExit handler in run() cannot downgrade the exit to 0.
+        """
+        self._security_failure_exit_pending = True  # type: ignore[attr-defined]
+
+        message_full = str(exc)
+        lines = message_full.split("\n")
+        header = lines[0] if lines else "external-checks verification failed"
+        failure_lines = [ln for ln in lines[1:] if ln.strip()]
+        if len(failure_lines) > _VERIFICATION_FAILURE_INLINE_LIMIT:
+            visible = failure_lines[:_VERIFICATION_FAILURE_INLINE_LIMIT]
+            extra = len(failure_lines) - _VERIFICATION_FAILURE_INLINE_LIMIT
+            body = (
+                "\n".join(visible)
+                + f"\n  ... and {extra} more "
+                f"(see ./{_VERIFICATION_FAILURE_LOG_FILENAME} for the full list)"
+            )
+            truncated = f"{header}\n{body}"
+        else:
+            truncated = message_full
+
+        print(
+            f"External checks signature verification failed:\n{truncated}",
+            file=sys.stderr,
+        )
+        try:
+            with open(f"./{_VERIFICATION_FAILURE_LOG_FILENAME}", "w") as f:
+                f.write(message_full + "\n")
+        except OSError:
+            pass
+        sys.exit(2)
+
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir
         if self.config.external_checks_git:
             git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
+
+        # Verification chokepoint: when public key(s) are configured,
+        # every user-supplied .py file must carry a valid trailer
+        # signature before any scan runs. The platform-supplied
+        # sast_custom_policies dir is appended *after* this step — it
+        # is authenticated separately by the platform integration and
+        # is out of scope for trailer signing.
+        public_key_paths: "list[str]" = self.config.external_checks_public_key or []
+        if public_key_paths and external_checks_dir:
+            try:
+                verify_and_register(external_checks_dir, public_key_paths)
+            except SignatureVerificationError as exc:
+                self._report_verification_failure_and_exit(exc)
+
         if bc_integration.sast_custom_policies:
             if not external_checks_dir:
                 external_checks_dir = []
