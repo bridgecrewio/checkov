@@ -80,6 +80,15 @@ def _walk_loadable_files(
         # In-place pruning is how ``os.walk`` stops recursing.
         dirnames[:] = [d for d in dirnames if d not in _SKIPPED_DIRECTORY_NAMES]
         for name in filenames:
+            # Skip files the loader would never execute — dotfiles
+            # (``.signed_backup.py``, ``.swp``-style editor backups,
+            # ``.foo.py``) are excluded by
+            # ``BaseCheckRegistry._file_can_be_imported`` on the legacy
+            # path; aligning the verifier with the loader avoids
+            # false-positive rejections for files the import machinery
+            # would never reach.
+            if name.startswith("."):
+                continue
             if _is_binary_loadable(name):
                 full = os.path.join(dirpath, name)
                 binary_messages.append(
@@ -189,9 +198,7 @@ def verify_external_checks_dirs(
                 failures.append(f"signature verification failed: {rel}")
 
     if failures:
-        raise SignatureVerificationError(
-            "external-checks verification failed:\n  - " + "\n  - ".join(failures)
-        )
+        raise SignatureVerificationError("\n".join(f"  - {f}" for f in failures))
 
     logger.info(
         "external-checks signature verification ok: %d files verified across %d directories",

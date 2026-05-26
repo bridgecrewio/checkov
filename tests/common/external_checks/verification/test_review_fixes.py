@@ -864,6 +864,47 @@ def test_legacy_load_external_checks_works_without_cryptography(tmp_path: Path):
 # --------------------------------------------------------------------------
 
 
+def test_walker_skips_dotfile_py_files(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """``.foo.py`` / ``.backup.py`` / editor swap-style dotfiles are silently
+    skipped — the loader never imports them either, so requiring them to
+    be signed would produce false-positive failures for everyday
+    editor/CI artifacts in the user's tree.
+
+    Caught during end-to-end testing: a stray ``.signed_backup.py``
+    created by the demo setup script failed verification, which is
+    technically correct but UX-hostile because the file would never
+    have been loaded by the existing
+    ``BaseCheckRegistry._file_can_be_imported`` filter.
+    """
+    root = tmp_path / "with_dotfiles"
+    root.mkdir()
+    (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
+    (root / "real_check.py").write_bytes(
+        make_trailer(b"# real\nID = 'CKV_T_1'\n", priv_a)
+    )
+    # Drop several unsigned dotfile-style ``.py`` files that the loader
+    # would never look at.
+    (root / ".swp.py").write_bytes(b"# editor swap\n")
+    (root / ".bak.py").write_bytes(b"# backup\n")
+    (root / ".hidden_helper.py").write_bytes(b"# hidden\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    # Must not raise — dotfile ``.py`` files are silently skipped.
+    verified = verify_external_checks_dirs([str(root)], keys)
+    assert any(p.endswith("real_check.py") for p in verified)
+    # The dotfiles must NOT be added to the allowlist.
+    for unwanted in (".swp.py", ".bak.py", ".hidden_helper.py"):
+        assert not any(p.endswith(unwanted) for p in verified), (
+            f"{unwanted} was added to the verified allowlist; the walker "
+            f"should skip dotfile-prefixed .py files entirely"
+        )
+
+
 def test_walker_skips_pycache_subdirectory(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):

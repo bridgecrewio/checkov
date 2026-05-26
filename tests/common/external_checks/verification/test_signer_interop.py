@@ -470,3 +470,187 @@ def test_signing_input_excludes_trailer_line_and_its_newline(
         f"verifier returned the wrong signed-bytes slice: expected "
         f"{body!r}, got {signed!r}"
     )
+
+
+# --------------------------------------------------------------------------
+# 9. JWS / IEEE P1363 raw ``r||s`` signatures MUST be rejected.
+#
+# JWT/JWS libraries (PyJWT, jose, java-jwt, …) emit 64-byte flat
+# ``r||s`` concatenations, NOT DER. The hex length is 128 chars — INSIDE
+# our [126, 144] length guard — so the parser will let the trailer line
+# through, and the DER-decode step is the only thing that distinguishes
+# the two encodings. The rejection MUST happen via ``BAD_SIGNATURE``
+# (well-formed trailer, malformed DER), not ``UNKNOWN_KEY``.
+#
+# This pins that the verifier accepts ONLY DER. A future refactor that
+# "helpfully" accepts both encodings would be a real security regression:
+# raw r||s makes signature malleability easier to exploit and removes the
+# structural sanity check the DER wrapper provides.
+# --------------------------------------------------------------------------
+
+
+def test_jose_raw_r_s_signature_rejected_as_bad_signature(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes,
+):
+    """A 64-byte raw ``r||s`` signature (the JWS / IEEE P1363 form) is rejected."""
+    body = b"def check():\n    return 'ok'\n"
+    der_sig = priv_a.sign(body, ec.ECDSA(hashes.SHA256()))
+    r, s = decode_dss_signature(der_sig)
+    # IEEE P1363 / JWS-style flat encoding: r||s, each padded to 32 bytes.
+    raw_sig = r.to_bytes(32, "big") + s.to_bytes(32, "big")
+    assert len(raw_sig) == 64, "test helper failed to produce a 64-byte raw sig"
+
+    target = tmp_path / "jose_style.py"
+    target.write_bytes(body + TRAILER_PREFIX + raw_sig.hex().encode("ascii") + b"\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    result, _ = verify_file(str(target), keys)
+    assert result == VerificationResult.BAD_SIGNATURE, (
+        f"raw r||s (JWS/IEEE-P1363) signature was not rejected as "
+        f"BAD_SIGNATURE; got {result!r}. The verifier accepts ONLY DER. "
+        f"A future refactor that adds raw-r||s support is a security "
+        f"regression — see the test docstring."
+    )
+
+
+# --------------------------------------------------------------------------
+# 10. Legacy PEM shape: ``-----BEGIN EC PUBLIC KEY-----``.
+#
+# Most OpenSSL versions emit ``-----BEGIN PUBLIC KEY-----`` (SPKI), and
+# our docs recipe (``openssl ec -in priv.pem -pubout``) ALWAYS emits
+# SPKI. The legacy ``BEGIN EC PUBLIC KEY`` banner wraps raw-EC-point
+# bytes, NOT a SubjectPublicKeyInfo structure — they are not byte-
+# compatible. ``cryptography.serialization.load_pem_public_key`` rejects
+# the mismatch with the standard ``unsupported key format`` error.
+#
+# This test documents the contract: customers must use SPKI (the openssl
+# ``-pubout`` default). A non-SPKI key is rejected loudly, which is the
+# right outcome — no silent acceptance of an unintended key shape.
+# --------------------------------------------------------------------------
+
+
+def test_non_spki_pem_rejected_with_clear_error(tmp_path: Path, priv_a):
+    """A non-SubjectPublicKeyInfo PEM is rejected with ``unsupported key format``.
+
+    Documents the SPKI requirement and pins the diagnostic so a customer
+    who pastes a non-SPKI key gets a clear error.
+    """
+    from checkov.common.external_checks.verification.errors import (
+        SignatureVerificationError,
+    )
+
+    spki_pem = priv_a.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    # Rewriting the banner produces a PEM whose body is SPKI but whose
+    # banner says "EC PUBLIC KEY" — load_pem_public_key validates the
+    # banner-vs-body match and rejects this.
+    legacy_pem = (
+        spki_pem
+        .replace(b"-----BEGIN PUBLIC KEY-----", b"-----BEGIN EC PUBLIC KEY-----")
+        .replace(b"-----END PUBLIC KEY-----", b"-----END EC PUBLIC KEY-----")
+    )
+    pub_path = tmp_path / "wrong_banner.pem"
+    pub_path.write_bytes(legacy_pem)
+
+    with pytest.raises(SignatureVerificationError, match="unsupported key format"):
+        load_public_keys([str(pub_path)])
+
+
+# --------------------------------------------------------------------------
+# 11. Wrong hash algorithm on the signing side.
+#
+# The verifier hardcodes SHA-256. If a signer accidentally used SHA-384
+# or SHA-512, the signature is structurally valid (DER) but cryptographically
+# invalid for the payload-under-SHA-256, so the verifier MUST reject it
+# with ``UNKNOWN_KEY`` (not BAD_SIGNATURE — the DER is fine).
+#
+# This pins the algorithm rigidity: a customer who runs
+# ``openssl dgst -sha384 -sign`` will get a clear UNKNOWN_KEY result,
+# not a silently-accepted wrong-algorithm signature.
+# --------------------------------------------------------------------------
+
+
+def test_sha384_signed_file_is_rejected(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes,
+):
+    """A signature computed with SHA-384 over the payload is rejected.
+
+    Pins SHA-256 as the only accepted hash. The verifier never tries
+    other hashes; the signature simply fails to verify under SHA-256.
+    """
+    body = b"# wrong-hash signer\n"
+    sha384_sig = priv_a.sign(body, ec.ECDSA(hashes.SHA384()))
+
+    target = tmp_path / "sha384.py"
+    target.write_bytes(body + TRAILER_PREFIX + sha384_sig.hex().encode("ascii") + b"\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    result, _ = verify_file(str(target), load_public_keys([str(key_path)]))
+    assert result == VerificationResult.UNKNOWN_KEY, (
+        f"SHA-384-signed file produced {result!r}; expected UNKNOWN_KEY. "
+        f"If the verifier ever silently accepts non-SHA-256 hashes, "
+        f"that's a primitive-pinning regression."
+    )
+
+
+def test_sha512_signed_file_is_rejected(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes,
+):
+    """Companion to the SHA-384 test — SHA-512 is also rejected."""
+    body = b"# wrong-hash signer (sha512)\n"
+    sha512_sig = priv_a.sign(body, ec.ECDSA(hashes.SHA512()))
+
+    target = tmp_path / "sha512.py"
+    target.write_bytes(body + TRAILER_PREFIX + sha512_sig.hex().encode("ascii") + b"\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    result, _ = verify_file(str(target), load_public_keys([str(key_path)]))
+    assert result == VerificationResult.UNKNOWN_KEY
+
+
+# --------------------------------------------------------------------------
+# 12. Pre-hashed signing path (operator misconfiguration).
+#
+# ``openssl pkeyutl -sign`` signs an already-computed digest, not the
+# file bytes. If a customer wires their signing pipeline this way by
+# mistake, the verifier will see a structurally valid DER signature
+# that does not match the file → ``UNKNOWN_KEY``. Pins the diagnostic
+# so the customer's support ticket lands with a clear failure code.
+# --------------------------------------------------------------------------
+
+
+def test_pre_hashed_signature_rejected(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes,
+):
+    """A signature over ``sha256(body)`` (instead of ``body``) is rejected.
+
+    This is the ``openssl pkeyutl -sign`` mistake. The signature is a
+    well-formed DER ECDSA pair; it just signs the wrong payload.
+    """
+    import hashlib
+    body = b"# pre-hashed signing mistake\n"
+    digest = hashlib.sha256(body).digest()
+    # Sign the DIGEST (32 bytes) as if it were the message. The
+    # cryptography library will SHA-256 it AGAIN — a classic double-hash
+    # bug — and produce a sig that the verifier will reject because the
+    # verifier hashes the on-disk body, not the digest of the body.
+    sig = priv_a.sign(digest, ec.ECDSA(hashes.SHA256()))
+
+    target = tmp_path / "double_hashed.py"
+    target.write_bytes(body + TRAILER_PREFIX + sig.hex().encode("ascii") + b"\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    result, _ = verify_file(str(target), load_public_keys([str(key_path)]))
+    assert result == VerificationResult.UNKNOWN_KEY, (
+        f"double-hash signing mistake produced {result!r}; expected "
+        f"UNKNOWN_KEY. Customer support tickets for this scenario need "
+        f"the dedicated diagnostic."
+    )

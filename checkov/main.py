@@ -774,36 +774,42 @@ class Checkov:
     def _report_verification_failure_and_exit(
         self, exc: SignatureVerificationError,
     ) -> None:
-        """Print a truncated failure list to stderr, dump full list, exit 2.
+        """Print a one-line summary + truncated bullet list to stderr, exit 2.
 
         Sets the sticky security-failure flag so the outer
         except-SystemExit handler in run() cannot downgrade the exit to 0.
+        Matches the existing checkov stderr convention: an English
+        sentence first, then any structured detail.
         """
         self._security_failure_exit_pending = True  # type: ignore[attr-defined]
 
-        message_full = str(exc)
-        lines = message_full.split("\n")
-        header = lines[0] if lines else "external-checks verification failed"
-        failure_lines = [ln for ln in lines[1:] if ln.strip()]
-        if len(failure_lines) > _VERIFICATION_FAILURE_INLINE_LIMIT:
-            visible = failure_lines[:_VERIFICATION_FAILURE_INLINE_LIMIT]
-            extra = len(failure_lines) - _VERIFICATION_FAILURE_INLINE_LIMIT
-            body = (
+        # ``str(exc)`` is the bulleted detail (one ``  - <path>`` per
+        # failure), with no header — see ``enforce.verify_external_checks_dirs``.
+        bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
+        if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
+            visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
+            extra = len(bullets) - _VERIFICATION_FAILURE_INLINE_LIMIT
+            inline_detail = (
                 "\n".join(visible)
                 + f"\n  ... and {extra} more "
                 f"(see ./{_VERIFICATION_FAILURE_LOG_FILENAME} for the full list)"
             )
-            truncated = f"{header}\n{body}"
         else:
-            truncated = message_full
+            inline_detail = "\n".join(bullets)
 
         print(
-            f"External checks signature verification failed:\n{truncated}",
+            "External checks signature verification failed; "
+            "refusing to run the scan. Offending files:\n"
+            f"{inline_detail}",
             file=sys.stderr,
         )
         try:
             with open(f"./{_VERIFICATION_FAILURE_LOG_FILENAME}", "w") as f:
-                f.write(message_full + "\n")
+                f.write(
+                    "External checks signature verification failed; "
+                    "refusing to run the scan. Offending files:\n"
+                )
+                f.write("\n".join(bullets) + "\n")
         except OSError:
             pass
         sys.exit(2)
