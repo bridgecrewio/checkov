@@ -8,7 +8,7 @@ from checkov.runner_filter import RunnerFilter
 
 class TestAdminPolicyDocument(unittest.TestCase):
 
-    @mock.patch.dict(os.environ, {"sneaky_var": "*"})
+    @mock.patch.dict(os.environ, {"sneaky_var": "*", "CHECKOV_SERVERLESS_RESOLVE_VARS": "true"})
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
