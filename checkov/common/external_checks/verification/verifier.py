@@ -1,18 +1,9 @@
-"""Single-file signature verification.
+"""Single-file ECDSA P-256 + SHA-256 signature verification.
 
-Cryptographic invariants:
-
-* Strict DER signature decoding via ``decode_dss_signature``.
-* Curve and key-type pinning happen at key-load time in :mod:`.keys`.
-* ``r`` and ``s`` are checked against the standard ECDSA validity range
-  ``[1, n-1]``. ``s`` is NOT further constrained to ``[1, n/2]``
-  (low-S) because ``openssl dgst -sha256 -sign`` and AWS KMS produce
-  high-S signatures roughly half the time; requiring low-S would
-  reject ~50% of customer-produced signatures. This is safe because
-  no cache, log or persistent index in this package is keyed by
-  signature bytes. If you add such a structure, low-S enforcement
-  must come back (or key the structure by
-  ``sha256(payload) + key_fingerprint`` instead).
+``s`` is NOT constrained to low-S: ``openssl dgst -sign`` and AWS KMS
+emit high-S signatures ~50% of the time. This is safe only because no
+cache in this package is keyed by signature bytes — if you add one,
+restore low-S enforcement or key by ``sha256(payload) + key_fp``.
 """
 from __future__ import annotations
 
@@ -45,8 +36,6 @@ _SECP256R1_N = int(
 
 
 class VerificationResult(enum.Enum):
-    """Outcome of verifying a single file."""
-
     OK = "ok"
     NO_SIGNATURE = "no_signature"
     BAD_SIGNATURE = "bad_signature"
@@ -56,7 +45,7 @@ class VerificationResult(enum.Enum):
 
 
 def _signature_is_well_formed(sig_der: bytes) -> bool:
-    """Strict-DER decode plus the standard ECDSA ``[1, n-1]`` range check."""
+    """Strict-DER decode plus ECDSA ``[1, n-1]`` range check on ``r`` and ``s``."""
     try:
         r, s = decode_dss_signature(sig_der)
     except (ValueError, TypeError):
@@ -86,13 +75,10 @@ def verify_bytes(
     file_bytes: bytes,
     keys: "Iterable[VerificationKey]",
 ) -> "tuple[VerificationResult, bytes]":
-    """Verify already-in-memory trailer-signed bytes.
+    """Verify in-memory trailer-signed bytes.
 
-    Returns ``(result, signed_bytes)`` — ``signed_bytes`` is ``b""`` on
-    any non-OK result, and also ``b""`` on the legal one-line
-    trailer-only file shape (a signed empty ``__init__.py``).
-
-    Raises :class:`ValueError` if ``keys`` is empty.
+    Returns ``(result, signed_bytes)``; ``signed_bytes`` is ``b""`` on
+    any non-OK result. Raises :class:`ValueError` if ``keys`` is empty.
     """
     keys_list = list(keys)
     if not keys_list:
@@ -103,8 +89,7 @@ def verify_bytes(
 
     parsed = parse_trailer(file_bytes)
     if parsed is None:
-        # Split "no trailer at all" from "trailer present but malformed"
-        # so customer error messages can be useful.
+        # Distinguish "no trailer" from "malformed trailer" for error messages.
         if has_trailer_prefix(file_bytes):
             return VerificationResult.BAD_SIGNATURE, b""
         return VerificationResult.NO_SIGNATURE, b""
@@ -124,7 +109,6 @@ def verify_file(
     path: str,
     keys: "Iterable[VerificationKey]",
 ) -> "tuple[VerificationResult, bytes]":
-    """Read ``path`` from disk and verify its trailer signature."""
     try:
         with open(path, "rb") as f:
             file_bytes = f.read()

@@ -1,15 +1,7 @@
 """In-memory loader for verified external-check source bytes.
 
-Exposes a :class:`VerifiedSourcesFinder` that, while installed on
-:data:`sys.meta_path`, intercepts every ``import`` whose target file
-sits inside one of the verified directories and serves its source from
-the in-memory ``verified_sources`` allowlist instead of re-reading the
-file from disk.
-
-The invariant the finder enforces: **the bytes the verifier hashed are
-the bytes the interpreter executes**. This holds for transitive imports
-as well — e.g. a signed ``aws_check.py`` that does ``import _helper``
-resolves through this finder and runs the verified in-memory bytes.
+Invariant: the bytes the verifier hashed are the bytes the interpreter
+executes. The meta-path finder enforces this for transitive imports too.
 """
 from __future__ import annotations
 
@@ -30,13 +22,10 @@ def load_verified_sources_into_module(
     file_path: str,
     source_bytes: bytes,
 ) -> "object":
-    """Compile ``source_bytes`` and exec into a fresh module named ``module_name``.
+    """Compile + exec ``source_bytes`` as ``module_name``.
 
-    Registers the module in :data:`sys.modules` BEFORE executing so
-    ``import module_name`` from inside ``source_bytes`` resolves to the
-    in-flight module. ``file_path`` is set as ``module.__file__`` and is
-    the filename argument to :func:`compile` so tracebacks point at the
-    on-disk file even though the bytes came from memory.
+    Registers the module in ``sys.modules`` BEFORE exec so self-imports
+    inside ``source_bytes`` resolve to the in-flight module.
     """
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None:
@@ -47,15 +36,13 @@ def load_verified_sources_into_module(
         code = compile(source_bytes, file_path, "exec")
         exec(code, module.__dict__)
     except BaseException:
-        # Clean up a half-initialised module so it can't be re-used.
+        # Don't leave a half-initialised module behind.
         sys.modules.pop(module_name, None)
         raise
     return module
 
 
 class _VerifiedSourceLoader(Loader):
-    """Loader that execs already-verified bytes; never touches disk."""
-
     def __init__(self, file_path: str, source_bytes: bytes) -> None:
         self._file_path = file_path
         self._source_bytes = source_bytes
@@ -73,13 +60,7 @@ class _VerifiedSourceLoader(Loader):
 
 
 class VerifiedSourcesFinder(MetaPathFinder):
-    """Meta-path finder that serves verified .py files from an in-memory map.
-
-    v1 scope: only top-level (un-dotted) module names. The existing
-    ``BaseCheckRegistry.load_external_checks`` flow imports each ``.py``
-    by bare stem, so per-file resolution is sufficient. Packages of
-    checks are out of scope for v1.
-    """
+    """v1 scope: top-level (un-dotted) module names only — packages of checks are out of scope."""
 
     def __init__(
         self,
@@ -111,14 +92,13 @@ def install_finder(
     verified_sources: Mapping[str, bytes],
     verified_dirs: Iterable[str],
 ) -> VerifiedSourcesFinder:
-    """Install a :class:`VerifiedSourcesFinder` at the front of ``sys.meta_path``."""
     finder = VerifiedSourcesFinder(verified_sources, list(verified_dirs))
     sys.meta_path.insert(0, finder)
     return finder
 
 
 def uninstall_finder(finder: VerifiedSourcesFinder) -> None:
-    """Remove ``finder`` from :data:`sys.meta_path`. Idempotent."""
+    """Idempotent."""
     try:
         sys.meta_path.remove(finder)
     except ValueError:

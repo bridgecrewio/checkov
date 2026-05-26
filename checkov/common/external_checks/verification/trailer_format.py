@@ -1,23 +1,10 @@
-"""In-file trailer wire format for external-check signatures.
+"""Trailer wire format: ``# checkov-digest: <hex-DER-ECDSA-P256-SHA256>\\n``.
 
-Each signed ``.py`` file ends with exactly one line of the form::
+Signed bytes = file bytes with the final trailer line + its ``\\n``
+stripped (no CRLF normalisation, no BOM stripping).
 
-    # checkov-digest: <lowercase-hex-DER-ECDSA-P256-SHA256-signature>\\n
-
-Wire-format rules (each is binding):
-
-* Trailer prefix is exactly ``b"# checkov-digest: "`` — one ASCII space
-  after the colon.
-* Payload is the DER ECDSA signature in lowercase hex, length in
-  ``[126, 144]``.
-* Trailer is the final line, terminated by exactly one ``\\n``.
-* Signed bytes = file bytes with the trailer line + its ``\\n`` stripped.
-  No CRLF normalisation, no BOM stripping.
-
-Do not build any cache keyed by trailer bytes. ECDSA signatures are
-malleable in their ``s`` component — ``(r, s)`` and ``(r, n-s)`` both
-verify under the same key for the same payload but encode differently.
-Key by ``sha256(payload) + key_fingerprint`` instead.
+ECDSA signatures are malleable in ``s`` — do NOT key any cache by
+trailer bytes; key by ``sha256(payload) + key_fingerprint`` instead.
 """
 from __future__ import annotations
 
@@ -26,8 +13,7 @@ import string
 
 TRAILER_PREFIX = b"# checkov-digest: "
 
-# P-256 DER ECDSA signatures are 70-72 bytes typically and 63-72 with
-# leading-zero stripping → 126-144 hex chars.
+# P-256 DER signatures are 63-72 bytes → 126-144 hex chars.
 _HEX_MIN = 126
 _HEX_MAX = 144
 
@@ -35,13 +21,7 @@ _LOWERCASE_HEX_BYTES = frozenset((string.digits + "abcdef").encode("ascii"))
 
 
 def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
-    """Parse trailer-signed file bytes into ``(signed_bytes, hex_payload)``.
-
-    Returns ``None`` on any structural failure (no terminating ``\\n``,
-    wrong prefix, payload length out of range, non-lowercase-hex byte
-    in payload). On success, ``signed_bytes`` are the bytes to hash and
-    ``hex_payload`` is the ASCII hex to decode as a DER signature.
-    """
+    """Return ``(signed_bytes, hex_payload)`` or ``None`` on any structural failure."""
     if not file_bytes or not file_bytes.endswith(b"\n"):
         return None
 
@@ -63,7 +43,6 @@ def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
 
 
 def has_trailer_prefix(file_bytes: bytes) -> bool:
-    """True iff the file's last ``\\n``-terminated line starts with the trailer prefix."""
     if not file_bytes or not file_bytes.endswith(b"\n"):
         return False
     body = file_bytes[:-1]
@@ -72,11 +51,8 @@ def has_trailer_prefix(file_bytes: bytes) -> bool:
 
 
 def has_double_trailer(file_bytes: bytes) -> bool:
-    """True iff the last AND second-to-last lines both start with the trailer prefix.
-
-    Detects "the signer ran the signing recipe twice without resetting
-    the file" — a recipe re-run cannot happen by editor mishap; only by
-    deliberate / scripted re-signing.
+    """True iff the last TWO lines both start with the trailer prefix
+    (i.e. the signing recipe was run twice without resetting the file).
     """
     if not file_bytes or not file_bytes.endswith(b"\n"):
         return False
@@ -92,7 +68,6 @@ def has_double_trailer(file_bytes: bytes) -> bool:
 
 
 def decode_hex_signature(hex_payload: bytes) -> "bytes | None":
-    """Decode a hex payload into raw DER signature bytes. Returns ``None`` on failure."""
     try:
         return bytes.fromhex(hex_payload.decode("ascii"))
     except (UnicodeDecodeError, ValueError):

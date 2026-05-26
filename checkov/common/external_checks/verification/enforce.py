@@ -1,14 +1,9 @@
 """Directory-tree enforcement of signature verification.
 
-Only ``.py`` files can be trailer-signed (ELF / PE / bytecode containers
-have no Python-comment concept). Binary loadable types (``.pyc``,
-``.so``, ``.pyd``, ``.pyi``) anywhere except inside ``__pycache__/``
-are a hard failure — silently skipping them would let the import
-machinery load an unverified compiled module that happens to share a
-stem with a signed ``.py``.
-
-``__pycache__/`` subdirectories are silently skipped (see
-:data:`_SKIPPED_DIRECTORY_NAMES`).
+Binary loadable files (``.pyc``, ``.so``, ``.pyd``, ``.pyi``) outside
+``__pycache__/`` are a hard failure — silently skipping them would let
+the import machinery load an unverified compiled module sharing a stem
+with a signed ``.py``.
 """
 from __future__ import annotations
 
@@ -28,12 +23,9 @@ LOADABLE_SUFFIXES = (".py",)
 
 _BINARY_LOADABLE_SUFFIXES = (".pyc", ".pyi", ".so", ".pyd")
 
-# Skipped during the walk. ``__pycache__`` is a CPython artefact that
-# can contain ``.pyc`` files from previous (verified or unverified) runs;
-# treating its contents as binary loadable failures would produce false
-# positives. The loader's meta-path finder intercepts allowlisted names
-# BEFORE the default ``PathFinder`` ever consults ``__pycache__``, so
-# skipping the directory cannot be used to bypass verification.
+# ``__pycache__`` is skipped (not failed): it may hold .pyc artefacts
+# from prior runs. The meta-path finder intercepts allowlisted names
+# before ``PathFinder`` consults ``__pycache__``, so this is not a bypass.
 _SKIPPED_DIRECTORY_NAMES = frozenset({"__pycache__"})
 
 
@@ -65,28 +57,22 @@ def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
 def _walk_loadable_files(
     root: str,
 ) -> "tuple[list[str], list[str], list[str]]":
-    """Walk ``root`` and partition files into three buckets.
+    """Walk ``root`` → ``(inside_paths, escape_messages, binary_rejections)``.
 
-    Returns ``(inside_paths, escape_messages, binary_rejection_messages)``.
-    Never raises so a single bad symlink or stray binary file does not
-    mask other failures.
+    Never raises so a single bad symlink or stray binary does not mask
+    other failures.
     """
     root_real = os.path.normpath(os.path.realpath(root))
     inside: "list[str]" = []
     escape_messages: "list[str]" = []
     binary_messages: "list[str]" = []
-    # ``followlinks=False`` is the default — do not change it.
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
-        # In-place pruning is how ``os.walk`` stops recursing.
+        # In-place mutation is how os.walk stops recursing into dirnames.
         dirnames[:] = [d for d in dirnames if d not in _SKIPPED_DIRECTORY_NAMES]
         for name in filenames:
-            # Skip files the loader would never execute — dotfiles
-            # (``.signed_backup.py``, ``.swp``-style editor backups,
-            # ``.foo.py``) are excluded by
-            # ``BaseCheckRegistry._file_can_be_imported`` on the legacy
-            # path; aligning the verifier with the loader avoids
-            # false-positive rejections for files the import machinery
-            # would never reach.
+            # Align with BaseCheckRegistry._file_can_be_imported, which
+            # skips dotfiles — the verifier must not reject files the
+            # loader would never reach.
             if name.startswith("."):
                 continue
             if _is_binary_loadable(name):
@@ -115,11 +101,8 @@ def _normalise_and_dedupe(
 ) -> "tuple[list[str], list[str]]":
     """Return ``(unique_dirs, overlap_errors)``.
 
-    Overlap (one entry's realpath is the same as or a subpath of
-    another's) is refused because the verified map is keyed by absolute
-    payload path and overlap would silently double-load files.
-    Errors are accumulated, not raised, so a config typo and a duplicate
-    dir in the same call both surface in one CI cycle.
+    Overlap is refused because the verified map is keyed by absolute
+    payload path; overlapping dirs would silently double-load files.
     """
     unique_dirs: "list[str]" = []
     overlap_errors: "list[str]" = []
@@ -153,15 +136,10 @@ def verify_external_checks_dirs(
     dirs: "Iterable[str]",
     keys: "list[VerificationKey]",
 ) -> "dict[str, bytes]":
-    """Verify every Python-loadable file in every dir and return the source map.
+    """Verify every ``.py`` under every dir; raise on any failure.
 
-    * Empty ``keys`` → returns ``{}`` and does not walk anything.
-    * Failures (missing trailer, bad sig, unknown key, path-escape,
-      binary loadable file, duplicate/overlapping/missing dir) →
-      :class:`SignatureVerificationError` after every dir has been
-      walked, listing every offender by relative path.
-    * On success → ``{absolute_path: signed_bytes}``. Bytes are
-      trailer-stripped; the loader execs from these.
+    Empty ``keys`` → ``{}`` (no walk). All failures across all dirs are
+    accumulated before raising, so one CI cycle surfaces everything.
     """
     if not keys:
         return {}

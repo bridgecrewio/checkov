@@ -753,12 +753,9 @@ class Checkov:
                     bc_integration.persist_all_logs_streams(logger_streams.get_streams())
 
     def exit_run(self) -> None:
-        # Security failures (signature verification, etc.) set the
-        # sticky flag below and MUST exit non-zero regardless of
-        # --no-fail-on-crash. The flag stays set for the rest of the
-        # process so the outer except-SystemExit handler in run() does
-        # not silently downgrade the security exit to 0 by re-routing
-        # through exit_run().
+        # Sticky security-failure flag overrides --no-fail-on-crash so
+        # the outer except-SystemExit handler in run() cannot downgrade
+        # a security exit to 0.
         if getattr(self, "_security_failure_exit_pending", False):
             exit(2)
         exit(0) if self.config.no_fail_on_crash else exit(2)
@@ -774,17 +771,9 @@ class Checkov:
     def _report_verification_failure_and_exit(
         self, exc: SignatureVerificationError,
     ) -> None:
-        """Print a one-line summary + truncated bullet list to stderr, exit 2.
-
-        Sets the sticky security-failure flag so the outer
-        except-SystemExit handler in run() cannot downgrade the exit to 0.
-        Matches the existing checkov stderr convention: an English
-        sentence first, then any structured detail.
-        """
+        """Print summary + truncated bullets to stderr; set sticky flag; exit 2."""
         self._security_failure_exit_pending = True  # type: ignore[attr-defined]
 
-        # ``str(exc)`` is the bulleted detail (one ``  - <path>`` per
-        # failure), with no header — see ``enforce.verify_external_checks_dirs``.
         bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
         if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
             visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
@@ -821,12 +810,9 @@ class Checkov:
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
 
-        # Verification chokepoint: when public key(s) are configured,
-        # every user-supplied .py file must carry a valid trailer
-        # signature before any scan runs. The platform-supplied
-        # sast_custom_policies dir is appended *after* this step — it
-        # is authenticated separately by the platform integration and
-        # is out of scope for trailer signing.
+        # Verification chokepoint — runs before any scan. The platform's
+        # sast_custom_policies dir is appended after this step and is
+        # authenticated separately (out of scope for trailer signing).
         public_key_paths: "list[str]" = self.config.external_checks_public_key or []
         if public_key_paths and external_checks_dir:
             try:

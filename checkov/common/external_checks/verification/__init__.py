@@ -1,17 +1,8 @@
 """External-checks signature verification.
 
-Public surface is lazily re-exported via PEP 562 ``__getattr__``.
-
-**Why lazy?** The legacy code path
-(``BaseCheckRegistry.load_external_checks`` with no public key
-configured) must work on installs without ``cryptography`` installed —
-``cryptography`` is NOT a core checkov dependency, it is only required
-when the operator opts into verification. Eager re-exports of the
-crypto-touching submodules (``keys``, ``verifier``, ``enforce``)
-would break every existing user of ``--external-checks-dir`` with
-``ModuleNotFoundError: No module named 'cryptography'`` on a stock
-install. The PEP 562 hook resolves symbols on first access, so the
-package import is side-effect free.
+Public surface is exported lazily via PEP 562 ``__getattr__`` because
+``cryptography`` is NOT a core checkov dependency — eager imports would
+break every existing ``--external-checks-dir`` user on a stock install.
 """
 from __future__ import annotations
 
@@ -32,7 +23,6 @@ __all__ = [
 ]
 
 
-# public name -> (submodule, attribute)
 _LAZY_EXPORTS: "dict[str, tuple[str, str]]" = {
     "LOADABLE_SUFFIXES":           ("enforce",        "LOADABLE_SUFFIXES"),
     "verify_external_checks_dirs": ("enforce",        "verify_external_checks_dirs"),
@@ -55,7 +45,7 @@ def __getattr__(name: str) -> Any:
     import importlib
     submodule = importlib.import_module(f"{__name__}.{submodule_name}")
     value = getattr(submodule, attribute_name)
-    globals()[name] = value  # cache for subsequent lookups
+    globals()[name] = value
     return value
 
 

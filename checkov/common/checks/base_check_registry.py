@@ -192,14 +192,7 @@ class BaseCheckRegistry:
         verified_sources: Dict[str, bytes],
         check_full_path: str,
     ) -> "bytes | None":
-        """Look up ``check_full_path`` in the allowlist via canonical path.
-
-        ``check_full_path`` from ``os.scandir`` is NOT realpath'd, but
-        the registry stores realpath-normalised keys (so the lookup
-        works even when ``--external-checks-dir`` is a symlink). We
-        also fall back to the raw scandir key for direct callers who
-        passed an un-normalised map.
-        """
+        """Look up ``check_full_path`` in the allowlist (realpath-normalised, with raw-path fallback)."""
         canonical_path = os.path.normpath(os.path.realpath(check_full_path))
         return verified_sources.get(canonical_path) or verified_sources.get(check_full_path)
 
@@ -208,35 +201,14 @@ class BaseCheckRegistry:
         directory: str,
         verified_sources: Optional[Dict[str, bytes]] = None,
     ) -> None:
-        """Browse a directory looking for .py files to import.
+        """Import ``.py`` files from ``directory`` as external checks.
 
-        Log an error when the directory does not contain an ``__init__.py``
-        or when a ``.py`` file has a syntax error.
+        If ``verified_sources`` is given (or the global verification
+        registry is active for ``directory``), only files in the
+        allowlist are loaded, from in-memory bytes; otherwise the
+        loader falls back to the legacy on-disk import path.
 
-        When ``verified_sources`` is provided OR the process-global
-        verification registry is active for ``directory``, every ``.py``
-        file under ``directory`` must be present in the allowlist and
-        is loaded by execing the in-memory bytes (no on-disk re-read).
-        Files absent from the map are refused. A meta-path finder is
-        installed for the load window so transitive imports resolve to
-        the same in-memory bytes; ``sys.dont_write_bytecode`` is also
-        set so no ``__pycache__`` files leak into the verified tree.
-
-        When ``verified_sources`` is ``None`` and the registry is not
-        active, behaviour is byte-identical to the pre-Phase-2 loader:
-        direct ``spec.loader.exec_module`` from disk.
-
-        Concurrency contract: this method is NOT reentrant or
-        thread-safe. The class-level ``__loading_external_checks`` flag,
-        the ``sys.meta_path`` finder install/uninstall window, and the
-        ``sys.dont_write_bytecode`` toggle all mutate process-global
-        state without locking. Callers must serialise.
-
-        v1 limitation: external check files are imported by their bare
-        filename stem, so ``checks/aws/helper.py`` and
-        ``checks/azure/helper.py`` collide on the name ``helper``. Keep
-        helper filenames unique across a single ``--external-checks-dir``
-        tree.
+        Not reentrant or thread-safe — callers must serialise.
         """
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")

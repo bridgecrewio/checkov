@@ -1,9 +1,4 @@
-"""Public-key loading and primitive pinning.
-
-Only ECDSA over NIST P-256 (``secp256r1``) with SHA-256 is accepted; any
-other curve or key type is rejected at load time so operator
-misconfiguration fails fast.
-"""
+"""Public-key loading. Only ECDSA P-256 + SHA-256 is accepted."""
 from __future__ import annotations
 
 import hashlib
@@ -21,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class VerificationKey:
-    """A loaded P-256 public key with its SHA-256 SPKI fingerprint."""
     public_key: EllipticCurvePublicKey
     fingerprint_hex: str
     source_path: str
@@ -34,10 +28,6 @@ def _validate_curve(pub: object, source_path: str) -> EllipticCurvePublicKey:
 
 
 def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
-    """Read PEM-encoded P-256 public keys from disk and validate each one.
-
-    Raises :class:`SignatureVerificationError` on any read or parse failure.
-    """
     keys: "list[VerificationKey]" = []
     for path in paths:
         try:
