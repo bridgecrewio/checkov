@@ -14,6 +14,7 @@ from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.dockerfile import DOCKERFILE_IGNORE_PATTERN_ENV_VAR
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 from checkov.dockerfile.runner import Runner, get_files_definitions
 from checkov.dockerfile.registry import registry
@@ -350,6 +351,21 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
 
+    def test_ignore_dockerfile_pattern(self):
+        runner = Runner(db_connector=self.db_connector())
+        os.environ[DOCKERFILE_IGNORE_PATTERN_ENV_VAR] = "true"
+        self.assertTrue(runner.should_scan_file("no_pattern_match_file"), "Did not ignore dockerfile pattern as expected!")
+        os.environ.pop(DOCKERFILE_IGNORE_PATTERN_ENV_VAR, None)
+
+    def test_no_ignore_dockerfile_pattern_no_pattern_match(self):
+        runner = Runner(db_connector=self.db_connector())
+        os.environ.pop(DOCKERFILE_IGNORE_PATTERN_ENV_VAR, None)
+        self.assertFalse(runner.should_scan_file("no_pattern_match_file"), "Did not recognize ignored dockerfile pattern as expected!")
+
+    def test_no_ignore_dockerfile_pattern_with_pattern_match(self):
+        runner = Runner(db_connector=self.db_connector())
+        os.environ.pop(DOCKERFILE_IGNORE_PATTERN_ENV_VAR, None)
+        self.assertTrue(runner.should_scan_file("dockerfile"), "Did not recognize accepted dockerfile pattern as expected!")
 
     def tearDown(self) -> None:
         registry.checks = self.orig_checks

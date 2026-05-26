@@ -19,7 +19,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.dockerfile import is_dockerfile
+from checkov.common.util.dockerfile import is_dockerfile, DOCKERFILE_IGNORE_PATTERN_ENV_VAR
 from checkov.common.typing import _CheckResult
 from checkov.dockerfile.graph_builder.local_graph import DockerfileLocalGraph
 from checkov.dockerfile.graph_manager import DockerfileGraphManager
@@ -72,6 +72,8 @@ class Runner(ImageReferencerMixin[_DockerfileDefinitions], BaseRunner[_Dockerfil
         self.root_folder: str | None = None
 
     def should_scan_file(self, filename: str) -> bool:
+        if DOCKERFILE_IGNORE_PATTERN_ENV_VAR in os.environ and bool(os.environ[DOCKERFILE_IGNORE_PATTERN_ENV_VAR]):
+            return True
         return is_dockerfile(os.path.basename(filename))
 
     def run(
@@ -99,7 +101,7 @@ class Runner(ImageReferencerMixin[_DockerfileDefinitions], BaseRunner[_Dockerfil
                         self.graph_registry.load_external_checks(directory)
 
             if files:
-                files_list = [file for file in files if is_dockerfile(os.path.basename(file))]
+                files_list = [file for file in files if self.should_scan_file(os.path.basename(file))]
 
             if root_folder:
                 filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"

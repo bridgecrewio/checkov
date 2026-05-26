@@ -154,6 +154,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             nargs="+",
         )
         self.add(
+            "--ignore-dockerfile-pattern",
+            action='store_true',
+            help="Ignore the internal pattern matching a Dockerfile name. "
+                 "Only active, if --file is given and framework is 'dockerfile'. This allows to check Dockerfiles with special names "
+                 "like 'Dockerfile-special' or 'my-fancy-dockerfile' which will normally be silently ignored.",
+        )
+        self.add(
             "--skip-path",
             action="append",
             help="Path (file or directory) to skip, using regular expression logic, relative to current "

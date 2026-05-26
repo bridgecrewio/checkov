@@ -1,6 +1,7 @@
 import re
 
 DOCKERFILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$(?<!\.[Dd]ockerignore)")
+DOCKERFILE_IGNORE_PATTERN_ENV_VAR = "DOCKERFILE_IGNORE_PATTERN"
 
 
 def is_dockerfile(file: str) -> bool:
