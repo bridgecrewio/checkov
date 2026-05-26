@@ -2,11 +2,19 @@
 
 This is the module the CLI chokepoint calls. It walks every configured
 external-checks directory, identifies every Python-loadable file the
-Python import machinery could reach from inside that tree, and requires
-each one to be signed by one of the configured keys.
+import machinery could reach inside that tree, and requires each one
+to be signed by one of the configured keys.
 
-The verifier and the loader **must** share this enumeration (Phase 2).
+Only ``.py`` files can be trailer-signed (ELF / PE32+ / bytecode
+containers have no Python-comment concept). Compiled / binary loadable
+file types — ``.pyc``, ``.so``, ``.pyd``, ``.pyi`` — therefore CANNOT
+be covered by this verifier. Silently skipping them would let an
+attacker drop a ``.so`` next to a verified ``.py`` and have it loaded
+transitively, so we reject the whole directory if any such file is
+present, listing every offender.
+
 The dict this function returns is the allowlist the loader consumes.
+The verifier and the loader must share this enumeration.
 """
 from __future__ import annotations
 
@@ -15,23 +23,28 @@ import os
 from typing import Iterable
 
 from .keys import SignatureVerificationError, VerificationKey
-from .signature_format import SIG_SUFFIX, sidecar_path_for
-from .verifier import VerificationResult, verify_file_with_bytes
+from .verifier import VerificationResult, verify_file
 
 
 logger = logging.getLogger(__name__)
 
 
-# Python file extensions the import machinery can reach. The verifier
-# covers the superset of what BaseCheckRegistry._file_can_be_imported
-# filters, because the loader's own ``sys.path.insert`` makes every
-# importable file in the tree reachable, not just the top-level
-# non-dunder ``.py`` files the loader's for-loop enumerates.
-LOADABLE_SUFFIXES = (".py", ".pyc", ".pyi", ".so", ".pyd")
+# Python-loadable file extensions the trailer wire format can sign.
+LOADABLE_SUFFIXES = (".py",)
+
+# Python-loadable file types that cannot be trailer-signed. Their
+# presence in a verified directory is a hard failure (see module
+# docstring) — otherwise they would be loaded transitively without
+# verification.
+_BINARY_LOADABLE_SUFFIXES = (".pyc", ".pyi", ".so", ".pyd")
 
 
 def _is_loadable(name: str) -> bool:
     return name.endswith(LOADABLE_SUFFIXES)
+
+
+def _is_binary_loadable(name: str) -> bool:
+    return name.endswith(_BINARY_LOADABLE_SUFFIXES)
 
 
 def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
@@ -43,7 +56,7 @@ def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
     target_real = os.path.normpath(target_real)
     if not os.path.exists(target_real):
         return False, "symlink target does not exist"
-    # Use ``os.path.commonpath`` to avoid string-prefix bugs (``/a/b`` vs ``/a/bb``).
+    # ``os.path.commonpath`` avoids the ``/a/b`` vs ``/a/bb`` prefix bug.
     try:
         if os.path.commonpath([target_real, root_real]) != root_real:
             return False, "resolves outside the verified directory"
@@ -52,21 +65,29 @@ def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
     return True, ""
 
 
-def _walk_loadable_files(root: str) -> "tuple[list[str], list[str]]":
-    """Walk ``root`` and partition loadable files into (inside, escaped).
+def _walk_loadable_files(
+    root: str,
+) -> "tuple[list[str], list[str], list[str]]":
+    """Walk ``root`` and partition files into three buckets.
 
-    Returns ``(inside_paths, escape_messages)``. The caller decides whether
-    to raise; this function never raises so a single bad symlink does not
+    Returns ``(inside_paths, escape_messages, binary_rejection_messages)``.
+    Never raises so a single bad symlink or stray binary file does not
     mask other failures in the same dir.
     """
     root_real = os.path.normpath(os.path.realpath(root))
     inside: "list[str]" = []
     escape_messages: "list[str]" = []
+    binary_messages: "list[str]" = []
     # ``followlinks=False`` is the default — do not change it. A symlinked
-    # subdir is treated as a file entry by the walk and never recursed into.
+    # subdir is treated as a file entry and never recursed into.
     for dirpath, _dirnames, filenames in os.walk(root, followlinks=False):
         for name in filenames:
-            if name.endswith(SIG_SUFFIX):
+            if _is_binary_loadable(name):
+                full = os.path.join(dirpath, name)
+                binary_messages.append(
+                    "binary file not supported under trailer signing "
+                    f"(only .py is covered): {os.path.relpath(full, start=root)}"
+                )
                 continue
             if not _is_loadable(name):
                 continue
@@ -79,7 +100,7 @@ def _walk_loadable_files(root: str) -> "tuple[list[str], list[str]]":
                 )
                 continue
             inside.append(full)
-    return inside, escape_messages
+    return inside, escape_messages, binary_messages
 
 
 def _normalise_and_dedupe(
@@ -87,14 +108,14 @@ def _normalise_and_dedupe(
 ) -> "tuple[list[str], list[str]]":
     """Return ``(unique_dirs, overlap_errors)``.
 
-    Overlap = the realpath of one entry is the same as or a subpath of
+    Overlap = realpath of one entry is the same as or a subpath of
     another's realpath. We refuse overlap because the verified map is
     keyed by absolute payload path and overlap would silently double-load
-    files in the Phase-2 loader.
+    files in the loader.
 
-    Errors are accumulated (not raised) so that a single config typo and
-    a duplicate dir in the same call are both reported to the customer.
-    Non-existent directories pass through untouched; the caller validates
+    Errors are accumulated (not raised) so that a config typo and a
+    duplicate dir in the same call both surface in one CI cycle.
+    Non-existent directories pass through here; the caller validates
     them and emits its own ``does not exist`` failure line.
     """
     unique_dirs: "list[str]" = []
@@ -104,7 +125,6 @@ def _normalise_and_dedupe(
         if not directory:
             continue
         if not os.path.isdir(directory):
-            # Caller validates non-existent dirs separately (see F1).
             unique_dirs.append(directory)
             continue
         rp = os.path.normpath(os.path.realpath(directory))
@@ -135,25 +155,22 @@ def verify_external_checks_dirs(
 ) -> "dict[str, bytes]":
     """Verify every Python-loadable file in every dir and return the source map.
 
-    Behaviour contract:
-
-    * If ``keys`` is empty: returns an empty dict and does not walk any
-      directory. This is the no-key, no-op path that backwards-compat
-      callers rely on.
-    * If any entry in ``dirs`` is non-empty but does not resolve to a real
-      directory: that entry is reported in the failure list and the call
-      raises after every dir has been processed. Empty strings are ignored
-      (they are an artefact of CLI default-joining).
+    * Empty ``keys`` → returns ``{}`` and does not walk anything (no-key
+      no-op for callers that haven't opted into verification).
+    * Any non-empty dir entry that does not resolve to a real directory
+      is reported in the failure list. Empty strings are silently
+      ignored (CLI default-joining artefact).
     * Duplicate or overlapping (nested) dirs are reported in the same
-      failure list; processing of other dirs continues so the customer sees
-      every problem in a single CI cycle.
-    * If any file fails verification (missing sig, bad sig, unknown key,
-      or path-escape): raises :class:`SignatureVerificationError` listing
-      every failure. The exception message names offending relative paths
-      so the customer can find them.
-    * On success: returns ``{absolute_path: source_bytes}`` covering every
-      Python-loadable file in the dir tree. The loader is expected to
-      ``exec`` from these bytes and refuse any path not present.
+      failure list; other dirs continue processing so the customer sees
+      every problem in one CI cycle.
+    * Any per-file failure (missing trailer, bad sig, unknown key,
+      path-escape, binary loadable file present) → raises
+      :class:`SignatureVerificationError` after every dir has been
+      walked, listing every offender by relative path.
+    * On success → ``{absolute_path: signed_bytes}`` covering every
+      ``.py`` file in the dir tree. The bytes are trailer-stripped; the
+      loader should ``exec`` from these and refuse any path not in the
+      map.
     """
     if not keys:
         return {}
@@ -170,18 +187,18 @@ def verify_external_checks_dirs(
             )
             continue
 
-        loadable, escape_messages = _walk_loadable_files(directory)
+        loadable, escape_messages, binary_messages = _walk_loadable_files(directory)
         failures.extend(escape_messages)
+        failures.extend(binary_messages)
 
         for payload_path in loadable:
-            sig_path = sidecar_path_for(payload_path)
-            verification = verify_file_with_bytes(payload_path, sig_path, keys)
+            result, signed_bytes = verify_file(payload_path, keys)
             rel = os.path.relpath(payload_path, start=directory)
-            if verification.result == VerificationResult.OK:
-                verified_sources[payload_path] = verification.payload_bytes
-            elif verification.result == VerificationResult.NO_SIGNATURE:
+            if result == VerificationResult.OK:
+                verified_sources[payload_path] = signed_bytes
+            elif result == VerificationResult.NO_SIGNATURE:
                 failures.append(f"missing signature: {rel}")
-            elif verification.result == VerificationResult.IO_ERROR:
+            elif result == VerificationResult.IO_ERROR:
                 failures.append(f"payload file is unreadable: {rel}")
             else:
                 failures.append(f"signature verification failed: {rel}")
@@ -192,9 +209,6 @@ def verify_external_checks_dirs(
             + "\n  - ".join(failures)
         )
 
-    # ``unique_dirs`` has already been filtered (empty strings dropped) and
-    # validated (every entry is an existing dir, since failures would have
-    # caused the early raise above). No extra syscalls needed.
     logger.info(
         "external-checks signature verification ok: %d files verified across %d directories",
         len(verified_sources),
