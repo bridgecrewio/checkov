@@ -255,9 +255,10 @@ def test_load_external_checks_refuses_unverified_file(
        walk so the chokepoint can route the failure through
        ``_report_verification_failure_and_exit`` and exit 2.
 
-    Part 2 closes the M1/S3 TOCTOU gap: an empty allowlist or a late-added
-    on-disk file (rename / git stash pop / build-script artefact / attacker
-    drop) must not silently shrink the verified check set.
+    Part 2 closes the M1/S3 disk-drift gap: an empty allowlist or a
+    late-added on-disk file (rename / git stash pop / build-script
+    artefact / unrelated process write) must not silently shrink the
+    verified check set.
     """
     import logging
     from checkov.common.external_checks.verification import (

@@ -47,7 +47,7 @@ def _run_chokepoint(
     unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
     *, no_fail_on_crash: bool,
 ) -> "tuple[int, str]":
-    """Run the chokepoint with a tampered tree; return ``(exit_code, stderr_text)``."""
+    """Run the chokepoint with a modified tree; return ``(exit_code, stderr_text)``."""
     from checkov.main import Checkov
     import io
     import contextlib
@@ -552,7 +552,7 @@ def test_public_key_cli_overrides_env_var(monkeypatch):
 @pytest.mark.parametrize(
     "byte",
     [
-        b"\x00",   # NUL — common "smuggling" attempt
+        b"\x00",   # NUL byte — not a valid hex character
         b"\xff",   # high byte
         b"\x7f",   # DEL
         b" ",      # ASCII space inside the hex blob
@@ -710,7 +710,7 @@ def test_pyc_outside_pycache_is_still_hard_rejected(
     (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
     (root / "check.py").write_bytes(make_trailer(b"# signed\n", priv_a))
     # A stray .pyc at top-level — NOT inside __pycache__.
-    (root / "rogue.pyc").write_bytes(b"\x00\x01\x02")
+    (root / "stray.pyc").write_bytes(b"\x00\x01\x02")
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -718,7 +718,7 @@ def test_pyc_outside_pycache_is_still_hard_rejected(
 
     with pytest.raises(SignatureVerificationError) as exc:
         verify_external_checks_dirs([str(root)], keys)
-    assert "rogue.pyc" in str(exc.value)
+    assert "stray.pyc" in str(exc.value)
 
 
 def test_verified_load_does_not_create_pycache(
@@ -799,13 +799,13 @@ def test_dont_write_bytecode_state_restored_after_load(
 # the in-memory verified bytes — NOT fall back to the default PathFinder
 # which would load it from disk WITHOUT verification.
 #
-# This is the security-critical invariant: while ANY verified load is
-# in flight, EVERY allowlisted .py — regardless of which dir registered
+# This is the integrity invariant: while ANY verified load is in
+# flight, EVERY allowlisted .py — regardless of which dir registered
 # it — must be served from the in-memory verified bytes. Otherwise a
-# tampered on-disk helper.py in dir-B could be smuggled into the
-# process via a transitive `import helper` from a verified check in
-# dir-A. The bytes the verifier hashed must be the bytes the
-# interpreter executes, transitively.
+# modified on-disk helper.py in dir-B could leak into the process
+# via a transitive `import helper` from a verified check in dir-A.
+# The bytes the verifier hashed must be the bytes the interpreter
+# executes, transitively.
 # --------------------------------------------------------------------------
 
 
@@ -1013,14 +1013,14 @@ def test_verify_against_keys_propagates_unexpected_exception_types():
 
     mock_public_key = MagicMock()
     mock_public_key.verify.side_effect = RuntimeError("simulated provider failure")
-    malicious_key = VerificationKey(
+    failing_key = VerificationKey(
         public_key=mock_public_key,
         fingerprint_hex="deadbeef" * 8,
         source_path="/fake/kms/key.pem",
     )
 
     with pytest.raises(RuntimeError, match="simulated provider failure"):
-        verify_bytes(file_bytes, [malicious_key])
+        verify_bytes(file_bytes, [failing_key])
 
     assert mock_public_key.verify.call_count == 1, (
         "precondition: verify_bytes must reach _verify_against_keys "
@@ -1268,17 +1268,17 @@ def test_doc_style_body_with_internal_trailer_prefix_round_trips(
 
 
 # --------------------------------------------------------------------------
-# 18. Verify-then-load TOCTOU enforcement (M1 / S3).
+# 18. Verify-then-load disk-drift enforcement (M1 / S3).
 #
 # Between ``verify_and_register`` (chokepoint) and ``load_external_checks``
 # (during scan) the on-disk file set can diverge from the in-memory
 # allowlist — rename, late-added unverified file, ``git stash pop``
-# during the scan, attacker drop in a writable container. The
-# pre-fix loader handled both branches with a per-file ERROR log line
-# and ``continue``'d, leaving the scan running with a silently-degraded
-# check set. The fix collects every refused path and raises
-# ``SignatureVerificationError`` at the end of the walk so the
-# chokepoint's exit handler can route the failure through
+# during the scan, or a writable temp directory mutated by an
+# unrelated process. The pre-fix loader handled both branches with a
+# per-file ERROR log line and ``continue``'d, leaving the scan running
+# with a silently-degraded check set. The fix collects every refused
+# path and raises ``SignatureVerificationError`` at the end of the
+# walk so the chokepoint's exit handler can route the failure through
 # ``_report_verification_failure_and_exit`` and exit 2 (or 0 under
 # ``--no-fail-on-crash``).
 # --------------------------------------------------------------------------
@@ -1330,15 +1330,14 @@ def test_loader_escalates_on_unverified_file_dropped_after_register(
     """An unverified ``.py`` appearing after register causes the loader to escalate.
 
     Models post-registration drift — accidental (``git stash pop``,
-    build-script artefact) or adversarial (writable container,
-    compromised CI runner with disk access during the scan). The
-    pre-fix loader logged ERROR and proceeded; the fix collects every
-    refused path and raises ``SignatureVerificationError`` so the
-    chokepoint handles the failure uniformly.
+    build-script artefact) or environmental (writable container,
+    shared CI runner with disk access during the scan). The pre-fix
+    loader logged ERROR and proceeded; the fix collects every refused
+    path and raises ``SignatureVerificationError`` so the chokepoint
+    handles the failure uniformly.
 
     Sanity-checks the existing safety guarantee too: the bytes are
-    never exec'd (a critical-severity bypass would be a different
-    test, and would never have shipped).
+    never exec'd.
     """
     root = tmp_path / "checks"
     root.mkdir()

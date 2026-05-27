@@ -132,7 +132,7 @@ def test_git_unsigned_clone_with_key_exits_via_exit_run(
     assert is_verification_active() is False
 
 
-def test_git_tampered_clone_with_key_exits_2(
+def test_git_modified_clone_with_key_exits_2(
     mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """A signed-then-mutated git clone + key → exit 2 + log file written."""
@@ -328,13 +328,14 @@ def test_git_only_first_url_is_used(
 def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
     valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov, stub_registry,
 ):
-    """Closes the S4 TOCTOU window: between ``verify_and_register`` (at the
-    chokepoint) and ``load_external_checks`` (during the scan), the cloned
-    git directory lives on disk and is mutable. An attacker (or a careless
-    build-script artefact) dropping an extra ``.py`` into the cloned dir
-    AFTER verification but BEFORE the loader walks it must NOT silently
-    shrink/grow the verified check set — the loader's M1+S3 escalation
-    must catch the divergence and raise ``SignatureVerificationError``.
+    """Closes the S4 disk-drift window: between ``verify_and_register`` (at
+    the chokepoint) and ``load_external_checks`` (during the scan), the
+    cloned git directory lives on disk and is mutable. A careless
+    build-script artefact (or any unrelated process) dropping an extra
+    ``.py`` into the cloned dir AFTER verification but BEFORE the loader
+    walks it must NOT silently shrink/grow the verified check set — the
+    loader's M1+S3 escalation must catch the divergence and raise
+    ``SignatureVerificationError``.
 
     Mirrors the local-dir regression already pinned in
     ``test_verified_loader.test_load_external_checks_refuses_unverified_file``,
