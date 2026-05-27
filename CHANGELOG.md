@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.528...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.529...HEAD)
+
+## [3.2.529](https://github.com/bridgecrewio/checkov/compare/3.2.528...3.2.529) - 2026-05-14
+
+### Bug Fix
+
+- **terraform:** include 90-day boundary in rotation check CKV_AWS_304 - [#7544](https://github.com/bridgecrewio/checkov/pull/7544)
 
 ## [3.2.528](https://github.com/bridgecrewio/checkov/compare/3.2.527...3.2.528) - 2026-05-10
 
