@@ -229,12 +229,15 @@ class BaseCheckRegistry:
         finder_dirs = sorted({os.path.dirname(p) for p in finder_sources})
         finder = install_finder(finder_sources, finder_dirs)
         previous_dont_write_bytecode = sys.dont_write_bytecode
+
+        previous_sys_path = list(sys.path)
         sys.dont_write_bytecode = True
         try:
             self._load_external_checks_from_verified_sources(directory, verified_sources)
         finally:
             uninstall_finder(finder)
             sys.dont_write_bytecode = previous_dont_write_bytecode
+            sys.path[:] = previous_sys_path
 
     def _walk_external_check_files(
         self, directory: str,
