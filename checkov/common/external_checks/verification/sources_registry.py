@@ -51,12 +51,19 @@ def get_verified_sources_for_directory(directory: str) -> "Optional[Dict[str, by
     }
 
 
+def get_all_verified_sources() -> "Optional[Dict[str, bytes]]":
+    if _verified_sources is None:
+        return None
+    return dict(_verified_sources)
+
+
 def reset_for_tests() -> None:
     global _verified_sources
     _verified_sources = None
 
 
 __all__ = [
+    "get_all_verified_sources",
     "get_verified_sources_for_directory",
     "is_verification_active",
     "reset_for_tests",

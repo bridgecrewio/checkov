@@ -792,3 +792,111 @@ def test_dont_write_bytecode_state_restored_after_load(
         finally:
             sys.dont_write_bytecode = previous
             sys.modules.pop("check", None)
+
+
+# --------------------------------------------------------------------------
+# 10. Cross-directory transitive imports during a verified load.
+#
+# When the operator passes two --external-checks-dir arguments, the
+# loader walks them one at a time. If a verified check in dir-A imports
+# a verified helper that lives in dir-B, the meta-path finder active
+# during the load of dir-A MUST still resolve the dir-B helper from
+# the in-memory verified bytes — NOT fall back to the default PathFinder
+# which would load it from disk WITHOUT verification.
+#
+# This is the security-critical invariant: while ANY verified load is
+# in flight, EVERY allowlisted .py — regardless of which dir registered
+# it — must be served from the in-memory verified bytes. Otherwise a
+# tampered on-disk helper.py in dir-B could be smuggled into the
+# process via a transitive `import helper` from a verified check in
+# dir-A. The bytes the verifier hashed must be the bytes the
+# interpreter executes, transitively.
+# --------------------------------------------------------------------------
+
+
+def test_cross_dir_transitive_import_serves_in_memory_bytes(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """A verified check in dir-A that imports a verified helper in dir-B
+    must get the in-memory verified bytes for the helper, not the
+    on-disk file.
+
+    Regression for M1: the per-call meta-path finder used to be built
+    from only the current directory's verified subset. While dir-A was
+    being loaded, the finder did not know about dir-B's verified
+    sources, so a transitive `import shared_helper` would miss the
+    finder and the default PathFinder would load the on-disk file
+    without verification. This test poisons the on-disk bytes for the
+    helper to raise on execution — if the test passes (no exception),
+    the in-memory verified bytes were served.
+    """
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+    # dir-A has the "check" that imports the helper.
+    dir_a = tmp_path / "checks_a"
+    dir_a.mkdir()
+    (dir_a / "__init__.py").write_bytes(make_trailer(b"", priv_a))
+    check_body = (
+        b"import cross_dir_shared_helper\n"
+        b"PROVIDER = cross_dir_shared_helper.PROVIDER_NAME\n"
+    )
+    (dir_a / "cross_dir_check.py").write_bytes(make_trailer(check_body, priv_a))
+
+    # dir-B holds the helper. Sign it with the SAFE in-memory bytes,
+    # then OVERWRITE the on-disk file with bytes that raise on exec.
+    # Verification ran against the safe bytes (they live in the
+    # in-memory allowlist); the on-disk bytes are now a tripwire.
+    dir_b = tmp_path / "checks_b"
+    dir_b.mkdir()
+    (dir_b / "__init__.py").write_bytes(make_trailer(b"", priv_a))
+    helper_path = dir_b / "cross_dir_shared_helper.py"
+    safe_helper_bytes = b"PROVIDER_NAME = 'verified-helper'\n"
+    helper_path.write_bytes(make_trailer(safe_helper_bytes, priv_a))
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    verify_and_register([str(dir_a), str(dir_b)], [str(key_path)])
+
+    # AFTER verification registered the safe bytes, overwrite the disk
+    # file with a tripwire. If the finder falls back to disk-load, this
+    # raises and the test fails loudly.
+    helper_path.write_bytes(
+        b"raise RuntimeError('cross-dir transitive import fell back to disk-load; "
+        b"M1 bypass is live')\n"
+    )
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    # Mimic the real runner loop: load each dir in turn through the
+    # SAME registry. The bypass only manifests when the finder for the
+    # current call doesn't know about the other dir's verified sources.
+    registry = _StubRegistry(report_type="terraform")
+    sys.modules.pop("cross_dir_check", None)
+    sys.modules.pop("cross_dir_shared_helper", None)
+    try:
+        # Load dir-A first; the check it contains imports the helper
+        # from dir-B during its own exec. If the bypass exists, the
+        # tripwire on disk fires here.
+        registry.load_external_checks(str(dir_a))
+        registry.load_external_checks(str(dir_b))
+
+        # The helper must have been served from the in-memory bytes.
+        helper_mod = sys.modules.get("cross_dir_shared_helper")
+        assert helper_mod is not None, (
+            "the helper did not register at all — finder did not serve it"
+        )
+        assert helper_mod.PROVIDER_NAME == "verified-helper", (
+            f"helper executed the WRONG bytes: PROVIDER_NAME="
+            f"{helper_mod.PROVIDER_NAME!r}. The tripwire on disk should have "
+            f"either fired (RuntimeError) or been bypassed by serving the "
+            f"in-memory bytes; got disk bytes silently."
+        )
+        # And the check itself observed the helper's verified value.
+        check_mod = sys.modules.get("cross_dir_check")
+        assert check_mod is not None
+        assert check_mod.PROVIDER == "verified-helper"
+    finally:
+        sys.modules.pop("cross_dir_check", None)
+        sys.modules.pop("cross_dir_shared_helper", None)
