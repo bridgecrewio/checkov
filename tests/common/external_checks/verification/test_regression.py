@@ -1,3 +1,8 @@
+"""Regression tests for the verification feature.
+
+Each section covers one behavioural contract; the section headers are
+functional groupings only, not TODOs.
+"""
 from __future__ import annotations
 
 import io
@@ -126,9 +131,7 @@ def test_exit_run_honours_no_fail_on_crash(tmp_path: Path):
 
 
 # --------------------------------------------------------------------------
-# 2. SHOULD-FIX: realpath/symlink consistency between the registry and the
-#    loader. Verifies the fix for the case where ``--external-checks-dir``
-#    is itself a symlink to a verified tree.
+# 2. Realpath / symlink consistency between the registry and the loader.
 # --------------------------------------------------------------------------
 
 
@@ -137,11 +140,9 @@ def test_verified_load_works_when_external_checks_dir_is_symlinked(
 ):
     """``--external-checks-dir`` pointed at a symlink must still resolve.
 
-    Before the fix: ``verify_and_register`` realpath-normalised the
-    allowlist keys, but the loader looked them up by the raw (symlinked)
-    ``entry.path`` and missed → "Refusing to load unverified external check".
-    The fix realpath-normalises the candidate path inside the loader so
-    the comparison is canonical regardless of how the user spelled the
+    The registry stores realpath-normalised allowlist keys; the loader
+    must realpath-normalise its candidate path before lookup so the
+    comparison is canonical regardless of how the user spelled the
     top-level directory.
     """
     # Real directory with a signed check.
@@ -203,21 +204,16 @@ def test_verified_load_works_when_external_checks_dir_is_symlinked(
 
 
 # --------------------------------------------------------------------------
-# 3. SHOULD-FIX: double-trailer detection produces DOUBLE_TRAILER.
+# 3. Double-trailer detection produces the dedicated DOUBLE_TRAILER code
+#    (so the customer-facing message can say "you signed this twice"
+#    instead of the generic "signature verification failed").
 # --------------------------------------------------------------------------
 
 
 def test_double_trailer_returns_dedicated_result_code(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):
-    """A file with two trailer lines at the end → ``DOUBLE_TRAILER``.
-
-    Before the fix this returned ``UNKNOWN_KEY`` (well-formed sig, doesn't
-    verify), which was a confusing diagnostic for an operator who just
-    accidentally ran the signing recipe twice. The dedicated result code
-    means the customer-facing error message can say "you signed this
-    twice" instead of "signature verification failed".
-    """
+    """A file with two trailer lines at the end → ``DOUBLE_TRAILER``."""
     body = b"def check():\n    return 'ok'\n"
     singly_signed = make_trailer(body, priv_a)
     # Run the signing recipe a second time, naively, on the already-signed file.
@@ -291,7 +287,8 @@ def test_legitimate_signed_file_with_digest_text_in_body_is_not_flagged(
 
 
 # --------------------------------------------------------------------------
-# 4. SHOULD-FIX: stderr truncation on huge failure lists.
+# 4. stderr truncation on huge failure lists keeps the inline message
+#    readable; the full list still goes to the on-disk failure log.
 # --------------------------------------------------------------------------
 
 
@@ -386,7 +383,9 @@ def test_stderr_not_truncated_when_failure_list_is_short(
 
 
 # --------------------------------------------------------------------------
-# 5. SHOULD-FIX: pin v1 behaviour for same-stem checks across subdirectories.
+# 5. v1 scope pin: same-stem checks across subdirectories collide
+#    deterministically (one wins by bare module name). Documented in the
+#    customer-facing docs as a v1 limitation.
 # --------------------------------------------------------------------------
 
 
@@ -395,12 +394,8 @@ def test_same_stem_checks_in_subdirectories_collide_deterministically(
 ):
     """Two ``helper.py`` files in different subdirectories collide on ``helper``.
 
-    This is a v1 limitation documented in the customer-facing docs.
-    The test pins the behaviour so a future refactor that "fixes" the
-    collision unintentionally is flagged. The exact winner is not part
-    of the contract — the test only asserts that *one* of them wins
-    deterministically and the other is shadowed, not that both load
-    side by side.
+    The exact winner is not part of the contract — the test only asserts
+    that *one* of them wins deterministically and the other is shadowed.
     """
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
@@ -444,17 +439,17 @@ def test_same_stem_checks_in_subdirectories_collide_deterministically(
 
 
 # --------------------------------------------------------------------------
-# 6. SHOULD-FIX: large tree with one bad file in the middle is fully walked.
+# 6. Failure accumulation: walking continues past a bad file so every
+#    offender in one tree surfaces in a single error cycle.
 # --------------------------------------------------------------------------
 
 
 def test_large_tree_with_one_bad_file_does_not_short_circuit(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):
-    """Verification must walk the whole tree even after a bad file.
+    """A single bad file must NOT short-circuit verification.
 
-    Pins that a single bad file does NOT short-circuit verification —
-    a customer with 1 000 files and one accidental unsigned addition
+    A customer with 1 000 files and one accidental unsigned addition
     should still get a single error listing exactly that file, not
     "stopped scanning after first failure".
     """
@@ -512,7 +507,7 @@ def test_many_bad_files_all_reported(
 
 
 # --------------------------------------------------------------------------
-# 7. Coverage gap: env-var key parsing.
+# 7. Env-var key parsing (CKV_EXTERNAL_CHECKS_PUBLIC_KEY).
 # --------------------------------------------------------------------------
 
 
@@ -543,7 +538,7 @@ def test_public_key_cli_overrides_env_var(monkeypatch):
 
 
 # --------------------------------------------------------------------------
-# 8. Coverage gap: NUL bytes in trailer payload.
+# 8. NUL / high-byte / control-byte rejection inside the trailer payload.
 # --------------------------------------------------------------------------
 
 
@@ -615,19 +610,12 @@ def test_trailer_payload_inside_signed_body_not_treated_as_trailer(
 
 
 # --------------------------------------------------------------------------
-# 9. Regression caught during end-to-end testing: ``__pycache__/``
-#     handling. Caught the same way as the cryptography-not-installed
-#     regression — by running the real CLI end-to-end. After a verified
-#     scan, CPython would leave behind ``__pycache__/<name>.cpython-XYZ.pyc``
-#     files. The next verified scan against the same directory would
-#     then hard-reject the whole dir with "binary file not supported
-#     under trailer signing" — a false positive on a cache file the
-#     user never created.
-#
-#     The fix is two-pronged:
-#     a) The walker silently skips ``__pycache__`` subdirectories.
-#     b) The loader sets ``sys.dont_write_bytecode = True`` for the
-#        load window so no fresh caches appear in the first place.
+# 9. ``__pycache__/`` handling. Two-pronged:
+#    a) The walker silently skips ``__pycache__`` subdirectories so a
+#       stale .pyc from a previous run doesn't trip the binary-file
+#       hard-reject.
+#    b) The loader sets ``sys.dont_write_bytecode = True`` for the
+#       load window so no fresh caches appear in the first place.
 # --------------------------------------------------------------------------
 
 
@@ -638,12 +626,6 @@ def test_walker_skips_dotfile_py_files(
     skipped — the loader never imports them either, so requiring them to
     be signed would produce false-positive failures for everyday
     editor/CI artifacts in the user's tree.
-
-    Caught during end-to-end testing: a stray ``.signed_backup.py``
-    created by the demo setup script failed verification, which is
-    technically correct but UX-hostile because the file would never
-    have been loaded by the existing
-    ``BaseCheckRegistry._file_can_be_imported`` filter.
     """
     root = tmp_path / "with_dotfiles"
     root.mkdir()
