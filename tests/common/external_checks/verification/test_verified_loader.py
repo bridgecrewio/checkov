@@ -166,6 +166,64 @@ def test_uninstall_finder_is_idempotent(tmp_path: Path):
     uninstall_finder(finder)  # second call must be a no-op
 
 
+def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path):
+    """``_resolve_verified_source`` returns None for non-canonical keys.
+
+    Pins S1: the lookup is documented as "registry keys are realpath",
+    full stop. A raw-path fallback (``verified_sources.get(canonical)
+    or verified_sources.get(raw)``) would silently honour any dict key
+    that exactly matched the requested ``check_full_path``, even when
+    that key was never realpath-normalised by the registry. Such keys
+    cannot exist in the production registry (per
+    ``sources_registry.verify_and_register``), so a fallback is dead
+    code at best — and a footgun if a future caller mutates the
+    in-memory map with non-canonical keys.
+
+    To distinguish a raw key from its canonical form we point a symlink
+    at a real file and key the dict by the symlinked path. The lookup
+    canonicalises via ``realpath`` (resolves the symlink) and so the
+    raw symlinked key MUST NOT match.
+    """
+    import os
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+    real = tmp_path / "real_check.py"
+    real.write_bytes(b"# real signed body\n")
+    link = tmp_path / "alias_check.py"
+    try:
+        os.symlink(real, link)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks not supported on this platform")
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    registry = _StubRegistry(report_type="terraform")
+
+    # Key the dict by the SYMLINKED (raw) path — the registry would
+    # never have produced this key because verify_and_register
+    # realpath-normalises every key.
+    raw_link_path = str(link)
+    verified_sources = {raw_link_path: b"unverified-bytes-the-registry-never-issued"}
+
+    result = registry._resolve_verified_source(verified_sources, raw_link_path)
+
+    assert result is None, (
+        "non-canonical (symlinked) key lookup must return None — the "
+        "raw-path fallback is removed; if this fails the fallback has "
+        "been reintroduced and S1 has regressed"
+    )
+
+    # Sanity: when the dict IS keyed by the realpath, the lookup finds it.
+    canonical_path = os.path.normpath(os.path.realpath(raw_link_path))
+    canonical_sources = {canonical_path: b"verified-canonical-bytes"}
+    assert (
+        registry._resolve_verified_source(canonical_sources, raw_link_path)
+        == b"verified-canonical-bytes"
+    )
+
+
 def test_load_external_checks_with_verified_sources_runs_in_memory(
     tmp_path: Path, capsys,
 ):
@@ -201,9 +259,23 @@ def test_load_external_checks_with_verified_sources_runs_in_memory(
 def test_load_external_checks_refuses_unverified_file(
     tmp_path: Path, caplog,
 ):
-    """A .py file present on disk but absent from verified_sources is skipped."""
+    """A .py file present on disk but absent from verified_sources is REFUSED and ESCALATES.
+
+    Two-part contract:
+    1. The bytes are NEVER exec'd — refused at the resolve step.
+    2. The loader raises ``SignatureVerificationError`` at the end of the
+       walk so the chokepoint can route the failure through
+       ``_report_verification_failure_and_exit`` and exit 2.
+
+    Part 2 closes the M1/S3 TOCTOU gap: an empty allowlist or a late-added
+    on-disk file (rename / git stash pop / build-script artefact / attacker
+    drop) must not silently shrink the verified check set.
+    """
     import logging
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.external_checks.verification import (
+        SignatureVerificationError,
+    )
 
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
@@ -218,13 +290,16 @@ def test_load_external_checks_refuses_unverified_file(
 
     registry = _StubRegistry(report_type="terraform")
 
-    with caplog.at_level(logging.ERROR):
+    with caplog.at_level(logging.ERROR), pytest.raises(SignatureVerificationError) as exc:
         registry.load_external_checks(
             str(checks_dir.resolve()),
             verified_sources={},  # empty allowlist → every .py is unverified
         )
 
-    # Test passes by *not* raising. The error log line is a UX nicety.
+    # The escalation diagnostic must name the offending file so the
+    # operator sees exactly what diverged on disk.
+    assert "unverified_extra.py" in str(exc.value)
+    # And the per-file ERROR log line remains as a UX nicety.
     assert any(
         "Refusing to load unverified external check" in record.message
         for record in caplog.records

@@ -7,6 +7,8 @@ import logging
 from typing import Iterable
 
 from ecdsa import BadSignatureError, NIST256p
+from ecdsa.der import UnexpectedDER
+from ecdsa.errors import MalformedPointError
 from ecdsa.util import sigdecode_der
 
 from .keys import VerificationKey
@@ -22,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 
 _SECP256R1_N = NIST256p.order
+
+_EXPECTED_VERIFY_ERRORS = (
+    BadSignatureError,
+    UnexpectedDER,
+    MalformedPointError,
+    ValueError,
+)
 
 
 class VerificationResult(enum.Enum):
@@ -57,9 +66,7 @@ def _verify_against_keys(
                 sig_der, payload, hashfunc=hashlib.sha256, sigdecode=sigdecode_der,
             )
             return VerificationResult.OK
-        except BadSignatureError:
-            continue
-        except Exception:
+        except _EXPECTED_VERIFY_ERRORS:
             continue
     return VerificationResult.UNKNOWN_KEY
 

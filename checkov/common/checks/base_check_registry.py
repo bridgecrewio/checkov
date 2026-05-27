@@ -11,6 +11,7 @@ from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
+from checkov.common.external_checks.verification.errors import SignatureVerificationError
 from checkov.common.external_checks.verification.sources_registry import (
     get_all_verified_sources,
     get_verified_sources_for_directory,
@@ -193,9 +194,13 @@ class BaseCheckRegistry:
         verified_sources: Dict[str, bytes],
         check_full_path: str,
     ) -> "bytes | None":
-        """Look up ``check_full_path`` in the allowlist (realpath-normalised, with raw-path fallback)."""
+        """Look up ``check_full_path`` in the allowlist using ONLY the realpath-normalised key.
+
+        The registry promises (per ``sources_registry.verify_and_register``)
+        that every key is the realpath-normalised path of a verified file.
+        """
         canonical_path = os.path.normpath(os.path.realpath(check_full_path))
-        return verified_sources.get(canonical_path) or verified_sources.get(check_full_path)
+        return verified_sources.get(canonical_path)
 
     def load_external_checks(
         self,
@@ -231,6 +236,7 @@ class BaseCheckRegistry:
 
     def _load_external_checks_from_disk(self, directory: str) -> None:
         """Legacy disk-exec path; byte-identical to the pre-MR behaviour."""
+        # NOTE: Legacy path; no signature checks. See _load_external_checks_from_verified_sources for the verified equivalent.
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
@@ -266,6 +272,8 @@ class BaseCheckRegistry:
         verified_sources: Dict[str, bytes],
     ) -> None:
         """Verified path: exec ONLY the in-memory bytes for allowlist files."""
+        # NOTE: Verified path. See _load_external_checks_from_disk for the legacy equivalent.
+        refused_paths: "list[str]" = []
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
@@ -288,6 +296,7 @@ class BaseCheckRegistry:
                                 f"Refusing to load unverified external check "
                                 f"'{check_name}' from {check_full_path}"
                             )
+                            refused_paths.append(check_full_path)
                             continue
                         load_verified_sources_into_module(
                             check_name, check_full_path, source_bytes,
@@ -299,3 +308,10 @@ class BaseCheckRegistry:
                         )
                     finally:
                         BaseCheckRegistry.__loading_external_checks = False
+        if refused_paths:
+            bullets = "\n".join(f"  - {p}" for p in refused_paths)
+            raise SignatureVerificationError(
+                "unverified external check files refused at load time "
+                "(disk state diverged from the verified allowlist):\n"
+                f"{bullets}"
+            )

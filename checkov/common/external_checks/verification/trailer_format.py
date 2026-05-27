@@ -31,6 +31,7 @@ def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
     if not all(b in _LOWERCASE_HEX_BYTES for b in hex_payload):
         return None
 
+    # last_nl == -1 → file is the trailer line only → empty signed body.
     signed_bytes = file_bytes[:last_nl + 1] if last_nl >= 0 else b""
     return signed_bytes, hex_payload
 

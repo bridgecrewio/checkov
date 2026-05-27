@@ -203,3 +203,41 @@ def test_cli_flag_is_registered_in_parser():
          "--external-checks-public-key", "/tmp/b.pem"]
     )
     assert cfg2.external_checks_public_key == ["/tmp/a.pem", "/tmp/b.pem"]
+
+
+def test_help_text_documents_no_fail_on_crash_override():
+    """``--external-checks-public-key`` help mentions the ``--no-fail-on-crash`` override.
+
+    Pins S5: the help text must accurately describe the runtime
+    behaviour. The flag changes the exit code from 2 to 0 on
+    verification failure (the documented contract of
+    ``--no-fail-on-crash`` is "Return exit code 0 instead of 2", and
+    verification failures honour that contract — see
+    ``test_verification_failure_with_no_fail_on_crash_exits_0`` in
+    ``test_regression.py``). The help text must mention this so
+    operators see one source of truth, not a docs-vs-runtime drift.
+    """
+    from checkov.common.util.ext_argument_parser import ExtArgumentParser
+
+    parser = ExtArgumentParser(description="test")
+    parser.add_parser_args()
+
+    action = next(
+        (a for a in parser._actions if "--external-checks-public-key" in (a.option_strings or [])),
+        None,
+    )
+    assert action is not None, (
+        "could not find --external-checks-public-key action on the parser"
+    )
+    help_text = action.help or ""
+
+    # The baseline exit code is still 2 — the help must keep saying so.
+    assert "exit with code 2" in help_text, (
+        f"help text must still mention the default 'exit with code 2'; "
+        f"got: {help_text!r}"
+    )
+    # AND it must mention the --no-fail-on-crash override.
+    assert "--no-fail-on-crash" in help_text, (
+        f"help text must mention the --no-fail-on-crash override so "
+        f"operators see one source of truth; got: {help_text!r}"
+    )

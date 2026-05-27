@@ -1009,6 +1009,60 @@ def test_load_public_keys_propagates_unexpected_exception_types(
     )
 
 
+def test_verify_against_keys_propagates_unexpected_exception_types():
+    """An exception type OUTSIDE the verify-side expected-error set propagates.
+
+    Mirrors ``test_load_public_keys_propagates_unexpected_exception_types``
+    at the M2-sibling layer in ``verifier._verify_against_keys``. The
+    blanket ``except Exception: continue`` was deliberately narrowed
+    to ``(BadSignatureError, UnexpectedDER, MalformedPointError,
+    ValueError)`` so that non-crypto faults from a misbehaving key
+    provider (HSM timeout, KMS unavailable, hardware-token
+    disconnected, exhausted entropy pool) surface with their real
+    root cause instead of being collapsed to ``UNKNOWN_KEY`` and a
+    misleading "signature verification failed" diagnostic.
+    """
+    from unittest.mock import MagicMock
+    from checkov.common.external_checks.verification import verify_bytes
+    from checkov.common.external_checks.verification.keys import (
+        VerificationKey,
+    )
+
+    # We need a properly-shaped file (passes the well-formedness checks)
+    # so execution reaches _verify_against_keys. Use the conftest
+    # fixtures via direct construction here to keep the test
+    # self-contained — no signing needed because we control the key.
+    # A 71-byte DER-shaped blob passes the strict-DER + range check.
+    body = b"def check():\n    return 'ok'\n"
+    # Build a plausible signed file: real body + a well-formed trailer.
+    # Sign with an actual key so well-formedness passes, then point
+    # verify_bytes at a MOCK key that raises on .verify().
+    from ecdsa import NIST256p, SigningKey
+    from ecdsa.util import sigencode_der
+    import hashlib
+    priv = SigningKey.generate(curve=NIST256p)
+    sig_der = priv.sign_deterministic(
+        body, hashfunc=hashlib.sha256, sigencode=sigencode_der,
+    )
+    file_bytes = body + b"# checkov-digest: " + sig_der.hex().encode("ascii") + b"\n"
+
+    mock_public_key = MagicMock()
+    mock_public_key.verify.side_effect = RuntimeError("simulated provider failure")
+    malicious_key = VerificationKey(
+        public_key=mock_public_key,
+        fingerprint_hex="deadbeef" * 8,
+        source_path="/fake/kms/key.pem",
+    )
+
+    with pytest.raises(RuntimeError, match="simulated provider failure"):
+        verify_bytes(file_bytes, [malicious_key])
+
+    assert mock_public_key.verify.call_count == 1, (
+        "precondition: verify_bytes must reach _verify_against_keys "
+        "(well-formedness check should have passed)"
+    )
+
+
 # --------------------------------------------------------------------------
 # 12. S1: log-file write failure surfaces a warning on stderr.
 #
@@ -1249,3 +1303,119 @@ def test_doc_style_body_with_internal_trailer_prefix_round_trips(
     result, signed = verify_file(str(target), keys)
     assert result == VerificationResult.OK
     assert signed == body
+
+
+# --------------------------------------------------------------------------
+# 18. Verify-then-load TOCTOU enforcement (M1 / S3).
+#
+# Between ``verify_and_register`` (chokepoint) and ``load_external_checks``
+# (during scan) the on-disk file set can diverge from the in-memory
+# allowlist — rename, late-added unverified file, ``git stash pop``
+# during the scan, attacker drop in a writable container. The
+# pre-fix loader handled both branches with a per-file ERROR log line
+# and ``continue``'d, leaving the scan running with a silently-degraded
+# check set. The fix collects every refused path and raises
+# ``SignatureVerificationError`` at the end of the walk so the
+# chokepoint's exit handler can route the failure through
+# ``_report_verification_failure_and_exit`` and exit 2 (or 0 under
+# ``--no-fail-on-crash``).
+# --------------------------------------------------------------------------
+
+
+def _make_stub_registry():
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    return _StubRegistry(report_type="terraform")
+
+
+def test_loader_escalates_when_verified_file_renamed_after_register(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """A verified file renamed AFTER registration causes the loader to escalate.
+
+    Pre-fix the loader only logged ERROR and continued, leaving the
+    scan running with the renamed file silently absent from the
+    verified check set. The fix raises ``SignatureVerificationError``
+    naming the offending path so the operator sees a hard failure
+    instead of a silently-shrunken allowlist.
+    """
+    root = tmp_path / "checks"
+    root.mkdir()
+    (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
+    body = b"# signed\nCHECK_ID = 'CKV_T_M1'\n"
+    (root / "aws_check.py").write_bytes(make_trailer(body, priv_a))
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+
+    verify_and_register([str(root)], [str(key_path)])
+    assert is_verification_active() is True
+
+    # Rename the verified file AFTER registration. The registry still
+    # has the ORIGINAL path; the on-disk name no longer matches.
+    (root / "aws_check.py").rename(root / "aws_check_RENAMED.py")
+
+    # Make sure no stale module is lingering from prior tests.
+    sys.modules.pop("aws_check", None)
+    sys.modules.pop("aws_check_RENAMED", None)
+
+    registry = _make_stub_registry()
+    with pytest.raises(SignatureVerificationError) as exc:
+        registry.load_external_checks(str(root))
+
+    assert "aws_check_RENAMED.py" in str(exc.value), (
+        f"escalation should identify the offending file; got: {exc.value!r}"
+    )
+
+
+def test_loader_escalates_on_unverified_file_dropped_after_register(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """An unverified ``.py`` appearing after register causes the loader to escalate.
+
+    Models post-registration drift — accidental (``git stash pop``,
+    build-script artefact) or adversarial (writable container,
+    compromised CI runner with disk access during the scan). The
+    pre-fix loader logged ERROR and proceeded; the fix collects every
+    refused path and raises ``SignatureVerificationError`` so the
+    chokepoint handles the failure uniformly.
+
+    Sanity-checks the existing safety guarantee too: the bytes are
+    never exec'd (a critical-severity bypass would be a different
+    test, and would never have shipped).
+    """
+    root = tmp_path / "checks"
+    root.mkdir()
+    (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
+    (root / "good.py").write_bytes(
+        make_trailer(b"# signed\nCHECK_ID = 'CKV_T_S3'\n", priv_a)
+    )
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+
+    verify_and_register([str(root)], [str(key_path)])
+    assert is_verification_active() is True
+
+    # Drop an unverified evil.py AFTER registration.
+    (root / "evil.py").write_bytes(b"raise RuntimeError('this should not exec')\n")
+
+    sys.modules.pop("evil", None)
+    sys.modules.pop("good", None)
+
+    registry = _make_stub_registry()
+    with pytest.raises(SignatureVerificationError) as exc:
+        registry.load_external_checks(str(root))
+
+    assert "evil.py" in str(exc.value), (
+        f"escalation should identify evil.py; got: {exc.value!r}"
+    )
+    # Sanity: the existing "bytes never exec" guarantee still holds.
+    assert "evil" not in sys.modules, (
+        "evil.py was exec'd despite missing from allowlist — that would "
+        "be a critical-severity bypass, not just a TOCTOU escalation gap"
+    )

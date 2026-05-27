@@ -24,14 +24,21 @@ def verify_and_register(
     dirs: Iterable[str],
     public_key_paths: List[str],
 ) -> None:
-    """No-op when ``public_key_paths`` is empty. Raises on verification failure."""
+    """No-op when ``public_key_paths`` is empty. Raises on verification failure.
+
+    On failure the registry is cleared (set back to inactive).
+    """
     global _verified_sources
 
     if not public_key_paths:
         return
 
     keys = load_public_keys(public_key_paths)
-    verified = verify_external_checks_dirs(dirs, keys)
+    try:
+        verified = verify_external_checks_dirs(dirs, keys)
+    except BaseException:
+        _verified_sources = None
+        raise
     _verified_sources = {
         os.path.normpath(os.path.realpath(p)): b for p, b in verified.items()
     }

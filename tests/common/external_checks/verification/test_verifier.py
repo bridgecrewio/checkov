@@ -153,19 +153,31 @@ def test_reports_offending_path_on_failure(
     assert "_helper.py" in str(exc.value)
 
 
-@pytest.mark.parametrize("format_id", ["format_a", "format_b", "format_c"])
+@pytest.mark.parametrize("format_id", ["format_a", "format_b", "format_c", "format_d", "format_e"])
 def test_rejects_unsupported_key_format(
     format_id: str,
     unsupported_key_format_a: bytes,
     unsupported_key_format_b: bytes,
     unsupported_key_format_c: bytes,
+    unsupported_key_format_d: bytes,
+    unsupported_key_format_e: bytes,
     tmp_path: Path,
 ):
-    """Public keys that aren't P-256 ECDSA are rejected up-front."""
+    """Public keys that aren't P-256 ECDSA are rejected up-front.
+
+    Covers RSA (format_a), Ed25519 (format_b), P-384 (format_c),
+    SECP256K1 (format_d — the Bitcoin curve, which operators are most
+    likely to accidentally use because it shows up in countless ECDSA
+    tutorials and Stack Overflow answers), and P-521 (format_e — a NIST
+    EC curve that looks superficially like P-256 but has a different
+    key size).
+    """
     pem_by_id = {
         "format_a": unsupported_key_format_a,
         "format_b": unsupported_key_format_b,
         "format_c": unsupported_key_format_c,
+        "format_d": unsupported_key_format_d,
+        "format_e": unsupported_key_format_e,
     }
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(pem_by_id[format_id])
@@ -702,6 +714,54 @@ def test_ignores_extra_trailer_line_in_middle_of_file(
     result, signed_bytes = verify_file(str(target), keys)
     assert result == VerificationResult.OK
     assert signed_bytes == body
+
+
+def test_ignores_length_valid_fake_trailer_inside_signed_body(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """A LENGTH-VALID fake ``# checkov-digest:`` mid-body still verifies OK.
+
+    Sibling to ``test_ignores_extra_trailer_line_in_middle_of_file``,
+    which uses ``deadbeef`` (8 hex chars). That length is rejected by
+    the parser's ``_HEX_MIN <= len <= _HEX_MAX`` (126-144) guard
+    BEFORE the "only the last line counts" invariant is even
+    exercised — so the existing test would pass even with a buggy
+    parser that scanned every line.
+
+    This sibling uses a 128-hex-char imposter (valid length, just not
+    the real signature), proving the "last line only" rule alone
+    catches the imposter even if the length filter accidentally
+    accepted it. Pins the parser invariant at the right scope.
+    """
+    fake_trailer_line = b"# checkov-digest: " + b"ab" * 64 + b"\n"
+    assert 126 <= len(b"ab" * 64) <= 144, (
+        "precondition: the imposter trailer must be length-valid "
+        "(otherwise we're testing the same path as the sibling test)"
+    )
+
+    body = (
+        b"# real check\n"
+        + fake_trailer_line  # imposter, mid-body
+        + b"def check():\n    return 'ok'\n"  # real code AFTER the imposter
+    )
+
+    target = tmp_path / "imposter.py"
+    target.write_bytes(make_trailer(body, priv_a))
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    result, signed_bytes = verify_file(str(target), keys)
+    assert result == VerificationResult.OK, (
+        f"length-valid mid-body fake trailer wrongly altered the result "
+        f"to {result!r}; the 'last line only' rule should hold "
+        f"regardless of imposter length"
+    )
+    assert signed_bytes == body, (
+        "the verifier returned a different body than the original — the "
+        "fake trailer was treated as a structural element, not data"
+    )
 
 
 def test_rejects_trailer_with_appended_garbage(

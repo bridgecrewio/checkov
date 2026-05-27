@@ -534,11 +534,14 @@ class Checkov:
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
                     file = self.config.file
-                    self.scan_reports = runner_registry.run(
-                        root_folder=root_folder,
-                        external_checks_dir=external_checks_dir,
-                        files=file,
-                    )
+                    try:
+                        self.scan_reports = runner_registry.run(
+                            root_folder=root_folder,
+                            external_checks_dir=external_checks_dir,
+                            files=file,
+                        )
+                    except SignatureVerificationError as exc:
+                        self._report_verification_failure_and_exit(exc)
                     self.graphs = runner_registry.check_type_to_graph
                     self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
@@ -649,11 +652,14 @@ class Checkov:
             elif self.config.file:
                 bc_integration.scan_file = self.config.file
                 runner_registry.filter_runners_for_files(self.config.file)
-                self.scan_reports = runner_registry.run(
-                    external_checks_dir=external_checks_dir,
-                    files=self.config.file,
-                    repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-                )
+                try:
+                    self.scan_reports = runner_registry.run(
+                        external_checks_dir=external_checks_dir,
+                        files=self.config.file,
+                        repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
+                    )
+                except SignatureVerificationError as exc:
+                    self._report_verification_failure_and_exit(exc)
                 self.graphs = runner_registry.check_type_to_graph
                 self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):

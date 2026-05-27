@@ -337,3 +337,66 @@ def test_git_only_first_url_is_used(
         "iterate all URLs — update the test, and also verify each URL's clone runs "
         "through verify_and_register."
     )
+
+
+# --------------------------------------------------------------------------
+# S4: TOCTOU regression — late mutation of git clone caught by loader escalation
+# --------------------------------------------------------------------------
+
+
+def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+):
+    """Closes the S4 TOCTOU window: between ``verify_and_register`` (at the
+    chokepoint) and ``load_external_checks`` (during the scan), the cloned
+    git directory lives on disk and is mutable. An attacker (or a careless
+    build-script artefact) dropping an extra ``.py`` into the cloned dir
+    AFTER verification but BEFORE the loader walks it must NOT silently
+    shrink/grow the verified check set — the loader's M1+S3 escalation
+    must catch the divergence and raise ``SignatureVerificationError``.
+
+    Mirrors the local-dir regression already pinned in
+    ``test_verified_loader.test_load_external_checks_refuses_unverified_file``,
+    but starts from the git-clone code path so the regression covers the
+    full ``--external-checks-git`` lifecycle end-to-end. No production-code
+    change is required if the existing M1+S3 fix is wired correctly.
+    """
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.external_checks.verification import (
+        SignatureVerificationError,
+    )
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+
+    checkov = _make_checkov(
+        external_checks_git=["https://example.invalid/repo.git"],
+        external_checks_public_key=[str(key_path)],
+    )
+
+    # Chokepoint runs against the signed ``valid_dir`` (stand-in for the
+    # post-clone temp dir GitGetter would have returned in production).
+    result, _ = _run_chokepoint(checkov, valid_dir)
+    assert isinstance(result, list)
+    assert is_verification_active() is True
+
+    # Simulate the TOCTOU window: drop an unverified file into the cloned
+    # dir AFTER verify_and_register has populated the in-memory allowlist.
+    # Bytes that would raise on exec — proves the loader never exec'd them
+    # (the divergence is caught at the resolve step, before exec).
+    evil = valid_dir / "evil.py"
+    evil.write_bytes(b"raise RuntimeError('TOCTOU drop was executed')\n")
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    registry = _StubRegistry(report_type="terraform")
+
+    # The loader resolves ``verified_sources`` from the in-memory registry
+    # populated by the chokepoint, then walks the dir; ``evil.py`` is on
+    # disk but absent from the allowlist → escalates.
+    with pytest.raises(SignatureVerificationError) as exc:
+        registry.load_external_checks(str(valid_dir.resolve()))
+
+    assert "evil.py" in str(exc.value)

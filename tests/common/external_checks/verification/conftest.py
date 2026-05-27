@@ -110,6 +110,31 @@ def _p384_pub_pem() -> bytes:
     return _openssl_pubkey_pem(["-algorithm", "EC", "-pkeyopt", "ec_paramgen_curve:P-384"])
 
 
+def _secp256k1_pub_pem() -> bytes:
+    """SECP256K1 (Bitcoin) public key — the curve operators are most
+    likely to accidentally use because it shows up in countless ECDSA
+    tutorials and Stack Overflow answers. Built via the legacy
+    ``openssl ecparam ... -genkey`` recipe (``genpkey`` does not
+    accept ``secp256k1`` on every openssl build).
+    """
+    openssl = _openssl_or_skip()
+    priv_proc = subprocess.run(
+        [openssl, "ecparam", "-name", "secp256k1", "-genkey", "-noout"],
+        capture_output=True, check=False,
+    )
+    if priv_proc.returncode != 0:
+        stderr = (priv_proc.stderr or b"").decode("utf-8", errors="replace")
+        pytest.skip(f"openssl build lacks secp256k1: {stderr.strip()}")
+    pub_proc = subprocess.run(
+        [openssl, "ec", "-pubout"], input=priv_proc.stdout,
+        capture_output=True, check=False,
+    )
+    if pub_proc.returncode != 0:
+        stderr = (pub_proc.stderr or b"").decode("utf-8", errors="replace")
+        pytest.skip(f"openssl ec -pubout failed for secp256k1: {stderr.strip()}")
+    return pub_proc.stdout
+
+
 @pytest.fixture(scope="session")
 def unsupported_key_format_a() -> bytes:
     return _rsa_pub_pem()
@@ -123,6 +148,21 @@ def unsupported_key_format_b() -> bytes:
 @pytest.fixture(scope="session")
 def unsupported_key_format_c() -> bytes:
     return _p384_pub_pem()
+
+
+@pytest.fixture(scope="session")
+def unsupported_key_format_d() -> bytes:
+    """SECP256K1 (Bitcoin curve) — the curve operators are most likely
+    to accidentally use. Skipped when the local openssl build lacks
+    secp256k1 support."""
+    return _secp256k1_pub_pem()
+
+
+@pytest.fixture(scope="session")
+def unsupported_key_format_e() -> bytes:
+    """P-521 — a NIST EC curve that looks superficially like P-256
+    but has a different key size, so the loader must reject it."""
+    return _openssl_pubkey_pem(["-algorithm", "EC", "-pkeyopt", "ec_paramgen_curve:P-521"])
 
 
 @pytest.fixture

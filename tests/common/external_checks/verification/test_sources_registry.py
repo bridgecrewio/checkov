@@ -90,6 +90,55 @@ def test_verification_failure_propagates(
     assert is_verification_active() is False
 
 
+def test_failed_second_register_rolls_back_prior_allowlist(
+    valid_dir: Path, tmp_path: Path, key_a_pub_pem: bytes,
+):
+    """A failed SECOND ``verify_and_register`` clears the FIRST registration.
+
+    Pins M2: ``verify_and_register`` must not leave the prior allowlist
+    live in the process after a re-register call raises. Without this
+    guarantee a misconfigured second call silently keeps the stale
+    snapshot active, and the operator's in-memory allowlist quietly
+    diverges from the call they thought just failed.
+
+    Today's single-CLI-invocation flow doesn't hit this in production
+    but the moment anything calls the chokepoint twice (test harness,
+    long-running daemon, future re-config use case) the contract this
+    test pins is what makes a retry safe.
+    """
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+
+    # First call succeeds and populates the registry.
+    verify_and_register([str(valid_dir)], [str(key_path)])
+    assert is_verification_active() is True
+    assert get_verified_sources_for_directory(str(valid_dir)), (
+        "precondition: first registration must populate the snapshot"
+    )
+
+    # Second call points at an unsigned dir and must fail.
+    bad_dir = tmp_path / "unsigned"
+    bad_dir.mkdir()
+    (bad_dir / "__init__.py").write_bytes(b"")
+    (bad_dir / "aws_check.py").write_bytes(b"# unsigned\nCHECK_ID = 'CKV_T_M2'\n")
+
+    with pytest.raises(SignatureVerificationError):
+        verify_and_register([str(bad_dir)], [str(key_path)])
+
+    # After the failed second call the registry must be inactive
+    # AND the prior per-directory snapshot must be gone.
+    assert is_verification_active() is False, (
+        "after a failed verify_and_register, the registry must be "
+        "inactive — leaving the prior allowlist live is a stale-state "
+        "bug (operators can't safely retry a misconfigured call)"
+    )
+    assert get_verified_sources_for_directory(str(valid_dir)) is None, (
+        "after a failed verify_and_register, prior per-directory "
+        "snapshots must be gone — a non-None result here means the "
+        "failed call silently preserved stale data"
+    )
+
+
 def test_reset_for_tests_clears_state(
     valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
 ):
