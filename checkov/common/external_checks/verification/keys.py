@@ -6,9 +6,11 @@ import hashlib
 import logging
 from dataclasses import dataclass
 
-from ecdsa import NIST256p, VerifyingKey
-from ecdsa.der import UnexpectedDER
-from ecdsa.errors import MalformedPointError
+# ecdsa ships no py.typed marker; suppress the strict-mode import-untyped
+# noise here rather than polluting mypy.ini for a single MR-scoped dependency.
+from ecdsa import NIST256p, VerifyingKey  # type: ignore[import-untyped]
+from ecdsa.der import UnexpectedDER  # type: ignore[import-untyped]
+from ecdsa.errors import MalformedPointError  # type: ignore[import-untyped]
 
 from .errors import SignatureVerificationError
 

@@ -6,10 +6,12 @@ import hashlib
 import logging
 from typing import Iterable
 
-from ecdsa import BadSignatureError, NIST256p
-from ecdsa.der import UnexpectedDER
-from ecdsa.errors import MalformedPointError
-from ecdsa.util import sigdecode_der
+# ecdsa ships no py.typed marker; suppress the strict-mode import-untyped
+# noise here rather than polluting mypy.ini for a single MR-scoped dependency.
+from ecdsa import BadSignatureError, NIST256p  # type: ignore[import-untyped]
+from ecdsa.der import UnexpectedDER  # type: ignore[import-untyped]
+from ecdsa.errors import MalformedPointError  # type: ignore[import-untyped]
+from ecdsa.util import sigdecode_der  # type: ignore[import-untyped]
 
 from .keys import VerificationKey
 from .trailer_format import (

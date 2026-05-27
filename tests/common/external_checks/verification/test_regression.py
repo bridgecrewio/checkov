@@ -907,10 +907,10 @@ def test_cross_dir_transitive_import_serves_in_memory_bytes(
 @pytest.mark.parametrize(
     ("scenario_id", "pem_bytes"),
     [
-        ("empty_bytes",        b""),
-        ("garbage_non_pem",    b"this is not a pem"),
+        ("empty_bytes", b""),
+        ("garbage_non_pem", b"this is not a pem"),
         ("only_header_footer", b"-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----\n"),
-        ("garbage_base64",     b"-----BEGIN PUBLIC KEY-----\nnot-base64-at-all\n-----END PUBLIC KEY-----\n"),
+        ("garbage_base64", b"-----BEGIN PUBLIC KEY-----\nnot-base64-at-all\n-----END PUBLIC KEY-----\n"),
         # 60+ valid-base64 bytes that decode to a non-DER body.
         ("valid_b64_garbage_body",
          b"-----BEGIN PUBLIC KEY-----\n"

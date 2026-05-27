@@ -66,7 +66,9 @@ def has_double_trailer(file_bytes: bytes) -> bool:
 def decode_hex_signature(hex_payload: bytes) -> "bytes | None":
     try:
         return bytes.fromhex(hex_payload.decode("ascii"))
-    except (UnicodeDecodeError, ValueError):
+    except ValueError:
+        # UnicodeDecodeError is a subclass of ValueError, so this catches both
+        # non-ASCII payloads and non-hex characters in one branch.
         return None
 
 

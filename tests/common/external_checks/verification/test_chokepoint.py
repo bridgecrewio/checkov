@@ -120,9 +120,10 @@ def test_keys_plus_unsigned_dir_exits_via_exit_run(
     prev_cwd = os.getcwd()
     os.chdir(str(tmp_path))
     try:
-        with patch("checkov.main.bc_integration") as bc, pytest.raises(SystemExit) as raised:
+        with patch("checkov.main.bc_integration") as bc:
             bc.sast_custom_policies = None
-            checkov.get_external_checks_dir()
+            with pytest.raises(SystemExit) as raised:
+                checkov.get_external_checks_dir()
     finally:
         os.chdir(prev_cwd)
 

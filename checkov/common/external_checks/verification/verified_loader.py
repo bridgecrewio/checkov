@@ -6,6 +6,7 @@ import os
 import sys
 from importlib.abc import Loader, MetaPathFinder
 from importlib.machinery import ModuleSpec
+from types import ModuleType
 from typing import Iterable, Mapping, Sequence
 
 
@@ -13,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 def _compile_and_exec_into_module(
-    module: "object", file_path: str, source_bytes: bytes, module_name: str,
+    module: ModuleType, file_path: str, source_bytes: bytes, module_name: str,
 ) -> None:
     try:
         code = compile(source_bytes, file_path, "exec")
-        exec(code, module.__dict__)  # type: ignore[attr-defined]
+        exec(code, module.__dict__)
     except BaseException:
         sys.modules.pop(module_name, None)
         raise
@@ -27,7 +28,7 @@ def load_verified_sources_into_module(
     module_name: str,
     file_path: str,
     source_bytes: bytes,
-) -> "object":
+) -> ModuleType:
     """Compile + exec ``source_bytes`` as ``module_name``.
 
     Pre-registers in ``sys.modules`` BEFORE exec so self-imports resolve.
@@ -47,11 +48,11 @@ class _VerifiedSourceLoader(Loader):
         self._file_path = file_path
         self._source_bytes = source_bytes
 
-    def create_module(self, spec: ModuleSpec) -> "object | None":
+    def create_module(self, spec: ModuleSpec) -> "ModuleType | None":
         return None
 
-    def exec_module(self, module: "object") -> None:
-        module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
+    def exec_module(self, module: ModuleType) -> None:
+        module.__dict__["__file__"] = self._file_path
         _compile_and_exec_into_module(
             module,
             self._file_path,
