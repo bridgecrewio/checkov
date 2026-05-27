@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from checkov.common.external_checks.verification.keys import SignatureVerificationError
+from checkov.common.external_checks.verification import SignatureVerificationError
 from checkov.common.external_checks.verification.sources_registry import (
     get_verified_sources_for_directory,
     is_verification_active,

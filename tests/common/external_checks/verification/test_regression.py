@@ -1073,3 +1073,179 @@ def test_failure_log_write_failure_warns_on_stderr(
         "the warning should name the path that failed so the operator can "
         "diagnose (e.g. read-only mount, full disk)"
     )
+
+
+# --------------------------------------------------------------------------
+# 13. T2: `cryptography` library is NOT in the import graph.
+#
+# The migration off ``cryptography`` to ``ecdsa`` is a deliberate
+# dependency reduction. A future PR that re-introduces a transitive
+# ``cryptography`` import (e.g. via a sibling util that gets pulled in
+# by the verification package) would silently revive the old dep.
+# --------------------------------------------------------------------------
+
+
+def test_verification_package_does_not_import_cryptography():
+    """Pin the dep migration: no transitive ``cryptography`` import via
+    the verification surface."""
+    import sys
+    from checkov.common.external_checks import verification  # noqa: F401
+
+    cryptography_modules = [m for m in sys.modules if m == "cryptography" or m.startswith("cryptography.")]
+    assert not cryptography_modules, (
+        f"verification package transitively imported the ``cryptography`` "
+        f"library via: {cryptography_modules}. The migration to ``ecdsa`` "
+        f"is supposed to drop this dep — investigate which import re-added it."
+    )
+
+
+# --------------------------------------------------------------------------
+# 14. T3: property-style ~100 random bodies signed-then-verified.
+#
+# Catches edge cases in DER length variance (leading-zero stripping in
+# ``r``/``s`` changes the signature length), trailer-length-guard
+# interactions, and round-trip integrity for arbitrary content.
+# --------------------------------------------------------------------------
+
+
+def test_random_bodies_round_trip(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """100 random bodies of varying sizes all sign-and-verify cleanly."""
+    import random
+    random.seed(0xC0FFEE)  # determinism across CI runs
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    for i in range(100):
+        size = random.randint(0, 2048)
+        # Always end the body in \n — the trailer parser requires the
+        # signed payload to be \n-terminated. (Empty body is allowed.)
+        body = (os.urandom(size) if size else b"") + b"\n"
+        target = tmp_path / f"r_{i:03d}.py"
+        target.write_bytes(make_trailer(body, priv_a))
+        result, signed = verify_file(str(target), keys)
+        assert result == VerificationResult.OK, (
+            f"random body #{i} (size={size}) failed verification with {result!r}"
+        )
+        assert signed == body, (
+            f"random body #{i}: verifier returned different bytes than the "
+            f"original payload — round-trip integrity is broken"
+        )
+
+
+# --------------------------------------------------------------------------
+# 15. T4: legacy path queries the registry exactly once per directory
+#         and (when verification is inactive) gets back ``None``.
+#
+# Spy on ``get_verified_sources_for_directory``. The contract is
+# documented as "consulted, returns None when inactive" — this pins it
+# so a refactor that bypasses the registry (or, worse, mutates it as
+# a side effect) fails fast.
+# --------------------------------------------------------------------------
+
+
+def test_legacy_path_consults_registry_once_per_directory(tmp_path, monkeypatch):
+    """Legacy disk-load path queries the registry once per call and gets None."""
+    from checkov.common.checks import base_check_registry as mod
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+    checks_dir = tmp_path / "legacy"
+    checks_dir.mkdir()
+    (checks_dir / "__init__.py").write_bytes(b"")
+    (checks_dir / "check.py").write_bytes(b"X = 1\n")
+
+    calls: list[str] = []
+
+    def _spy(directory: str):
+        calls.append(directory)
+        return None  # mimic inactive-registry contract
+
+    monkeypatch.setattr(mod, "get_verified_sources_for_directory", _spy)
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    _StubRegistry(report_type="terraform").load_external_checks(str(checks_dir))
+
+    assert calls == [str(checks_dir).replace("/", os.sep)] or calls == [str(checks_dir)], (
+        f"expected exactly one registry consultation for the loaded directory; "
+        f"got {calls}"
+    )
+
+
+# --------------------------------------------------------------------------
+# 16. T6: trailer line + \n + arbitrary-looking junk line + \n.
+#
+# A future "permissive parser" change could silently make
+# ``trailer + \n + commented-code\n`` verify against the trailer. The
+# current parser only checks the LAST \n-terminated line; assert this
+# explicitly.
+# --------------------------------------------------------------------------
+
+
+def test_trailer_followed_by_junk_line_is_rejected(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """``signed-file + \\nJUNK\\n`` → NO_SIGNATURE.
+
+    The trailer is no longer the last line, so the parser must not
+    treat it as the trailer. The "JUNK" line is the last line and it
+    doesn't start with the trailer prefix → no trailer at all.
+    """
+    body = b"def check():\n    pass\n"
+    signed = make_trailer(body, priv_a)
+    target = tmp_path / "junked.py"
+    target.write_bytes(signed + b"# innocent-looking trailing comment\n")
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    result, _ = verify_file(str(target), keys)
+    assert result == VerificationResult.NO_SIGNATURE, (
+        f"a trailer line followed by another \\n-terminated line was "
+        f"silently accepted; expected NO_SIGNATURE, got {result!r}. "
+        f"The parser's last-line-only invariant has regressed."
+    )
+
+
+# --------------------------------------------------------------------------
+# 17. N2: realistic doc-string body with blank lines AND a literal
+#         ``# checkov-digest:`` prefix mid-file is signed and verified
+#         cleanly. Pins the "only the last line counts" invariant against
+#         a body that closely mimics customer-facing doc examples.
+# --------------------------------------------------------------------------
+
+
+def test_doc_style_body_with_internal_trailer_prefix_round_trips(
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+):
+    """A signed file whose body contains blank lines AND a literal
+    ``# checkov-digest:`` line (e.g. embedded as a docstring example)
+    must verify cleanly. Realistic shape of customer documentation."""
+    body = (
+        b'"""Example custom check.\n'
+        b"\n"
+        b"Signing recipe::\n"
+        b"\n"
+        b"    openssl dgst -sha256 -sign priv.pem check.py | xxd -p -c 256\n"
+        b"    # checkov-digest: <hex>  <-- this is just doc text, not a trailer\n"
+        b'"""\n'
+        b"\n"
+        b"def check():\n"
+        b"    return True\n"
+    )
+    target = tmp_path / "doc_example.py"
+    target.write_bytes(make_trailer(body, priv_a))
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+    keys = load_public_keys([str(key_path)])
+
+    result, signed = verify_file(str(target), keys)
+    assert result == VerificationResult.OK
+    assert signed == body

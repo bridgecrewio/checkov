@@ -105,6 +105,9 @@ def _normalise_and_dedupe(
     payload path; overlapping dirs would silently double-load files.
     """
     unique_dirs: "list[str]" = []
+    # Diagnostics for duplicate / overlapping directory entries — flushed
+    # into the main loop's failure list so the operator sees every issue
+    # in one cycle instead of having to re-run after fixing each one.
     overlap_errors: "list[str]" = []
     seen: "dict[str, str]" = {}  # realpath -> original directory string
     for directory in dirs:
@@ -193,4 +196,7 @@ def verify_external_checks_dirs(
     return verified_sources
 
 
-__all__ = ["LOADABLE_SUFFIXES", "verify_external_checks_dirs"]
+# Only ``verify_external_checks_dirs`` is part of the public surface;
+# ``LOADABLE_SUFFIXES`` is module-internal (the rest of the codebase
+# hard-codes ".py" anyway) and is not advertised via ``__all__``.
+__all__ = ["verify_external_checks_dirs"]

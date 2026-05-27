@@ -83,6 +83,38 @@ def test_load_verified_sources_into_module_cleans_up_on_failure(tmp_path: Path):
     assert "module_a_test_broken" not in sys.modules
 
 
+def test_verified_source_loader_exec_module_cleans_up_on_failure(tmp_path: Path):
+    """``_VerifiedSourceLoader.exec_module`` must mirror the direct loader's
+    half-load cleanup — a SyntaxError or in-module raise during the finder
+    path must NOT leave a partially initialised module in ``sys.modules``.
+
+    Pins S6: without the cleanup, a single broken verified file could
+    poison subsequent legitimate imports of the same name with a
+    half-initialised module object.
+    """
+    import importlib.util
+    from checkov.common.external_checks.verification.verified_loader import (
+        _VerifiedSourceLoader,
+    )
+
+    module_name = "broken_via_finder_exec"
+    loader = _VerifiedSourceLoader(str(tmp_path / "broken.py"), b"def broken(:\n")
+    spec = importlib.util.spec_from_loader(module_name, loader)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    try:
+        with pytest.raises(SyntaxError):
+            loader.exec_module(module)
+        assert module_name not in sys.modules, (
+            f"{module_name} survived a SyntaxError during exec_module; "
+            f"future imports of this name would receive the half-initialised "
+            f"module object instead of a clean ModuleNotFoundError"
+        )
+    finally:
+        sys.modules.pop(module_name, None)
+
+
 def test_finder_resolves_imports_from_in_memory_map(tmp_path: Path):
     """A normal ``import`` call goes through the finder when active."""
     on_disk = tmp_path / "helper_module.py"

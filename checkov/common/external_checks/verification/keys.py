@@ -79,8 +79,11 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
     return keys
 
 
+# ``SignatureVerificationError`` is intentionally NOT re-exported here:
+# the canonical surface is `verification.__init__` (which re-exports
+# from `.errors`). Listing it in two places confuses ``from … import …``
+# call sites about where the error type really lives.
 __all__ = [
-    "SignatureVerificationError",
     "VerificationKey",
     "load_public_keys",
 ]

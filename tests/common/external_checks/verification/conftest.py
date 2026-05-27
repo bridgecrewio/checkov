@@ -72,13 +72,28 @@ def _openssl_or_skip() -> str:
 
 
 def _openssl_pubkey_pem(genpkey_args: "list[str]") -> bytes:
+    """Run ``openssl genpkey <args>`` + ``openssl pkey -pubout``.
+
+    Skips the requesting test (instead of failing it) when the local
+    ``openssl`` build does not support the requested algorithm — older
+    LibreSSL / system-shipped OpenSSL builds lack ED25519 or specific
+    EC curves. Operators who run the suite in a minimal CI image should
+    see clean ``SKIPPED`` entries, not red errors.
+    """
     openssl = _openssl_or_skip()
-    priv = subprocess.run(
+    priv_proc = subprocess.run(
         [openssl, "genpkey"] + genpkey_args,
-        capture_output=True, check=True,
-    ).stdout
+        capture_output=True, check=False,
+    )
+    if priv_proc.returncode != 0:
+        stderr = (priv_proc.stderr or b"").decode("utf-8", errors="replace")
+        pytest.skip(
+            f"openssl genpkey {' '.join(genpkey_args)!r} not supported "
+            f"by this openssl build: {stderr.strip()}"
+        )
     pub = subprocess.run(
-        [openssl, "pkey", "-pubout"], input=priv, capture_output=True, check=True,
+        [openssl, "pkey", "-pubout"], input=priv_proc.stdout,
+        capture_output=True, check=True,
     ).stdout
     return pub
 

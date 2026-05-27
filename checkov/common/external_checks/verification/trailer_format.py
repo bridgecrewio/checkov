@@ -13,7 +13,15 @@ import string
 
 TRAILER_PREFIX = b"# checkov-digest: "
 
-# P-256 DER signatures are 63-72 bytes → 126-144 hex chars.
+# P-256 ECDSA-DER signatures vary in length between 63 and 72 bytes,
+# yielding 126-144 hex chars on the wire. Derivation:
+#   * Outer SEQUENCE: 2 bytes (tag + length)
+#   * Two INTEGER fields ``r`` and ``s``, each 1-33 bytes of content
+#     (32-byte scalar plus an optional leading 0x00 sign-byte when the
+#     high bit is set; SEC 1 §C.5 / RFC 5480 §2.1) with 2 bytes of
+#     INTEGER tag+length each.
+# Producers that emit outside this range (non-conforming signers) are
+# rejected at the length-guard before any DER decode.
 _HEX_MIN = 126
 _HEX_MAX = 144
 

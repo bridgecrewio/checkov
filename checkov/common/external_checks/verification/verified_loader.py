@@ -51,9 +51,19 @@ class _VerifiedSourceLoader(Loader):
         return None
 
     def exec_module(self, module: "object") -> None:
-        code = compile(self._source_bytes, self._file_path, "exec")
-        module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
-        exec(code, module.__dict__)  # type: ignore[attr-defined]
+        # Mirror the half-load cleanup contract from
+        # ``load_verified_sources_into_module`` so a SyntaxError at
+        # compile time OR an in-module raise during exec does not
+        # leave a partially initialised module sitting in
+        # ``sys.modules`` and masking subsequent legitimate imports
+        # of the same name.
+        try:
+            code = compile(self._source_bytes, self._file_path, "exec")
+            module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
+            exec(code, module.__dict__)  # type: ignore[attr-defined]
+        except BaseException:
+            sys.modules.pop(getattr(module, "__name__", ""), None)
+            raise
 
     def get_source(self, fullname: str) -> str:
         return self._source_bytes.decode("utf-8", errors="replace")
@@ -100,11 +110,12 @@ def install_finder(
 
 
 def uninstall_finder(finder: VerifiedSourcesFinder) -> None:
-    """Idempotent."""
+    """Idempotent — second call after the finder has already been
+    removed is a silent no-op (no DEBUG noise during repeated cleanup)."""
     try:
         sys.meta_path.remove(finder)
     except ValueError:
-        logger.debug("verified-sources finder was already absent from sys.meta_path")
+        pass
 
 
 __all__ = [
