@@ -167,7 +167,7 @@ def test_uninstall_finder_is_idempotent(tmp_path: Path):
     uninstall_finder(finder)  # second call must be a no-op
 
 
-def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path):
+def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path, stub_registry):
     """``_resolve_verified_source`` returns None for non-canonical keys.
 
     Pins S1: the lookup is documented as "registry keys are realpath",
@@ -186,7 +186,6 @@ def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path):
     raw symlinked key MUST NOT match.
     """
     import os
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
     real = tmp_path / "real_check.py"
     real.write_bytes(b"# real signed body\n")
@@ -196,11 +195,7 @@ def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path):
     except (OSError, NotImplementedError):
         pytest.skip("symlinks not supported on this platform")
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
+    registry = stub_registry
 
     # Key the dict by the SYMLINKED (raw) path — the registry would
     # never have produced this key because verify_and_register
@@ -226,11 +221,9 @@ def test_resolve_verified_source_only_honours_canonical_keys(tmp_path: Path):
 
 
 def test_load_external_checks_with_verified_sources_runs_in_memory(
-    tmp_path: Path, capsys,
+    tmp_path: Path, capsys, stub_registry,
 ):
     """The registry loader execs the allowlist bytes, ignoring disk content."""
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
@@ -242,13 +235,7 @@ def test_load_external_checks_with_verified_sources_runs_in_memory(
         str(on_disk_check.resolve()): in_memory_bytes,
     }
 
-    # Need a concrete subclass; the abstract method isn't called in this path.
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
-    registry.load_external_checks(
+    stub_registry.load_external_checks(
         str(checks_dir.resolve()), verified_sources=verified_sources,
     )
 
@@ -258,7 +245,7 @@ def test_load_external_checks_with_verified_sources_runs_in_memory(
 
 
 def test_load_external_checks_refuses_unverified_file(
-    tmp_path: Path, caplog,
+    tmp_path: Path, caplog, stub_registry,
 ):
     """A .py file present on disk but absent from verified_sources is REFUSED and ESCALATES.
 
@@ -273,7 +260,6 @@ def test_load_external_checks_refuses_unverified_file(
     drop) must not silently shrink the verified check set.
     """
     import logging
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.external_checks.verification import (
         SignatureVerificationError,
     )
@@ -285,14 +271,8 @@ def test_load_external_checks_refuses_unverified_file(
     # Bytes that would *raise* if executed — proves the loader did not exec.
     extra.write_bytes(b"raise RuntimeError('unverified file was executed')\n")
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
-
     with caplog.at_level(logging.ERROR), pytest.raises(SignatureVerificationError) as exc:
-        registry.load_external_checks(
+        stub_registry.load_external_checks(
             str(checks_dir.resolve()),
             verified_sources={},  # empty allowlist → every .py is unverified
         )
@@ -307,23 +287,16 @@ def test_load_external_checks_refuses_unverified_file(
     )
 
 
-def test_load_external_checks_cleans_up_finder(tmp_path: Path):
+def test_load_external_checks_cleans_up_finder(tmp_path: Path, stub_registry):
     """sys.meta_path returns to its pre-call state once load returns."""
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
     chk = checks_dir / "simple.py"
     chk.write_bytes(b"X = 1\n")
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
     before = list(sys.meta_path)
-    registry.load_external_checks(
+    stub_registry.load_external_checks(
         str(checks_dir.resolve()),
         verified_sources={str(chk.resolve()): b"X = 1\n"},
     )
@@ -336,7 +309,7 @@ def test_load_external_checks_cleans_up_finder(tmp_path: Path):
 
 
 def test_unverified_load_external_checks_unchanged_when_no_verified_sources(
-    tmp_path: Path, capsys,
+    tmp_path: Path, capsys, stub_registry,
 ):
     """Default behaviour (no verified_sources) execs from disk as before.
 
@@ -344,20 +317,13 @@ def test_unverified_load_external_checks_unchanged_when_no_verified_sources(
     ``--external-checks-public-key``; it must remain byte-identical to
     pre-feature behaviour so existing customers see no change.
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
     chk = checks_dir / "unverified_check.py"
     chk.write_bytes(b"print('UNVERIFIED_DISK_LOAD')\n")
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
-    registry.load_external_checks(str(checks_dir.resolve()))  # verified_sources=None
+    stub_registry.load_external_checks(str(checks_dir.resolve()))  # verified_sources=None
 
     captured = capsys.readouterr()
     assert "UNVERIFIED_DISK_LOAD" in captured.out

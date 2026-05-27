@@ -23,7 +23,6 @@ from checkov.common.external_checks.verification.sources_registry import (
     is_verification_active,
     reset_for_tests,
 )
-from checkov.main import Checkov
 
 
 @pytest.fixture(autouse=True)
@@ -35,26 +34,9 @@ def _reset_registry():
         reset_for_tests()
 
 
-def _make_checkov(
-    *,
-    external_checks_dir: "list[str] | None",
-    external_checks_public_key: "list[str] | None" = None,
-    external_checks_git: "list[str] | None" = None,
-) -> Checkov:
-    """Build a ``Checkov`` skeleton that exposes only what the chokepoint needs."""
-    instance = Checkov.__new__(Checkov)
-    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
-        external_checks_dir=external_checks_dir,
-        external_checks_public_key=external_checks_public_key,
-        external_checks_git=external_checks_git,
-        no_fail_on_crash=False,
-    )
-    return instance
-
-
-def test_no_keys_no_verification(valid_dir: Path):
+def test_no_keys_no_verification(valid_dir: Path, make_checkov):
     """No --external-checks-public-key → registry stays inactive."""
-    checkov = _make_checkov(external_checks_dir=[str(valid_dir)])
+    checkov = make_checkov(external_checks_dir=[str(valid_dir)])
 
     # Patch bc_integration.sast_custom_policies to None for isolation.
     with patch("checkov.main.bc_integration") as bc:
@@ -66,13 +48,13 @@ def test_no_keys_no_verification(valid_dir: Path):
 
 
 def test_no_external_checks_dir_skips_verification(
-    key_a_pub_pem: bytes, tmp_path: Path,
+    key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """Key configured but no dirs to verify → no-op, no error."""
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_dir=None,
         external_checks_public_key=[str(key_path)],
     )
@@ -86,13 +68,13 @@ def test_no_external_checks_dir_skips_verification(
 
 
 def test_keys_plus_signed_dir_activates_registry(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """Happy path: signed dir + matching key → registry populated, dir returned."""
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_dir=[str(valid_dir)],
         external_checks_public_key=[str(key_path)],
     )
@@ -105,7 +87,7 @@ def test_keys_plus_signed_dir_activates_registry(
 
 
 def test_keys_plus_unsigned_dir_exits_via_exit_run(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """Verification failure routes the exit through ``self.exit_run()``.
 
@@ -120,7 +102,7 @@ def test_keys_plus_unsigned_dir_exits_via_exit_run(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_dir=[str(unsigned_dir)],
         external_checks_public_key=[str(key_path)],
     )
@@ -155,7 +137,7 @@ def test_keys_plus_unsigned_dir_exits_via_exit_run(
 
 
 def test_platform_policies_appended_after_verification(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """sast_custom_policies dir is appended after verification.
 
@@ -173,7 +155,7 @@ def test_platform_policies_appended_after_verification(
     platform_dir.mkdir()
     (platform_dir / "unsigned_platform.py").write_bytes(b"# unsigned\n")
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_dir=[str(valid_dir)],
         external_checks_public_key=[str(key_path)],
     )

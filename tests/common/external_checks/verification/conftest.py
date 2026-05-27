@@ -284,3 +284,57 @@ def binary_loadable_dir(tmp_path: Path, priv_a) -> Path:
     root.mkdir()
     (root / "aws_check.py").write_bytes(_append_trailer(b"# valid\n", priv_a))
     return root
+
+
+# --- Shared test scaffolding -----------------------------------------------
+
+@pytest.fixture(scope="session")
+def stub_registry_cls():
+    """Concrete ``BaseCheckRegistry`` for tests that just need a loadable
+    instance (the abstract ``extract_entity_details`` is never called in
+    the loader/registry paths under test)."""
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+    class _StubRegistry(BaseCheckRegistry):
+        def extract_entity_details(self, entity):
+            return ("", "", {})
+
+    return _StubRegistry
+
+
+@pytest.fixture
+def stub_registry(stub_registry_cls):
+    """Pre-built ``_StubRegistry(report_type="terraform")`` instance."""
+    return stub_registry_cls(report_type="terraform")
+
+
+@pytest.fixture
+def make_checkov():
+    """Build a ``Checkov`` skeleton exposing only what the chokepoint reads.
+
+    Usage:
+        checkov = make_checkov(
+            external_checks_dir=[str(some_dir)],
+            external_checks_public_key=[str(key_path)],
+        )
+    """
+    import types
+    from checkov.main import Checkov
+
+    def _build(
+        *,
+        external_checks_dir=None,
+        external_checks_public_key=None,
+        external_checks_git=None,
+        no_fail_on_crash=False,
+    ):
+        instance = Checkov.__new__(Checkov)
+        instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
+            external_checks_dir=external_checks_dir,
+            external_checks_public_key=external_checks_public_key,
+            external_checks_git=external_checks_git,
+            no_fail_on_crash=no_fail_on_crash,
+        )
+        return instance
+
+    return _build

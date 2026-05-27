@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import os
-import types
 import contextlib
 from pathlib import Path
 from unittest.mock import patch
@@ -23,24 +22,6 @@ def _reset_registry():
         yield
     finally:
         reset_for_tests()
-
-
-def _make_checkov(
-    *,
-    external_checks_dir: "list[str] | None" = None,
-    external_checks_public_key: "list[str] | None" = None,
-    external_checks_git: "list[str] | None" = None,
-    no_fail_on_crash: bool = False,
-) -> Checkov:
-    """Same skeleton as ``test_chokepoint._make_checkov``."""
-    instance = Checkov.__new__(Checkov)
-    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
-        external_checks_dir=external_checks_dir,
-        external_checks_public_key=external_checks_public_key,
-        external_checks_git=external_checks_git,
-        no_fail_on_crash=no_fail_on_crash,
-    )
-    return instance
 
 
 def _patch_git_getter(returns_path: Path):
@@ -86,9 +67,9 @@ def _run_chokepoint(
 # --------------------------------------------------------------------------
 
 
-def test_git_no_key_skips_verification(valid_dir: Path):
+def test_git_no_key_skips_verification(valid_dir: Path, make_checkov):
     """``--external-checks-git`` without a public key → no verification at all."""
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
     )
     result, _ = _run_chokepoint(checkov, valid_dir)
@@ -98,13 +79,13 @@ def test_git_no_key_skips_verification(valid_dir: Path):
 
 
 def test_git_signed_clone_with_matching_key_verifies(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """A signed git clone + matching key → verification succeeds, registry active."""
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
     )
@@ -120,7 +101,7 @@ def test_git_signed_clone_with_matching_key_verifies(
 
 
 def test_git_unsigned_clone_with_key_exits_via_exit_run(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """An unsigned git clone + key → exit_run() invoked, no scan.
 
@@ -131,7 +112,7 @@ def test_git_unsigned_clone_with_key_exits_via_exit_run(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
     )
@@ -152,13 +133,13 @@ def test_git_unsigned_clone_with_key_exits_via_exit_run(
 
 
 def test_git_tampered_clone_with_key_exits_2(
-    mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """A signed-then-mutated git clone + key → exit 2 + log file written."""
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
     )
@@ -177,7 +158,7 @@ def test_git_tampered_clone_with_key_exits_2(
 
 
 def test_git_unsigned_clone_with_key_and_no_fail_on_crash_exits_0(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """Same as the unsigned-rejection test, but with ``--no-fail-on-crash``.
 
@@ -188,7 +169,7 @@ def test_git_unsigned_clone_with_key_and_no_fail_on_crash_exits_0(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
         no_fail_on_crash=True,
@@ -214,7 +195,7 @@ def test_git_unsigned_clone_with_key_and_no_fail_on_crash_exits_0(
 
 
 def test_git_overrides_local_dir_when_both_are_set(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """If both ``--external-checks-dir`` AND ``--external-checks-git`` are passed,
     the git clone REPLACES the local dir.
@@ -238,7 +219,7 @@ def test_git_overrides_local_dir_when_both_are_set(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_dir=[str(decoy_dir)],
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
@@ -261,7 +242,7 @@ def test_git_overrides_local_dir_when_both_are_set(
 
 
 def test_git_clone_with_pycache_in_repo_is_handled(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, make_checkov,
 ):
     """A git clone that happens to ship a ``__pycache__/`` (e.g. checked in by
     accident or left over from local CI) must be silently skipped by the
@@ -281,7 +262,7 @@ def test_git_clone_with_pycache_in_repo_is_handled(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
     )
@@ -296,7 +277,7 @@ def test_git_clone_with_pycache_in_repo_is_handled(
 
 
 def test_git_only_first_url_is_used(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
 ):
     """``--external-checks-git`` is declared as ``action='append'`` but the
     chokepoint only consumes the first URL — confirm so future operators
@@ -308,7 +289,7 @@ def test_git_only_first_url_is_used(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=[
             "https://example.invalid/first.git",
             "https://example.invalid/second.git",  # SILENTLY IGNORED today
@@ -345,7 +326,7 @@ def test_git_only_first_url_is_used(
 
 
 def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
-    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    valid_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov, stub_registry,
 ):
     """Closes the S4 TOCTOU window: between ``verify_and_register`` (at the
     chokepoint) and ``load_external_checks`` (during the scan), the cloned
@@ -361,7 +342,6 @@ def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
     full ``--external-checks-git`` lifecycle end-to-end. No production-code
     change is required if the existing M1+S3 fix is wired correctly.
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.external_checks.verification import (
         SignatureVerificationError,
     )
@@ -369,7 +349,7 @@ def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
-    checkov = _make_checkov(
+    checkov = make_checkov(
         external_checks_git=["https://example.invalid/repo.git"],
         external_checks_public_key=[str(key_path)],
     )
@@ -387,11 +367,7 @@ def test_late_modification_of_git_clone_is_caught_by_loader_escalation(
     evil = valid_dir / "evil.py"
     evil.write_bytes(b"raise RuntimeError('TOCTOU drop was executed')\n")
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
+    registry = stub_registry
 
     # The loader resolves ``verified_sources`` from the in-memory registry
     # populated by the chokepoint, then walks the dir; ``evil.py`` is on

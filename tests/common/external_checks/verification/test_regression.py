@@ -1,8 +1,3 @@
-"""Regression tests for the verification feature.
-
-Each section covers one behavioural contract; the section headers are
-functional groupings only, not TODOs.
-"""
 from __future__ import annotations
 
 import io
@@ -160,7 +155,7 @@ def test_exit_run_has_no_security_failure_sticky_flag():
 
 
 def test_verified_load_works_when_external_checks_dir_is_symlinked(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """``--external-checks-dir`` pointed at a symlink must still resolve.
 
@@ -193,13 +188,7 @@ def test_verified_load_works_when_external_checks_dir_is_symlinked(
 
     # Now drive the loader against the symlinked path (which is what
     # the runners will do — they don't realpath the user input either).
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
+    registry = stub_registry
 
     # Capture stderr to confirm no "Refusing to load" error log appears.
     import logging
@@ -414,15 +403,13 @@ def test_stderr_not_truncated_when_failure_list_is_short(
 
 
 def test_same_stem_checks_in_subdirectories_collide_deterministically(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """Two ``helper.py`` files in different subdirectories collide on ``helper``.
 
     The exact winner is not part of the contract — the test only asserts
     that *one* of them wins deterministically and the other is shadowed.
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     root = tmp_path / "root"
     root.mkdir()
     (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
@@ -441,11 +428,7 @@ def test_same_stem_checks_in_subdirectories_collide_deterministically(
     key_path.write_bytes(key_a_pub_pem)
     verify_and_register([str(root)], [str(key_path)])
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    registry = _StubRegistry(report_type="terraform")
+    registry = stub_registry
 
     # Clean any pre-existing 'helper' module so the test isn't polluted.
     sys.modules.pop("helper", None)
@@ -739,7 +722,7 @@ def test_pyc_outside_pycache_is_still_hard_rejected(
 
 
 def test_verified_load_does_not_create_pycache(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """A successful verified load must not leave a ``__pycache__/`` behind.
 
@@ -748,8 +731,6 @@ def test_verified_load_does_not_create_pycache(
     ``binary file not supported`` failure (see the regression that
     surfaced during end-to-end testing).
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     root = tmp_path / "fresh"
     root.mkdir()
     (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
@@ -761,13 +742,9 @@ def test_verified_load_does_not_create_pycache(
     key_path.write_bytes(key_a_pub_pem)
     verify_and_register([str(root)], [str(key_path)])
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
     sys.modules.pop("fresh_check", None)
     try:
-        _StubRegistry(report_type="terraform").load_external_checks(str(root))
+        stub_registry.load_external_checks(str(root))
     finally:
         sys.modules.pop("fresh_check", None)
 
@@ -780,15 +757,13 @@ def test_verified_load_does_not_create_pycache(
 
 
 def test_dont_write_bytecode_state_restored_after_load(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry_cls,
 ):
     """``sys.dont_write_bytecode`` returns to its pre-call value after load.
 
     The verified-load window must not permanently silence bytecode
     writing for the rest of the process.
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     root = tmp_path / "restore_test"
     root.mkdir()
     (root / "__init__.py").write_bytes(make_trailer(b"", priv_a))
@@ -798,17 +773,13 @@ def test_dont_write_bytecode_state_restored_after_load(
     key_path.write_bytes(key_a_pub_pem)
     verify_and_register([str(root)], [str(key_path)])
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
     # Exercise both starting values to confirm the restore is faithful.
     for initial in (False, True):
         previous = sys.dont_write_bytecode
         sys.dont_write_bytecode = initial
         sys.modules.pop("check", None)
         try:
-            _StubRegistry(report_type="terraform").load_external_checks(str(root))
+            stub_registry_cls(report_type="terraform").load_external_checks(str(root))
             assert sys.dont_write_bytecode is initial, (
                 f"sys.dont_write_bytecode not restored — was {initial}, "
                 f"became {sys.dont_write_bytecode}"
@@ -839,7 +810,7 @@ def test_dont_write_bytecode_state_restored_after_load(
 
 
 def test_cross_dir_transitive_import_serves_in_memory_bytes(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """A verified check in dir-A that imports a verified helper in dir-B
     must get the in-memory verified bytes for the helper, not the
@@ -854,8 +825,6 @@ def test_cross_dir_transitive_import_serves_in_memory_bytes(
     helper to raise on execution — if the test passes (no exception),
     the in-memory verified bytes were served.
     """
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
     # dir-A has the "check" that imports the helper.
     dir_a = tmp_path / "checks_a"
     dir_a.mkdir()
@@ -889,14 +858,10 @@ def test_cross_dir_transitive_import_serves_in_memory_bytes(
         b"M1 bypass is live')\n"
     )
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
     # Mimic the real runner loop: load each dir in turn through the
     # SAME registry. The bypass only manifests when the finder for the
     # current call doesn't know about the other dir's verified sources.
-    registry = _StubRegistry(report_type="terraform")
+    registry = stub_registry
     sys.modules.pop("cross_dir_check", None)
     sys.modules.pop("cross_dir_shared_helper", None)
     try:
@@ -1201,10 +1166,11 @@ def test_random_bodies_round_trip(
 # --------------------------------------------------------------------------
 
 
-def test_unverified_path_consults_registry_once_per_directory(tmp_path, monkeypatch):
+def test_unverified_path_consults_registry_once_per_directory(
+    tmp_path, monkeypatch, stub_registry,
+):
     """Unverified disk-load path queries the registry once per call and gets None."""
     from checkov.common.checks import base_check_registry as mod
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
     checks_dir = tmp_path / "unverified"
     checks_dir.mkdir()
@@ -1219,11 +1185,7 @@ def test_unverified_path_consults_registry_once_per_directory(tmp_path, monkeypa
 
     monkeypatch.setattr(mod, "get_verified_sources_for_directory", _spy)
 
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    _StubRegistry(report_type="terraform").load_external_checks(str(checks_dir))
+    stub_registry.load_external_checks(str(checks_dir))
 
     assert calls == [str(checks_dir).replace("/", os.sep)] or calls == [str(checks_dir)], (
         f"expected exactly one registry consultation for the loaded directory; "
@@ -1322,18 +1284,8 @@ def test_doc_style_body_with_internal_trailer_prefix_round_trips(
 # --------------------------------------------------------------------------
 
 
-def _make_stub_registry():
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
-    class _StubRegistry(BaseCheckRegistry):
-        def extract_entity_details(self, entity):
-            return ("", "", {})
-
-    return _StubRegistry(report_type="terraform")
-
-
 def test_loader_escalates_when_verified_file_renamed_after_register(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """A verified file renamed AFTER registration causes the loader to escalate.
 
@@ -1363,7 +1315,7 @@ def test_loader_escalates_when_verified_file_renamed_after_register(
     sys.modules.pop("aws_check", None)
     sys.modules.pop("aws_check_RENAMED", None)
 
-    registry = _make_stub_registry()
+    registry = stub_registry
     with pytest.raises(SignatureVerificationError) as exc:
         registry.load_external_checks(str(root))
 
@@ -1373,7 +1325,7 @@ def test_loader_escalates_when_verified_file_renamed_after_register(
 
 
 def test_loader_escalates_on_unverified_file_dropped_after_register(
-    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
+    tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer, stub_registry,
 ):
     """An unverified ``.py`` appearing after register causes the loader to escalate.
 
@@ -1407,7 +1359,7 @@ def test_loader_escalates_on_unverified_file_dropped_after_register(
     sys.modules.pop("evil", None)
     sys.modules.pop("good", None)
 
-    registry = _make_stub_registry()
+    registry = stub_registry
     with pytest.raises(SignatureVerificationError) as exc:
         registry.load_external_checks(str(root))
 

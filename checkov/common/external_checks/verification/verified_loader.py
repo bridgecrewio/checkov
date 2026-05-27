@@ -1,4 +1,3 @@
-"""In-memory loader for verified external-check source bytes."""
 from __future__ import annotations
 
 import importlib.util
@@ -11,6 +10,17 @@ from typing import Iterable, Mapping, Sequence
 
 
 logger = logging.getLogger(__name__)
+
+
+def _compile_and_exec_into_module(
+    module: "object", file_path: str, source_bytes: bytes, module_name: str,
+) -> None:
+    try:
+        code = compile(source_bytes, file_path, "exec")
+        exec(code, module.__dict__)  # type: ignore[attr-defined]
+    except BaseException:
+        sys.modules.pop(module_name, None)
+        raise
 
 
 def load_verified_sources_into_module(
@@ -28,12 +38,7 @@ def load_verified_sources_into_module(
         raise ImportError(f"cannot create module spec for {module_name} at {file_path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
-    try:
-        code = compile(source_bytes, file_path, "exec")
-        exec(code, module.__dict__)
-    except BaseException:
-        sys.modules.pop(module_name, None)
-        raise
+    _compile_and_exec_into_module(module, file_path, source_bytes, module_name)
     return module
 
 
@@ -46,13 +51,13 @@ class _VerifiedSourceLoader(Loader):
         return None
 
     def exec_module(self, module: "object") -> None:
-        try:
-            code = compile(self._source_bytes, self._file_path, "exec")
-            module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
-            exec(code, module.__dict__)  # type: ignore[attr-defined]
-        except BaseException:
-            sys.modules.pop(getattr(module, "__name__", ""), None)
-            raise
+        module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
+        _compile_and_exec_into_module(
+            module,
+            self._file_path,
+            self._source_bytes,
+            getattr(module, "__name__", ""),
+        )
 
     def get_source(self, fullname: str) -> str:
         return self._source_bytes.decode("utf-8", errors="replace")

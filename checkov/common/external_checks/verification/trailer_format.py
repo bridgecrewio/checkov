@@ -13,14 +13,19 @@ _HEX_MAX = 144
 _LOWERCASE_HEX_BYTES = frozenset((string.digits + "abcdef").encode("ascii"))
 
 
-def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
-    """Return ``(signed_bytes, hex_payload)`` or ``None`` on any structural failure."""
+def _split_last_line(file_bytes: bytes) -> "tuple[bytes, int, bytes] | None":
     if not file_bytes or not file_bytes.endswith(b"\n"):
         return None
-
     body = file_bytes[:-1]
     last_nl = body.rfind(b"\n")
-    trailer_line = body[last_nl + 1:]
+    return body, last_nl, body[last_nl + 1:]
+
+
+def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
+    split = _split_last_line(file_bytes)
+    if split is None:
+        return None
+    _body, last_nl, trailer_line = split
 
     if not trailer_line.startswith(TRAILER_PREFIX):
         return None
@@ -37,22 +42,21 @@ def parse_trailer(file_bytes: bytes) -> "tuple[bytes, bytes] | None":
 
 
 def has_trailer_prefix(file_bytes: bytes) -> bool:
-    if not file_bytes or not file_bytes.endswith(b"\n"):
+    split = _split_last_line(file_bytes)
+    if split is None:
         return False
-    body = file_bytes[:-1]
-    last_nl = body.rfind(b"\n")
-    return body[last_nl + 1:].startswith(TRAILER_PREFIX)
+    return split[2].startswith(TRAILER_PREFIX)
 
 
 def has_double_trailer(file_bytes: bytes) -> bool:
     """True iff the last TWO lines both start with the trailer prefix."""
-    if not file_bytes or not file_bytes.endswith(b"\n"):
+    split = _split_last_line(file_bytes)
+    if split is None:
         return False
-    body = file_bytes[:-1]
-    last_nl = body.rfind(b"\n")
+    body, last_nl, last_line = split
     if last_nl < 0:
         return False
-    if not body[last_nl + 1:].startswith(TRAILER_PREFIX):
+    if not last_line.startswith(TRAILER_PREFIX):
         return False
     body_without_last = body[:last_nl]
     prev_nl = body_without_last.rfind(b"\n")
