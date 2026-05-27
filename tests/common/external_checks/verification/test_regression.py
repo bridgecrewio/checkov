@@ -116,7 +116,7 @@ def test_verification_failure_with_no_fail_on_crash_exits_0(
 
 
 def test_exit_run_honours_no_fail_on_crash(tmp_path: Path):
-    """Sanity: ``exit_run`` is the unmodified pre-MR contract."""
+    """Sanity: ``exit_run`` honours ``--no-fail-on-crash`` uniformly."""
     from checkov.main import Checkov
 
     instance = Checkov.__new__(Checkov)
@@ -1191,8 +1191,8 @@ def test_random_bodies_round_trip(
 
 
 # --------------------------------------------------------------------------
-# 15. T4: legacy path queries the registry exactly once per directory
-#         and (when verification is inactive) gets back ``None``.
+# 15. T4: unverified default path queries the registry exactly once per
+#         directory and (when verification is inactive) gets back ``None``.
 #
 # Spy on ``get_verified_sources_for_directory``. The contract is
 # documented as "consulted, returns None when inactive" — this pins it
@@ -1201,12 +1201,12 @@ def test_random_bodies_round_trip(
 # --------------------------------------------------------------------------
 
 
-def test_legacy_path_consults_registry_once_per_directory(tmp_path, monkeypatch):
-    """Legacy disk-load path queries the registry once per call and gets None."""
+def test_unverified_path_consults_registry_once_per_directory(tmp_path, monkeypatch):
+    """Unverified disk-load path queries the registry once per call and gets None."""
     from checkov.common.checks import base_check_registry as mod
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
-    checks_dir = tmp_path / "legacy"
+    checks_dir = tmp_path / "unverified"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
     (checks_dir / "check.py").write_bytes(b"X = 1\n")

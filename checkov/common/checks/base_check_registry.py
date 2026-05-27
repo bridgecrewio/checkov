@@ -209,8 +209,10 @@ class BaseCheckRegistry:
     ) -> None:
         """Import ``.py`` files from ``directory`` as external checks.
 
-        Verified-load when ``verified_sources`` or the registry has an
-        allowlist; legacy disk-load otherwise. Not thread-safe.
+        Verified opt-in load when ``verified_sources`` or the registry has
+        an allowlist; backward-compatible unverified disk-load otherwise
+        (the default when ``--external-checks-public-key`` is not set).
+        Not thread-safe.
         """
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")
@@ -235,8 +237,17 @@ class BaseCheckRegistry:
             sys.dont_write_bytecode = previous_dont_write_bytecode
 
     def _load_external_checks_from_disk(self, directory: str) -> None:
-        """Legacy disk-exec path; byte-identical to the pre-MR behaviour."""
-        # NOTE: Legacy path; no signature checks. See _load_external_checks_from_verified_sources for the verified equivalent.
+        """Unverified disk-exec path.
+
+        Active when ``--external-checks-public-key`` is NOT set. Loads every
+        ``.py`` file under ``directory`` exactly as before the verification
+        feature was introduced — no signature checks. This is the
+        backward-compatible default for operators who haven't opted in to
+        trailer-based signing.
+
+        See ``_load_external_checks_from_verified_sources`` for the
+        opt-in verified equivalent.
+        """
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
@@ -271,8 +282,17 @@ class BaseCheckRegistry:
         directory: str,
         verified_sources: Dict[str, bytes],
     ) -> None:
-        """Verified path: exec ONLY the in-memory bytes for allowlist files."""
-        # NOTE: Verified path. See _load_external_checks_from_disk for the legacy equivalent.
+        """Verified opt-in path: exec ONLY the in-memory bytes for allowlist files.
+
+        Active when ``--external-checks-public-key`` is set AND the chokepoint
+        successfully registered the directory via ``verify_and_register``.
+        Any ``.py`` file present on disk but absent from ``verified_sources``
+        is refused and surfaces as a ``SignatureVerificationError`` after the
+        walk (M1/S3 TOCTOU escalation).
+
+        See ``_load_external_checks_from_disk`` for the unverified default
+        used when no public key is configured.
+        """
         refused_paths: "list[str]" = []
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)

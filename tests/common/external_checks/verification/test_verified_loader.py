@@ -14,8 +14,9 @@ Covers Phase 2 of the verification module:
 * The finder is fully cleaned up from ``sys.meta_path`` after
   ``load_external_checks`` returns — no leakage into the rest of the
   Python program.
-* The legacy disk-load path (``verified_sources=None``) is byte-for-byte
-  unchanged.
+* The unverified default disk-load path (``verified_sources=None``) is
+  byte-for-byte unchanged. This is the supported path when no public
+  key is configured — see ``base_check_registry._load_external_checks_from_disk``.
 """
 from __future__ import annotations
 
@@ -334,17 +335,22 @@ def test_load_external_checks_cleans_up_finder(tmp_path: Path):
     assert len(after) == len(before)
 
 
-def test_legacy_load_external_checks_unchanged_when_no_verified_sources(
+def test_unverified_load_external_checks_unchanged_when_no_verified_sources(
     tmp_path: Path, capsys,
 ):
-    """Default behaviour (no verified_sources) execs from disk as before."""
+    """Default behaviour (no verified_sources) execs from disk as before.
+
+    This is the supported path for operators who don't pass
+    ``--external-checks-public-key``; it must remain byte-identical to
+    pre-feature behaviour so existing customers see no change.
+    """
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
     checks_dir = tmp_path / "checks"
     checks_dir.mkdir()
     (checks_dir / "__init__.py").write_bytes(b"")
-    chk = checks_dir / "legacy_check.py"
-    chk.write_bytes(b"print('LEGACY_DISK_LOAD')\n")
+    chk = checks_dir / "unverified_check.py"
+    chk.write_bytes(b"print('UNVERIFIED_DISK_LOAD')\n")
 
     class _StubRegistry(BaseCheckRegistry):
         def extract_entity_details(self, entity):
@@ -354,4 +360,4 @@ def test_legacy_load_external_checks_unchanged_when_no_verified_sources(
     registry.load_external_checks(str(checks_dir.resolve()))  # verified_sources=None
 
     captured = capsys.readouterr()
-    assert "LEGACY_DISK_LOAD" in captured.out
+    assert "UNVERIFIED_DISK_LOAD" in captured.out
