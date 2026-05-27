@@ -787,15 +787,27 @@ class Checkov:
             f"{inline_detail}",
             file=sys.stderr,
         )
+        log_path = f"./{_VERIFICATION_FAILURE_LOG_FILENAME}"
         try:
-            with open(f"./{_VERIFICATION_FAILURE_LOG_FILENAME}", "w") as f:
+            with open(log_path, "w") as f:
                 f.write(
                     "External checks signature verification failed; "
                     "refusing to run the scan. Offending files:\n"
                 )
                 f.write("\n".join(bullets) + "\n")
-        except OSError:
-            pass
+        except OSError as exc:
+            # The stderr message above points the operator at log_path;
+            # if we can't write it, say so explicitly so they don't waste
+            # time looking for a file that isn't there. Read-only cwd
+            # (container / CI sandbox) is the most common cause.
+            print(
+                f"warning: could not write {log_path}: {exc}. "
+                f"The truncated stderr above is the only failure record.",
+                file=sys.stderr,
+            )
+            logger.warning(
+                "Failed to write verification failure log %s: %s", log_path, exc,
+            )
         self.exit_run()
 
     def get_external_checks_dir(self) -> list[str]:

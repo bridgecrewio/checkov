@@ -1,17 +1,40 @@
 """Public-key loading. Only ECDSA P-256 + SHA-256 is accepted."""
 from __future__ import annotations
 
+import binascii
 import hashlib
 import logging
 from dataclasses import dataclass
 
 from ecdsa import NIST256p, VerifyingKey
+from ecdsa.der import UnexpectedDER
 from ecdsa.errors import MalformedPointError
 
 from .errors import SignatureVerificationError
 
 
 logger = logging.getLogger(__name__)
+
+
+# Failure modes ``ecdsa.VerifyingKey.from_pem`` produces for the inputs
+# we want to collapse to "unsupported key format":
+#   * ``UnexpectedDER`` — empty / truncated / mis-tagged SPKI body
+#     (subclasses ``ValueError`` but pinned here explicitly so a future
+#     ``ecdsa`` release that re-parents it does not silently broaden
+#     the catch).
+#   * ``binascii.Error`` — base64 garbage in the PEM body.
+#   * ``MalformedPointError`` — body decodes but the point is off the curve.
+#   * ``ValueError`` / ``TypeError`` — any other input-shape failure.
+# Anything outside this set (``MemoryError``, ``RuntimeError`` from a
+# misbehaving third-party hook, …) propagates so the operator sees the
+# real root cause instead of a misleading "unsupported key format" line.
+_EXPECTED_PEM_LOAD_ERRORS = (
+    UnexpectedDER,
+    binascii.Error,
+    MalformedPointError,
+    ValueError,
+    TypeError,
+)
 
 
 @dataclass(frozen=True)
@@ -40,9 +63,7 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
 
         try:
             vk = VerifyingKey.from_pem(pem)
-        except (MalformedPointError, ValueError, TypeError, Exception) as exc:
-            # ``ecdsa`` raises a wide assortment (UnexpectedDER, base64,
-            # plain Exception); collapse them all to one consistent error.
+        except _EXPECTED_PEM_LOAD_ERRORS as exc:
             raise SignatureVerificationError(f"unsupported key format in {path}") from exc
 
         validated = _validate_curve(vk, path)

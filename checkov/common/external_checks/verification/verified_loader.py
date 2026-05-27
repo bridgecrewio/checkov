@@ -78,7 +78,9 @@ class VerifiedSourcesFinder(MetaPathFinder):
     ) -> "ModuleSpec | None":
         if "." in fullname:
             return None
-        candidate_name = fullname.split(".")[-1] + ".py"
+        # `fullname` is guaranteed un-dotted by the guard above, so the
+        # candidate filename is simply `<fullname>.py`.
+        candidate_name = fullname + ".py"
         for verified_dir in self._verified_dirs:
             candidate_path = os.path.join(verified_dir, candidate_name)
             if candidate_path in self._verified_sources:

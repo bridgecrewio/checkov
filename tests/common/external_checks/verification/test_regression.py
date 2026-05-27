@@ -10,7 +10,6 @@ import os
 import sys
 import types
 from pathlib import Path
-from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -19,7 +18,6 @@ from checkov.common.external_checks.verification import (
     SignatureVerificationError,
     VerificationResult,
     load_public_keys,
-    verify_bytes,
     verify_external_checks_dirs,
     verify_file,
 )
@@ -900,3 +898,152 @@ def test_cross_dir_transitive_import_serves_in_memory_bytes(
     finally:
         sys.modules.pop("cross_dir_check", None)
         sys.modules.pop("cross_dir_shared_helper", None)
+
+
+# --------------------------------------------------------------------------
+# 11. M2: load_public_keys catches ONLY the expected PEM-load failure modes.
+#
+# The original code did `except (MalformedPointError, ValueError, TypeError,
+# Exception)` which collapses literally every Exception subclass to a
+# misleading "unsupported key format" diagnostic, including unrelated
+# RuntimeErrors from a misbehaving third-party hook. The fix narrows the
+# tuple to the actual failure surface of ecdsa.from_pem (UnexpectedDER,
+# binascii.Error, MalformedPointError, ValueError, TypeError). Anything
+# outside that set must propagate so operators see the real root cause.
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "pem_bytes"),
+    [
+        ("empty_bytes",        b""),
+        ("garbage_non_pem",    b"this is not a pem"),
+        ("only_header_footer", b"-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----\n"),
+        ("garbage_base64",     b"-----BEGIN PUBLIC KEY-----\nnot-base64-at-all\n-----END PUBLIC KEY-----\n"),
+        # 60+ valid-base64 bytes that decode to a non-DER body.
+        ("valid_b64_garbage_body",
+         b"-----BEGIN PUBLIC KEY-----\n"
+         b"aGVsbG8gd29ybGQgaGVsbG8gd29ybGQgaGVsbG8gd29ybGQgaGVsbG8gd29ybGQgaGVsbG8gd29ybGQ=\n"
+         b"-----END PUBLIC KEY-----\n"),
+        # Truncated DER body (length byte claims more than the buffer carries).
+        ("truncated_der",
+         b"-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQg==\n-----END PUBLIC KEY-----\n"),
+    ],
+)
+def test_garbage_pem_inputs_still_collapse_to_unsupported_key_format(
+    scenario_id: str, pem_bytes: bytes, tmp_path: Path,
+):
+    """Every legitimate "this isn't a usable P-256 SPKI" input must still
+    surface as ``unsupported key format in <path>``.
+
+    Pins the M2 narrowing: the new tuple covers UnexpectedDER (subclass
+    of ValueError), binascii.Error, and the existing ValueError/TypeError
+    fallbacks. If any of these inputs ever escapes the catch (i.e. the
+    test would now raise the underlying library error instead of the
+    customer-facing SignatureVerificationError), M2 was over-tightened.
+    """
+    pem_path = tmp_path / f"{scenario_id}.pem"
+    pem_path.write_bytes(pem_bytes)
+
+    with pytest.raises(SignatureVerificationError) as exc:
+        load_public_keys([str(pem_path)])
+    assert "unsupported key format" in str(exc.value).lower(), (
+        f"scenario {scenario_id!r} did not produce the canonical "
+        f"'unsupported key format' diagnostic; got {exc.value!r}"
+    )
+
+
+def test_load_public_keys_propagates_unexpected_exception_types(
+    tmp_path: Path, monkeypatch,
+):
+    """An exception type OUTSIDE the M2 expected-error set propagates.
+
+    Pins that the catch was narrowed correctly. If a future refactor
+    re-broadens the tuple to ``Exception``, this test fails. Without
+    this test, a regression that hides a genuine RuntimeError behind a
+    misleading "unsupported key format" diagnostic would land silently
+    and cost operators hours of debugging on unrelated root causes.
+    """
+    pem_path = tmp_path / "trigger.pem"
+    pem_path.write_bytes(b"-----BEGIN PUBLIC KEY-----\nXXXX\n-----END PUBLIC KEY-----\n")
+
+    sentinel = RuntimeError("simulated third-party hook explosion")
+
+    def _exploding_from_pem(*_args, **_kwargs):
+        raise sentinel
+
+    from checkov.common.external_checks.verification import keys as keys_mod
+    monkeypatch.setattr(keys_mod.VerifyingKey, "from_pem", staticmethod(_exploding_from_pem))
+
+    with pytest.raises(RuntimeError) as raised:
+        load_public_keys([str(pem_path)])
+    assert raised.value is sentinel, (
+        "the RuntimeError was swallowed and replaced with another exception; "
+        "M2 narrowing has regressed back to a broad catch — see keys.py"
+    )
+
+
+# --------------------------------------------------------------------------
+# 12. S1: log-file write failure surfaces a warning on stderr.
+#
+# The stderr message points the operator at ./checkov-verification-failures.log
+# but if cwd is read-only (CI sandbox, read-only container) the write fails
+# silently. The operator follows the breadcrumb and finds nothing. S1
+# requires that we explicitly tell them the log couldn't be written.
+# --------------------------------------------------------------------------
+
+
+def test_failure_log_write_failure_warns_on_stderr(
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+):
+    """When the failure log cannot be written, stderr gets an explicit
+    warning instead of just silently dropping the file.
+    """
+    import io
+    import contextlib
+    from unittest.mock import patch
+    from checkov.main import Checkov
+
+    key_path = tmp_path / "key.pem"
+    key_path.write_bytes(key_a_pub_pem)
+
+    instance = Checkov.__new__(Checkov)
+    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
+        external_checks_dir=[str(unsigned_dir)],
+        external_checks_public_key=[str(key_path)],
+        external_checks_git=None,
+        no_fail_on_crash=False,
+    )
+
+    captured_stderr = io.StringIO()
+    # Patch open() to raise on the write-only log file path; all other
+    # `open` calls (key file etc.) must pass through to the real builtin.
+    real_open = open
+    log_filename = "checkov-verification-failures.log"
+
+    def _selective_open(path, *args, **kwargs):
+        if isinstance(path, str) and log_filename in path:
+            raise OSError("Read-only file system (simulated)")
+        return real_open(path, *args, **kwargs)
+
+    with patch("checkov.main.bc_integration") as bc, \
+         patch("builtins.open", side_effect=_selective_open), \
+         contextlib.redirect_stderr(captured_stderr):
+        bc.sast_custom_policies = None
+        prev_cwd = os.getcwd()
+        os.chdir(str(tmp_path))
+        try:
+            with pytest.raises(SystemExit):
+                instance.get_external_checks_dir()
+        finally:
+            os.chdir(prev_cwd)
+
+    stderr_text = captured_stderr.getvalue()
+    assert "could not write" in stderr_text, (
+        "expected an explicit 'could not write ...' warning on stderr when "
+        "the failure log cannot be written; got:\n" + stderr_text
+    )
+    assert log_filename in stderr_text, (
+        "the warning should name the path that failed so the operator can "
+        "diagnose (e.g. read-only mount, full disk)"
+    )

@@ -111,6 +111,13 @@ def _normalise_and_dedupe(
         if not directory:
             continue
         if not os.path.isdir(directory):
+            # Non-existent / non-dir paths skip realpath + overlap
+            # normalisation: they cannot be resolved, and the missing-dir
+            # diagnostic in the main loop will surface them by name. As a
+            # consequence, two `dirs` arguments that are both typos for
+            # the same path each produce their own "does not exist" line
+            # (harmless, but explains the asymmetry with the dir-vs-dir
+            # duplicate case below).
             unique_dirs.append(directory)
             continue
         rp = os.path.normpath(os.path.realpath(directory))
