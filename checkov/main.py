@@ -753,11 +753,6 @@ class Checkov:
                     bc_integration.persist_all_logs_streams(logger_streams.get_streams())
 
     def exit_run(self) -> None:
-        # Sticky security-failure flag overrides --no-fail-on-crash so
-        # the outer except-SystemExit handler in run() cannot downgrade
-        # a security exit to 0.
-        if getattr(self, "_security_failure_exit_pending", False):
-            exit(2)
         exit(0) if self.config.no_fail_on_crash else exit(2)
 
     def commit_repository(self) -> str | None:
@@ -771,9 +766,9 @@ class Checkov:
     def _report_verification_failure_and_exit(
         self, exc: SignatureVerificationError,
     ) -> None:
-        """Print summary + truncated bullets to stderr; set sticky flag; exit 2."""
-        self._security_failure_exit_pending = True  # type: ignore[attr-defined]
-
+        """Print summary + truncated bullets to stderr, write the failure log file,
+        then exit via ``self.exit_run()`` so ``--no-fail-on-crash`` is honoured.
+        """
         bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
         if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
             visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
@@ -801,7 +796,7 @@ class Checkov:
                 f.write("\n".join(bullets) + "\n")
         except OSError:
             pass
-        sys.exit(2)
+        self.exit_run()
 
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir

@@ -104,18 +104,17 @@ def test_keys_plus_signed_dir_activates_registry(
     assert is_verification_active() is True
 
 
-def test_keys_plus_unsigned_dir_triggers_sys_exit_2(
+def test_keys_plus_unsigned_dir_exits_via_exit_run(
     unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
 ):
-    """Verification failure → ``sys.exit(2)``, bypassing ``self.exit_run()``.
+    """Verification failure routes the exit through ``self.exit_run()``.
 
-    A verification failure is a "scanner refused to run" security event
-    that MUST exit non-zero regardless of ``--no-fail-on-crash`` (which
-    is honoured by ``self.exit_run()``). The chokepoint calls
-    ``sys.exit(2)`` directly. We assert that bypass by stubbing
-    ``exit_run`` to a sentinel — if the chokepoint were still calling
-    it, the sentinel would fire and ``SystemExit(2)`` would never be
-    raised.
+    ``exit_run()`` honours ``--no-fail-on-crash`` — the documented contract
+    of that flag is to "Return exit code 0 instead of 2". The chokepoint
+    therefore reports the failure (stderr + log file), then delegates the
+    actual ``exit()`` call to ``self.exit_run()`` so the flag's contract
+    is preserved end-to-end. Verified here by stubbing ``exit_run`` to a
+    sentinel and asserting it fires.
     """
     import os
     key_path = tmp_path / "key.pem"
@@ -126,18 +125,16 @@ def test_keys_plus_unsigned_dir_triggers_sys_exit_2(
         external_checks_public_key=[str(key_path)],
     )
 
-    # If exit_run() is mistakenly invoked, fail loudly with a unique
-    # exception type the assertion can detect.
-    class _ExitRunWronglyCalled(Exception):
-        pass
+    exit_run_called: list[bool] = []
 
     def _fake_exit_run(self):
-        raise _ExitRunWronglyCalled()
+        exit_run_called.append(True)
+        # Mirror the real exit_run's terminating behaviour so the caller
+        # doesn't accidentally proceed past the failure point.
+        raise SystemExit(2 if not self.config.no_fail_on_crash else 0)
 
     checkov.exit_run = types.MethodType(_fake_exit_run, checkov)  # type: ignore[attr-defined]
 
-    # cwd matters because the failure-log file is written relative to cwd;
-    # keep the side-effect inside tmp_path.
     prev_cwd = os.getcwd()
     os.chdir(str(tmp_path))
     try:
@@ -147,8 +144,12 @@ def test_keys_plus_unsigned_dir_triggers_sys_exit_2(
     finally:
         os.chdir(prev_cwd)
 
+    assert exit_run_called, (
+        "verification failure must delegate exit to self.exit_run() so the "
+        "--no-fail-on-crash contract is preserved; got direct sys.exit instead"
+    )
     assert raised.value.code == 2, (
-        f"verification failure must exit with code 2; got {raised.value.code!r}"
+        f"with --no-fail-on-crash unset, exit must be 2; got {raised.value.code!r}"
     )
     assert is_verification_active() is False
 

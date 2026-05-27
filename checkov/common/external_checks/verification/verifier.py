@@ -1,20 +1,12 @@
-"""Single-file ECDSA P-256 + SHA-256 signature verification.
-
-``s`` is NOT constrained to low-S: ``openssl dgst -sign`` and AWS KMS
-emit high-S signatures ~50% of the time. This is safe only because no
-cache in this package is keyed by signature bytes — if you add one,
-restore low-S enforcement or key by ``sha256(payload) + key_fp``.
-"""
 from __future__ import annotations
 
 import enum
+import hashlib
 import logging
 from typing import Iterable
 
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
+from ecdsa import BadSignatureError, NIST256p
+from ecdsa.util import sigdecode_der
 
 from .keys import VerificationKey
 from .trailer_format import (
@@ -29,10 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 # secp256r1 group order (SEC 2 §2.4.2 / RFC 5480 §2.1.1.1).
-_SECP256R1_N = int(
-    "ffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
-    16,
-)
+_SECP256R1_N = NIST256p.order
 
 
 class VerificationResult(enum.Enum):
@@ -47,8 +36,10 @@ class VerificationResult(enum.Enum):
 def _signature_is_well_formed(sig_der: bytes) -> bool:
     """Strict-DER decode plus ECDSA ``[1, n-1]`` range check on ``r`` and ``s``."""
     try:
-        r, s = decode_dss_signature(sig_der)
-    except (ValueError, TypeError):
+        r, s = sigdecode_der(sig_der, _SECP256R1_N)
+    except Exception:
+        # ``ecdsa.util.sigdecode_der`` raises a variety: UnexpectedDER,
+        # ValueError, IndexError. Collapse to a single boolean here.
         return False
     if r <= 0 or r >= _SECP256R1_N:
         return False
@@ -64,9 +55,15 @@ def _verify_against_keys(
 ) -> VerificationResult:
     for key in keys:
         try:
-            key.public_key.verify(sig_der, payload, ec.ECDSA(hashes.SHA256()))
+            key.public_key.verify(
+                sig_der, payload, hashfunc=hashlib.sha256, sigdecode=sigdecode_der,
+            )
             return VerificationResult.OK
-        except InvalidSignature:
+        except BadSignatureError:
+            continue
+        except Exception:
+            # Malformed DER caught upstream by _signature_is_well_formed,
+            # but defend against the ecdsa lib raising for any other reason.
             continue
     return VerificationResult.UNKNOWN_KEY
 

@@ -1,4 +1,4 @@
-"""Crypto-free error types — safe to import without ``cryptography``."""
+"""Error types for external-checks signature verification."""
 from __future__ import annotations
 
 

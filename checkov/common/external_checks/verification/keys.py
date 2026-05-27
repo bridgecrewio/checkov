@@ -5,8 +5,8 @@ import hashlib
 import logging
 from dataclasses import dataclass
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey, SECP256R1
+from ecdsa import NIST256p, VerifyingKey
+from ecdsa.errors import MalformedPointError
 
 from .errors import SignatureVerificationError
 
@@ -16,15 +16,15 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class VerificationKey:
-    public_key: EllipticCurvePublicKey
+    public_key: VerifyingKey
     fingerprint_hex: str
     source_path: str
 
 
-def _validate_curve(pub: object, source_path: str) -> EllipticCurvePublicKey:
-    if not isinstance(pub, EllipticCurvePublicKey) or not isinstance(pub.curve, SECP256R1):
+def _validate_curve(vk: VerifyingKey, source_path: str) -> VerifyingKey:
+    if vk.curve != NIST256p:
         raise SignatureVerificationError(f"unsupported key format in {source_path}")
-    return pub
+    return vk
 
 
 def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
@@ -39,16 +39,15 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
             ) from exc
 
         try:
-            pub = serialization.load_pem_public_key(pem)
-        except (ValueError, TypeError) as exc:
+            vk = VerifyingKey.from_pem(pem)
+        except (MalformedPointError, ValueError, TypeError, Exception) as exc:
+            # ``ecdsa`` raises a wide assortment (UnexpectedDER, base64,
+            # plain Exception); collapse them all to one consistent error.
             raise SignatureVerificationError(f"unsupported key format in {path}") from exc
 
-        validated = _validate_curve(pub, path)
-        spki = validated.public_bytes(
-            encoding=serialization.Encoding.DER,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-        fingerprint = hashlib.sha256(spki).hexdigest()
+        validated = _validate_curve(vk, path)
+        spki_der = validated.to_der()  # SPKI DER form
+        fingerprint = hashlib.sha256(spki_der).hexdigest()
         keys.append(VerificationKey(
             public_key=validated,
             fingerprint_hex=fingerprint,

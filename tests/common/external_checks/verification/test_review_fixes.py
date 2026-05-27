@@ -1,24 +1,3 @@
-"""Regression tests for the issues raised in the code review.
-
-Each test below corresponds to a specific item from
-``plans/cli/sig-validation/external-checks/review-checkov-external-checks-signing.md``.
-The intent is one self-contained file per review pass so that future
-review iterations can be added as ``test_review_fixes_<round>.py``
-without disturbing the original behavioural suite.
-
-Sections, in order:
-
-1. **MUST-FIX:** verification failure bypasses ``--no-fail-on-crash``
-2. **SHOULD-FIX:** realpath/symlink consistency between the registry
-   and the loader
-3. **SHOULD-FIX:** double-trailer detection produces ``DOUBLE_TRAILER``
-4. **SHOULD-FIX:** stderr truncation on very large failure lists
-5. **SHOULD-FIX:** v1 same-stem-checks behaviour is pinned
-6. **SHOULD-FIX:** large tree with one bad file in the middle is fully
-   walked (no short-circuit)
-7. **Coverage gap:** env-var key parsing
-8. **Coverage gap:** NUL bytes in trailer payload
-"""
 from __future__ import annotations
 
 import io
@@ -57,23 +36,23 @@ def _reset_registry():
 
 
 # --------------------------------------------------------------------------
-# 1. MUST-FIX: --no-fail-on-crash MUST NOT mask a verification failure.
+# 1. --no-fail-on-crash behaviour for verification failures.
+#
+# Contract (matches the documented help text "Return exit code 0 instead of 2"):
+#   * Flag OFF -> exit 2, stderr message printed, ./checkov-verification-failures.log written.
+#   * Flag ON  -> exit 0, SAME stderr message + SAME log file.
+# The flag changes ONLY the exit code, not the diagnostic surface.
 # --------------------------------------------------------------------------
 
 
-def test_no_fail_on_crash_does_not_mask_verification_failure(
+def _run_chokepoint(
     unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
-):
-    """A tampered/unsigned tree must exit 2 even when --no-fail-on-crash is set.
-
-    ``--no-fail-on-crash`` / ``CKV_NO_FAIL_ON_CRASH`` is intended for
-    "the scanner itself crashed; don't fail CI on infrastructure flakes"
-    — not "the scanner refused to run because it detected tampering".
-    The chokepoint at ``main.py:get_external_checks_dir`` must bypass
-    ``self.exit_run()`` (which honours the flag) and call ``sys.exit(2)``
-    directly so the flag cannot mask a security failure.
-    """
+    *, no_fail_on_crash: bool,
+) -> "tuple[int, str]":
+    """Run the chokepoint with a tampered tree; return ``(exit_code, stderr_text)``."""
     from checkov.main import Checkov
+    import io
+    import contextlib
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -83,50 +62,12 @@ def test_no_fail_on_crash_does_not_mask_verification_failure(
         external_checks_dir=[str(unsigned_dir)],
         external_checks_public_key=[str(key_path)],
         external_checks_git=None,
-        no_fail_on_crash=True,  # <-- the flag that MUST be ignored on verification failure
+        no_fail_on_crash=no_fail_on_crash,
     )
 
-    # Run from inside tmp_path so the side-effect log file doesn't litter
-    # the repo root.
-    with patch("checkov.main.bc_integration") as bc, patch("os.getcwd", return_value=str(tmp_path)):
-        bc.sast_custom_policies = None
-        # cwd matters because the failure-log file is written relative to cwd.
-        prev_cwd = os.getcwd()
-        os.chdir(str(tmp_path))
-        try:
-            with pytest.raises(SystemExit) as raised:
-                instance.get_external_checks_dir()
-        finally:
-            os.chdir(prev_cwd)
-
-    assert raised.value.code == 2, (
-        "verification failure with --no-fail-on-crash must still exit 2; "
-        f"got exit code {raised.value.code!r}"
-    )
-
-
-def test_no_fail_on_crash_off_also_exits_2(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
-):
-    """Companion to the previous test: with the flag OFF, still exit 2.
-
-    Pins that the unconditional ``sys.exit(2)`` is exit 2 in both flag
-    states. If a future refactor accidentally inverts the flag check,
-    this test catches it.
-    """
-    from checkov.main import Checkov
-
-    key_path = tmp_path / "key.pem"
-    key_path.write_bytes(key_a_pub_pem)
-
-    instance = Checkov.__new__(Checkov)
-    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
-        external_checks_dir=[str(unsigned_dir)],
-        external_checks_public_key=[str(key_path)],
-        external_checks_git=None,
-        no_fail_on_crash=False,
-    )
-    with patch("checkov.main.bc_integration") as bc:
+    captured_stderr = io.StringIO()
+    with patch("checkov.main.bc_integration") as bc, \
+         contextlib.redirect_stderr(captured_stderr):
         bc.sast_custom_policies = None
         prev_cwd = os.getcwd()
         os.chdir(str(tmp_path))
@@ -135,70 +76,44 @@ def test_no_fail_on_crash_off_also_exits_2(
                 instance.get_external_checks_dir()
         finally:
             os.chdir(prev_cwd)
-    assert raised.value.code == 2
+    return raised.value.code, captured_stderr.getvalue()
 
 
-def test_exit_run_after_verification_failure_still_exits_2(
+def test_verification_failure_without_no_fail_on_crash_exits_2(
     unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
 ):
-    """Once verification has failed, *every* subsequent ``exit_run()``
-    call must exit 2, even when ``--no-fail-on-crash`` is set.
-
-    This pins the sticky ``_security_failure_exit_pending`` flag. The
-    outer ``except SystemExit`` handler in ``Checkov.run`` calls
-    ``self.exit_run()`` after our chokepoint raises ``SystemExit(2)`` —
-    without the sticky flag, that re-call would silently downgrade the
-    exit to 0 under ``--no-fail-on-crash``. Caught by real end-to-end
-    testing: the unit test that only invoked ``get_external_checks_dir``
-    in isolation missed it.
-    """
-    from checkov.main import Checkov
-
-    key_path = tmp_path / "key.pem"
-    key_path.write_bytes(key_a_pub_pem)
-
-    instance = Checkov.__new__(Checkov)
-    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
-        external_checks_dir=[str(unsigned_dir)],
-        external_checks_public_key=[str(key_path)],
-        external_checks_git=None,
-        no_fail_on_crash=True,
+    """Default flag state: verification failure exits 2."""
+    code, stderr = _run_chokepoint(
+        unsigned_dir, key_a_pub_pem, tmp_path, no_fail_on_crash=False,
     )
-
-    # Step 1: chokepoint sets the flag and exits 2.
-    with patch("checkov.main.bc_integration") as bc:
-        bc.sast_custom_policies = None
-        prev_cwd = os.getcwd()
-        os.chdir(str(tmp_path))
-        try:
-            with pytest.raises(SystemExit) as raised_first:
-                instance.get_external_checks_dir()
-        finally:
-            os.chdir(prev_cwd)
-    assert raised_first.value.code == 2
-
-    # Step 2: simulate the outer wrapper's "re-exit cleanly" call.
-    # Without the sticky flag, this would exit 0 because
-    # no_fail_on_crash=True. With the flag, it must still exit 2.
-    with pytest.raises(SystemExit) as raised_second:
-        instance.exit_run()
-    assert raised_second.value.code == 2, (
-        "exit_run() after a verification failure must exit 2 regardless "
-        "of --no-fail-on-crash; got "
-        f"exit code {raised_second.value.code!r}. The sticky "
-        "_security_failure_exit_pending flag is the only thing preventing "
-        "the outer ``except SystemExit`` handler in Checkov.run from "
-        "silently downgrading the security exit to 0."
-    )
+    assert code == 2
+    assert "External checks signature verification failed" in stderr
+    assert (tmp_path / "checkov-verification-failures.log").exists()
 
 
-def test_exit_run_without_security_failure_honours_no_fail_on_crash(tmp_path: Path):
-    """Regression guard for the previous test: an ordinary ``exit_run``
-    call (no verification involved) still honours ``--no-fail-on-crash``.
+def test_verification_failure_with_no_fail_on_crash_exits_0(
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+):
+    """``--no-fail-on-crash`` aligns the security-failure exit code with the
+    documented contract of the flag (``Return exit code 0 instead of 2``).
 
-    The sticky flag must default to *unset* so the pre-existing semantic
-    of ``--no-fail-on-crash`` for genuine scanner crashes is preserved.
+    The diagnostic surface — stderr message, failure log file on disk — is
+    UNCHANGED. Only the exit code differs. Operators who need the pipeline
+    to fail must either drop the flag or grep stderr / the log file.
     """
+    code, stderr = _run_chokepoint(
+        unsigned_dir, key_a_pub_pem, tmp_path, no_fail_on_crash=True,
+    )
+    assert code == 0, (
+        "--no-fail-on-crash documents 'Return exit code 0 instead of 2'; "
+        f"got {code!r}"
+    )
+    assert "External checks signature verification failed" in stderr
+    assert (tmp_path / "checkov-verification-failures.log").exists()
+
+
+def test_exit_run_honours_no_fail_on_crash(tmp_path: Path):
+    """Sanity: ``exit_run`` is the unmodified pre-MR contract."""
     from checkov.main import Checkov
 
     instance = Checkov.__new__(Checkov)
@@ -207,11 +122,7 @@ def test_exit_run_without_security_failure_honours_no_fail_on_crash(tmp_path: Pa
     )
     with pytest.raises(SystemExit) as raised:
         instance.exit_run()
-    assert raised.value.code == 0, (
-        "without the security-failure sentinel, exit_run() must still "
-        "honour --no-fail-on-crash for ordinary scanner crashes; got "
-        f"{raised.value.code!r}"
-    )
+    assert raised.value.code == 0
 
 
 # --------------------------------------------------------------------------
@@ -704,151 +615,7 @@ def test_trailer_payload_inside_signed_body_not_treated_as_trailer(
 
 
 # --------------------------------------------------------------------------
-# 9. Regression caught during end-to-end testing: the LEGACY path
-#    (no public key configured) must NOT require the ``cryptography``
-#    package.
-#
-#    ``cryptography`` is NOT a core checkov dependency. It is only
-#    required when the operator opts into verification by passing
-#    ``--external-checks-public-key``. If the package ``__init__.py``
-#    eagerly re-exports the crypto-touching submodules, every existing
-#    user of ``--external-checks-dir`` (including users who never
-#    enabled signing) breaks with ``ModuleNotFoundError: No module named
-#    'cryptography'`` on a stock install — a silent backward-compat
-#    regression.
-#
-#    The fix is PEP 562 lazy attributes on the package ``__init__.py``.
-#    These tests run in a subprocess with ``cryptography`` hidden from
-#    the import system so a regression here is caught directly.
-# --------------------------------------------------------------------------
-
-
-def _run_in_subprocess_without_cryptography(
-    script: str, tmp_path: Path,
-) -> "tuple[int, str, str]":
-    """Run ``script`` in a fresh Python process that cannot import ``cryptography``.
-
-    Uses a ``sitecustomize.py`` trick: Python automatically imports a
-    module called ``sitecustomize`` at startup if it exists on the path,
-    BEFORE any user code runs. We drop one on ``PYTHONPATH`` that
-    installs a ``sys.meta_path`` finder which raises
-    ``ModuleNotFoundError`` for ``cryptography`` and any of its
-    subpackages. The subprocess therefore sees the same Python
-    environment as the test, MINUS ``cryptography``.
-
-    Returns ``(returncode, stdout, stderr)``.
-    """
-    import subprocess
-    blocker_dir = tmp_path / "_blocker"
-    blocker_dir.mkdir()
-    (blocker_dir / "sitecustomize.py").write_text(
-        "import sys\n"
-        "class _Blocker:\n"
-        "    def find_spec(self, fullname, path=None, target=None):\n"
-        "        if fullname == 'cryptography' or fullname.startswith('cryptography.'):\n"
-        "            raise ModuleNotFoundError(\n"
-        "                f'simulated: {fullname} blocked for test'\n"
-        "            )\n"
-        "        return None\n"
-        "sys.meta_path.insert(0, _Blocker())\n"
-    )
-    script_path = tmp_path / "_run.py"
-    script_path.write_text(script)
-    env = dict(os.environ)
-    env["PYTHONPATH"] = str(blocker_dir) + os.pathsep + env.get("PYTHONPATH", "")
-    result = subprocess.run(
-        [sys.executable, str(script_path)],
-        capture_output=True,
-        text=True,
-        env=env,
-        timeout=30,
-    )
-    return result.returncode, result.stdout, result.stderr
-
-
-def test_package_import_does_not_require_cryptography(tmp_path: Path):
-    """Importing the verification package must not transitively import ``cryptography``.
-
-    Pins the PEP 562 lazy ``__getattr__`` design: a bare
-    ``import checkov.common.external_checks.verification`` must succeed
-    on a Python environment that does not have ``cryptography``
-    installed. ``dir()`` on the package must also not trigger any
-    crypto-touching submodule import.
-    """
-    script = (
-        "import sys\n"
-        "# Confirm the blocker is actually in effect — guards against a\n"
-        "# silent test-harness regression where the subprocess somehow\n"
-        "# still finds cryptography.\n"
-        "try:\n"
-        "    import cryptography  # noqa\n"
-        "    raise SystemExit('TEST_HARNESS_BROKEN: cryptography is importable')\n"
-        "except ModuleNotFoundError:\n"
-        "    pass\n"
-        "# Now the real assertion: importing the verification package must work.\n"
-        "import checkov.common.external_checks.verification as v\n"
-        "# And reading the documented public names via __dir__ must not\n"
-        "# trigger the crypto submodules either.\n"
-        "names = dir(v)\n"
-        "assert 'SignatureVerificationError' in names\n"
-        "assert 'verify_external_checks_dirs' in names\n"
-        "print('OK')\n"
-    )
-    rc, stdout, stderr = _run_in_subprocess_without_cryptography(script, tmp_path)
-    assert rc == 0, (
-        f"package import failed when cryptography was unavailable\n"
-        f"--- stdout ---\n{stdout}\n--- stderr ---\n{stderr}"
-    )
-    assert "OK" in stdout
-
-
-def test_legacy_load_external_checks_works_without_cryptography(tmp_path: Path):
-    """Loading an external check with no public key configured must work
-    on a Python install without ``cryptography``.
-
-    This is the backward-compat contract for every existing user of
-    ``--external-checks-dir``. Caught by real end-to-end testing — the
-    unit tests had ``cryptography`` available in the test venv and
-    missed the eager-import regression.
-    """
-    # Build a tiny unsigned check tree the loader can scan.
-    checks_dir = tmp_path / "checks"
-    checks_dir.mkdir()
-    (checks_dir / "__init__.py").write_bytes(b"")
-    (checks_dir / "demo_unsigned_check.py").write_bytes(
-        b"# unsigned check, legacy path\n"
-        b"LOADED = True\n"
-    )
-    script = (
-        f"import sys\n"
-        f"# Confirm the blocker is in effect.\n"
-        f"try:\n"
-        f"    import cryptography  # noqa\n"
-        f"    raise SystemExit('TEST_HARNESS_BROKEN: cryptography is importable')\n"
-        f"except ModuleNotFoundError:\n"
-        f"    pass\n"
-        f"from checkov.common.checks.base_check_registry import BaseCheckRegistry\n"
-        f"class _StubRegistry(BaseCheckRegistry):\n"
-        f"    def extract_entity_details(self, entity):\n"
-        f"        return ('', '', {{}})\n"
-        f"registry = _StubRegistry(report_type='terraform')\n"
-        f"registry.load_external_checks({str(checks_dir.resolve())!r})\n"
-        f"# Confirm the check actually loaded (legacy disk-exec path).\n"
-        f"import demo_unsigned_check\n"
-        f"assert demo_unsigned_check.LOADED is True\n"
-        f"print('OK')\n"
-    )
-    rc, stdout, stderr = _run_in_subprocess_without_cryptography(script, tmp_path)
-    assert rc == 0, (
-        f"legacy load_external_checks crashed when cryptography was "
-        f"unavailable — a backward-compat regression\n"
-        f"--- stdout ---\n{stdout}\n--- stderr ---\n{stderr}"
-    )
-    assert "OK" in stdout
-
-
-# --------------------------------------------------------------------------
-# 10. Regression caught during end-to-end testing: ``__pycache__/``
+# 9. Regression caught during end-to-end testing: ``__pycache__/``
 #     handling. Caught the same way as the cryptography-not-installed
 #     regression — by running the real CLI end-to-end. After a verified
 #     scan, CPython would leave behind ``__pycache__/<name>.cpython-XYZ.pyc``

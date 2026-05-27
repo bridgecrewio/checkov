@@ -1,14 +1,11 @@
-"""Process-global allowlist of verified external-check sources.
-
-Bridges the chokepoint in ``main.py`` and the per-runner
-``load_external_checks`` calls without threading a ``verified_sources``
-kwarg through every call site. Tests must call :func:`reset_for_tests`.
-"""
 from __future__ import annotations
 
 import logging
 import os
 from typing import Dict, Iterable, List, Optional
+
+from .enforce import verify_external_checks_dirs
+from .keys import load_public_keys
 
 
 logger = logging.getLogger(__name__)
@@ -31,11 +28,6 @@ def verify_and_register(
 
     if not public_key_paths:
         return
-
-    # Lazy imports: ``enforce`` and ``keys`` pull in ``cryptography``,
-    # which is NOT a core checkov dependency.
-    from .enforce import verify_external_checks_dirs
-    from .keys import load_public_keys
 
     keys = load_public_keys(public_key_paths)
     verified = verify_external_checks_dirs(dirs, keys)
