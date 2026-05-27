@@ -204,31 +204,20 @@ class BaseCheckRegistry:
     ) -> None:
         """Import ``.py`` files from ``directory`` as external checks.
 
-        If ``verified_sources`` is given (or the global verification
-        registry is active for ``directory``), only files in the
-        allowlist are loaded, from in-memory bytes; otherwise the
-        loader falls back to the legacy on-disk import path.
-
-        The meta-path finder, when installed, is populated with the
-        ENTIRE registry — not just this directory's subset — so a
-        verified check in dir-A can ``import shared_helper`` from
-        dir-B without falling back to the unverified on-disk file
-        (which would be a transitive-import bypass of the feature).
-        Per-dir restriction would only kick in if `verified_sources`
-        was passed in explicitly (testing seam).
-
-        Not reentrant or thread-safe — callers must serialise.
+        Verified-load when ``verified_sources`` or the registry has an
+        allowlist; legacy disk-load otherwise. Not thread-safe.
         """
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")
 
         if verified_sources is None:
             verified_sources = get_verified_sources_for_directory(directory)
+            if verified_sources is None:
+                self._load_external_checks_from_disk(directory)
+                return
 
-        if verified_sources is None:
-            self._load_external_checks_from_disk(directory)
-            return
-
+        # Finder must see the FULL registry, not just this dir's subset,
+        # so cross-directory transitive imports are served from verified bytes.
         finder_sources = get_all_verified_sources() or verified_sources
         finder_dirs = sorted({os.path.dirname(p) for p in finder_sources})
         finder = install_finder(finder_sources, finder_dirs)
@@ -241,10 +230,7 @@ class BaseCheckRegistry:
             sys.dont_write_bytecode = previous_dont_write_bytecode
 
     def _load_external_checks_from_disk(self, directory: str) -> None:
-        """Legacy disk-exec path: import every importable ``.py`` from
-        ``directory`` straight from disk. Byte-identical to the pre-MR
-        behaviour for the no-public-key-configured case.
-        """
+        """Legacy disk-exec path; byte-identical to the pre-MR behaviour."""
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
@@ -279,10 +265,7 @@ class BaseCheckRegistry:
         directory: str,
         verified_sources: Dict[str, bytes],
     ) -> None:
-        """Verified path: exec ONLY the in-memory bytes for files in
-        the allowlist. Any on-disk ``.py`` not on the allowlist is
-        skipped with an error log.
-        """
+        """Verified path: exec ONLY the in-memory bytes for allowlist files."""
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:

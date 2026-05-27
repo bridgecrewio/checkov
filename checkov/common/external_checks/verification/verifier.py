@@ -1,3 +1,4 @@
+"""Single-file ECDSA-P256-SHA256 trailer verification."""
 from __future__ import annotations
 
 import enum
@@ -20,7 +21,6 @@ from .trailer_format import (
 logger = logging.getLogger(__name__)
 
 
-# secp256r1 group order (SEC 2 §2.4.2 / RFC 5480 §2.1.1.1).
 _SECP256R1_N = NIST256p.order
 
 
@@ -38,8 +38,6 @@ def _signature_is_well_formed(sig_der: bytes) -> bool:
     try:
         r, s = sigdecode_der(sig_der, _SECP256R1_N)
     except Exception:
-        # ``ecdsa.util.sigdecode_der`` raises a variety: UnexpectedDER,
-        # ValueError, IndexError. Collapse to a single boolean here.
         return False
     if r <= 0 or r >= _SECP256R1_N:
         return False
@@ -62,8 +60,6 @@ def _verify_against_keys(
         except BadSignatureError:
             continue
         except Exception:
-            # Malformed DER caught upstream by _signature_is_well_formed,
-            # but defend against the ecdsa lib raising for any other reason.
             continue
     return VerificationResult.UNKNOWN_KEY
 
@@ -72,11 +68,7 @@ def verify_bytes(
     file_bytes: bytes,
     keys: "Iterable[VerificationKey]",
 ) -> "tuple[VerificationResult, bytes]":
-    """Verify in-memory trailer-signed bytes.
-
-    Returns ``(result, signed_bytes)``; ``signed_bytes`` is ``b""`` on
-    any non-OK result. Raises :class:`ValueError` if ``keys`` is empty.
-    """
+    """Verify in-memory trailer-signed bytes; ``signed_bytes`` is ``b""`` on non-OK."""
     keys_list = list(keys)
     if not keys_list:
         raise ValueError("verify_bytes requires at least one key")
@@ -86,7 +78,6 @@ def verify_bytes(
 
     parsed = parse_trailer(file_bytes)
     if parsed is None:
-        # Distinguish "no trailer" from "malformed trailer" for error messages.
         if has_trailer_prefix(file_bytes):
             return VerificationResult.BAD_SIGNATURE, b""
         return VerificationResult.NO_SIGNATURE, b""

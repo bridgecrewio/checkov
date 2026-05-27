@@ -1,8 +1,4 @@
-"""In-memory loader for verified external-check source bytes.
-
-Invariant: the bytes the verifier hashed are the bytes the interpreter
-executes. The meta-path finder enforces this for transitive imports too.
-"""
+"""In-memory loader for verified external-check source bytes."""
 from __future__ import annotations
 
 import importlib.util
@@ -24,8 +20,8 @@ def load_verified_sources_into_module(
 ) -> "object":
     """Compile + exec ``source_bytes`` as ``module_name``.
 
-    Registers the module in ``sys.modules`` BEFORE exec so self-imports
-    inside ``source_bytes`` resolve to the in-flight module.
+    Pre-registers in ``sys.modules`` BEFORE exec so self-imports resolve.
+    Cleans up on failure.
     """
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     if spec is None:
@@ -36,7 +32,6 @@ def load_verified_sources_into_module(
         code = compile(source_bytes, file_path, "exec")
         exec(code, module.__dict__)
     except BaseException:
-        # Don't leave a half-initialised module behind.
         sys.modules.pop(module_name, None)
         raise
     return module
@@ -51,12 +46,6 @@ class _VerifiedSourceLoader(Loader):
         return None
 
     def exec_module(self, module: "object") -> None:
-        # Mirror the half-load cleanup contract from
-        # ``load_verified_sources_into_module`` so a SyntaxError at
-        # compile time OR an in-module raise during exec does not
-        # leave a partially initialised module sitting in
-        # ``sys.modules`` and masking subsequent legitimate imports
-        # of the same name.
         try:
             code = compile(self._source_bytes, self._file_path, "exec")
             module.__dict__["__file__"] = self._file_path  # type: ignore[attr-defined]
@@ -70,7 +59,7 @@ class _VerifiedSourceLoader(Loader):
 
 
 class VerifiedSourcesFinder(MetaPathFinder):
-    """v1 scope: top-level (un-dotted) module names only — packages of checks are out of scope."""
+    """v1 scope: top-level (un-dotted) module names only."""
 
     def __init__(
         self,
@@ -88,8 +77,6 @@ class VerifiedSourcesFinder(MetaPathFinder):
     ) -> "ModuleSpec | None":
         if "." in fullname:
             return None
-        # `fullname` is guaranteed un-dotted by the guard above, so the
-        # candidate filename is simply `<fullname>.py`.
         candidate_name = fullname + ".py"
         for verified_dir in self._verified_dirs:
             candidate_path = os.path.join(verified_dir, candidate_name)
@@ -110,8 +97,7 @@ def install_finder(
 
 
 def uninstall_finder(finder: VerifiedSourcesFinder) -> None:
-    """Idempotent — second call after the finder has already been
-    removed is a silent no-op (no DEBUG noise during repeated cleanup)."""
+    """Idempotent — second call is a silent no-op."""
     try:
         sys.meta_path.remove(finder)
     except ValueError:

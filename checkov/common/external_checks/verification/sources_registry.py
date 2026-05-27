@@ -1,3 +1,4 @@
+"""Process-global verified-sources registry: chokepoint ↔ loader bridge."""
 from __future__ import annotations
 
 import logging
@@ -31,7 +32,6 @@ def verify_and_register(
 
     keys = load_public_keys(public_key_paths)
     verified = verify_external_checks_dirs(dirs, keys)
-    # Realpath-normalise so symlinked --external-checks-dir resolves correctly.
     _verified_sources = {
         os.path.normpath(os.path.realpath(p)): b for p, b in verified.items()
     }
@@ -39,7 +39,7 @@ def verify_and_register(
 
 
 def get_verified_sources_for_directory(directory: str) -> "Optional[Dict[str, bytes]]":
-    """Return None when inactive (legacy disk-load); else the subset under ``directory``."""
+    """Return None when inactive; else the subset under ``directory``."""
     if _verified_sources is None:
         return None
     directory_real = os.path.normpath(os.path.realpath(directory))
@@ -52,6 +52,13 @@ def get_verified_sources_for_directory(directory: str) -> "Optional[Dict[str, by
 
 
 def get_all_verified_sources() -> "Optional[Dict[str, bytes]]":
+    """Return the FULL registry snapshot, or ``None`` when inactive.
+
+    Used by the loader to serve cross-directory transitive imports
+    from verified bytes (otherwise a verified check in dir-A that does
+    ``import shared_helper`` from dir-B would fall through to the
+    unverified on-disk file).
+    """
     if _verified_sources is None:
         return None
     return dict(_verified_sources)

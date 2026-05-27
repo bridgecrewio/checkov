@@ -100,8 +100,6 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
-# Max inline failure lines printed to stderr on an external-checks
-# verification failure; the full list is written to the log file below.
 _VERIFICATION_FAILURE_INLINE_LIMIT = 20
 _VERIFICATION_FAILURE_LOG_FILENAME = "checkov-verification-failures.log"
 
@@ -766,9 +764,7 @@ class Checkov:
     def _report_verification_failure_and_exit(
         self, exc: SignatureVerificationError,
     ) -> None:
-        """Print summary + truncated bullets to stderr, write the failure log file,
-        then exit via ``self.exit_run()`` so ``--no-fail-on-crash`` is honoured.
-        """
+        """Print stderr summary + log file, then exit via ``self.exit_run()``."""
         bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
         if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
             visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
@@ -796,10 +792,8 @@ class Checkov:
                 )
                 f.write("\n".join(bullets) + "\n")
         except OSError as exc:
-            # The stderr message above points the operator at log_path;
-            # if we can't write it, say so explicitly so they don't waste
-            # time looking for a file that isn't there. Read-only cwd
-            # (container / CI sandbox) is the most common cause.
+            # Read-only cwd is the usual cause; tell the operator
+            # explicitly so they don't chase a non-existent file.
             print(
                 f"warning: could not write {log_path}: {exc}. "
                 f"The truncated stderr above is the only failure record.",
@@ -817,9 +811,8 @@ class Checkov:
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
 
-        # Verification chokepoint — runs before any scan. The platform's
-        # sast_custom_policies dir is appended after this step and is
-        # authenticated separately (out of scope for trailer signing).
+        # Verification chokepoint — sast_custom_policies is appended
+        # after this and is authenticated through a separate trust boundary.
         public_key_paths: "list[str]" = self.config.external_checks_public_key or []
         if public_key_paths and external_checks_dir:
             try:

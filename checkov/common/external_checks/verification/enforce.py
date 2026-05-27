@@ -1,10 +1,4 @@
-"""Directory-tree enforcement of signature verification.
-
-Binary loadable files (``.pyc``, ``.so``, ``.pyd``, ``.pyi``) outside
-``__pycache__/`` are a hard failure — silently skipping them would let
-the import machinery load an unverified compiled module sharing a stem
-with a signed ``.py``.
-"""
+"""Directory-tree enforcement of signature verification."""
 from __future__ import annotations
 
 import logging
@@ -20,13 +14,17 @@ logger = logging.getLogger(__name__)
 
 
 LOADABLE_SUFFIXES = (".py",)
-
 _BINARY_LOADABLE_SUFFIXES = (".pyc", ".pyi", ".so", ".pyd")
-
-# ``__pycache__`` is skipped (not failed): it may hold .pyc artefacts
-# from prior runs. The meta-path finder intercepts allowlisted names
-# before ``PathFinder`` consults ``__pycache__``, so this is not a bypass.
 _SKIPPED_DIRECTORY_NAMES = frozenset({"__pycache__"})
+
+_FAILURE_MESSAGE_TEMPLATES: "dict[VerificationResult, str]" = {
+    VerificationResult.NO_SIGNATURE: "missing signature: {rel}",
+    VerificationResult.IO_ERROR: "payload file is unreadable: {rel}",
+    VerificationResult.DOUBLE_TRAILER: (
+        "file appears to be signed twice (two trailer lines at end of file): {rel}"
+    ),
+}
+_GENERIC_FAILURE_MESSAGE = "signature verification failed: {rel}"
 
 
 def _is_loadable(name: str) -> bool:
@@ -38,7 +36,7 @@ def _is_binary_loadable(name: str) -> bool:
 
 
 def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
-    """Return ``(inside, reason)``. ``reason`` is empty on success."""
+    """Return ``(inside, reason)``; ``reason`` is empty on success."""
     try:
         target_real = os.path.realpath(path)
     except OSError as exc:
@@ -57,22 +55,14 @@ def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
 def _walk_loadable_files(
     root: str,
 ) -> "tuple[list[str], list[str], list[str]]":
-    """Walk ``root`` → ``(inside_paths, escape_messages, binary_rejections)``.
-
-    Never raises so a single bad symlink or stray binary does not mask
-    other failures.
-    """
+    """Walk ``root`` → ``(inside_paths, escape_messages, binary_rejections)``."""
     root_real = os.path.normpath(os.path.realpath(root))
     inside: "list[str]" = []
     escape_messages: "list[str]" = []
     binary_messages: "list[str]" = []
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
-        # In-place mutation is how os.walk stops recursing into dirnames.
         dirnames[:] = [d for d in dirnames if d not in _SKIPPED_DIRECTORY_NAMES]
         for name in filenames:
-            # Align with BaseCheckRegistry._file_can_be_imported, which
-            # skips dotfiles — the verifier must not reject files the
-            # loader would never reach.
             if name.startswith("."):
                 continue
             if _is_binary_loadable(name):
@@ -99,28 +89,14 @@ def _walk_loadable_files(
 def _normalise_and_dedupe(
     dirs: "Iterable[str]",
 ) -> "tuple[list[str], list[str]]":
-    """Return ``(unique_dirs, overlap_errors)``.
-
-    Overlap is refused because the verified map is keyed by absolute
-    payload path; overlapping dirs would silently double-load files.
-    """
+    """Return ``(unique_dirs, overlap_errors)``."""
     unique_dirs: "list[str]" = []
-    # Diagnostics for duplicate / overlapping directory entries — flushed
-    # into the main loop's failure list so the operator sees every issue
-    # in one cycle instead of having to re-run after fixing each one.
     overlap_errors: "list[str]" = []
-    seen: "dict[str, str]" = {}  # realpath -> original directory string
+    seen: "dict[str, str]" = {}
     for directory in dirs:
         if not directory:
             continue
         if not os.path.isdir(directory):
-            # Non-existent / non-dir paths skip realpath + overlap
-            # normalisation: they cannot be resolved, and the missing-dir
-            # diagnostic in the main loop will surface them by name. As a
-            # consequence, two `dirs` arguments that are both typos for
-            # the same path each produce their own "does not exist" line
-            # (harmless, but explains the asymmetry with the dir-vs-dir
-            # duplicate case below).
             unique_dirs.append(directory)
             continue
         rp = os.path.normpath(os.path.realpath(directory))
@@ -146,11 +122,7 @@ def verify_external_checks_dirs(
     dirs: "Iterable[str]",
     keys: "list[VerificationKey]",
 ) -> "dict[str, bytes]":
-    """Verify every ``.py`` under every dir; raise on any failure.
-
-    Empty ``keys`` → ``{}`` (no walk). All failures across all dirs are
-    accumulated before raising, so one CI cycle surfaces everything.
-    """
+    """Verify every ``.py`` under every dir; raise on any failure."""
     if not keys:
         return {}
 
@@ -174,16 +146,9 @@ def verify_external_checks_dirs(
             rel = os.path.relpath(payload_path, start=directory)
             if result == VerificationResult.OK:
                 verified_sources[payload_path] = signed_bytes
-            elif result == VerificationResult.NO_SIGNATURE:
-                failures.append(f"missing signature: {rel}")
-            elif result == VerificationResult.IO_ERROR:
-                failures.append(f"payload file is unreadable: {rel}")
-            elif result == VerificationResult.DOUBLE_TRAILER:
-                failures.append(
-                    f"file appears to be signed twice (two trailer lines at end of file): {rel}"
-                )
-            else:
-                failures.append(f"signature verification failed: {rel}")
+                continue
+            template = _FAILURE_MESSAGE_TEMPLATES.get(result, _GENERIC_FAILURE_MESSAGE)
+            failures.append(template.format(rel=rel))
 
     if failures:
         raise SignatureVerificationError("\n".join(f"  - {f}" for f in failures))
@@ -196,7 +161,4 @@ def verify_external_checks_dirs(
     return verified_sources
 
 
-# Only ``verify_external_checks_dirs`` is part of the public surface;
-# ``LOADABLE_SUFFIXES`` is module-internal (the rest of the codebase
-# hard-codes ".py" anyway) and is not advertised via ``__all__``.
 __all__ = ["verify_external_checks_dirs"]

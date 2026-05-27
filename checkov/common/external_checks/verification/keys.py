@@ -16,18 +16,7 @@ from .errors import SignatureVerificationError
 logger = logging.getLogger(__name__)
 
 
-# Failure modes ``ecdsa.VerifyingKey.from_pem`` produces for the inputs
-# we want to collapse to "unsupported key format":
-#   * ``UnexpectedDER`` — empty / truncated / mis-tagged SPKI body
-#     (subclasses ``ValueError`` but pinned here explicitly so a future
-#     ``ecdsa`` release that re-parents it does not silently broaden
-#     the catch).
-#   * ``binascii.Error`` — base64 garbage in the PEM body.
-#   * ``MalformedPointError`` — body decodes but the point is off the curve.
-#   * ``ValueError`` / ``TypeError`` — any other input-shape failure.
-# Anything outside this set (``MemoryError``, ``RuntimeError`` from a
-# misbehaving third-party hook, …) propagates so the operator sees the
-# real root cause instead of a misleading "unsupported key format" line.
+# Anything outside this set propagates so unrelated bugs surface with their real root cause.
 _EXPECTED_PEM_LOAD_ERRORS = (
     UnexpectedDER,
     binascii.Error,
@@ -67,7 +56,7 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
             raise SignatureVerificationError(f"unsupported key format in {path}") from exc
 
         validated = _validate_curve(vk, path)
-        spki_der = validated.to_der()  # SPKI DER form
+        spki_der = validated.to_der()
         fingerprint = hashlib.sha256(spki_der).hexdigest()
         keys.append(VerificationKey(
             public_key=validated,
@@ -79,10 +68,6 @@ def load_public_keys(paths: "list[str]") -> "list[VerificationKey]":
     return keys
 
 
-# ``SignatureVerificationError`` is intentionally NOT re-exported here:
-# the canonical surface is `verification.__init__` (which re-exports
-# from `.errors`). Listing it in two places confuses ``from … import …``
-# call sites about where the error type really lives.
 __all__ = [
     "VerificationKey",
     "load_public_keys",
