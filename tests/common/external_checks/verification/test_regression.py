@@ -128,6 +128,32 @@ def test_exit_run_honours_no_fail_on_crash(tmp_path: Path):
     assert raised.value.code == 0
 
 
+def test_exit_run_has_no_security_failure_sticky_flag():
+    """Pin the absence of the ``_security_failure_exit_pending`` sticky-flag.
+
+    Earlier in this MR ``exit_run`` carried a carve-out that overrode
+    ``--no-fail-on-crash`` for verification failures (always exit 2,
+    even when the flag was set). That was a real design mistake — it
+    silently violated the documented flag contract — and was removed.
+    The e2e harness greps for this name in a preflight check, but
+    e2e harnesses can be skipped in CI; this unit test guarantees
+    the same invariant is enforced on every ``pytest`` run, so a
+    future refactor that re-introduces a similar sticky-flag fails
+    fast in the unit suite instead of in customer pipelines.
+    """
+    import inspect
+    from checkov.main import Checkov
+
+    src = inspect.getsource(Checkov.exit_run)
+    assert "_security_failure_exit_pending" not in src, (
+        "Checkov.exit_run reintroduced the sticky-flag override that was "
+        "removed earlier in this MR. --no-fail-on-crash must be honoured "
+        "uniformly for ALL failure types, including verification failures. "
+        "Either move the security-specific exit-code logic out of exit_run "
+        "or remove the sticky flag entirely."
+    )
+
+
 # --------------------------------------------------------------------------
 # 2. Realpath / symlink consistency between the registry and the loader.
 # --------------------------------------------------------------------------
