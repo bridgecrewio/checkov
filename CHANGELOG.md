@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.529...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.530...HEAD)
+
+## [3.2.530](https://github.com/bridgecrewio/checkov/compare/3.2.529...3.2.530) - 2026-05-28
+
+### Bug Fix
+
+- **serverless:** disable env/file variable resolution by default - [#7554](https://github.com/bridgecrewio/checkov/pull/7554)
 
 ## [3.2.529](https://github.com/bridgecrewio/checkov/compare/3.2.528...3.2.529) - 2026-05-14
 
