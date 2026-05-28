@@ -217,8 +217,12 @@ Load data based on the type/path (see param_lookup_function parameter of process
     elif var_type == "self":
         value = _determine_variable_value_from_dict(self_data_source, var_location, None)
     elif var_type == "env":
+        if os.environ.get("CHECKOV_SERVERLESS_RESOLVE_VARS", "").lower() != "true":
+            return None
         value = _determine_variable_value_from_dict(dict(os.environ.items()), var_location, None)
     elif var_type.startswith("file("):
+        if os.environ.get("CHECKOV_SERVERLESS_RESOLVE_VARS", "").lower() != "true":
+            return None
         match = FILE_LOCATION_PATTERN.match(var_type)
         if match is None:
             return None
