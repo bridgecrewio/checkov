@@ -59,6 +59,7 @@ from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_c
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool, convert_str_to_optional_bool
 from checkov.common.util.env_vars_config import env_vars_config
+from checkov.common.util.dockerfile import DOCKERFILE_IGNORE_PATTERN_ENV_VAR
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.docs_generator import print_checks
@@ -204,6 +205,10 @@ class Checkov:
             logger.warning(
                 '--policy-metadata-filter or --policy-metadata-filter-exception flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
             )
+        if self.config.ignore_dockerfile_pattern and not self.config.file:
+            self.parser.error('--file is required if using --ignore-dockerfile-pattern')
+        else:
+            os.environ[DOCKERFILE_IGNORE_PATTERN_ENV_VAR] = "true"
 
         logging.debug('Normalizing --framework')
         self.config.framework = self.normalize_framework_arg(self.config.framework, handle_all=True)
