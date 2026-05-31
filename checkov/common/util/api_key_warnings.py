@@ -98,13 +98,13 @@ def check_for_severity_filtering_without_api_key(config: Namespace, has_api_key:
     
     if severity_filtering_attempted:
         logger.warning(
-            f"⚠️  Severity codes cannot be used without an API key:\n"
+            f"⚠️  Severity-based filtering may be limited without an API key:\n"
             f"   {', '.join(severity_codes_used)}\n"
             f"   \n"
-            f"   Severity codes are not available without an API key because they come from the Prisma Cloud platform.\n"
-            f"   Your filtering parameters using severity codes will be ignored during this scan.\n"
+            f"   Some severity information is fetched from the Prisma Cloud platform and may be unavailable without an API key.\n"
+            f"   Checks with locally-defined severities may still be filtered by severity, but platform-defined severities may be missing during this scan.\n"
             f"   \n"
-            f"   To enable severity-based filtering, provide an API key:\n"
+            f"   To enable full severity-based filtering, provide an API key:\n"
             f"   --bc-api-key <your_key> or set BC_API_KEY environment variable"
         )
     
