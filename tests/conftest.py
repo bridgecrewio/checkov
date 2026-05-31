@@ -1,33 +1,43 @@
-
-# ──────────────────────────────────────────────────────────────────────────────
-# DIAGNOSTIC: disable pycares (via aiodns) in the test environment.
-#
-# The unit-tests(3.9) job segfaults inside pytest's tmp_path fixture during
-# `posixpath.realpath`, with the pycares background shutdown thread parked
-# on a SimpleQueue.get(). Hypothesis: pycares's C-extension thread races
-# with realpath syscalls on Python 3.9 + ubuntu-latest runners.
-#
-# This block forces aiohttp to use its pure-Python `ThreadedResolver`
-# (no pycares thread ever spawned), proving or disproving the hypothesis.
-# If the segfault disappears on the next CI run, pycares is the culprit
-# and this becomes the permanent fix. If it persists, pycares was a red
-# herring and we revert this block.
-#
-# IMPORTANT: must run BEFORE any `import checkov...` because checkov's
-# http_utils does `import aiohttp` at module level, which would already
-# load pycares if aiodns is available.
-import sys as _sys
-import aiohttp as _aiohttp  # noqa: E402 — must come BEFORE checkov import
-_sys.modules["aiodns"] = None  # type: ignore[assignment]
-# `http_utils.py` calls `aiohttp.AsyncResolver()` which raises RuntimeError
-# when aiodns is None, so we redirect the symbol to the pure-Python resolver.
-_aiohttp.AsyncResolver = _aiohttp.ThreadedResolver  # type: ignore[misc]
-del _sys, _aiohttp
-# ──────────────────────────────────────────────────────────────────────────────
-
 from copy import copy, deepcopy
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 import pytest
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# DIAGNOSTIC: log every test start to a per-worker file, so the LAST line
+# before a SIGSEGV tells us which test was running when the crash happened.
+#
+# Why a file (and not stderr):
+#   (a) xdist captures stderr from worker subprocesses and discards it from
+#       the controller output unless `-s` is also passed, so stderr-based
+#       breadcrumbs are invisible in CI logs.
+#   (b) Writing to a file with explicit fsync survives a worker segfault
+#       because fsync'd data is durable across abnormal process termination
+#       (POSIX guarantee).
+#
+# Each worker gets its own file via the PYTEST_XDIST_WORKER env var set by
+# xdist (e.g. `gw0`, `gw1`). The CI workflow has a `failure()` step that
+# tails these files so the trigger test appears in the action log.
+import os as _diag_os
+
+_DIAG_WORKER_ID = _diag_os.environ.get("PYTEST_XDIST_WORKER", "master")
+_DIAG_PROGRESS_PATH = f"/tmp/pytest-worker-{_DIAG_WORKER_ID}.log"
+
+
+def pytest_runtest_logstart(nodeid: str, location: tuple) -> None:
+    """Append the about-to-run nodeid to /tmp/pytest-worker-<id>.log with
+    fsync, so the file's last line identifies the crashing test even if
+    the worker dies inside the test body."""
+    try:
+        with open(_DIAG_PROGRESS_PATH, "a", encoding="utf-8") as f:
+            f.write(f"{nodeid}\n")
+            f.flush()
+            _diag_os.fsync(f.fileno())
+    except Exception:
+        # Best-effort only — never break the test run because of diag.
+        pass
+# ──────────────────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture(scope='module', autouse=True)
 def clean_bc_integration() -> None:
