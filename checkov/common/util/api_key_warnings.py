@@ -172,7 +172,7 @@ def warn_about_missing_metadata_without_api_key(has_api_key: bool) -> None:
     if not has_api_key:
         logger.info(
             "\n📋 Running without API key - Limited metadata available:\n"
-            "   • Severity levels will be estimated based on check categories\n"
+            "   • Severity information may be unavailable for some checks\n"
             "   • Policy guidelines links may not be available\n"
             "   • Custom policies from platform will not be included\n"
             "   • Platform-based suppressions will not be applied\n"
