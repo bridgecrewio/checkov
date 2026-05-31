@@ -157,18 +157,18 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
         try:
             proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-            o, e = proc.communicate()
+            o, _ = proc.communicate()
             oString = str(o, 'utf-8')
             if "Version:" in oString:
                 helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
-                if "v3" in helmVersionOutput:
+                if any(helmVersionOutput.startswith(s) for s in ("v3.", "v4.")):
                     logging.info(f"Found working version of {self.check_type} dependencies: {helmVersionOutput}")
                     return None
             else:
                 return self.check_type
-        except Exception:
+        except Exception as e:
             logging.info(f"Error running necessary tools to process {self.check_type} checks.")
-
+            logging.debug(e)
         return self.check_type
 
     @staticmethod

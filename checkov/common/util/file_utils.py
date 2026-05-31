@@ -23,6 +23,28 @@ def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
 
 
+def safe_relpath(file_path: str, root_folder: str | Path | None) -> str:
+    """Compute os.path.relpath(file_path, root_folder) safely on Windows.
+
+    On Windows ``os.path.relpath`` raises ``ValueError`` when *file_path* and
+    *root_folder* reside on different drives (e.g. ``C:\\`` vs ``D:\\``).
+    In that case we fall back to returning just the file basename so that the
+    caller still gets a usable (albeit shortened) relative path instead of
+    crashing.
+
+    On non-Windows platforms this is a thin wrapper around ``os.path.relpath``.
+    """
+    try:
+        return os.path.relpath(file_path, root_folder)
+    except ValueError:
+        # Cross-drive on Windows – best-effort: return the basename only
+        logger.warning(
+            f"Could not compute relative path for '{file_path}' from root '{root_folder}' "
+            f"(cross-drive path on Windows); falling back to basename."
+        )
+        return os.path.basename(file_path)
+
+
 def _is_within(base: str, target: str) -> bool:
     """Return True iff target resolves inside base (both realpath'd)."""
     base_real = os.path.realpath(base)
