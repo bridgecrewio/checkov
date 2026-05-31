@@ -284,12 +284,18 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ env.PYTHON_VERSION }}
           pipenv install --dev
-      - name: Test with pytest
+      # DEBUG: temporary isolation run to determine whether the segfault
+      # in `tests/` is caused by the new external_checks/verification suite.
+      # If this step passes → the new tests are NOT the culprit; revert this
+      # block and re-enable the full `pytest tests` run with an xdist_group
+      # fix instead. If this step fails → we have a clean reproducer to bisect.
+      # Remove this debug block before merging.
+      - name: Test with pytest (DEBUG — verification suite only, no xdist)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IS_TEST: true
         run: |
-          pipenv run python -m pytest tests
+          pipenv run python -m pytest tests/common/external_checks/verification -p no:xdist -v
   bump-version:
     needs: [integration-tests, unit-tests, prisma-tests, sast-integration-tests, integration-tests-old-python, sast-integration-tests-old-python]
     runs-on: [self-hosted, public, linux, x64]
