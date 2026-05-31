@@ -125,7 +125,12 @@ jobs:
         run: |
           mkdir -p ./pytest-worker-logs
           shopt -s nullglob
+          # Progress log (test STARTED/FINISHED breadcrumbs)
           for f in /tmp/pytest-worker-*.log; do
+            cp "$f" "./pytest-worker-logs/$(basename "$f")" || true
+          done
+          # Python faulthandler stack-trace sink (written on SIGSEGV/SIGTERM)
+          for f in /tmp/pytest-worker-*.faulthandler.log; do
             cp "$f" "./pytest-worker-logs/$(basename "$f")" || true
           done
           ls -la ./pytest-worker-logs/ || true

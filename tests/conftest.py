@@ -4,38 +4,77 @@ import pytest
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# DIAGNOSTIC: log every test start to a per-worker file, so the LAST line
-# before a SIGSEGV tells us which test was running when the crash happened.
+# DIAGNOSTIC: progress logging + SIGSEGV faulthandler.
 #
-# Why a file (and not stderr):
-#   (a) xdist captures stderr from worker subprocesses and discards it from
-#       the controller output unless `-s` is also passed, so stderr-based
-#       breadcrumbs are invisible in CI logs.
-#   (b) Writing to a file with explicit fsync survives a worker segfault
-#       because fsync'd data is durable across abnormal process termination
-#       (POSIX guarantee).
+# Each line has the format:
+#     <iso-ts>  pid=<pid>  <STARTED|FINISHED>  <nodeid>
 #
-# Each worker gets its own file via the PYTEST_XDIST_WORKER env var set by
-# xdist (e.g. `gw0`, `gw1`). The CI workflow has a `failure()` step that
-# tails these files so the trigger test appears in the action log.
+# Why every field matters for the Python 3.9 segfault investigation:
+#   * iso-ts maps directly to the "Fatal Python error" timestamp in the
+#     action log, so we can identify the last log entry before the crash.
+#   * pid distinguishes the ORIGINAL worker (that segfaulted) from the
+#     xdist-spawned REPLACEMENT worker that continued after the crash —
+#     both write to the same per-worker file but have different pids.
+#   * STARTED vs FINISHED tells us whether the crash happened DURING a
+#     test body or BETWEEN tests (e.g. during fixture teardown, gc, or
+#     module import for the next test).
+#
+# Plus faulthandler.register(SIGSEGV) — Python's stdlib stack-trace
+# dumper. When a C-level SIGSEGV fires it writes the Python AND C-level
+# stack to /tmp/pytest-worker-<id>.faulthandler.log BEFORE the process
+# dies. That stack identifies the offending C extension directly.
+#
+# The CI workflow uploads /tmp/pytest-worker-*.log AND
+# /tmp/pytest-worker-*.faulthandler.log as an artifact on every run.
 import os as _diag_os
+import datetime as _diag_dt
+import faulthandler as _diag_faulthandler
+import signal as _diag_signal
 
 _DIAG_WORKER_ID = _diag_os.environ.get("PYTEST_XDIST_WORKER", "master")
 _DIAG_PROGRESS_PATH = f"/tmp/pytest-worker-{_DIAG_WORKER_ID}.log"
+_DIAG_FAULT_PATH = f"/tmp/pytest-worker-{_DIAG_WORKER_ID}.faulthandler.log"
+_DIAG_PID = _diag_os.getpid()
+
+# Open the faulthandler sink and register it for SIGSEGV. The file handle
+# must stay open for the life of the worker; faulthandler writes via the
+# fd at signal-handler time (no Python heap allocations after the crash).
+try:
+    _diag_fault_fh = open(_DIAG_FAULT_PATH, "a", buffering=1, encoding="utf-8")
+    _diag_fault_fh.write(
+        f"# faulthandler armed at {_diag_dt.datetime.now(_diag_dt.timezone.utc).isoformat()} "
+        f"pid={_DIAG_PID} worker={_DIAG_WORKER_ID}\n"
+    )
+    _diag_fault_fh.flush()
+    _diag_faulthandler.enable(file=_diag_fault_fh, all_threads=True)
+    # Also dump on SIGTERM (xdist sends this on worker shutdown) so we
+    # can see a stack if the runner kills us due to the job timeout.
+    _diag_faulthandler.register(
+        _diag_signal.SIGTERM, file=_diag_fault_fh, all_threads=True, chain=True,
+    )
+except Exception:
+    _diag_fault_fh = None  # Best-effort.
 
 
-def pytest_runtest_logstart(nodeid: str, location: tuple) -> None:
-    """Append the about-to-run nodeid to /tmp/pytest-worker-<id>.log with
-    fsync, so the file's last line identifies the crashing test even if
-    the worker dies inside the test body."""
+def _diag_write(kind: str, nodeid: str) -> None:
     try:
+        ts = _diag_dt.datetime.now(_diag_dt.timezone.utc).isoformat(timespec="milliseconds")
+        line = f"{ts}\tpid={_DIAG_PID}\t{kind}\t{nodeid}\n"
         with open(_DIAG_PROGRESS_PATH, "a", encoding="utf-8") as f:
-            f.write(f"{nodeid}\n")
+            f.write(line)
             f.flush()
             _diag_os.fsync(f.fileno())
     except Exception:
         # Best-effort only — never break the test run because of diag.
         pass
+
+
+def pytest_runtest_logstart(nodeid: str, location: tuple) -> None:
+    _diag_write("STARTED", nodeid)
+
+
+def pytest_runtest_logfinish(nodeid: str, location: tuple) -> None:
+    _diag_write("FINISHED", nodeid)
 # ──────────────────────────────────────────────────────────────────────────────
 
 
