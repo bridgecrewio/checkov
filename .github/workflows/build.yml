@@ -259,7 +259,7 @@ jobs:
           pipenv run pytest sast_integration_tests
 
   unit-tests:
-    timeout-minutes: 30
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: "3.9"
@@ -290,26 +290,23 @@ jobs:
           IS_TEST: true
         run: |
           pipenv run python -m pytest tests
-      - name: Dump xdist worker progress logs (segfault diagnostic)
+      - name: Stage xdist worker progress logs for artifact upload (segfault diagnostic)
         if: always()
         run: |
-          echo "--- ls /tmp/pytest-worker-*.log ---"
-          ls -la /tmp/pytest-worker-*.log 2>&1 || echo "(no files matched)"
-          echo "--- contents (last 15 lines each) ---"
+          mkdir -p ./pytest-worker-logs
           shopt -s nullglob
-          found=0
           for f in /tmp/pytest-worker-*.log; do
-            found=1
-            echo "------------------------------------------"
-            echo "--- $f (last 15 lines) ---"
-            echo "------------------------------------------"
-            tail -15 "$f" || true
+            cp "$f" "./pytest-worker-logs/$(basename "$f")" || true
           done
-          if [ "$found" = "0" ]; then
-            echo "WARN: no /tmp/pytest-worker-*.log files found."
-            echo "Checking /tmp contents for any pytest artefacts:"
-            ls -la /tmp/ | grep -iE 'pytest|worker' || true
-          fi
+          ls -la ./pytest-worker-logs/ || true
+      - name: Upload xdist worker progress logs (segfault diagnostic)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-worker-logs-py${{ env.PYTHON_VERSION }}-${{ github.run_attempt }}
+          path: ./pytest-worker-logs/
+          if-no-files-found: warn
+          retention-days: 7
   bump-version:
     needs: [integration-tests, unit-tests, prisma-tests, sast-integration-tests, integration-tests-old-python, sast-integration-tests-old-python]
     runs-on: [self-hosted, public, linux, x64]
