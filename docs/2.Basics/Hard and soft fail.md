@@ -33,14 +33,14 @@ For hard fails, a a failed check *matches* the threshold if its severity is grea
 
 ### Severity filtering without an API key
 
-When you use severity levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, etc.) with `--hard-fail-on`, `--soft-fail-on`, `--check`, or `--skip-check` without providing a Bridgecrew/Prisma Cloud API key, Checkov uses **estimated default severities** based on check categories rather than official platform-defined severities.
+When you use severity levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, etc.) with `--hard-fail-on`, `--soft-fail-on`, `--check`, or `--skip-check`, Checkov typically needs Bridgecrew/Prisma Cloud platform metadata to determine check severities. Without providing a Bridgecrew/Prisma Cloud API key, those severity-based filters are generally ineffective or ignored rather than evaluated against estimated default severities.
 
 **Functional impact:**
-- Severity filtering still works, but uses category-based defaults
-- Results may differ from what you see in the Prisma Cloud platform
-- The scan continues normally with estimated values
+- Severity-based filtering may not work as expected without an API key
+- Checkov can warn that platform severity metadata is unavailable
+- Results may differ from what you see in the Prisma Cloud platform until platform metadata is available
 
-**To use official platform severities:** Provide your API key via `--bc-api-key <key>` or the `BC_API_KEY` environment variable. This ensures full parity with Prisma Cloud platform severity assignments.
+**To use platform-defined severities:** Provide your API key via `--bc-api-key <key>` or the `BC_API_KEY` environment variable. This allows Checkov to fetch the platform metadata used for severity-based filtering and aligns results with Prisma Cloud severity assignments.
 
 ## Combining options
 

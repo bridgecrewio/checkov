@@ -2,7 +2,7 @@
 Unit tests for API key warning utilities
 """
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from checkov.common.util.api_key_warnings import (
     check_for_api_key_usage_warnings,
     check_for_severity_filtering_without_api_key,
