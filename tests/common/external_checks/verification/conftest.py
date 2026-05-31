@@ -11,51 +11,6 @@ import pytest
 from ecdsa import NIST256p, SigningKey
 from ecdsa.util import sigencode_der
 
-# ──────────────────────────────────────────────────────────────────────────────
-# xdist single-worker pinning for this package.
-#
-# Why: the unit-tests(3.9) GitHub Actions job intermittently crashed with
-# `Fatal Python error: Segmentation fault` inside `posixpath.realpath`, called
-# from pytest's `tmp_path` fixture on the *other* xdist worker (not in any
-# test from this package). Locally on Python 3.12 the same `-n 2 --dist
-# loadfile` config runs the whole 3914-test suite with zero segfaults — the
-# crash is a Python-3.9- and ubuntu-runner-specific race, most likely between
-# a C extension's worker thread (pycares / aiodns / aiohttp transitive dep)
-# and our `tmp_path`-heavy tests on the other xdist worker.
-#
-# Fix: attach `xdist_group("external_checks_verification")` to every test
-# collected from this package so xdist's `LoadGroupScheduling` (enabled via
-# `--dist loadgroup` in pyproject.toml) pins them all onto a single worker.
-# This serialises this package's tests with whatever else lands on that
-# worker through the GIL, eliminating the cross-process race window.
-#
-# Caveats:
-# - `pytest_collection_modifyitems` defined in a conftest receives ALL
-#   collected items (not just items in the conftest's subtree) — we must
-#   filter by nodeid prefix.
-# - `tryfirst=True` ensures we add the mark BEFORE xdist's own
-#   `pytest_collection_modifyitems` (in `xdist/remote.py`) reads it and
-#   appends the `@<group>` suffix to `item._nodeid` that LoadGroupScheduling
-#   actually keys on.
-# ──────────────────────────────────────────────────────────────────────────────
-_VERIFICATION_PKG_PREFIX = "tests/common/external_checks/verification/"
-_XDIST_GROUP = "external_checks_verification"
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    """Attach `xdist_group(_XDIST_GROUP)` to every test in this package so
-    `--dist loadgroup` schedules them on a single xdist worker.
-
-    See the block comment above for the segfault background and the rationale
-    for `tryfirst=True` / the nodeid-prefix filter.
-    """
-    mark = pytest.mark.xdist_group(_XDIST_GROUP)
-    for item in items:
-        # `nodeid` uses forward slashes on every platform — safe to substring-match.
-        if item.nodeid.startswith(_VERIFICATION_PKG_PREFIX):
-            item.add_marker(mark)
-
 
 def _gen_p256_pem() -> tuple[bytes, SigningKey]:
     """Return ``(public_key_pem_bytes, private_key_object)`` for a fresh P-256 key."""
