@@ -134,5 +134,10 @@ forbidden_modules = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-n 2 --dist loadfile"
+# `--dist loadgroup` keeps `loadfile`'s file-level pinning for un-marked tests
+# (verified empirically) while ALSO honouring per-test `xdist_group` marks —
+# see `tests/common/external_checks/verification/conftest.py` for the one
+# package that needs single-worker scheduling to dodge an intermittent
+# segfault under Python 3.9 on ubuntu-latest runners.
+addopts = "-n 2 --dist loadgroup"
 
