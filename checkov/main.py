@@ -309,10 +309,10 @@ class Checkov:
 
             # Check for CLI parameters that require or are enhanced by an API key
             check_for_api_key_usage_warnings(self.config, bool(self.config.bc_api_key))
-            
+
             # Inform about limited metadata without API key
-            if not self.config.bc_api_key and not self.config.quiet:
-                warn_about_missing_metadata_without_api_key(False)
+            if not self.config.quiet:
+                warn_about_missing_metadata_without_api_key(bool(self.config.bc_api_key))
 
             excluded_paths = self.config.skip_path or []
 
