@@ -14,11 +14,24 @@ from ecdsa.util import sigencode_der
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Python 3.9 stability — run each verification test in a forked subprocess.
+# Python 3.9 / 3.10 stability — run each verification test in a forked
+# subprocess.
 #
-# Under Python 3.9 + xdist on Linux, ``pytest``'s ``tmp_path`` fixture
-# segfaults the worker inside ``posixpath.realpath`` for some verification
-# tests. When a worker dies mid-test under ``--dist loadfile``, the xdist
+# Under Python 3.9 and 3.10 + xdist on Linux, ``pytest``'s ``tmp_path``
+# fixture segfaults the worker inside ``posixpath.realpath`` for some
+# verification tests. Verified via CI traceback on both versions:
+#
+#   Current thread <id> (most recent call first):
+#     File "posixpath.py", line 393 in realpath
+#     File "pathlib.py", ... in resolve
+#     File "_pytest/tmpdir.py", line 116 in _ensure_relative_to_basetemp
+#     ...
+#
+# The traceback also shows a parked ``pycares._run_safe_shutdown_loop``
+# thread, but disabling pycares does NOT fix the crash, so pycares is
+# not the racer.
+#
+# When the worker dies mid-test under ``--dist loadfile``, the xdist
 # controller's ``loop_once`` blocks in ``queue.get()`` forever (the dead
 # worker's test results never arrive and the file is never reassigned),
 # which turns a single-test crash into a full job-timeout hang.
@@ -26,13 +39,9 @@ from ecdsa.util import sigencode_der
 # Running each test in a forked subprocess (via ``pytest-forked``)
 # isolates the crash: a SIGSEGV kills only the fork, the parent worker
 # stays alive, and the test surfaces as a normal failure instead of
-# hanging the whole job. Python 3.10+ doesn't exhibit the C-level crash
-# locally or in CI, so the mark is gated on the interpreter version.
-#
-# The mark applies to every test collected under this directory; we
-# attach it in ``pytest_collection_modifyitems`` rather than statically
-# so the rest of the suite (3.10+) is unaffected.
-if sys.version_info < (3, 10):
+# hanging the whole job. Python 3.11+ doesn't exhibit the crash, so the
+# mark is gated on the interpreter version.
+if sys.version_info < (3, 11):
     # IMPORTANT: this hook fires with the FULL session ``items`` list,
     # not just items collected under this directory. We must filter by
     # the test's file path so the ``forked`` marker is applied only to
