@@ -33,10 +33,24 @@ from ecdsa.util import sigencode_der
 # attach it in ``pytest_collection_modifyitems`` rather than statically
 # so the rest of the suite (3.10+) is unaffected.
 if sys.version_info < (3, 10):
+    # IMPORTANT: this hook fires with the FULL session ``items`` list,
+    # not just items collected under this directory. We must filter by
+    # the test's file path so the ``forked`` marker is applied only to
+    # verification tests; otherwise every test in the suite runs in its
+    # own subprocess and loses class-level state from earlier tests in
+    # the same file (which broke ``tests/common/integration_features/
+    # test_custom_policies_integration.py::test_pre_scan_with_cloned_checks``).
+    _VERIFICATION_DIR = os.path.dirname(__file__)
+
     def pytest_collection_modifyitems(items):
         forked_mark = pytest.mark.forked
         for item in items:
-            item.add_marker(forked_mark)
+            try:
+                item_path = str(item.fspath)
+            except Exception:
+                continue
+            if item_path.startswith(_VERIFICATION_DIR):
+                item.add_marker(forked_mark)
 # ──────────────────────────────────────────────────────────────────────────────
 
 
