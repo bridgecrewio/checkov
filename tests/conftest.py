@@ -2,7 +2,6 @@ from copy import copy, deepcopy
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 import pytest
 
-
 @pytest.fixture(scope='module', autouse=True)
 def clean_bc_integration() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration

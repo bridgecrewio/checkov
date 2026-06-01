@@ -11,10 +11,6 @@ pytest-cov = "*"
 pytest-mock = "*"
 pytest-benchmark = "*"
 pytest-timeout = "*"
-# pytest-forked is used by tests/common/external_checks/verification/conftest.py
-# to fork-isolate each verification test on Python 3.9, where pytest's tmp_path
-# fixture can SIGSEGV the xdist worker and turn a one-test crash into a job-
-# wide hang. Required only on 3.9; safe to install everywhere.
 pytest-forked = "*"
 exceptiongroup = {version = "*", markers="python_version < '3.11'"}
 coverage ="==7.6.1"
