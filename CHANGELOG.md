@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.530...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.531...HEAD)
+
+## [3.2.531](https://github.com/bridgecrewio/checkov/compare/3.2.530...3.2.531) - 2026-06-01
+
+### Feature
+
+- **terraform:** add CKV_AWS_393 for GitHub OIDC trust on aws_iam_role - [#7561](https://github.com/bridgecrewio/checkov/pull/7561)
 
 ## [3.2.530](https://github.com/bridgecrewio/checkov/compare/3.2.529...3.2.530) - 2026-05-28
 
