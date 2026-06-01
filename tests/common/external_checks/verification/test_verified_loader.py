@@ -151,13 +151,25 @@ def test_finder_returns_none_for_unknown_names(tmp_path: Path):
 
 
 def test_finder_is_removed_from_sys_meta_path_after_uninstall(tmp_path: Path):
-    """install_finder + uninstall_finder leaves sys.meta_path as it was."""
-    before = list(sys.meta_path)
+    """install_finder + uninstall_finder leaves sys.meta_path as it was.
+
+    Uses identity-based comparison (``id()``) rather than ``==`` /
+    ``in``. List equality and the ``in`` operator both invoke ``__eq__``
+    on every element of ``sys.meta_path``; on Python 3.9 inside xdist
+    workers we have observed third-party MetaPathFinder instances whose
+    ``__eq__`` can hang indefinitely (waiting on a lock held by an
+    xdist control thread). Identity comparison avoids the user-defined
+    equality path entirely while still verifying the contract: the
+    finder we installed is gone, and the rest of the meta-path is the
+    same set of objects in the same order.
+    """
+    before_ids = [id(x) for x in sys.meta_path]
     finder = install_finder({}, [str(tmp_path)])
-    assert finder in sys.meta_path
+    assert id(finder) in [id(x) for x in sys.meta_path]
     uninstall_finder(finder)
-    assert finder not in sys.meta_path
-    assert sys.meta_path == before
+    after_ids = [id(x) for x in sys.meta_path]
+    assert id(finder) not in after_ids
+    assert after_ids == before_ids
 
 
 def test_uninstall_finder_is_idempotent(tmp_path: Path):
