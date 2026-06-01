@@ -14,22 +14,29 @@ from ecdsa.util import sigencode_der
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Safety net: skip this entire test directory on Python 3.9.
+# Python 3.9 stability — run each verification test in a forked subprocess.
 #
-# The verified-loader and signer-interop tests in this folder reliably hang
-# on Python 3.9 inside the xdist worker, consuming the full job timeout.
-# The root cause is under active investigation (suspected ``__eq__``-based
-# deadlock through ``sys.meta_path.remove`` and / or autouse-fixture
-# teardown), with fixes deployed in ``verified_loader.uninstall_finder``
-# (identity removal) and the autouse fixture. This collect_ignore_glob is
-# the belt-and-suspenders fallback so the unit-tests(3.9) job stays green
-# even if the underlying fixes turn out to be insufficient. checkov already
-# supports Python 3.10+ as primary; the verification feature is opt-in via
-# ``--external-checks-public-key`` and continues to be covered by 4 other
-# Python versions in CI.
-collect_ignore_glob: list[str] = []
+# Under Python 3.9 + xdist on Linux, ``pytest``'s ``tmp_path`` fixture
+# segfaults the worker inside ``posixpath.realpath`` for some verification
+# tests. When a worker dies mid-test under ``--dist loadfile``, the xdist
+# controller's ``loop_once`` blocks in ``queue.get()`` forever (the dead
+# worker's test results never arrive and the file is never reassigned),
+# which turns a single-test crash into a full job-timeout hang.
+#
+# Running each test in a forked subprocess (via ``pytest-forked``)
+# isolates the crash: a SIGSEGV kills only the fork, the parent worker
+# stays alive, and the test surfaces as a normal failure instead of
+# hanging the whole job. Python 3.10+ doesn't exhibit the C-level crash
+# locally or in CI, so the mark is gated on the interpreter version.
+#
+# The mark applies to every test collected under this directory; we
+# attach it in ``pytest_collection_modifyitems`` rather than statically
+# so the rest of the suite (3.10+) is unaffected.
 if sys.version_info < (3, 10):
-    collect_ignore_glob = ["test_*.py"]
+    def pytest_collection_modifyitems(items):
+        forked_mark = pytest.mark.forked
+        for item in items:
+            item.add_marker(forked_mark)
 # ──────────────────────────────────────────────────────────────────────────────
 
 
