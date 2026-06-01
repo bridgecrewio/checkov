@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import os
 import sys
 import types
@@ -37,20 +36,20 @@ def _reset_registry():
 # 1. --no-fail-on-crash behaviour for verification failures.
 #
 # Contract (matches the documented help text "Return exit code 0 instead of 2"):
-#   * Flag OFF -> exit 2, stderr message printed, ./checkov-verification-failures.log written.
-#   * Flag ON  -> exit 0, SAME stderr message + SAME log file.
+#   * Flag OFF -> exit 2, diagnostic logged at ERROR level (stderr via logging).
+#   * Flag ON  -> exit 0, SAME diagnostic logged.
 # The flag changes ONLY the exit code, not the diagnostic surface.
 # --------------------------------------------------------------------------
 
 
 def _run_chokepoint(
     unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
-    *, no_fail_on_crash: bool,
+    *, no_fail_on_crash: bool, caplog,
 ) -> "tuple[int, str]":
-    """Run the chokepoint with a modified tree; return ``(exit_code, stderr_text)``."""
+    """Run the chokepoint with a modified tree; return ``(exit_code, log_text)``."""
+    import logging as _logging
+
     from checkov.main import Checkov
-    import io
-    import contextlib
 
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -63,9 +62,8 @@ def _run_chokepoint(
         no_fail_on_crash=no_fail_on_crash,
     )
 
-    captured_stderr = io.StringIO()
     with patch("checkov.main.bc_integration") as bc, \
-         contextlib.redirect_stderr(captured_stderr):
+         caplog.at_level(_logging.ERROR, logger="checkov.main"):
         bc.sast_custom_policies = None
         prev_cwd = os.getcwd()
         os.chdir(str(tmp_path))
@@ -74,40 +72,40 @@ def _run_chokepoint(
                 instance.get_external_checks_dir()
         finally:
             os.chdir(prev_cwd)
-    return raised.value.code, captured_stderr.getvalue()
+    return raised.value.code, caplog.text
 
 
 def test_verification_failure_without_no_fail_on_crash_exits_2(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, caplog,
 ):
     """Default flag state: verification failure exits 2."""
-    code, stderr = _run_chokepoint(
-        unsigned_dir, key_a_pub_pem, tmp_path, no_fail_on_crash=False,
+    code, log_text = _run_chokepoint(
+        unsigned_dir, key_a_pub_pem, tmp_path,
+        no_fail_on_crash=False, caplog=caplog,
     )
     assert code == 2
-    assert "External checks signature verification failed" in stderr
-    assert (tmp_path / "checkov-verification-failures.log").exists()
+    assert "External checks signature verification failed" in log_text
 
 
 def test_verification_failure_with_no_fail_on_crash_exits_0(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, caplog,
 ):
     """``--no-fail-on-crash`` aligns the security-failure exit code with the
     documented contract of the flag (``Return exit code 0 instead of 2``).
 
-    The diagnostic surface — stderr message, failure log file on disk — is
+    The diagnostic surface — error message logged to stderr — is
     UNCHANGED. Only the exit code differs. Operators who need the pipeline
-    to fail must either drop the flag or grep stderr / the log file.
+    to fail must either drop the flag or grep the stderr diagnostic.
     """
-    code, stderr = _run_chokepoint(
-        unsigned_dir, key_a_pub_pem, tmp_path, no_fail_on_crash=True,
+    code, log_text = _run_chokepoint(
+        unsigned_dir, key_a_pub_pem, tmp_path,
+        no_fail_on_crash=True, caplog=caplog,
     )
     assert code == 0, (
         "--no-fail-on-crash documents 'Return exit code 0 instead of 2'; "
         f"got {code!r}"
     )
-    assert "External checks signature verification failed" in stderr
-    assert (tmp_path / "checkov-verification-failures.log").exists()
+    assert "External checks signature verification failed" in log_text
 
 
 def test_exit_run_honours_no_fail_on_crash(tmp_path: Path):
@@ -300,19 +298,17 @@ def test_legitimate_signed_file_with_digest_text_in_body_is_not_flagged(
 
 
 # --------------------------------------------------------------------------
-# 4. stderr truncation on huge failure lists keeps the inline message
-#    readable; the full list still goes to the on-disk failure log.
+# 4. Diagnostic truncation on huge failure lists keeps the logged message
+#    readable; long lists are truncated with an "... and N more" hint.
 # --------------------------------------------------------------------------
 
 
-def test_stderr_truncated_on_huge_failure_list(
-    tmp_path: Path, key_a_pub_pem: bytes,
+def test_diagnostic_truncated_on_huge_failure_list(
+    tmp_path: Path, key_a_pub_pem: bytes, caplog,
 ):
-    """A 100-bad-file failure prints ~20 inline lines plus a "... N more" hint.
+    """A 100-bad-file failure logs ~20 inline lines plus a "... N more" hint."""
+    import logging as _logging
 
-    The full list is written to ``./checkov-verification-failures.log``
-    so nothing is lost.
-    """
     from checkov.main import Checkov
 
     big = tmp_path / "many_unsigned"
@@ -331,9 +327,8 @@ def test_stderr_truncated_on_huge_failure_list(
         no_fail_on_crash=False,
     )
 
-    # Capture stderr by patching sys.stderr to a StringIO.
-    captured = io.StringIO()
-    with patch("checkov.main.bc_integration") as bc, patch("sys.stderr", captured):
+    with patch("checkov.main.bc_integration") as bc, \
+         caplog.at_level(_logging.ERROR, logger="checkov.main"):
         bc.sast_custom_policies = None
         prev_cwd = os.getcwd()
         os.chdir(str(tmp_path))
@@ -344,31 +339,27 @@ def test_stderr_truncated_on_huge_failure_list(
             os.chdir(prev_cwd)
 
     assert raised.value.code == 2
-    stderr_text = captured.getvalue()
+    log_text = caplog.text
 
-    # Hard upper bound on inline failure lines (header + ~20 visible + truncation hint).
+    # Hard upper bound on inline failure lines (~20 visible + truncation hint).
     visible_failure_lines = [
-        ln for ln in stderr_text.split("\n") if ln.strip().startswith("- missing signature:")
+        ln for ln in log_text.split("\n") if ln.strip().startswith("- missing signature:")
     ]
     assert len(visible_failure_lines) <= 25, (
-        f"stderr printed {len(visible_failure_lines)} inline failure lines; "
+        f"diagnostic logged {len(visible_failure_lines)} inline failure lines; "
         f"expected ~20 with a truncation hint"
     )
-    assert "... and" in stderr_text and "more" in stderr_text, (
-        "expected a 'and N more' truncation hint on stderr"
+    assert "... and" in log_text and "more" in log_text, (
+        "expected a 'and N more' truncation hint in the diagnostic"
     )
 
-    # Full-list log file exists and contains all 100 entries.
-    log_path = tmp_path / "checkov-verification-failures.log"
-    assert log_path.exists(), "expected ./checkov-verification-failures.log to be written"
-    log_text = log_path.read_text()
-    assert log_text.count("missing signature:") == 100
 
-
-def test_stderr_not_truncated_when_failure_list_is_short(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
+def test_diagnostic_not_truncated_when_failure_list_is_short(
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, caplog,
 ):
-    """A 1-bad-file failure prints the whole list inline, no truncation hint."""
+    """A 1-bad-file failure logs the whole list inline, no truncation hint."""
+    import logging as _logging
+
     from checkov.main import Checkov
 
     key_path = tmp_path / "key.pem"
@@ -381,8 +372,8 @@ def test_stderr_not_truncated_when_failure_list_is_short(
         no_fail_on_crash=False,
     )
 
-    captured = io.StringIO()
-    with patch("checkov.main.bc_integration") as bc, patch("sys.stderr", captured):
+    with patch("checkov.main.bc_integration") as bc, \
+         caplog.at_level(_logging.ERROR, logger="checkov.main"):
         bc.sast_custom_policies = None
         prev_cwd = os.getcwd()
         os.chdir(str(tmp_path))
@@ -392,7 +383,7 @@ def test_stderr_not_truncated_when_failure_list_is_short(
         finally:
             os.chdir(prev_cwd)
 
-    assert "... and" not in captured.getvalue()
+    assert "... and" not in caplog.text
 
 
 # --------------------------------------------------------------------------
@@ -695,15 +686,14 @@ def test_walker_skips_pycache_subdirectory(
     assert not any(p.endswith(".pyc") for p in verified)
 
 
-def test_pyc_outside_pycache_is_still_hard_rejected(
+def test_pyc_outside_pycache_is_silently_ignored(
     tmp_path: Path, priv_a, key_a_pub_pem: bytes, make_trailer,
 ):
-    """A ``.pyc`` that is NOT under ``__pycache__/`` is still a hard failure.
+    """A ``.pyc`` outside ``__pycache__/`` is silently ignored.
 
-    Skipping all ``.pyc`` files everywhere would create a way to ship
-    an unverified ``.pyc`` next to a signed ``.py`` by placing it
-    outside any cache directory. The skip is strictly scoped to the
-    ``__pycache__`` directory name.
+    Only ``.py`` files are loaded by the external-checks loader, so
+    stray binary loadables anywhere in the tree are out of scope for
+    trailer signing — they do not cause the scan to fail.
     """
     root = tmp_path / "loose_pyc"
     root.mkdir()
@@ -716,9 +706,10 @@ def test_pyc_outside_pycache_is_still_hard_rejected(
     key_path.write_bytes(key_a_pub_pem)
     keys = load_public_keys([str(key_path)])
 
-    with pytest.raises(SignatureVerificationError) as exc:
-        verify_external_checks_dirs([str(root)], keys)
-    assert "stray.pyc" in str(exc.value)
+    # Must not raise — .pyc is ignored regardless of location.
+    verified = verify_external_checks_dirs([str(root)], keys)
+    assert any(p.endswith("check.py") for p in verified)
+    assert not any(p.endswith(".pyc") for p in verified)
 
 
 def test_verified_load_does_not_create_pycache(
@@ -726,10 +717,8 @@ def test_verified_load_does_not_create_pycache(
 ):
     """A successful verified load must not leave a ``__pycache__/`` behind.
 
-    Pins the ``sys.dont_write_bytecode = True`` window. Without this,
-    every verified scan would seed the next scan's false-positive
-    ``binary file not supported`` failure (see the regression that
-    surfaced during end-to-end testing).
+    Pins the ``sys.dont_write_bytecode = True`` window so verified scans
+    don't pollute the source tree with bytecode artefacts.
     """
     root = tmp_path / "fresh"
     root.mkdir()
@@ -1029,73 +1018,7 @@ def test_verify_against_keys_propagates_unexpected_exception_types():
 
 
 # --------------------------------------------------------------------------
-# 12. S1: log-file write failure surfaces a warning on stderr.
-#
-# The stderr message points the operator at ./checkov-verification-failures.log
-# but if cwd is read-only (CI sandbox, read-only container) the write fails
-# silently. The operator follows the breadcrumb and finds nothing. S1
-# requires that we explicitly tell them the log couldn't be written.
-# --------------------------------------------------------------------------
-
-
-def test_failure_log_write_failure_warns_on_stderr(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path,
-):
-    """When the failure log cannot be written, stderr gets an explicit
-    warning instead of just silently dropping the file.
-    """
-    import io
-    import contextlib
-    from unittest.mock import patch
-    from checkov.main import Checkov
-
-    key_path = tmp_path / "key.pem"
-    key_path.write_bytes(key_a_pub_pem)
-
-    instance = Checkov.__new__(Checkov)
-    instance.config = types.SimpleNamespace(  # type: ignore[attr-defined]
-        external_checks_dir=[str(unsigned_dir)],
-        external_checks_public_key=[str(key_path)],
-        external_checks_git=None,
-        no_fail_on_crash=False,
-    )
-
-    captured_stderr = io.StringIO()
-    # Patch open() to raise on the write-only log file path; all other
-    # `open` calls (key file etc.) must pass through to the real builtin.
-    real_open = open
-    log_filename = "checkov-verification-failures.log"
-
-    def _selective_open(path, *args, **kwargs):
-        if isinstance(path, str) and log_filename in path:
-            raise OSError("Read-only file system (simulated)")
-        return real_open(path, *args, **kwargs)
-
-    with patch("checkov.main.bc_integration") as bc, \
-         patch("builtins.open", side_effect=_selective_open), \
-         contextlib.redirect_stderr(captured_stderr):
-        bc.sast_custom_policies = None
-        prev_cwd = os.getcwd()
-        os.chdir(str(tmp_path))
-        try:
-            with pytest.raises(SystemExit):
-                instance.get_external_checks_dir()
-        finally:
-            os.chdir(prev_cwd)
-
-    stderr_text = captured_stderr.getvalue()
-    assert "could not write" in stderr_text, (
-        "expected an explicit 'could not write ...' warning on stderr when "
-        "the failure log cannot be written; got:\n" + stderr_text
-    )
-    assert log_filename in stderr_text, (
-        "the warning should name the path that failed so the operator can "
-        "diagnose (e.g. read-only mount, full disk)"
-    )
-
-
-# --------------------------------------------------------------------------
-# 13. T2: `cryptography` library is NOT in the import graph.
+# 12. T2: `cryptography` library is NOT in the import graph.
 #
 # The migration off ``cryptography`` to ``ecdsa`` is a deliberate
 # dependency reduction. A future PR that re-introduces a transitive
@@ -1119,7 +1042,7 @@ def test_verification_package_does_not_import_cryptography():
 
 
 # --------------------------------------------------------------------------
-# 14. T3: property-style ~100 random bodies signed-then-verified.
+# 13. T3: property-style ~100 random bodies signed-then-verified.
 #
 # Catches edge cases in DER length variance (leading-zero stripping in
 # ``r``/``s`` changes the signature length), trailer-length-guard
@@ -1156,7 +1079,7 @@ def test_random_bodies_round_trip(
 
 
 # --------------------------------------------------------------------------
-# 15. T4: unverified default path queries the registry exactly once per
+# 14. T4: unverified default path queries the registry exactly once per
 #         directory and (when verification is inactive) gets back ``None``.
 #
 # Spy on ``get_verified_sources_for_directory``. The contract is
@@ -1194,7 +1117,7 @@ def test_unverified_path_consults_registry_once_per_directory(
 
 
 # --------------------------------------------------------------------------
-# 16. T6: trailer line + \n + arbitrary-looking junk line + \n.
+# 15. T6: trailer line + \n + arbitrary-looking junk line + \n.
 #
 # A future "permissive parser" change could silently make
 # ``trailer + \n + commented-code\n`` verify against the trailer. The
@@ -1230,7 +1153,7 @@ def test_trailer_followed_by_junk_line_is_rejected(
 
 
 # --------------------------------------------------------------------------
-# 17. N2: realistic doc-string body with blank lines AND a literal
+# 16. N2: realistic doc-string body with blank lines AND a literal
 #         ``# checkov-digest:`` prefix mid-file is signed and verified
 #         cleanly. Pins the "only the last line counts" invariant against
 #         a body that closely mimics customer-facing doc examples.
@@ -1268,7 +1191,7 @@ def test_doc_style_body_with_internal_trailer_prefix_round_trips(
 
 
 # --------------------------------------------------------------------------
-# 18. Verify-then-load disk-drift enforcement (M1 / S3).
+# 17. Verify-then-load disk-drift enforcement (M1 / S3).
 #
 # Between ``verify_and_register`` (chokepoint) and ``load_external_checks``
 # (during scan) the on-disk file set can diverge from the in-memory

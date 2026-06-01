@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 LOADABLE_SUFFIXES = (".py",)
-_BINARY_LOADABLE_SUFFIXES = (".pyc", ".pyi", ".so", ".pyd")
 _SKIPPED_DIRECTORY_NAMES = frozenset({"__pycache__"})
 
 _FAILURE_MESSAGE_TEMPLATES: "dict[VerificationResult, str]" = {
@@ -29,10 +28,6 @@ _GENERIC_FAILURE_MESSAGE = "signature verification failed: {rel}"
 
 def _is_loadable(name: str) -> bool:
     return name.endswith(LOADABLE_SUFFIXES)
-
-
-def _is_binary_loadable(name: str) -> bool:
-    return name.endswith(_BINARY_LOADABLE_SUFFIXES)
 
 
 def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
@@ -54,23 +49,21 @@ def _resolves_inside(path: str, root_real: str) -> "tuple[bool, str]":
 
 def _walk_loadable_files(
     root: str,
-) -> "tuple[list[str], list[str], list[str]]":
-    """Walk ``root`` → ``(inside_paths, escape_messages, binary_rejections)``."""
+) -> "tuple[list[str], list[str]]":
+    """Walk ``root`` → ``(inside_paths, escape_messages)``.
+
+    Only ``.py`` files are considered for verification. Any other file
+    type (including binary loadables such as ``.pyc`` / ``.so``) is
+    silently ignored — Checkov never imports them via the external-checks
+    loader, so they are not in scope for trailer signing.
+    """
     root_real = os.path.normpath(os.path.realpath(root))
     inside: "list[str]" = []
     escape_messages: "list[str]" = []
-    binary_messages: "list[str]" = []
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         dirnames[:] = [d for d in dirnames if d not in _SKIPPED_DIRECTORY_NAMES]
         for name in filenames:
             if name.startswith("."):
-                continue
-            if _is_binary_loadable(name):
-                full = os.path.join(dirpath, name)
-                binary_messages.append(
-                    "binary file not supported under trailer signing "
-                    f"(only .py is covered): {os.path.relpath(full, start=root)}"
-                )
                 continue
             if not _is_loadable(name):
                 continue
@@ -83,7 +76,7 @@ def _walk_loadable_files(
                 )
                 continue
             inside.append(full)
-    return inside, escape_messages, binary_messages
+    return inside, escape_messages
 
 
 def _normalise_and_dedupe(
@@ -137,9 +130,8 @@ def verify_external_checks_dirs(
             )
             continue
 
-        loadable, escape_messages, binary_messages = _walk_loadable_files(directory)
+        loadable, escape_messages = _walk_loadable_files(directory)
         failures.extend(escape_messages)
-        failures.extend(binary_messages)
 
         for payload_path in loadable:
             result, signed_bytes = verify_file(payload_path, keys)

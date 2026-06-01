@@ -612,16 +612,15 @@ def test_rejects_trailer_with_huge_hex_payload(
 
 
 @pytest.mark.parametrize("extension", [".pyc", ".so", ".pyd", ".pyi"])
-def test_rejects_dir_containing_binary_loadable_file(
+def test_binary_loadable_files_are_silently_ignored(
     extension: str, binary_loadable_dir: Path,
     key_a_pub_pem: bytes, tmp_path: Path,
 ):
-    """Any binary loadable file inside an external-checks dir is a hard failure.
+    """Binary loadable files inside an external-checks dir are silently ignored.
 
-    These file types cannot carry a trailer (no Python-comment concept
-    in ELF/PE/bytecode containers); silently skipping would leave the
-    import machinery free to load an unverified compiled module that
-    shares a stem with a signed ``.py``.
+    Only ``.py`` files are imported via the external-checks loader, so
+    other file types (``.pyc`` / ``.so`` / ``.pyd`` / ``.pyi``) are out
+    of scope for trailer signing. They must not cause the scan to fail.
     """
     (binary_loadable_dir / f"native{extension}").write_bytes(b"\x00\x01\x02")
 
@@ -629,12 +628,10 @@ def test_rejects_dir_containing_binary_loadable_file(
     key_path.write_bytes(key_a_pub_pem)
     keys = load_public_keys([str(key_path)])
 
-    with pytest.raises(SignatureVerificationError) as exc:
-        verify_external_checks_dirs([str(binary_loadable_dir)], keys)
-
-    msg = str(exc.value)
-    assert "binary file not supported under trailer signing" in msg
-    assert f"native{extension}" in msg
+    # Must not raise — binary loadables alongside a valid signed .py are ignored.
+    verified = verify_external_checks_dirs([str(binary_loadable_dir)], keys)
+    assert any(p.endswith("aws_check.py") for p in verified)
+    assert not any(p.endswith(extension) for p in verified)
 
 
 def test_accepts_empty_init_py_signed_as_comment_only(

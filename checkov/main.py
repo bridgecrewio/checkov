@@ -101,7 +101,6 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 _VERIFICATION_FAILURE_INLINE_LIMIT = 20
-_VERIFICATION_FAILURE_LOG_FILENAME = "checkov-verification-failures.log"
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
@@ -770,44 +769,20 @@ class Checkov:
     def _report_verification_failure_and_exit(
         self, exc: SignatureVerificationError,
     ) -> None:
-        """Print stderr summary + log file, then exit via ``self.exit_run()``."""
+        """Log a stderr summary of the verification failure, then exit via ``self.exit_run()``."""
         bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
         if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
             visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
             extra = len(bullets) - _VERIFICATION_FAILURE_INLINE_LIMIT
-            inline_detail = (
-                "\n".join(visible)
-                + f"\n  ... and {extra} more "
-                f"(see ./{_VERIFICATION_FAILURE_LOG_FILENAME} for the full list)"
-            )
+            inline_detail = "\n".join(visible) + f"\n  ... and {extra} more"
         else:
             inline_detail = "\n".join(bullets)
 
-        print(
+        logger.error(
             "External checks signature verification failed; "
-            "refusing to run the scan. Offending files:\n"
-            f"{inline_detail}",
-            file=sys.stderr,
+            "refusing to run the scan. Offending files:\n%s",
+            inline_detail,
         )
-        log_path = f"./{_VERIFICATION_FAILURE_LOG_FILENAME}"
-        try:
-            with open(log_path, "w") as f:
-                f.write(
-                    "External checks signature verification failed; "
-                    "refusing to run the scan. Offending files:\n"
-                )
-                f.write("\n".join(bullets) + "\n")
-        except OSError as exc:
-            # Read-only cwd is the usual cause; tell the operator
-            # explicitly so they don't chase a non-existent file.
-            print(
-                f"warning: could not write {log_path}: {exc}. "
-                f"The truncated stderr above is the only failure record.",
-                file=sys.stderr,
-            )
-            logger.warning(
-                "Failed to write verification failure log %s: %s", log_path, exc,
-            )
         self.exit_run()
 
     def get_external_checks_dir(self) -> list[str]:

@@ -185,9 +185,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "When set, any file without a valid '# checkov-digest: <hex>' trailer "
                  "signed by one of the configured keys causes Checkov to exit with code 2 "
                  "before scanning (or 0 if --no-fail-on-crash is also set; the "
-                 "diagnostic message and ./checkov-verification-failures.log are "
-                 "still produced). When unset, no verification is performed "
-                 "(backward compatible).",
+                 "diagnostic message is still produced on stderr). When unset, no "
+                 "verification is performed (backward compatible).",
         )
         self.add(
             "-l",

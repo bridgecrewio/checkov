@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import io
-import os
-import contextlib
+import logging
 from pathlib import Path
 from unittest.mock import patch
 
@@ -40,26 +38,39 @@ def _patch_git_getter(returns_path: Path):
 
 
 def _run_chokepoint(
-    checkov: Checkov, clone_result: Path,
+    checkov: Checkov, clone_result: Path, caplog=None,
 ) -> "tuple[list[str] | SystemExit, str]":
-    """Drive the chokepoint with a patched GitGetter; return ``(result, stderr)``.
+    """Drive the chokepoint with a patched GitGetter; return ``(result, log_text)``.
 
     ``result`` is the returned dir list on success, or the ``SystemExit``
-    on verification failure.
+    on verification failure. ``log_text`` is captured via ``caplog`` if
+    provided; otherwise an empty string.
     """
-    captured_stderr = io.StringIO()
+    log_capture = (
+        caplog.at_level(logging.ERROR, logger="checkov.main")
+        if caplog is not None
+        else _noop_ctx()
+    )
     # atexit.register inside main.py is harmless under test (the temp dir
     # is owned by the test's tmp_path), but mute it to keep test output clean.
     with patch("checkov.main.bc_integration") as bc, \
          patch("checkov.main.atexit"), \
          _patch_git_getter(clone_result), \
-         contextlib.redirect_stderr(captured_stderr):
+         log_capture:
         bc.sast_custom_policies = None
         try:
             result = checkov.get_external_checks_dir()
         except SystemExit as exc:
-            return exc, captured_stderr.getvalue()
-    return result, captured_stderr.getvalue()
+            return exc, (caplog.text if caplog is not None else "")
+    return result, (caplog.text if caplog is not None else "")
+
+
+import contextlib as _contextlib
+
+
+@_contextlib.contextmanager
+def _noop_ctx():
+    yield
 
 
 # --------------------------------------------------------------------------
@@ -101,13 +112,13 @@ def test_git_signed_clone_with_matching_key_verifies(
 
 
 def test_git_unsigned_clone_with_key_exits_via_exit_run(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov, caplog,
 ):
     """An unsigned git clone + key → exit_run() invoked, no scan.
 
     Routing through ``self.exit_run()`` is what gives ``--no-fail-on-crash``
     its documented contract — exit 0 with the failure still surfaced on
-    stderr + log file.
+    stderr (via logging).
     """
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
@@ -117,25 +128,18 @@ def test_git_unsigned_clone_with_key_exits_via_exit_run(
         external_checks_public_key=[str(key_path)],
     )
 
-    # Run inside tmp_path so the failure-log lands there.
-    prev_cwd = os.getcwd()
-    os.chdir(str(tmp_path))
-    try:
-        result, stderr = _run_chokepoint(checkov, unsigned_dir)
-    finally:
-        os.chdir(prev_cwd)
+    result, log_text = _run_chokepoint(checkov, unsigned_dir, caplog=caplog)
 
     assert isinstance(result, SystemExit)
     assert result.code == 2
-    assert "External checks signature verification failed" in stderr
-    assert (tmp_path / "checkov-verification-failures.log").exists()
+    assert "External checks signature verification failed" in log_text
     assert is_verification_active() is False
 
 
 def test_git_modified_clone_with_key_exits_2(
-    mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
+    mutated_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov, caplog,
 ):
-    """A signed-then-mutated git clone + key → exit 2 + log file written."""
+    """A signed-then-mutated git clone + key → exit 2 + diagnostic logged."""
     key_path = tmp_path / "key.pem"
     key_path.write_bytes(key_a_pub_pem)
 
@@ -144,21 +148,15 @@ def test_git_modified_clone_with_key_exits_2(
         external_checks_public_key=[str(key_path)],
     )
 
-    prev_cwd = os.getcwd()
-    os.chdir(str(tmp_path))
-    try:
-        result, stderr = _run_chokepoint(checkov, mutated_dir)
-    finally:
-        os.chdir(prev_cwd)
+    result, log_text = _run_chokepoint(checkov, mutated_dir, caplog=caplog)
 
     assert isinstance(result, SystemExit)
     assert result.code == 2
-    assert "External checks signature verification failed" in stderr
-    assert (tmp_path / "checkov-verification-failures.log").exists()
+    assert "External checks signature verification failed" in log_text
 
 
 def test_git_unsigned_clone_with_key_and_no_fail_on_crash_exits_0(
-    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov,
+    unsigned_dir: Path, key_a_pub_pem: bytes, tmp_path: Path, make_checkov, caplog,
 ):
     """Same as the unsigned-rejection test, but with ``--no-fail-on-crash``.
 
@@ -175,18 +173,12 @@ def test_git_unsigned_clone_with_key_and_no_fail_on_crash_exits_0(
         no_fail_on_crash=True,
     )
 
-    prev_cwd = os.getcwd()
-    os.chdir(str(tmp_path))
-    try:
-        result, stderr = _run_chokepoint(checkov, unsigned_dir)
-    finally:
-        os.chdir(prev_cwd)
+    result, log_text = _run_chokepoint(checkov, unsigned_dir, caplog=caplog)
 
     assert isinstance(result, SystemExit)
     assert result.code == 0
     # Diagnostic surface is unchanged — only the exit code differs.
-    assert "External checks signature verification failed" in stderr
-    assert (tmp_path / "checkov-verification-failures.log").exists()
+    assert "External checks signature verification failed" in log_text
 
 
 # --------------------------------------------------------------------------
@@ -253,8 +245,8 @@ def test_git_clone_with_pycache_in_repo_is_handled(
     (clone / "__init__.py").write_bytes(make_trailer(b"", priv_a))
     body = b"# signed via git\nCHECK_ID = 'CKV_GIT_1'\n"
     (clone / "checked.py").write_bytes(make_trailer(body, priv_a))
-    # And a pre-existing __pycache__/ with a .pyc that would normally trip
-    # the binary-loadable hard-reject.
+    # And a pre-existing __pycache__/ with a stale .pyc — the walker
+    # skips __pycache__ subdirs entirely.
     cache_dir = clone / "__pycache__"
     cache_dir.mkdir()
     (cache_dir / "stale.cpython-312.pyc").write_bytes(b"\x00fake bytecode")
