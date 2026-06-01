@@ -103,11 +103,18 @@ def install_finder(
 
 
 def uninstall_finder(finder: VerifiedSourcesFinder) -> None:
-    """Idempotent — second call is a silent no-op."""
-    try:
-        sys.meta_path.remove(finder)
-    except ValueError:
-        pass
+    """Idempotent — second call is a silent no-op.
+
+    Uses identity-based removal (``x is not finder``) instead of
+    ``sys.meta_path.remove(finder)``. ``list.remove`` is ``__eq__``-based
+    and walks every element until it finds a match; if any earlier
+    MetaPathFinder on ``sys.meta_path`` has a user-defined ``__eq__``
+    that hangs (e.g. waiting on a lock held by another thread), the
+    whole removal hangs with it. Filtering by ``is`` avoids any
+    ``__eq__`` invocation. We rebuild the list in place so any other
+    references to ``sys.meta_path`` keep seeing the same list object.
+    """
+    sys.meta_path[:] = [x for x in sys.meta_path if x is not finder]
 
 
 __all__ = [

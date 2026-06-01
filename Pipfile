@@ -10,6 +10,7 @@ pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-mock = "*"
 pytest-benchmark = "*"
+pytest-timeout = "*"
 exceptiongroup = {version = "*", markers="python_version < '3.11'"}
 coverage ="==7.6.1"
 coverage-badge = "*"

@@ -135,4 +135,10 @@ forbidden_modules = [
 
 [tool.pytest.ini_options]
 addopts = "-n 2 --dist loadfile"
+# Per-test hard cap. Any test that runs longer than this is killed and the
+# worker dumps a Python+C traceback to stderr via faulthandler — surfacing
+# silent hangs (e.g. the deadlocks inside the verified-loader tests on
+# Python 3.9) as proper test failures instead of consuming the job timeout.
+timeout = 60
+timeout_method = "thread"
 
