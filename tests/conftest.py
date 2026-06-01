@@ -1,3 +1,4 @@
+
 from copy import copy, deepcopy
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 import pytest
