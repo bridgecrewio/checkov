@@ -238,6 +238,7 @@ class TestRunnerValid(unittest.TestCase):
         r = Runner()
         r.helm_command = 'thisshouldfail'
         assert r.check_system_deps() == "helm"
+#
 
 if __name__ == "__main__":
     unittest.main()
