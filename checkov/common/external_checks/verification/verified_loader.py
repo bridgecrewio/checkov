@@ -4,8 +4,8 @@ import importlib.util
 import logging
 import os
 import sys
-from importlib.abc import Loader, MetaPathFinder
-from importlib.machinery import ModuleSpec
+from importlib.abc import MetaPathFinder
+from importlib.machinery import ModuleSpec, SourceFileLoader
 from types import ModuleType
 from typing import Iterable, Mapping, Sequence
 
@@ -13,19 +13,39 @@ from typing import Iterable, Mapping, Sequence
 logger = logging.getLogger(__name__)
 
 
-def _compile_and_exec_into_module(
-    module: ModuleType, file_path: str, source_bytes: bytes, module_name: str,
-) -> None:
-    try:
-        code = compile(source_bytes, file_path, "exec")
-        # Loading a Python module inherently requires executing it. The bytes
-        # passed in here have already been ECDSA-signature-verified by the
-        # caller (see load_verified_sources_into_module / _VerifiedSourceLoader
-        # call sites in the verification package).
-        exec(code, module.__dict__)  # nosec B102
-    except BaseException:
-        sys.modules.pop(module_name, None)
-        raise
+class _VerifiedSourceLoader(SourceFileLoader):
+    """Serves pre-verified in-memory bytes through the stdlib import machinery."""
+
+    def __init__(self, fullname: str, file_path: str, source_bytes: bytes) -> None:
+        super().__init__(fullname, file_path)
+        self._source_bytes = source_bytes
+
+    def get_data(self, path: str) -> bytes:
+        return self._source_bytes
+
+    def path_stats(self, path: str) -> "Mapping[str, int]":
+        # Fixed mtime/size so the stdlib does not stat() the file or consult
+        # an on-disk .pyc cache (which would not be re-verified).
+        return {"mtime": 0, "size": len(self._source_bytes)}
+
+    def get_source(self, fullname: str) -> str:
+        return self._source_bytes.decode("utf-8", errors="replace")
+
+    def set_data(  # type: ignore[override]
+        self, path: str, data: bytes, *, _mode: int = 0o666,
+    ) -> None:
+        # Opt out of stdlib .pyc cache writes: those bytes would have no
+        # trailer of their own and could be picked up by a later process.
+        return None
+
+    def exec_module(self, module: ModuleType) -> None:
+        # Drop the half-initialised module on failure so a subsequent import
+        # of the same name gets ModuleNotFoundError instead of a partial.
+        try:
+            super().exec_module(module)
+        except BaseException:
+            sys.modules.pop(module.__name__, None)
+            raise
 
 
 def load_verified_sources_into_module(
@@ -33,39 +53,26 @@ def load_verified_sources_into_module(
     file_path: str,
     source_bytes: bytes,
 ) -> ModuleType:
-    """Compile + exec ``source_bytes`` as ``module_name``.
+    """Load ``source_bytes`` as ``module_name`` via the stdlib import machinery.
 
-    Pre-registers in ``sys.modules`` BEFORE exec so self-imports resolve.
-    Cleans up on failure.
+    Pre-registers in ``sys.modules`` BEFORE ``exec_module`` so self-imports
+    resolve. Cleans up on failure.
     """
-    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    loader = _VerifiedSourceLoader(module_name, file_path, source_bytes)
+    spec = importlib.util.spec_from_loader(module_name, loader, origin=file_path)
     if spec is None:
         raise ImportError(f"cannot create module spec for {module_name} at {file_path}")
     module = importlib.util.module_from_spec(spec)
+    # spec_from_loader doesn't propagate __file__ onto the module; external
+    # checks rely on it for diagnostics, so set it explicitly.
+    module.__file__ = file_path
     sys.modules[module_name] = module
-    _compile_and_exec_into_module(module, file_path, source_bytes, module_name)
+    try:
+        loader.exec_module(module)
+    except BaseException:
+        sys.modules.pop(module_name, None)
+        raise
     return module
-
-
-class _VerifiedSourceLoader(Loader):
-    def __init__(self, file_path: str, source_bytes: bytes) -> None:
-        self._file_path = file_path
-        self._source_bytes = source_bytes
-
-    def create_module(self, spec: ModuleSpec) -> "ModuleType | None":
-        return None
-
-    def exec_module(self, module: ModuleType) -> None:
-        module.__dict__["__file__"] = self._file_path
-        _compile_and_exec_into_module(
-            module,
-            self._file_path,
-            self._source_bytes,
-            getattr(module, "__name__", ""),
-        )
-
-    def get_source(self, fullname: str) -> str:
-        return self._source_bytes.decode("utf-8", errors="replace")
 
 
 class VerifiedSourcesFinder(MetaPathFinder):
@@ -92,7 +99,7 @@ class VerifiedSourcesFinder(MetaPathFinder):
             candidate_path = os.path.join(verified_dir, candidate_name)
             if candidate_path in self._verified_sources:
                 source_bytes = self._verified_sources[candidate_path]
-                loader = _VerifiedSourceLoader(candidate_path, source_bytes)
+                loader = _VerifiedSourceLoader(fullname, candidate_path, source_bytes)
                 return importlib.util.spec_from_loader(fullname, loader, origin=candidate_path)
         return None
 

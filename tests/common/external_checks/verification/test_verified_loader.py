@@ -69,6 +69,31 @@ def test_load_verified_sources_into_module_execs_in_memory_bytes(tmp_path: Path)
     assert module.__file__ == str(on_disk)
 
 
+def test_load_verified_sources_into_module_writes_no_bytecode_cache(tmp_path: Path):
+    """The loader must NOT write a ``.pyc`` next to the source.
+
+    A persistent bytecode cache on disk is a second representation of the
+    module that does not carry a trailer of its own. Disabling cache writes
+    keeps the executed-bytes / verified-bytes equality strictly per-process
+    and avoids leaving artefacts in customer directories.
+    """
+    on_disk = tmp_path / "no_cache_target.py"
+    on_disk.write_bytes(b"VALUE = 'verified'\n")
+
+    load_verified_sources_into_module(
+        "no_cache_target_mod", str(on_disk), b"VALUE = 'verified'\n",
+    )
+
+    # No __pycache__ directory created next to the source.
+    assert not (tmp_path / "__pycache__").exists(), (
+        f"unexpected __pycache__ in {tmp_path}: "
+        f"{list((tmp_path / '__pycache__').iterdir()) if (tmp_path / '__pycache__').exists() else []}"
+    )
+    # And no stray .pyc anywhere in tmp_path.
+    pyc_files = list(tmp_path.rglob("*.pyc"))
+    assert pyc_files == [], f"unexpected .pyc files written: {pyc_files}"
+
+
 def test_load_verified_sources_into_module_cleans_up_on_failure(tmp_path: Path):
     """A SyntaxError in the bytes leaves no half-loaded module behind."""
     on_disk = tmp_path / "broken.py"
@@ -99,7 +124,9 @@ def test_verified_source_loader_exec_module_cleans_up_on_failure(tmp_path: Path)
     )
 
     module_name = "broken_via_finder_exec"
-    loader = _VerifiedSourceLoader(str(tmp_path / "broken.py"), b"def broken(:\n")
+    loader = _VerifiedSourceLoader(
+        module_name, str(tmp_path / "broken.py"), b"def broken(:\n",
+    )
     spec = importlib.util.spec_from_loader(module_name, loader)
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
