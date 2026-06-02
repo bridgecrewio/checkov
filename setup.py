@@ -92,7 +92,7 @@ setup(
         "cyclonedx-python-lib<8.0.0,>=6.0.0",
         "packageurl-python<0.14.0,>=0.11.1",
         "click<9.0.0,>=8.1.0",
-        "aiohttp<4.0.0,>=3.8.0",
+        "aiohttp<3.14.0,>=3.8.0",
         "aiodns<4.0.0,>=3.0.0",
         "aiomultiprocess>=0.9.0,<0.10.0",
         "schema<=0.7.5",
