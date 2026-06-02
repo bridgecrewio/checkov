@@ -6,7 +6,7 @@ from unittest import mock
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
-from checkov.kustomize.runner import Runner
+from checkov.kustomize.runner import Runner, _has_remote_refs
 from tests.kustomize.utils import kustomize_exists
 
 
@@ -169,6 +169,143 @@ class TestRunnerValid(unittest.TestCase):
                                                                         runner.templateRendererCommand)
         assert regular_result == result_from_directory
 
+
+
+class TestRemoteBaseSSRF(unittest.TestCase):
+    """Tests for F-11: Kustomize Remote Base SSRF (CWE-918)."""
+
+    _REMOTE_BASE_DIR = str(Path(__file__).parent / "runner/resources/example_remote_base")
+
+    # ------------------------------------------------------------------
+    # Unit tests for the helper function (no kustomize binary needed)
+    # ------------------------------------------------------------------
+
+    def test_has_remote_refs_detects_http_url(self):
+        """_has_remote_refs() must flag http:// entries in resources:."""
+        refs = _has_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertIn("http://169.254.169.254/latest/meta-data/", refs)
+
+    def test_has_remote_refs_detects_git_url(self):
+        """_has_remote_refs() must flag git:: entries in resources:."""
+        refs = _has_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertTrue(any(r.startswith("git::") for r in refs),
+                        f"Expected a git:: ref in {refs}")
+
+    def test_has_remote_refs_returns_empty_for_local_only(self):
+        """_has_remote_refs() must return [] for a kustomization with only local refs."""
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        refs = _has_remote_refs(local_dir)
+        self.assertEqual(refs, [])
+
+    def test_has_remote_refs_returns_empty_for_missing_dir(self):
+        """_has_remote_refs() must not raise for a directory without a kustomization file."""
+        refs = _has_remote_refs("/nonexistent/path/that/does/not/exist")
+        self.assertEqual(refs, [])
+
+    # ------------------------------------------------------------------
+    # Integration tests: _get_kubectl_output() must skip remote bases
+    # (no real network call is made because we mock subprocess.Popen)
+    # ------------------------------------------------------------------
+
+    def _make_runner(self) -> Runner:
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        return runner
+
+    def test_get_kubectl_output_blocks_remote_refs_by_default(self):
+        """_get_kubectl_output() must return None when remote refs are present and
+        CHECKOV_KUSTOMIZE_ALLOW_REMOTE is not set (default safe behaviour)."""
+        runner = self._make_runner()
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", None)
+            with mock.patch("subprocess.Popen") as mock_popen:
+                result = runner._get_kubectl_output(
+                    self._REMOTE_BASE_DIR, "kustomize", "base"
+                )
+        self.assertIsNone(result, "Expected None when remote refs are present")
+        mock_popen.assert_not_called()
+
+    def test_get_kubectl_output_blocks_remote_refs_when_env_false(self):
+        """_get_kubectl_output() must return None when CHECKOV_KUSTOMIZE_ALLOW_REMOTE=false."""
+        runner = self._make_runner()
+        with mock.patch.dict(os.environ, {"CHECKOV_KUSTOMIZE_ALLOW_REMOTE": "false"}):
+            with mock.patch("subprocess.Popen") as mock_popen:
+                result = runner._get_kubectl_output(
+                    self._REMOTE_BASE_DIR, "kustomize", "base"
+                )
+        self.assertIsNone(result)
+        mock_popen.assert_not_called()
+
+    def test_get_kubectl_output_allows_remote_refs_when_env_true(self):
+        """_get_kubectl_output() must invoke kustomize when CHECKOV_KUSTOMIZE_ALLOW_REMOTE=true."""
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {"CHECKOV_KUSTOMIZE_ALLOW_REMOTE": "true"}):
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(
+                    self._REMOTE_BASE_DIR, "kustomize", "base"
+                )
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
+
+    def test_get_kubectl_output_allows_local_refs_without_env(self):
+        """_get_kubectl_output() must invoke kustomize for local-only kustomizations."""
+        runner = self._make_runner()
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", None)
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(local_dir, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
+
+    # ------------------------------------------------------------------
+    # Prefix allowlist tests (CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES)
+    # ------------------------------------------------------------------
+
+    def test_allowed_prefix_permits_matching_url(self):
+        """A remote ref matching an allowed prefix must not block the build."""
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        # The fixture contains http://169.254.169.254/... — allow that prefix
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "http://169.254.169.254/,git::https://attacker.example/"}
+        with mock.patch.dict(os.environ, env):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", None)
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
+
+    def test_allowed_prefix_blocks_non_matching_url(self):
+        """A remote ref NOT matching any allowed prefix must still block the build."""
+        runner = self._make_runner()
+        # Allow only a trusted org — the fixture's attacker URL must still be blocked
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "https://github.com/trusted-org/"}
+        with mock.patch.dict(os.environ, env):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", None)
+            with mock.patch("subprocess.Popen") as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        self.assertIsNone(result)
+        mock_popen.assert_not_called()
+
+    def test_allowed_prefix_partial_match_blocks_unmatched(self):
+        """Only the matching refs are allowed; if any ref is unmatched the build is blocked."""
+        runner = self._make_runner()
+        # Allow the http:// ref but NOT the git:: ref — build must still be blocked
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "http://169.254.169.254/"}
+        with mock.patch.dict(os.environ, env):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", None)
+            with mock.patch("subprocess.Popen") as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        self.assertIsNone(result)
+        mock_popen.assert_not_called()
 
 
 if __name__ == '__main__':

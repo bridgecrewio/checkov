@@ -287,7 +287,12 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 logging.warning(
                     f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
-        helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
+        # SSRF guard (CWE-918): do not fetch remote dependencies by default.
+        # Set CHECKOV_HELM_DEPENDENCY_UPDATE=true to opt in (charts should vendor deps in charts/).
+        helm_command_args = [helm_command, 'template']
+        if os.getenv("CHECKOV_HELM_DEPENDENCY_UPDATE", "").strip().lower() == "true":
+            helm_command_args.append('--dependency-update')
+        helm_command_args.append(chart_dir)
         if runner_filter.var_files:
             for var in runner_filter.var_files:
                 helm_command_args.append("--values")

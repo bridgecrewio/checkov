@@ -91,3 +91,35 @@ Check: CKV_K8S_43: "Image should use digest"
         File: /Users/matt/bcd/kustomize/checkov/testdir/example-monorepo-structure/k8s/overlays/prod-3/kustomization.yaml:
 
 ```
+
+## Remote Base Security (SSRF Protection)
+
+By default, Checkov blocks `kustomize build` for any `kustomization.yaml` that contains remote URLs in `resources`, `bases`, `components`, or `crds`. This prevents Server-Side Request Forgery (CWE-918) where a malicious PR could cause the CI runner to fetch attacker-controlled URLs.
+
+**Blocked patterns:** `http://`, `https://`, `git::`, `ssh://`, `github.com/` shorthand.
+
+**Local file paths are always allowed** (`./file.yaml`, `../base/`, `subdir/`).
+
+### Opt-in options (set as CI environment variables, not in scanned files)
+
+**Allow all remote references** (use only when you fully trust all scanned repos):
+```bash
+CHECKOV_KUSTOMIZE_ALLOW_REMOTE=true checkov -d ./myapp --framework kustomize
+```
+
+**Allow specific trusted URL prefixes** (recommended — allowlist your own org):
+```bash
+CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES=https://github.com/my-org/,https://gitlab.company.com/ \
+  checkov -d ./myapp --framework kustomize
+```
+
+Multiple prefixes are comma-separated. A remote URL is allowed if it starts with **any** of the listed prefixes; all others remain blocked.
+
+### Example warning when a remote base is blocked
+
+```
+WARNING: Skipping kustomize build for /path/to/app: blocked remote references:
+http://169.254.169.254/latest/meta-data/, git::https://attacker.example/evil-repo.
+Use CHECKOV_KUSTOMIZE_ALLOW_REMOTE or CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES
+to allow trusted sources.
+```

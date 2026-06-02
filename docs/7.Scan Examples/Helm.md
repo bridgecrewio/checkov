@@ -107,6 +107,20 @@ helm template gocd/gocd -f gocd.yaml > k8s-template.yaml
 checkov -f k8s-template.yaml --framework kubernetes --skip-check CKV_K8S_21
 ```
 
-Note we skip check `CKV_K8S_21` for this process, which alerts on default namespace usage within Kubernetes manifests. 
+Note we skip check `CKV_K8S_21` for this process, which alerts on default namespace usage within Kubernetes manifests.
 Since helm manages our namespaces, we always skip this internally when using the helm framework, so we want to replicate the same behaviour here.
+
+## Dependency Update Security (SSRF Protection)
+
+By default, Checkov runs `helm template` **without** `--dependency-update`. This prevents Server-Side Request Forgery (CWE-918) where a malicious PR could include a `Chart.yaml` with a `dependencies[].repository` pointing to an attacker-controlled URL, causing the CI runner to make outbound HTTP requests.
+
+Charts should vendor their dependencies into the `charts/` directory (standard Helm best practice). If dependencies are already vendored, `helm template` works without the flag.
+
+### Opt-in (set as a CI environment variable, not in scanned files)
+
+```bash
+CHECKOV_HELM_DEPENDENCY_UPDATE=true checkov -d ./myapp --framework helm
+```
+
+This re-enables `--dependency-update` for environments where charts are not vendored and all scanned repos are trusted.
 

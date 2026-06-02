@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import pathlib
 import platform
+import re
 import shutil
 import subprocess  # nosec
 import tempfile
@@ -42,6 +43,46 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
     from networkx import DiGraph
+
+
+# Regex matching any remote resource reference that kustomize would fetch over the network.
+# Covers: http(s)://, git::, ssh://, github.com/ shorthand
+_REMOTE_REF = re.compile(r'^(https?://|git::|ssh://|github\.com/)', re.IGNORECASE)
+
+# Keys in kustomization.yaml that may contain remote references
+_REMOTE_REF_KEYS = ('resources', 'bases', 'components', 'crds')
+
+
+def _has_remote_refs(kustomization_dir: str) -> list[str]:
+    """Return a list of remote references found in the kustomization file inside *kustomization_dir*.
+
+    Returns an empty list when no remote references are present or the file cannot be read.
+    """
+    for filename in ('kustomization.yaml', 'kustomization.yml'):
+        kustomization_path = os.path.join(kustomization_dir, filename)
+        if not os.path.isfile(kustomization_path):
+            continue
+        try:
+            with open(kustomization_path, 'r', encoding='utf-8') as f:
+                doc = yaml.safe_load(f)
+        except Exception:
+            logging.debug(f"Could not parse {kustomization_path} for remote-ref check.", exc_info=True)
+            return []
+
+        if not isinstance(doc, dict):
+            return []
+
+        remote_refs: list[str] = []
+        for key in _REMOTE_REF_KEYS:
+            entries = doc.get(key) or []
+            if not isinstance(entries, list):
+                continue
+            for entry in entries:
+                if isinstance(entry, str) and _REMOTE_REF.match(entry):
+                    remote_refs.append(entry)
+        return remote_refs
+
+    return []
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -561,6 +602,32 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         else:
             logging.error(f"Template renderer command has an invalid value: {template_renderer_command}")
             return None
+
+        # SSRF guard (CWE-918): block remote refs before invoking kustomize.
+        # Override via env vars (set in CI, not in scanned files):
+        #   CHECKOV_KUSTOMIZE_ALLOW_REMOTE=true                          – allow all
+        #   CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES=https://org/,...   – allowlist
+        allow_remote = convert_str_to_bool(os.getenv("CHECKOV_KUSTOMIZE_ALLOW_REMOTE", False))
+        if not allow_remote:
+            remote_refs = _has_remote_refs(filePath)
+            if remote_refs:
+                allowed_prefixes = [
+                    p.strip().lower()
+                    for p in os.getenv("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", "").split(",")
+                    if p.strip()
+                ]
+                blocked_refs = [
+                    ref for ref in remote_refs
+                    if not any(ref.lower().startswith(p) for p in allowed_prefixes)
+                ] if allowed_prefixes else remote_refs
+
+                if blocked_refs:
+                    logging.warning(
+                        f"Skipping kustomize build for {filePath}: blocked remote references: "
+                        f"{', '.join(blocked_refs)}. Use CHECKOV_KUSTOMIZE_ALLOW_REMOTE or "
+                        f"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES to allow trusted sources."
+                    )
+                    return None
 
         add_origin_annotations_return_code = None
 

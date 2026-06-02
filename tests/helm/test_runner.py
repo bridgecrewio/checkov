@@ -1,6 +1,8 @@
 import os
 import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 from unittest.mock import patch
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
@@ -238,6 +240,68 @@ class TestRunnerValid(unittest.TestCase):
         r = Runner()
         r.helm_command = 'thisshouldfail'
         assert r.check_system_deps() == "helm"
+
+class TestHelmDependencySSRF(unittest.TestCase):
+    """Tests for F-10: Helm dependency-update SSRF (CWE-918)."""
+
+    _REMOTE_DEP_DIR = str(Path(__file__).parent / "runner/resources/example_remote_dep")
+
+    def _make_chart_item(self) -> tuple[str, dict]:
+        return (self._REMOTE_DEP_DIR, {"name": "evil-chart", "version": "0.1.0"})
+
+    def test_dependency_update_not_in_args_by_default(self):
+        """--dependency-update must NOT be in helm args when env var is unset."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_HELM_DEPENDENCY_UPDATE", None)
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        call_args = mock_popen.call_args[0][0]
+        self.assertNotIn("--dependency-update", call_args)
+
+    def test_dependency_update_not_in_args_when_env_false(self):
+        """--dependency-update must NOT be in helm args when CHECKOV_HELM_DEPENDENCY_UPDATE=false."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {"CHECKOV_HELM_DEPENDENCY_UPDATE": "false"}):
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        call_args = mock_popen.call_args[0][0]
+        self.assertNotIn("--dependency-update", call_args)
+
+    def test_dependency_update_in_args_when_env_true(self):
+        """--dependency-update MUST be in helm args when CHECKOV_HELM_DEPENDENCY_UPDATE=true."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {"CHECKOV_HELM_DEPENDENCY_UPDATE": "true"}):
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        call_args = mock_popen.call_args[0][0]
+        self.assertIn("--dependency-update", call_args)
+
+    def test_chart_dir_always_last_arg(self):
+        """chart_dir must always be the last argument regardless of env var."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        for env in [{}, {"CHECKOV_HELM_DEPENDENCY_UPDATE": "true"}]:
+            with mock.patch.dict(os.environ, env, clear=False):
+                os.environ.pop("CHECKOV_HELM_DEPENDENCY_UPDATE", None)
+                if env:
+                    os.environ["CHECKOV_HELM_DEPENDENCY_UPDATE"] = env.get("CHECKOV_HELM_DEPENDENCY_UPDATE", "")
+                with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                    Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+            call_args = mock_popen.call_args[0][0]
+            self.assertEqual(call_args[-1], self._REMOTE_DEP_DIR)
+
 
 if __name__ == "__main__":
     unittest.main()
