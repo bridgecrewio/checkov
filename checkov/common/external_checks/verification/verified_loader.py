@@ -18,7 +18,11 @@ def _compile_and_exec_into_module(
 ) -> None:
     try:
         code = compile(source_bytes, file_path, "exec")
-        exec(code, module.__dict__)
+        # Loading a Python module inherently requires executing it. The bytes
+        # passed in here have already been ECDSA-signature-verified by the
+        # caller (see load_verified_sources_into_module / _VerifiedSourceLoader
+        # call sites in the verification package).
+        exec(code, module.__dict__)  # nosec B102
     except BaseException:
         sys.modules.pop(module_name, None)
         raise
