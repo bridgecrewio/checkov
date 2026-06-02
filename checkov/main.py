@@ -32,6 +32,8 @@ from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError, PlatformConnectionError
+from checkov.common.external_checks.verification.errors import SignatureVerificationError
+from checkov.common.external_checks.verification.sources_registry import verify_and_register
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -97,6 +99,8 @@ outer_registry = None
 
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
+
+_VERIFICATION_FAILURE_INLINE_LIMIT = 20
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
@@ -529,11 +533,14 @@ class Checkov:
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
                     file = self.config.file
-                    self.scan_reports = runner_registry.run(
-                        root_folder=root_folder,
-                        external_checks_dir=external_checks_dir,
-                        files=file,
-                    )
+                    try:
+                        self.scan_reports = runner_registry.run(
+                            root_folder=root_folder,
+                            external_checks_dir=external_checks_dir,
+                            files=file,
+                        )
+                    except SignatureVerificationError as exc:
+                        self._report_verification_failure_and_exit(exc)
                     self.graphs = runner_registry.check_type_to_graph
                     self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
@@ -644,11 +651,14 @@ class Checkov:
             elif self.config.file:
                 bc_integration.scan_file = self.config.file
                 runner_registry.filter_runners_for_files(self.config.file)
-                self.scan_reports = runner_registry.run(
-                    external_checks_dir=external_checks_dir,
-                    files=self.config.file,
-                    repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-                )
+                try:
+                    self.scan_reports = runner_registry.run(
+                        external_checks_dir=external_checks_dir,
+                        files=self.config.file,
+                        repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
+                    )
+                except SignatureVerificationError as exc:
+                    self._report_verification_failure_and_exit(exc)
                 self.graphs = runner_registry.check_type_to_graph
                 self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):
@@ -756,12 +766,41 @@ class Checkov:
             self.exit_run()
             return ""
 
+    def _report_verification_failure_and_exit(
+        self, exc: SignatureVerificationError,
+    ) -> None:
+        """Log a stderr summary of the verification failure, then exit via ``self.exit_run()``."""
+        bullets = [ln for ln in str(exc).split("\n") if ln.strip()]
+        if len(bullets) > _VERIFICATION_FAILURE_INLINE_LIMIT:
+            visible = bullets[:_VERIFICATION_FAILURE_INLINE_LIMIT]
+            extra = len(bullets) - _VERIFICATION_FAILURE_INLINE_LIMIT
+            inline_detail = "\n".join(visible) + f"\n  ... and {extra} more"
+        else:
+            inline_detail = "\n".join(bullets)
+
+        logger.error(
+            "External checks signature verification failed; "
+            "refusing to run the scan. Offending files:\n%s",
+            inline_detail,
+        )
+        self.exit_run()
+
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir
         if self.config.external_checks_git:
             git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
+
+        # Verification chokepoint — sast_custom_policies is appended
+        # after this and is authenticated through a separate trust boundary.
+        public_key_paths: "list[str]" = self.config.external_checks_public_key or []
+        if public_key_paths and external_checks_dir:
+            try:
+                verify_and_register(external_checks_dir, public_key_paths)
+            except SignatureVerificationError as exc:
+                self._report_verification_failure_and_exit(exc)
+
         if bc_integration.sast_custom_policies:
             if not external_checks_dir:
                 external_checks_dir = []
