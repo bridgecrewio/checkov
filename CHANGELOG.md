@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.531...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.532...HEAD)
+
+## [3.2.532](https://github.com/bridgecrewio/checkov/compare/3.2.531...3.2.532) - 2026-06-02
+
+### Feature
+
+- **general:** verify ECDSA-P256 signatures on external custom checks before loading - [#7556](https://github.com/bridgecrewio/checkov/pull/7556)
 
 ## [3.2.531](https://github.com/bridgecrewio/checkov/compare/3.2.530...3.2.531) - 2026-06-01
 
