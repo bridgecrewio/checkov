@@ -20,6 +20,7 @@ def _setup_test_under_example():
     runner.templateRendererCommandOptions = "build"
     checks_allowlist = ['CKV_K8S_37']
     return checks_allowlist, dir_rel_path, runner
+#
 
 
 class TestRunnerValid(unittest.TestCase):
