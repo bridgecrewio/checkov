@@ -383,6 +383,96 @@ class TestParser(unittest.TestCase):
         self.assertEqual(("self", "foo", None, None),
                          _parse_var("self: foo"))       # eat whitespace
 
+    #########################################
+    # env/file variable resolution opt-out
+    #
+    # Default behavior (flag unset) resolves ${env:VAR} and ${file(path)} to
+    # preserve backward compatibility. Setting CHECKOV_SERVERLESS_DISABLE_VARS=true
+    # disables that resolution.
+
+    @mock.patch.dict(os.environ, {"MY_SECRET": "s3cret"})
+    def test_env_var_resolved_by_default(self):
+        """${env:VAR} IS resolved by default when the disable flag is not set."""
+        env = os.environ.copy()
+        env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
+        with mock.patch.dict(os.environ, env, clear=True):
+            case = {
+                "provider": {"name": "aws"},
+                "value": "${env:MY_SECRET}"
+            }
+            result = process_variables(case, IRRELEVANT_DIR)
+            self.assertEqual(result["value"], "s3cret")
+
+    @mock.patch.dict(os.environ, {"MY_SECRET": "s3cret", "CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
+    def test_env_var_not_resolved_when_disabled(self):
+        """${env:VAR} must NOT resolve when CHECKOV_SERVERLESS_DISABLE_VARS=true."""
+        case = {
+            "provider": {"name": "aws"},
+            "value": "${env:MY_SECRET}"
+        }
+        result = process_variables(case, IRRELEVANT_DIR)
+        # Should remain unresolved
+        self.assertEqual(result["value"], "${env:MY_SECRET}")
+
+    def test_file_var_resolved_by_default(self):
+        """${file(path)} IS resolved by default when the disable flag is not set."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write('{"secret_key": "top-secret"}')
+            tmp_path = f.name
+        try:
+            env = os.environ.copy()
+            env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
+            with mock.patch.dict(os.environ, env, clear=True):
+                case = {
+                    "provider": {"name": "aws"},
+                    "value": "${file(" + tmp_path + "):secret_key}"
+                }
+                result = process_variables(case, IRRELEVANT_DIR)
+                self.assertEqual(result["value"], "top-secret")
+        finally:
+            os.unlink(tmp_path)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
+    def test_file_var_not_resolved_when_disabled(self):
+        """${file(path)} must NOT resolve when CHECKOV_SERVERLESS_DISABLE_VARS=true."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            f.write('{"secret_key": "top-secret"}')
+            tmp_path = f.name
+        try:
+            case = {
+                "provider": {"name": "aws"},
+                "value": "${file(" + tmp_path + "):secret_key}"
+            }
+            result = process_variables(case, IRRELEVANT_DIR)
+            # Should remain unresolved
+            self.assertEqual(result["value"], "${file(" + tmp_path + "):secret_key}")
+        finally:
+            os.unlink(tmp_path)
+
+    def test_self_resolution_unaffected_by_default(self):
+        """${self:} must always resolve when the disable flag is not set."""
+        env = os.environ.copy()
+        env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
+        with mock.patch.dict(os.environ, env, clear=True):
+            case = {
+                "provider": {"name": "aws"},
+                "source": "resolved-value",
+                "consumer": "${self:source}"
+            }
+            result = process_variables(case, IRRELEVANT_DIR)
+            self.assertEqual(result["consumer"], "resolved-value")
+
+    @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
+    def test_self_resolution_unaffected_when_disabled(self):
+        """${self:} must always resolve even when CHECKOV_SERVERLESS_DISABLE_VARS=true."""
+        case = {
+            "provider": {"name": "aws"},
+            "source": "resolved-value",
+            "consumer": "${self:source}"
+        }
+        result = process_variables(case, IRRELEVANT_DIR)
+        self.assertEqual(result["consumer"], "resolved-value")
+
 
     #########################################
     # Security: env/file variable resolution opt-in (BCE-58125)
