@@ -386,22 +386,13 @@ class TestParser(unittest.TestCase):
     #########################################
     # env/file variable resolution opt-out
     #
-    # Default behavior (flag unset) resolves ${env:VAR} and ${file(path)} to
-    # preserve backward compatibility. Setting CHECKOV_SERVERLESS_DISABLE_VARS=true
-    # disables that resolution.
-
-    @mock.patch.dict(os.environ, {"MY_SECRET": "s3cret"})
-    def test_env_var_resolved_by_default(self):
-        """${env:VAR} IS resolved by default when the disable flag is not set."""
-        env = os.environ.copy()
-        env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
-        with mock.patch.dict(os.environ, env, clear=True):
-            case = {
-                "provider": {"name": "aws"},
-                "value": "${env:MY_SECRET}"
-            }
-            result = process_variables(case, IRRELEVANT_DIR)
-            self.assertEqual(result["value"], "s3cret")
+    # Default behavior (flag unset) resolves ${env:VAR} and ${file(path)},
+    # preserving backward compatibility. That default path is already exercised
+    # by the check tests (test_AdminPolicyDocument / test_S3PublicACLRead, which
+    # rely on ${env:} and ${file()} resolution) and by the ${self:} tests above,
+    # so it is not re-tested here. These tests cover only the NEW opt-out
+    # behavior: CHECKOV_SERVERLESS_DISABLE_VARS=true disables ${env:} and
+    # ${file()} resolution while leaving ${self:} resolution intact.
 
     @mock.patch.dict(os.environ, {"MY_SECRET": "s3cret", "CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
     def test_env_var_not_resolved_when_disabled(self):
@@ -413,24 +404,6 @@ class TestParser(unittest.TestCase):
         result = process_variables(case, IRRELEVANT_DIR)
         # Should remain unresolved
         self.assertEqual(result["value"], "${env:MY_SECRET}")
-
-    def test_file_var_resolved_by_default(self):
-        """${file(path)} IS resolved by default when the disable flag is not set."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write('{"secret_key": "top-secret"}')
-            tmp_path = f.name
-        try:
-            env = os.environ.copy()
-            env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
-            with mock.patch.dict(os.environ, env, clear=True):
-                case = {
-                    "provider": {"name": "aws"},
-                    "value": "${file(" + tmp_path + "):secret_key}"
-                }
-                result = process_variables(case, IRRELEVANT_DIR)
-                self.assertEqual(result["value"], "top-secret")
-        finally:
-            os.unlink(tmp_path)
 
     @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
     def test_file_var_not_resolved_when_disabled(self):
@@ -449,19 +422,6 @@ class TestParser(unittest.TestCase):
         finally:
             os.unlink(tmp_path)
 
-    def test_self_resolution_unaffected_by_default(self):
-        """${self:} must always resolve when the disable flag is not set."""
-        env = os.environ.copy()
-        env.pop("CHECKOV_SERVERLESS_DISABLE_VARS", None)
-        with mock.patch.dict(os.environ, env, clear=True):
-            case = {
-                "provider": {"name": "aws"},
-                "source": "resolved-value",
-                "consumer": "${self:source}"
-            }
-            result = process_variables(case, IRRELEVANT_DIR)
-            self.assertEqual(result["consumer"], "resolved-value")
-
     @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_DISABLE_VARS": "true"})
     def test_self_resolution_unaffected_when_disabled(self):
         """${self:} must always resolve even when CHECKOV_SERVERLESS_DISABLE_VARS=true."""
@@ -472,102 +432,6 @@ class TestParser(unittest.TestCase):
         }
         result = process_variables(case, IRRELEVANT_DIR)
         self.assertEqual(result["consumer"], "resolved-value")
-
-
-    #########################################
-    # Security: env/file variable resolution opt-in (BCE-58125)
-
-    def test_env_var_not_resolved_by_default(self):
-        """${env:VAR} must NOT resolve when CHECKOV_SERVERLESS_RESOLVE_VARS is not set."""
-        with mock.patch.dict(os.environ, {"MY_SECRET": "s3cret"}, clear=False):
-            # Ensure opt-in is NOT set
-            env = os.environ.copy()
-            env.pop("CHECKOV_SERVERLESS_RESOLVE_VARS", None)
-            with mock.patch.dict(os.environ, env, clear=True):
-                case = {
-                    "provider": {"name": "aws"},
-                    "value": "${env:MY_SECRET}"
-                }
-                result = process_variables(case, IRRELEVANT_DIR)
-                # Should remain unresolved
-                self.assertEqual(result["value"], "${env:MY_SECRET}")
-
-    @mock.patch.dict(os.environ, {"MY_SECRET": "s3cret", "CHECKOV_SERVERLESS_RESOLVE_VARS": "true"})
-    def test_env_var_resolved_when_opted_in(self):
-        """${env:VAR} must resolve when CHECKOV_SERVERLESS_RESOLVE_VARS=true."""
-        case = {
-            "provider": {"name": "aws"},
-            "value": "${env:MY_SECRET}"
-        }
-        result = process_variables(case, IRRELEVANT_DIR)
-        self.assertEqual(result["value"], "s3cret")
-
-    def test_file_var_not_resolved_by_default(self):
-        """${file(path)} must NOT resolve when CHECKOV_SERVERLESS_RESOLVE_VARS is not set."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write('{"secret_key": "top-secret"}')
-            tmp_path = f.name
-        try:
-            env = os.environ.copy()
-            env.pop("CHECKOV_SERVERLESS_RESOLVE_VARS", None)
-            with mock.patch.dict(os.environ, env, clear=True):
-                case = {
-                    "provider": {"name": "aws"},
-                    "value": "${file(" + tmp_path + "):secret_key}"
-                }
-                result = process_variables(case, IRRELEVANT_DIR)
-                # Should remain unresolved
-                self.assertEqual(result["value"], "${file(" + tmp_path + "):secret_key}")
-        finally:
-            os.unlink(tmp_path)
-
-    @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_RESOLVE_VARS": "true"})
-    def test_file_var_resolved_when_opted_in(self):
-        """${file(path)} must resolve when CHECKOV_SERVERLESS_RESOLVE_VARS=true."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-            f.write('{"secret_key": "top-secret"}')
-            tmp_path = f.name
-        try:
-            case = {
-                "provider": {"name": "aws"},
-                "value": "${file(" + tmp_path + "):secret_key}"
-            }
-            result = process_variables(case, IRRELEVANT_DIR)
-            self.assertEqual(result["value"], "top-secret")
-        finally:
-            os.unlink(tmp_path)
-
-    def test_self_resolution_unaffected_by_opt_in(self):
-        """${self:} must always resolve regardless of CHECKOV_SERVERLESS_RESOLVE_VARS."""
-        env = os.environ.copy()
-        env.pop("CHECKOV_SERVERLESS_RESOLVE_VARS", None)
-        with mock.patch.dict(os.environ, env, clear=True):
-            case = {
-                "provider": {"name": "aws"},
-                "source": "resolved-value",
-                "consumer": "${self:source}"
-            }
-            result = process_variables(case, IRRELEVANT_DIR)
-            self.assertEqual(result["consumer"], "resolved-value")
-
-    def test_env_var_with_fallback_not_resolved_by_default(self):
-        """${env:VAR, 'default'} should remain unresolved when env resolution is disabled.
-
-        When the opt-in is not set, the env branch returns None early (before
-        the fallback logic), so the entire expression stays as a literal string.
-        This is intentional: fallbacks could themselves be file() references that
-        would leak host data.
-        """
-        env = os.environ.copy()
-        env.pop("CHECKOV_SERVERLESS_RESOLVE_VARS", None)
-        with mock.patch.dict(os.environ, env, clear=True):
-            case = {
-                "provider": {"name": "aws"},
-                "value": "${env:MISSING_VAR, 'fallback-value'}"
-            }
-            result = process_variables(case, IRRELEVANT_DIR)
-            # The entire expression stays unresolved — no fallback processing
-            self.assertEqual(result["value"], "${env:MISSING_VAR, 'fallback-value'}")
 
 
 if __name__ == '__main__':
