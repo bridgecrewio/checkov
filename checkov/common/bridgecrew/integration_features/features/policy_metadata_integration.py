@@ -154,19 +154,42 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             if self.bc_integration.is_prisma_integration() and pol.get('pcPolicyId'):
                 self.pc_to_ckv_id_mapping[pol['pcPolicyId']] = ckv_id
         # Custom policies are returned in run_config['customPolicies'] rather than run_config['policyMetadata'].
+        logging.info(run_config['customPolicies'])
         if 'customPolicies' in run_config:
+            import json
+            logging.info(
+                f"CUSTOM POLICIES DEBUG - raw entries ({len(run_config['customPolicies'])}):\n"
+                + json.dumps(
+                    [
+                        {
+                            'id': p.get('id'),
+                            'bcId': p.get('bcId'),
+                            'severity': p.get('severity'),
+                            'category': p.get('category'),
+                        }
+                        for p in run_config['customPolicies']
+                    ],
+                    indent=2,
+                    default=str,
+                )
+            )
             for custom_policy in run_config['customPolicies']:
+                ckv_id = custom_policy['id']
+                bc_id = custom_policy.get('bcId')
                 custom_policy_check_metadata = {
                     'severity': custom_policy.get('severity'),
-                    'guideline': custom_policy.get('guideline')
+                    'guideline': custom_policy.get('guideline'),
+                    'id': bc_id,
                 }
-                self.check_metadata[custom_policy['id']] = {k: v for k, v in custom_policy_check_metadata.items() if v is not None}
+                self.check_metadata[ckv_id] = {k: v for k, v in custom_policy_check_metadata.items() if v is not None}
+                if bc_id:
+                    self.bc_to_ckv_id_mapping[bc_id] = ckv_id
                 pc_policy_id = custom_policy.get('pcPolicyId')
                 if pc_policy_id:
-                    self.pc_to_ckv_id_mapping[pc_policy_id] = custom_policy['id']
+                    self.pc_to_ckv_id_mapping[pc_policy_id] = ckv_id
                 source_incident_id = custom_policy.get('sourceIncidentId')
                 if source_incident_id:
-                    self.ckv_id_to_source_incident_id_mapping[custom_policy['id']] = source_incident_id
+                    self.ckv_id_to_source_incident_id_mapping[ckv_id] = source_incident_id
 
     def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]], exclude_policies: bool) -> None:
         policy_ids = list()
