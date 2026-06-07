@@ -86,8 +86,6 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     if use_prisma_metadata and metadata.get('descriptiveTitle'):
                         check.name = metadata['descriptiveTitle']
                 else:
-                    logging.info(f"THE FAILED CHECK {check.__dict__}")
-                    logging.info(f"THE METADATA - {self.check_metadata}")
                     check.bc_id = None
         except Exception:
             self.integration_feature_failures = True
@@ -154,6 +152,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             if self.bc_integration.is_prisma_integration() and pol.get('pcPolicyId'):
                 self.pc_to_ckv_id_mapping[pol['pcPolicyId']] = ckv_id
         # Custom policies are returned in run_config['customPolicies'] rather than run_config['policyMetadata'].
+        logging.info(run_config['Lili'])
         logging.info(run_config['customPolicies'])
         if 'customPolicies' in run_config:
             import json
