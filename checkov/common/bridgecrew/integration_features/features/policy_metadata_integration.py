@@ -152,7 +152,6 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             if self.bc_integration.is_prisma_integration() and pol.get('pcPolicyId'):
                 self.pc_to_ckv_id_mapping[pol['pcPolicyId']] = ckv_id
         # Custom policies are returned in run_config['customPolicies'] rather than run_config['policyMetadata'].
-        logging.info(run_config['Lili'])
         logging.info(run_config['customPolicies'])
         if 'customPolicies' in run_config:
             import json
