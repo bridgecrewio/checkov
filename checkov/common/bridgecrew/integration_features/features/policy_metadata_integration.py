@@ -86,6 +86,8 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     if use_prisma_metadata and metadata.get('descriptiveTitle'):
                         check.name = metadata['descriptiveTitle']
                 else:
+                    logging.info(f"THE FAILED CHECK {check.__dict__}")
+                    logging.info(f"THE METADATA - {self.check_metadata}")
                     check.bc_id = None
         except Exception:
             self.integration_feature_failures = True
