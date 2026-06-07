@@ -150,7 +150,7 @@ class BaseTerraformRunner(
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
                     for skipped_check in entity_context.get("skipped_checks", []):
-                        if skipped_check["id"] == check.id or skipped_check.get("bc_id") == check.bc_id:
+                        if skipped_check["id"] == check.id or (skipped_check.get("bc_id") == check.bc_id and check.bc_id is not None):
                             print(f"This check is skipped {skipped_check['id']} and the check {check.__dict__}")
                             copy_of_check_result["result"] = CheckResult.SKIPPED
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
