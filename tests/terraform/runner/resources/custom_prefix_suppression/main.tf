@@ -7,9 +7,9 @@ resource "aws_db_instance" "suppressed_ckv_prefix" {
   publicly_accessible = true
 }
 
-resource "aws_db_instance" "suppressed_appsec_prefix" {
-  # checkov:skip=LETTER_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678: suppressed with alternate APPSEC prefix (same UUID)
-  identifier        = "suppressed-appsec-rds"
+resource "aws_db_instance" "suppressed_prefix" {
+  # checkov:skip=LETTER_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678: suppressed
+  identifier        = "suppressed-rds"
   engine            = "mysql"
   instance_class    = "db.t3.micro"
   allocated_storage = 20

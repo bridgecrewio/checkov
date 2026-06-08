@@ -163,9 +163,9 @@ class TestUtils(unittest.TestCase):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145: ADD REASON'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145:ADD REASON'))
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'cortex:skip=CKV_AWS_145'))
-        matched = re.search(COMMENT_REGEX, 'cortex:skip=APPSEC_CUSTOM_abcdefg-1234-5678-9000-123456789')
+        matched = re.search(COMMENT_REGEX, 'cortex:skip=RANDOM_CUSTOM_abcdefg-1234-5678-9000-123456789')
         self.assertIsNotNone(matched)
-        self.assertEqual(matched[2], 'APPSEC_CUSTOM_abcdefg-1234-5678-9000-123456789')
+        self.assertEqual(matched[2], 'RANDOM_CUSTOM_abcdefg-1234-5678-9000-123456789')
 
 
 if __name__ == '__main__':

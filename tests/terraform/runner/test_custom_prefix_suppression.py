@@ -2,7 +2,7 @@
 Tests for the fuzzy-prefix inline suppression fix in the Terraform graph runner.
 
 When a custom YAML check has id=CKV_CUSTOM_<uuid>, a skip comment using any
-*_CUSTOM_<same-uuid> prefix (e.g. LETTER_CUSTOM_*, APPSEC_CUSTOM_*) must also
+*_CUSTOM_<same-uuid> prefix (e.g. LETTER_CUSTOM_*, RANDOM_CUSTOM_*) must also
 suppress the check.  A skip comment with a *_CUSTOM_<different-uuid> must NOT.
 """
 import os
@@ -84,18 +84,18 @@ class TestCustomPrefixInlineSuppression(unittest.TestCase):
 
         Given:
           - A YAML custom check with id=CKV_CUSTOM_<uuid>
-          - aws_db_instance.suppressed_appsec_prefix has # checkov:skip=LETTER_CUSTOM_<uuid>
+          - aws_db_instance.suppressed_prefix has # checkov:skip=LETTER_CUSTOM_<uuid>
           - No bc_id mapping configured
 
         Then:
-          - aws_db_instance.suppressed_appsec_prefix is in skipped_checks
+          - aws_db_instance.suppressed_prefix is in skipped_checks
         """
         skipped, _ = self._run()
         skipped_resources = [r.resource for r in skipped]
         self.assertIn(
-            "aws_db_instance.suppressed_appsec_prefix",
+            "aws_db_instance.suppressed_prefix",
             skipped_resources,
-            f"Expected suppressed_appsec_prefix to be skipped; skipped={skipped_resources}",
+            f"Expected suppressed_prefix to be skipped; skipped={skipped_resources}",
         )
 
     def test_skip_with_wrong_uuid_does_not_suppress(self) -> None:
