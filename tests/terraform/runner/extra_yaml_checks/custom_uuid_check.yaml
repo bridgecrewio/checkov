@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678"
+  name: "Ensure RDS instance is not publicly accessible"
+  category: "NETWORKING"
+  guideline: "https://docs.example.com/custom-rule"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_db_instance"
+  attribute: "publicly_accessible"
+  operator: "equals"
+  value: "false"
