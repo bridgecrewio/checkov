@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.533...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.534...HEAD)
+
+## [3.2.534](https://github.com/bridgecrewio/checkov/compare/3.2.533...3.2.534) - 2026-06-09
+
+### Feature
+
+- **general:** fix regex to include hyphen - [#7566](https://github.com/bridgecrewio/checkov/pull/7566)
 
 ## [3.2.533](https://github.com/bridgecrewio/checkov/compare/3.2.532...3.2.533) - 2026-06-04
 
