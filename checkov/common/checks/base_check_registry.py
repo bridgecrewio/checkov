@@ -11,6 +11,16 @@ from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
+from checkov.common.external_checks.verification.errors import SignatureVerificationError
+from checkov.common.external_checks.verification.sources_registry import (
+    get_all_verified_sources,
+    get_verified_sources_for_directory,
+)
+from checkov.common.external_checks.verification.verified_loader import (
+    install_finder,
+    load_verified_sources_into_module,
+    uninstall_finder,
+)
 from checkov.common.models.enums import CheckResult
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
@@ -179,39 +189,166 @@ class BaseCheckRegistry:
         """ Verify if a directory entry is a non-magic Python file."""
         return entry.is_file() and not entry.name.startswith("__") and entry.name.endswith(".py")
 
-    def load_external_checks(self, directory: str) -> None:
-        """ Browse a directory looking for .py files to import.
+    def _resolve_verified_source(
+        self,
+        verified_sources: Dict[str, bytes],
+        check_full_path: str,
+    ) -> "bytes | None":
+        """Look up ``check_full_path`` in the allowlist using ONLY the realpath-normalised key.
 
-        Log an error when the directory does not contains an __init__.py or
-        when a .py file has syntax error
+        The registry promises (per ``sources_registry.verify_and_register``)
+        that every key is the realpath-normalised path of a verified file.
+        """
+        canonical_path = os.path.normpath(os.path.realpath(check_full_path))
+        return verified_sources.get(canonical_path)
+
+    def load_external_checks(
+        self,
+        directory: str,
+        verified_sources: Optional[Dict[str, bytes]] = None,
+    ) -> None:
+        """Import ``.py`` files from ``directory`` as external checks.
+
+        Verified opt-in load when ``verified_sources`` or the registry has
+        an allowlist; backward-compatible unverified disk-load otherwise
+        (the default when ``--external-checks-public-key`` is not set).
+        Not thread-safe.
         """
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")
+
+        if verified_sources is None:
+            verified_sources = get_verified_sources_for_directory(directory)
+            if verified_sources is None:
+                self._load_external_checks_from_disk(directory)
+                return
+
+        # Finder must see the FULL registry, not just this dir's subset,
+        # so cross-directory transitive imports are served from verified bytes.
+        finder_sources = get_all_verified_sources() or verified_sources
+        finder_dirs = sorted({os.path.dirname(p) for p in finder_sources})
+        finder = install_finder(finder_sources, finder_dirs)
+        previous_dont_write_bytecode = sys.dont_write_bytecode
+
+        previous_sys_path = list(sys.path)
+        sys.dont_write_bytecode = True
+        try:
+            self._load_external_checks_from_verified_sources(directory, verified_sources)
+        finally:
+            uninstall_finder(finder)
+            sys.dont_write_bytecode = previous_dont_write_bytecode
+            sys.path[:] = previous_sys_path
+
+    def _walk_external_check_files(
+        self, directory: str,
+    ) -> "Generator[tuple[str, str], None, None]":
+        """Yield ``(check_name, check_full_path)`` for every importable ``.py``.
+
+        Shared walker used by both the unverified and verified load paths.
+        Skips directories without ``__init__.py`` (with an INFO log) and
+        applies the same ``_file_can_be_imported`` filter the loaders
+        depend on (no dotfiles, no ``__init__.py``, only ``.py``). Side-
+        effect: prepends each walked dir to ``sys.path`` exactly as the
+        old per-loader walks did, so transitive imports inside loaded
+        checks resolve identically to pre-refactor behaviour.
+        """
         for root, _, _ in os.walk(directory):
             sys.path.insert(1, root)
             with os.scandir(root) as directory_content:
                 if not self._directory_has_init_py(root):
                     self.logger.info(f"No __init__.py found in {root}. Cannot load any check here.")
-                else:
-                    for entry in directory_content:
-                        if self._file_can_be_imported(entry):
-                            check_name = entry.name.replace(".py", "")
-                            check_full_path = entry.path
+                    continue
+                for entry in directory_content:
+                    if not self._file_can_be_imported(entry):
+                        continue
+                    check_name = entry.name.replace(".py", "")
+                    yield check_name, entry.path
 
-                            # Filter is set while loading external checks so the filter can be informed
-                            # of the checks, which need to be handled specially.
-                            try:
-                                BaseCheckRegistry.__loading_external_checks = True
-                                self.logger.debug(f"Importing external check '{check_name}'")
+    def _exec_check_from_disk(self, check_name: str, check_full_path: str) -> None:
+        """Compile + exec the on-disk ``.py`` file as a fresh module.
 
-                                spec = importlib.util.spec_from_file_location(check_name, check_full_path)
-                                if spec:
-                                    module = importlib.util.module_from_spec(spec)
-                                    sys.modules[check_name] = module
-                                    spec.loader.exec_module(module)  # type: ignore[union-attr] # loader can't be None here
-                                else:
-                                    self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
-                            except Exception:
-                                self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
-                            finally:
-                                BaseCheckRegistry.__loading_external_checks = False
+        Unverified path's per-file action. Mirrors the pre-MR behaviour
+        byte-for-byte: no signature checks, errors are logged and the
+        walk continues so a single broken check doesn't abort the scan.
+        """
+        spec = importlib.util.spec_from_file_location(check_name, check_full_path)
+        if spec:
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[check_name] = module
+            spec.loader.exec_module(module)  # type: ignore[union-attr]
+        else:
+            self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
+
+    def _load_external_checks_from_disk(self, directory: str) -> None:
+        """Unverified disk-exec path.
+
+        Active when ``--external-checks-public-key`` is NOT set. Loads every
+        ``.py`` file under ``directory`` exactly as before the verification
+        feature was introduced — no signature checks. This is the
+        backward-compatible default for operators who haven't opted in to
+        trailer-based signing.
+
+        See ``_load_external_checks_from_verified_sources`` for the
+        opt-in verified equivalent.
+        """
+        for check_name, check_full_path in self._walk_external_check_files(directory):
+            try:
+                BaseCheckRegistry.__loading_external_checks = True
+                self.logger.debug(f"Importing external check '{check_name}'")
+                self._exec_check_from_disk(check_name, check_full_path)
+            except Exception:
+                self.logger.error(
+                    f"Cannot load external check '{check_name}' from {check_full_path}",
+                    exc_info=True,
+                )
+            finally:
+                BaseCheckRegistry.__loading_external_checks = False
+
+    def _load_external_checks_from_verified_sources(
+        self,
+        directory: str,
+        verified_sources: Dict[str, bytes],
+    ) -> None:
+        """Verified opt-in path: exec ONLY the in-memory bytes for allowlist files.
+
+        Active when ``--external-checks-public-key`` is set AND the chokepoint
+        successfully registered the directory via ``verify_and_register``.
+        Any ``.py`` file present on disk but absent from ``verified_sources``
+        is refused and surfaces as a ``SignatureVerificationError`` after the
+        walk (M1/S3 TOCTOU escalation).
+
+        See ``_load_external_checks_from_disk`` for the unverified default
+        used when no public key is configured.
+        """
+        refused_paths: "list[str]" = []
+        for check_name, check_full_path in self._walk_external_check_files(directory):
+            try:
+                BaseCheckRegistry.__loading_external_checks = True
+                self.logger.debug(f"Importing external check '{check_name}'")
+                source_bytes = self._resolve_verified_source(
+                    verified_sources, check_full_path,
+                )
+                if source_bytes is None:
+                    self.logger.error(
+                        f"Refusing to load unverified external check "
+                        f"'{check_name}' from {check_full_path}"
+                    )
+                    refused_paths.append(check_full_path)
+                    continue
+                load_verified_sources_into_module(
+                    check_name, check_full_path, source_bytes,
+                )
+            except Exception:
+                self.logger.error(
+                    f"Cannot load external check '{check_name}' from {check_full_path}",
+                    exc_info=True,
+                )
+            finally:
+                BaseCheckRegistry.__loading_external_checks = False
+        if refused_paths:
+            bullets = "\n".join(f"  - {p}" for p in refused_paths)
+            raise SignatureVerificationError(
+                "unverified external check files refused at load time "
+                "(disk state diverged from the verified allowlist):\n"
+                f"{bullets}"
+            )

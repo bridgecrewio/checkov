@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 from abc import abstractmethod
 from typing import Dict, Optional, Any, Set, TYPE_CHECKING, TypeVar, Generic
 
@@ -47,6 +48,38 @@ _FilePath = TypeVar("_FilePath")
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
+
+# Matches IDs of the form: LETTERS_CUSTOM_uuid (e.g. CKV_CUSTOM_abc-123, RANDOM_CUSTOM_abc-123)
+_CUSTOM_CHECK_ID_RE = re.compile(r'^[A-Za-z]+_CUSTOM_([a-f0-9\-]{36})$', re.IGNORECASE)
+
+# Controls whether *_CUSTOM_<uuid> skip comments can match checks with different prefixes.
+# Set CKV_CUSTOM_PREFIX_SUPPRESSION=false to disable and use exact equality only (for benchmarking).
+_CUSTOM_PREFIX_SUPPRESSION_ENABLED = os.environ.get("CKV_CUSTOM_PREFIX_SUPPRESSION", "true").lower() != "false"
+
+
+def _skip_matches_check_id(skip_id: str, check_id: str) -> bool:
+    """Check if a skip comment ID matches a check ID.
+
+    Handles the case where custom checks may have different prefixes
+    (e.g. RANDOM_CUSTOM_* vs CKV_CUSTOM_*) but the same UUID suffix.
+    Only applies fuzzy matching for *_CUSTOM_<uuid> patterns to avoid
+    false positives on built-in checks.
+
+    Fuzzy matching can be disabled by setting CKV_CUSTOM_PREFIX_SUPPRESSION=false.
+    """
+    if not skip_id or not check_id:
+        return False
+    if skip_id == check_id:
+        return True
+    if not _CUSTOM_PREFIX_SUPPRESSION_ENABLED:
+        return False  # env var disabled — fall back to exact equality only
+    m1 = _CUSTOM_CHECK_ID_RE.match(skip_id)
+    if not m1:
+        return False
+    m2 = _CUSTOM_CHECK_ID_RE.match(check_id)
+    if not m2:
+        return False
+    return m1.group(1) == m2.group(1)
 
 
 class BaseTerraformRunner(
@@ -150,7 +183,7 @@ class BaseTerraformRunner(
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
                     for skipped_check in entity_context.get("skipped_checks", []):
-                        if skipped_check["id"] == check.id:
+                        if _skip_matches_check_id(skipped_check["id"], check.id):
                             copy_of_check_result["result"] = CheckResult.SKIPPED
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break

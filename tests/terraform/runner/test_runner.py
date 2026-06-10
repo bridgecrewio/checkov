@@ -1223,7 +1223,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 5)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 6)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1232,9 +1232,9 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 6)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 6)
 
         graph_checks = [x.id for x in runner.graph_registry.checks]
         self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
@@ -1839,6 +1839,63 @@ class TestRunnerValid(unittest.TestCase):
                 # then
                 self.assertEqual(len(runner.definitions), 0)
                 self.assertEqual(len(parsing_errors), 1)
+
+
+    def test_custom_prefix_suppression_ckv_prefix_skips_check(self):
+        """Skip comment using the same CKV_CUSTOM_<uuid> prefix as check.id suppresses the check."""
+        CUSTOM_CHECK_ID = "CKV_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678"
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        tf_dir = os.path.join(current_dir, "resources", "custom_prefix_suppression")
+        yaml_checks_dir = os.path.join(current_dir, "extra_yaml_checks")
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(
+            root_folder=tf_dir,
+            external_checks_dir=[yaml_checks_dir],
+            runner_filter=RunnerFilter(framework=["terraform"], checks=[CUSTOM_CHECK_ID]),
+        )
+        skipped_resources = [r.resource for r in report.skipped_checks if r.check_id == CUSTOM_CHECK_ID]
+        self.assertIn("aws_db_instance.suppressed_ckv_prefix", skipped_resources)
+        # Remove external checks from registry (same pattern as other tests in this class).
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
+
+    def test_custom_prefix_suppression_alternate_prefix_skips_check(self):
+        """Skip comment using a different prefix (LETTER_CUSTOM_*) but same UUID suppresses the check."""
+        CUSTOM_CHECK_ID = "CKV_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678"
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        tf_dir = os.path.join(current_dir, "resources", "custom_prefix_suppression")
+        yaml_checks_dir = os.path.join(current_dir, "extra_yaml_checks")
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(
+            root_folder=tf_dir,
+            external_checks_dir=[yaml_checks_dir],
+            runner_filter=RunnerFilter(framework=["terraform"], checks=[CUSTOM_CHECK_ID]),
+        )
+        skipped_resources = [r.resource for r in report.skipped_checks if r.check_id == CUSTOM_CHECK_ID]
+        self.assertIn("aws_db_instance.suppressed_prefix", skipped_resources)
+        # Remove external checks from registry (same pattern as other tests in this class).
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
+
+    def test_custom_prefix_suppression_wrong_uuid_does_not_skip(self):
+        """Skip comment using *_CUSTOM_<different-uuid> does NOT suppress the check."""
+        CUSTOM_CHECK_ID = "CKV_CUSTOM_a12f9ef1-1234-5678-1234-1234d0225678"
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        tf_dir = os.path.join(current_dir, "resources", "custom_prefix_suppression")
+        yaml_checks_dir = os.path.join(current_dir, "extra_yaml_checks")
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(
+            root_folder=tf_dir,
+            external_checks_dir=[yaml_checks_dir],
+            runner_filter=RunnerFilter(framework=["terraform"], checks=[CUSTOM_CHECK_ID]),
+        )
+        skipped_resources = [r.resource for r in report.skipped_checks if r.check_id == CUSTOM_CHECK_ID]
+        failed_resources = [r.resource for r in report.failed_checks if r.check_id == CUSTOM_CHECK_ID]
+        self.assertNotIn("aws_db_instance.wrong_uuid_skip", skipped_resources)
+        self.assertIn("aws_db_instance.wrong_uuid_skip", failed_resources)
+        # Remove external checks from registry (same pattern as other tests in this class).
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
 
 if __name__ == '__main__':

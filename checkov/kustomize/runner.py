@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import pathlib
 import platform
+import re
 import shutil
 import subprocess  # nosec
 import tempfile
@@ -42,6 +43,61 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
     from networkx import DiGraph
+
+
+# Regex matching any remote resource reference that kustomize would fetch over the network.
+# Covers: http(s)://, git::, ssh://, github.com/ shorthand
+_REMOTE_REF = re.compile(r'^(https?://|git::|ssh://|github\.com/)', re.IGNORECASE)
+
+# Keys in kustomization.yaml that may contain remote references
+_REMOTE_REF_KEYS = ('resources', 'bases', 'components', 'crds')
+
+
+def _get_kustomization_remote_refs(kustomization_dir: str) -> list[str]:
+    """Return all remote resource references found in the kustomization file.
+
+    Returns an empty list when the file cannot be read or contains no remote refs.
+    """
+    for filename in ('kustomization.yaml', 'kustomization.yml'):
+        kustomization_path = os.path.join(kustomization_dir, filename)
+        if not os.path.isfile(kustomization_path):
+            continue
+        try:
+            with open(kustomization_path, 'r', encoding='utf-8') as f:
+                doc = yaml.safe_load(f)
+        except Exception:
+            logging.debug(f"Could not parse {kustomization_path} for remote-ref check.", exc_info=True)
+            return []
+
+        if not isinstance(doc, dict):
+            return []
+
+        remote_refs: list[str] = []
+        for key in _REMOTE_REF_KEYS:
+            entries = doc.get(key) or []
+            if not isinstance(entries, list):
+                continue
+            for entry in entries:
+                if isinstance(entry, str) and _REMOTE_REF.match(entry):
+                    remote_refs.append(entry)
+        return remote_refs
+
+    return []
+
+
+def _get_blocked_remote_refs(kustomization_dir: str) -> list[str]:
+    """Return remote refs blocked by the CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES allowlist.
+
+    Not set → [] (allow all). Set → returns refs not matching any allowed prefix (these are blocked).
+    To block all remote refs, set the var to a non-matching value (e.g. 'none').
+    """
+    allowed_prefixes_raw = os.getenv("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", "")
+    if not allowed_prefixes_raw.strip():
+        return []  # no allowlist configured → allow everything (original behaviour)
+
+    allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
+    remote_refs = _get_kustomization_remote_refs(kustomization_dir)
+    return [ref for ref in remote_refs if not any(ref.lower().startswith(p) for p in allowed_prefixes)]
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -560,6 +616,16 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             template_render_command_options = "build"
         else:
             logging.error(f"Template renderer command has an invalid value: {template_renderer_command}")
+            return None
+
+        # Default = allow all. Set CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES
+        # to a comma-separated allowlist of trusted URL prefixes to block everything else.
+        blocked_refs = _get_blocked_remote_refs(filePath)
+        if blocked_refs:
+            logging.warning(
+                f"Skipping kustomize build for {filePath}: {len(blocked_refs)} remote reference(s) "
+                f"not in CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES allowlist."
+            )
             return None
 
         add_origin_annotations_return_code = None

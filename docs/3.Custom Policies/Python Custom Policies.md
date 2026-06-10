@@ -342,3 +342,78 @@ Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci 
 ```
 
 **Attention:** Policies cannot share the same file name. If two policies with the same file name exist, only the first one will be loaded.
+
+## Signing custom checks (optional)
+
+By default, Checkov loads every `.py` file under `--external-checks-dir` (or `--external-checks-git`) and executes it. In environments where the custom-checks tree must be tamper-evident, Checkov can verify a cryptographic signature on each file before loading it.
+
+Enable verification by passing one or more PEM-encoded ECDSA P-256 public keys via `--external-checks-public-key` (or the `CKV_EXTERNAL_CHECKS_PUBLIC_KEY` environment variable). When at least one key is configured, every `.py` file under the custom-checks directory must end with a `# checkov-digest: <hex>` trailer line signed by one of the configured keys. Files without a valid trailer cause Checkov to exit with code `2` **before** any scan runs.
+
+When `--external-checks-public-key` is not set, no verification is performed and behaviour is unchanged.
+
+### Constraints
+
+* **Trailer signing covers `.py` files only.** Binary loadable file types (`.pyc`, `.so`, `.pyd`, `.pyi`) cannot be trailer-signed and are rejected by the verifier. Distribute compiled extensions via `pip install` and import them by package name; do not place them in `--external-checks-dir`.
+* **Sign after all code-formatting steps in your CI** (after `black`, `ruff format`, `end-of-file-fixer`, and any "trim trailing whitespace" editor hooks) and **before** the commit. Formatters can invalidate the trailer if they run after signing.
+* **The trailer is the very last line of the file**, terminated by exactly one `\n`. No CRLF, no BOM, no trailing whitespace.
+* **Do not sign the same file twice.** Each signing run must start from the unsigned file. If your signing pipeline can be re-triggered (e.g. a pre-commit hook), make sure it detects an existing trailer and either skips the file or strips the trailer before re-signing. A file that ends in two trailer lines is rejected with a `file appears to be signed twice` error.
+* **Verification covers `--external-checks-dir` and `--external-checks-git` only.** Policies fetched from the Bridgecrew/Prisma Cloud platform (visible inside Checkov as `sast_custom_policies`) are authenticated separately by the platform integration's TLS-authenticated fetch and are **not** in scope for trailer verification.
+* **Same-stem checks across subdirectories are not supported in v1.** Checkov imports each external check by its bare filename stem, so `checks/aws/helper.py` and `checks/azure/helper.py` collide on the name `helper`. Keep helper filenames unique across a single `--external-checks-dir` tree.
+
+### Generating a key pair
+
+```bash
+openssl ecparam -name prime256v1 -genkey -noout -out priv.pem
+openssl ec -in priv.pem -pubout -out pub.pem
+```
+
+Keep `priv.pem` in a secure store (HSM, KMS, or your CI secret store). Distribute `pub.pem` to anyone running Checkov.
+
+### Signing a single check file
+
+Given an unsigned `aws_check.py`:
+
+```bash
+# 1. Refuse to re-sign — bail out if the file already ends in a trailer line.
+if tail -n 1 aws_check.py | grep -q '^# checkov-digest: '; then
+  echo "aws_check.py already has a trailer; refusing to double-sign." >&2
+  exit 1
+fi
+
+# 2. Produce a DER ECDSA-SHA256 signature over the unsigned file bytes,
+#    hex-encode it on one line, and append the trailer.
+HEX=$(openssl dgst -sha256 -sign priv.pem aws_check.py \
+        | od -An -tx1 \
+        | tr -d ' \n')
+printf '# checkov-digest: %s\n' "$HEX" >> aws_check.py
+```
+
+The `od -An -tx1 | tr -d ' \n'` pipeline produces a single-line lowercase-hex string and is portable across both GNU and BSD/macOS toolchains. (`xxd -p` is also lowercase but its line-wrapping behaviour varies between distributions, and the verifier rejects multi-line trailers.)
+
+After signing, the file's last line will look like:
+
+```
+# checkov-digest: 30450220...c3a4
+```
+
+Repeat for every `.py` file in the custom-checks tree, including each `__init__.py` (an empty `__init__.py` becomes a file whose entire contents is just the trailer line).
+
+### Running Checkov with verification enabled
+
+```bash
+checkov -d . \
+  --external-checks-dir my_extra_checks \
+  --external-checks-public-key pub.pem
+```
+
+On success, Checkov loads the verified checks and proceeds normally. On any failure (missing trailer, bad signature, unknown key, presence of a `.pyc`/`.so`/`.pyd`/`.pyi` file), Checkov prints the offending paths to stderr and exits with code `2` without running the scan.
+
+### Rotating keys
+
+Pass `--external-checks-public-key` multiple times (or list multiple paths in the env var). Each file is accepted if it verifies under any one of the configured keys, which lets you publish a new key alongside the old one and re-sign on your own schedule.
+
+```bash
+checkov -d . --external-checks-dir my_extra_checks \
+  --external-checks-public-key pub_old.pem \
+  --external-checks-public-key pub_new.pem
+```

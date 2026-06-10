@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.530...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.534...HEAD)
+
+## [3.2.534](https://github.com/bridgecrewio/checkov/compare/3.2.533...3.2.534) - 2026-06-09
+
+### Feature
+
+- **general:** fix regex to include hyphen - [#7566](https://github.com/bridgecrewio/checkov/pull/7566)
+
+## [3.2.533](https://github.com/bridgecrewio/checkov/compare/3.2.532...3.2.533) - 2026-06-04
+
+### Bug Fix
+
+- **general:** increase domain allow list as it blocks prisma release - [#7567](https://github.com/bridgecrewio/checkov/pull/7567)
+- **sca:** Kustomize and Helm improvements - [#7568](https://github.com/bridgecrewio/checkov/pull/7568)
+- **terraform:** pin security-group module to 5.3.1 in linked-module test - [#7570](https://github.com/bridgecrewio/checkov/pull/7570)
+
+## [3.2.532](https://github.com/bridgecrewio/checkov/compare/3.2.531...3.2.532) - 2026-06-02
+
+### Feature
+
+- **general:** verify ECDSA-P256 signatures on external custom checks before loading - [#7556](https://github.com/bridgecrewio/checkov/pull/7556)
+
+## [3.2.531](https://github.com/bridgecrewio/checkov/compare/3.2.530...3.2.531) - 2026-06-01
+
+### Feature
+
+- **terraform:** add CKV_AWS_393 for GitHub OIDC trust on aws_iam_role - [#7561](https://github.com/bridgecrewio/checkov/pull/7561)
 
 ## [3.2.530](https://github.com/bridgecrewio/checkov/compare/3.2.529...3.2.530) - 2026-05-28
 
