@@ -52,12 +52,34 @@ Following checks will be ignored;
 
 To check if a resource will be deleted or changed (further change values can be found [here](https://www.terraform.io/internals/json-format#change-representation)) the change actions values can be accessed via the attribute name `__change_actions__`.
 
-Ex. Python
+Checkov supports checking both:
+- **Replacement operations**: Resources with actions `["create", "delete"]` that appear in `planned_values`
+- **Pure delete operations**: Resources with actions `["delete"]` that only exist in `resource_changes`
+
+For pure deletions, the resource configuration will contain the "before" state (the resource's values before deletion), allowing checks to validate deletion conditions.
+
+Ex. Python - Prevent deletion of specific resources
 ```python
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         actions = conf.get("__change_actions__")
         if isinstance(actions, list) and "delete" in actions:
             return CheckResult.FAILED
+        return CheckResult.PASSED
+```
+
+Ex. Python - Validate resource state before deletion
+```python
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        actions = conf.get("__change_actions__")
+        # Only check resources being deleted
+        if isinstance(actions, list) and "delete" in actions:
+            # Check the resource's status before deletion
+            status = conf.get("status")
+            if isinstance(status, list):
+                status = status[0] if status else None
+            # Fail if deleting an active resource
+            if status == "ACTIVE":
+                return CheckResult.FAILED
         return CheckResult.PASSED
 ```
 
