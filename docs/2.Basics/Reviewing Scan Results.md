@@ -9,6 +9,8 @@ nav_order: 6
 
 The results of Checkov scans can be viewed in CLI, JSON, JUnit XML, SARIF, or Markdown
 
+Some checks return **UNKNOWN** when a value cannot be determined (e.g. variable-dependent or plan `after_unknown`). These are included in the report and summary; see [Unknown Check Results](Unknown%20Check%20Results.md) for details and examples.
+
 > Note: For Markdown output, you need to use `github_failed_only` as the `--output` type
 
 ## Scan Result Sample (CLI)
