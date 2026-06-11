@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.0...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.1...HEAD)
+
+## [3.3.1](https://github.com/bridgecrewio/checkov/compare/3.3.0...3.3.1) - 2026-06-11
+
+### Feature
+
+- **serverless:** disable vars opt out - [#7574](https://github.com/bridgecrewio/checkov/pull/7574)
 
 ## [3.3.0](https://github.com/bridgecrewio/checkov/compare/3.2.534...3.3.0) - 2026-06-10
 
