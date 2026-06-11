@@ -211,17 +211,22 @@ Load data based on the type/path (see param_lookup_function parameter of process
 
     :return     None if the variable could not be resolved
     """
+    # By default, ${env:VAR} and ${file(path)} resolution stays ENABLED to preserve
+    # the original backward-compatible behavior. Setting CHECKOV_SERVERLESS_DISABLE_VARS=true
+    # disables that resolution. ${self:} resolution is unaffected.
+    disable_vars = os.environ.get("CHECKOV_SERVERLESS_DISABLE_VARS", "").lower() == "true"
+
     value = None
     if var_type is None:
         value = var_location
     elif var_type == "self":
         value = _determine_variable_value_from_dict(self_data_source, var_location, None)
     elif var_type == "env":
-        if os.environ.get("CHECKOV_SERVERLESS_RESOLVE_VARS", "").lower() != "true":
+        if disable_vars:
             return None
         value = _determine_variable_value_from_dict(dict(os.environ.items()), var_location, None)
     elif var_type.startswith("file("):
-        if os.environ.get("CHECKOV_SERVERLESS_RESOLVE_VARS", "").lower() != "true":
+        if disable_vars:
             return None
         match = FILE_LOCATION_PATTERN.match(var_type)
         if match is None:
