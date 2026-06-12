@@ -61,6 +61,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_RepositoryHasBranchProtection(self):
         self.go("RepositoryHasBranchProtection")
 
+    def test_RepositoryEnableVulnerabilityAlerts(self):
+        self.go("RepositoryEnableVulnerabilityAlerts")
+
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
