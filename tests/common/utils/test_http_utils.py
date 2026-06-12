@@ -5,9 +5,21 @@ from unittest import mock
 import pytest
 from pytest_mock import MockerFixture
 from aioresponses import aioresponses
+from aioresponses import __version__ as aioresponses_version
 import aiohttp
 
+from packaging import version
+
 from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper, valid_url
+
+# aioresponses can't build a mock response for aiohttp>=3.14 yet (its mocked
+# ClientResponse is missing the new required 'stream_writer' argument), see
+# https://github.com/pnuckowski/aioresponses/issues/289. Tests that only mock
+# exceptions are unaffected. Remove once aioresponses releases a fix.
+AIORESPONSES_LACKS_AIOHTTP_314_SUPPORT = (
+    version.parse(aiohttp.__version__) >= version.parse("3.14.0")
+    and version.parse(aioresponses_version) <= version.parse("0.7.8")
+)
 
 
 def get_report_url() -> str:
@@ -127,6 +139,10 @@ def test_request_wrapper_with_success_for_post_scan(mock_bc_integration, scan_re
     responses.assert_call_count(mock_url, 1)
 
 
+@pytest.mark.skipif(
+    AIORESPONSES_LACKS_AIOHTTP_314_SUPPORT,
+    reason="aioresponses can't mock a successful response under aiohttp>=3.14 (pnuckowski/aioresponses#289)",
+)
 @pytest.mark.asyncio
 async def test_aiohttp_client_session_wrapper_with_one_handled_exception(mocker: MockerFixture, mock_bc_integration):
     # given
