@@ -18,6 +18,7 @@ class TestGKEDontUseNodePools(unittest.TestCase):
 
         passing_resources = {
             'google_container_cluster.pass',
+            'google_container_cluster.pass_remove_default',
         }
         failing_resources = {
             'google_container_cluster.fail',
