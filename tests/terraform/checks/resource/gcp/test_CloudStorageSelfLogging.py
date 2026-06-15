@@ -4,6 +4,7 @@ from pathlib import Path
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.CloudStorageSelfLogging import check
 from checkov.terraform.runner import Runner
+from checkov.terraform.plan_runner import Runner as PlanRunner
 
 
 class TestCloudStorageSelfLogging(unittest.TestCase):
@@ -36,6 +37,25 @@ class TestCloudStorageSelfLogging(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+    def test_terraform_plan(self):
+        runner = PlanRunner()
+
+        test_files_path = Path(__file__).parent / "example_CloudStorageSelfLogging/tfplan.json"
+        report = runner.run(files=[str(test_files_path)], runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
+
+        passing_resources = {
+            "google_storage_bucket.plan_pass",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
 
 if __name__ == '__main__':
     unittest.main()
