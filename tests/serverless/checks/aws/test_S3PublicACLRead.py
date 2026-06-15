@@ -1,6 +1,5 @@
 import os
 import unittest
-from unittest import mock
 
 from checkov.cloudformation.checks.resource.aws.S3PublicACLRead import check
 from checkov.serverless.runner import Runner
@@ -9,7 +8,6 @@ from checkov.runner_filter import RunnerFilter
 
 class TestS3PublicACLRead(unittest.TestCase):
 
-    @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_RESOLVE_VARS": "true"})
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -26,7 +24,6 @@ class TestS3PublicACLRead(unittest.TestCase):
         for failed_check in report.failed_checks:
             self.assertEqual(dict(sorted(failed_check.entity_tags.items())), {"RESOURCE": "lambda", "PUBLIC": "False"})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_SERVERLESS_RESOLVE_VARS": "true"})
     def test_inclusion(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
