@@ -1,4 +1,4 @@
-
+# FAIL - v5.0 is EOL
 resource "azurerm_app_service" "fail" {
   name                = "example-app-service"
   location            = azurerm_resource_group.example.location
@@ -11,8 +11,8 @@ resource "azurerm_app_service" "fail" {
     }
   }
 
-
-resource "azurerm_app_service" "pass" {
+# FAIL - v6.0 is EOL as of November 2024
+resource "azurerm_app_service" "fail2" {
   name                = "example-app-service"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -24,6 +24,46 @@ resource "azurerm_app_service" "pass" {
     }
   }
 
+# PASS - v8.0 is LTS (supported until November 2026)
+resource "azurerm_app_service" "pass" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
+  site_config {
+    dotnet_framework_version = "v8.0"
+    scm_type                 = "someValue"
+    }
+  }
+
+# PASS - v9.0 is STS (supported until May 2026)
+resource "azurerm_app_service" "pass2" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
+  site_config {
+    dotnet_framework_version = "v9.0"
+    scm_type                 = "someValue"
+    }
+  }
+
+# PASS - v10.0 is the latest version
+resource "azurerm_app_service" "pass3" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
+  https_only          = true
+  site_config {
+    dotnet_framework_version = "v10.0"
+    scm_type                 = "someValue"
+    }
+  }
+
+# IGNORE - uses Java, not .NET
 resource "azurerm_app_service" "ignore" {
   name                = "example-app-service"
   location            = azurerm_resource_group.example.location
@@ -39,7 +79,7 @@ resource "azurerm_app_service" "ignore" {
     }
   }
 
-
+# PASS - v8.0 via application_stack
 resource "azurerm_windows_web_app" "pass" {
   #checkov:skip=CKV_AZURE_16: AD might not be required
   name                = var.name
@@ -90,6 +130,109 @@ resource "azurerm_windows_web_app" "pass" {
   }
 }
 
+# PASS - v9.0 via application_stack
+resource "azurerm_windows_web_app" "pass2" {
+  #checkov:skip=CKV_AZURE_16: AD might not be required
+  name                = var.name
+  location            = var.location
+  resource_group_name = var.rg_name
+  service_plan_id     = var.service_plan_id
+
+  https_only = true
+  logs {
+    detailed_error_messages = true
+    failed_request_tracing  = true
+    http_logs {
+      file_system {
+        retention_in_days = 4
+        retention_in_mb   = 25
+      }
+
+    }
+  }
+
+  storage_account {
+    name         = var.storage.name
+    type         = var.storage.store_type
+    account_name = var.storage.account_name
+    share_name   = var.storage.share_name
+    access_key   = var.storage.access_key
+    mount_path   = var.storage.mount_path
+  }
+
+  site_config {
+    ftps_state        = "FtpsOnly"
+    http2_enabled     = true
+    health_check_path = var.health_check_path
+    application_stack {
+      dotnet_version = "v9.0"
+    }
+  }
+
+
+  client_certificate_enabled = true
+
+  auth_settings {
+    enabled = true
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# PASS - v10.0 via application_stack
+resource "azurerm_windows_web_app" "pass3" {
+  #checkov:skip=CKV_AZURE_16: AD might not be required
+  name                = var.name
+  location            = var.location
+  resource_group_name = var.rg_name
+  service_plan_id     = var.service_plan_id
+
+  https_only = true
+  logs {
+    detailed_error_messages = true
+    failed_request_tracing  = true
+    http_logs {
+      file_system {
+        retention_in_days = 4
+        retention_in_mb   = 25
+      }
+
+    }
+  }
+
+  storage_account {
+    name         = var.storage.name
+    type         = var.storage.store_type
+    account_name = var.storage.account_name
+    share_name   = var.storage.share_name
+    access_key   = var.storage.access_key
+    mount_path   = var.storage.mount_path
+  }
+
+  site_config {
+    ftps_state        = "FtpsOnly"
+    http2_enabled     = true
+    health_check_path = var.health_check_path
+    application_stack {
+      dotnet_version = "v10.0"
+    }
+  }
+
+
+  client_certificate_enabled = true
+
+  auth_settings {
+    enabled = true
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# FAIL - v2.0 is EOL
 resource "azurerm_windows_web_app" "fail" {
   #checkov:skip=CKV_AZURE_16: AD might not be required
   name                = var.name
@@ -140,7 +283,58 @@ resource "azurerm_windows_web_app" "fail" {
   }
 }
 
+# FAIL - v6.0 is EOL via application_stack
+resource "azurerm_windows_web_app" "fail2" {
+  #checkov:skip=CKV_AZURE_16: AD might not be required
+  name                = var.name
+  location            = var.location
+  resource_group_name = var.rg_name
+  service_plan_id     = var.service_plan_id
 
+  https_only = true
+  logs {
+    detailed_error_messages = true
+    failed_request_tracing  = true
+    http_logs {
+      file_system {
+        retention_in_days = 4
+        retention_in_mb   = 25
+      }
+
+    }
+  }
+
+  storage_account {
+    name         = var.storage.name
+    type         = var.storage.store_type
+    account_name = var.storage.account_name
+    share_name   = var.storage.share_name
+    access_key   = var.storage.access_key
+    mount_path   = var.storage.mount_path
+  }
+
+  site_config {
+    ftps_state        = "FtpsOnly"
+    http2_enabled     = true
+    health_check_path = var.health_check_path
+    application_stack {
+      dotnet_version = "v6.0"
+    }
+  }
+
+
+  client_certificate_enabled = true
+
+  auth_settings {
+    enabled = true
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# IGNORE - no dotnet version specified
 resource "azurerm_windows_web_app" "ignore" {
   #checkov:skip=CKV_AZURE_16: AD might not be required
   name                = var.name

@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.3",
-        "bc-detect-secrets==1.5.45",
+        "bc-detect-secrets==1.5.47",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.5.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -92,7 +92,7 @@ setup(
         "cyclonedx-python-lib<8.0.0,>=6.0.0",
         "packageurl-python<0.14.0,>=0.11.1",
         "click<9.0.0,>=8.1.0",
-        "aiohttp<4.0.0,>=3.8.0",
+        "aiohttp<3.14.0,>=3.8.0",
         "aiodns<4.0.0,>=3.0.0",
         "aiomultiprocess>=0.9.0,<0.10.0",
         "schema<=0.7.5",
@@ -108,7 +108,9 @@ setup(
         "rustworkx>=0.13.0,<1.0.0",
         "pydantic<3.0.0,>=2.0.0",
         "asteval==1.0.6",
-        "urllib3>=1.26.20"
+        "urllib3>=1.26.20",
+        "platformdirs>=4.0.0,<5.0.0",
+        "ecdsa>=0.19.0,<1.0.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

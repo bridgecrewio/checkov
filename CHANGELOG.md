@@ -1,6 +1,205 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.495...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.1...HEAD)
+
+## [3.3.1](https://github.com/bridgecrewio/checkov/compare/3.3.0...3.3.1) - 2026-06-11
+
+### Feature
+
+- **serverless:** disable vars opt out - [#7574](https://github.com/bridgecrewio/checkov/pull/7574)
+
+## [3.3.0](https://github.com/bridgecrewio/checkov/compare/3.2.534...3.3.0) - 2026-06-10
+
+- no noteworthy changes
+
+## [3.2.534](https://github.com/bridgecrewio/checkov/compare/3.2.533...3.2.534) - 2026-06-09
+
+### Feature
+
+- **general:** fix regex to include hyphen - [#7566](https://github.com/bridgecrewio/checkov/pull/7566)
+
+## [3.2.533](https://github.com/bridgecrewio/checkov/compare/3.2.532...3.2.533) - 2026-06-04
+
+### Bug Fix
+
+- **general:** increase domain allow list as it blocks prisma release - [#7567](https://github.com/bridgecrewio/checkov/pull/7567)
+- **sca:** Kustomize and Helm improvements - [#7568](https://github.com/bridgecrewio/checkov/pull/7568)
+- **terraform:** pin security-group module to 5.3.1 in linked-module test - [#7570](https://github.com/bridgecrewio/checkov/pull/7570)
+
+## [3.2.532](https://github.com/bridgecrewio/checkov/compare/3.2.531...3.2.532) - 2026-06-02
+
+### Feature
+
+- **general:** verify ECDSA-P256 signatures on external custom checks before loading - [#7556](https://github.com/bridgecrewio/checkov/pull/7556)
+
+## [3.2.531](https://github.com/bridgecrewio/checkov/compare/3.2.530...3.2.531) - 2026-06-01
+
+### Feature
+
+- **terraform:** add CKV_AWS_393 for GitHub OIDC trust on aws_iam_role - [#7561](https://github.com/bridgecrewio/checkov/pull/7561)
+
+## [3.2.530](https://github.com/bridgecrewio/checkov/compare/3.2.529...3.2.530) - 2026-05-28
+
+### Bug Fix
+
+- **serverless:** disable env/file variable resolution by default - [#7554](https://github.com/bridgecrewio/checkov/pull/7554)
+
+## [3.2.529](https://github.com/bridgecrewio/checkov/compare/3.2.528...3.2.529) - 2026-05-14
+
+### Bug Fix
+
+- **terraform:** include 90-day boundary in rotation check CKV_AWS_304 - [#7544](https://github.com/bridgecrewio/checkov/pull/7544)
+
+## [3.2.528](https://github.com/bridgecrewio/checkov/compare/3.2.527...3.2.528) - 2026-05-10
+
+### Bug Fix
+
+- **secrets:** report all multiline regex matches per file, not just first occurrence - FIX - [#7540](https://github.com/bridgecrewio/checkov/pull/7540)
+
+## [3.2.527](https://github.com/bridgecrewio/checkov/compare/3.2.526...3.2.527) - 2026-05-07
+
+### Feature
+
+- **secrets:** Revert "fix(secrets): report all multiline regex matches per file, not just first occurrence" - [#7537](https://github.com/bridgecrewio/checkov/pull/7537)
+
+## [3.2.526](https://github.com/bridgecrewio/checkov/compare/3.2.525...3.2.526) - 2026-04-30
+
+### Bug Fix
+
+- **helm:** Accept helm version greater than v3 - [#7399](https://github.com/bridgecrewio/checkov/pull/7399)
+
+## [3.2.525](https://github.com/bridgecrewio/checkov/compare/3.2.524...3.2.525) - 2026-04-26
+
+### Bug Fix
+
+- **terraform:** fix wrong windows path - [#7529](https://github.com/bridgecrewio/checkov/pull/7529)
+
+## [3.2.524](https://github.com/bridgecrewio/checkov/compare/3.2.522...3.2.524) - 2026-04-20
+
+### Bug Fix
+
+- **general:** Revert Switch Terraform regex eval to RE2 for better performance - [#7520](https://github.com/bridgecrewio/checkov/pull/7520)
+- **sca:** Align ImageScanner.run_image_scan with execute_scan - [#7518](https://github.com/bridgecrewio/checkov/pull/7518)
+
+## [3.2.522](https://github.com/bridgecrewio/checkov/compare/3.2.521...3.2.522) - 2026-04-19
+
+### Bug Fix
+
+- **general:** Strip unnecessary control bytes from CLI code block - [#7515](https://github.com/bridgecrewio/checkov/pull/7515)
+- **general:** Switch Terraform regex eval to RE2 for better performance - [#7516](https://github.com/bridgecrewio/checkov/pull/7516)
+
+## [3.2.521](https://github.com/bridgecrewio/checkov/compare/3.2.519...3.2.521) - 2026-04-14
+
+### Bug Fix
+
+- **general:** make version cache init lazy - [#7509](https://github.com/bridgecrewio/checkov/pull/7509)
+- **secrets:** report all multiline regex matches per file, not just first occurrence - [#7483](https://github.com/bridgecrewio/checkov/pull/7483)
+
+## [3.2.519](https://github.com/bridgecrewio/checkov/compare/3.2.517...3.2.519) - 2026-04-12
+
+### Bug Fix
+
+- **terraform:** add aws:VpceAccount to recognized condition keys in check CKV_AWS_70 - [#7514](https://github.com/bridgecrewio/checkov/pull/7514)
+- **terraform:** Fix crash in GoogleKMSKeyIsPublic in membership check for unhashable types - [#7440](https://github.com/bridgecrewio/checkov/pull/7440)
+
+## [3.2.517](https://github.com/bridgecrewio/checkov/compare/3.2.513...3.2.517) - 2026-04-06
+
+### Bug Fix
+
+- **general:** add domain allowlist validation for Prisma Cloud and Bridgecrew API URLs - [#7496](https://github.com/bridgecrewio/checkov/pull/7496)
+- **terraform:** Harden tar and zip extraction - [#7497](https://github.com/bridgecrewio/checkov/pull/7497)
+
+## [3.2.513](https://github.com/bridgecrewio/checkov/compare/3.2.511...3.2.513) - 2026-03-27
+
+### Bug Fix
+
+- **general:** Log update - [#7482](https://github.com/bridgecrewio/checkov/pull/7482)
+
+## [3.2.511](https://github.com/bridgecrewio/checkov/compare/3.2.510...3.2.511) - 2026-03-26
+
+### Bug Fix
+
+- **general:** Prevent run failure invalid policy - [#7476](https://github.com/bridgecrewio/checkov/pull/7476)
+
+## [3.2.510](https://github.com/bridgecrewio/checkov/compare/3.2.508...3.2.510) - 2026-03-18
+
+### Bug Fix
+
+- **terraform:** support modern TLS security policies in CKV_AWS_206 - [#7466](https://github.com/bridgecrewio/checkov/pull/7466)
+- **terraform:** update CKV_AWS_339 supported EKS Kubernetes versions - [#7465](https://github.com/bridgecrewio/checkov/pull/7465)
+- **terraform:** update CKV_GCP_79 latest Postgres version from 17 to 18 - [#7464](https://github.com/bridgecrewio/checkov/pull/7464)
+
+## [3.2.508](https://github.com/bridgecrewio/checkov/compare/3.2.507...3.2.508) - 2026-03-08
+
+### Bug Fix
+
+- **secrets:** eliminate race condition in secrets scanner when running concurrently with other scanners - [#7456](https://github.com/bridgecrewio/checkov/pull/7456)
+
+## [3.2.507](https://github.com/bridgecrewio/checkov/compare/3.2.506...3.2.507) - 2026-03-05
+
+### Bug Fix
+
+- **secrets:** add _thread_safe_transient_settings( to secret runner - [#7455](https://github.com/bridgecrewio/checkov/pull/7455)
+
+## [3.2.506](https://github.com/bridgecrewio/checkov/compare/3.2.505...3.2.506) - 2026-02-23
+
+### Bug Fix
+
+- **terraform:** return inner module path when dest_dir already exists on Linux - [#7436](https://github.com/bridgecrewio/checkov/pull/7436)
+
+## [3.2.505](https://github.com/bridgecrewio/checkov/compare/3.2.504...3.2.505) - 2026-02-22
+
+### Feature
+
+- **bicep:** revert bump pycep to support better bicep syntax - [#7446](https://github.com/bridgecrewio/checkov/pull/7446)
+
+## [3.2.504](https://github.com/bridgecrewio/checkov/compare/3.2.502...3.2.504) - 2026-02-18
+
+### Feature
+
+- **bicep:** bump pycep to support better bicep syntax - [#7441](https://github.com/bridgecrewio/checkov/pull/7441)
+- **terraform:** deprecate dotnet v6 and support v9 and v10 - [#7442](https://github.com/bridgecrewio/checkov/pull/7442)
+
+## [3.2.502](https://github.com/bridgecrewio/checkov/compare/3.2.501...3.2.502) - 2026-02-16
+
+### Feature
+
+- **general:** better shell commands - [#7438](https://github.com/bridgecrewio/checkov/pull/7438)
+
+## [3.2.501](https://github.com/bridgecrewio/checkov/compare/3.2.500...3.2.501) - 2026-02-11
+
+### Bug Fix
+
+- **general:**  secret detection in build log files with line prefixes - [#7431](https://github.com/bridgecrewio/checkov/pull/7431)
+
+## [3.2.500](https://github.com/bridgecrewio/checkov/compare/3.2.499...3.2.500) - 2026-02-01
+
+### Bug Fix
+
+- **cloudformation:** render variables in cfn vertices config - [#7423](https://github.com/bridgecrewio/checkov/pull/7423)
+
+## [3.2.499](https://github.com/bridgecrewio/checkov/compare/3.2.497...3.2.499) - 2026-01-25
+
+### Feature
+
+- **general:** Add BC_CA_BUNDLE environment variable support for custom CA certificates - [#7419](https://github.com/bridgecrewio/checkov/pull/7419)
+- **secrets:** Override AWS generic check with cortex specific checks - [#7420](https://github.com/bridgecrewio/checkov/pull/7420)
+
+### Bug Fix
+
+- **terraform:** test dates - [#7422](https://github.com/bridgecrewio/checkov/pull/7422)
+
+## [3.2.497](https://github.com/bridgecrewio/checkov/compare/3.2.496...3.2.497) - 2025-12-30
+
+### Bug Fix
+
+- **terraform:** handle file path instead of directory - [#7408](https://github.com/bridgecrewio/checkov/pull/7408)
+
+## [3.2.496](https://github.com/bridgecrewio/checkov/compare/3.2.495...3.2.496) - 2025-12-28
+
+### Bug Fix
+
+- **terraform:** CKV_GCP_6 - Added special handling for MSSQL SERVER database type - [#7405](https://github.com/bridgecrewio/checkov/pull/7405)
 
 ## [3.2.495](https://github.com/bridgecrewio/checkov/compare/3.2.494...3.2.495) - 2025-11-23
 

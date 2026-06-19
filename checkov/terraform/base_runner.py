@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import platform
+import re
 from abc import abstractmethod
 from typing import Dict, Optional, Any, Set, TYPE_CHECKING, TypeVar, Generic
 
@@ -18,6 +18,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.file_utils import safe_relpath
 from checkov.common.util.secrets import omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -47,6 +48,38 @@ _FilePath = TypeVar("_FilePath")
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
+
+# Matches IDs of the form: LETTERS_CUSTOM_uuid (e.g. CKV_CUSTOM_abc-123, RANDOM_CUSTOM_abc-123)
+_CUSTOM_CHECK_ID_RE = re.compile(r'^[A-Za-z]+_CUSTOM_([a-f0-9\-]{36})$', re.IGNORECASE)
+
+# Controls whether *_CUSTOM_<uuid> skip comments can match checks with different prefixes.
+# Set CKV_CUSTOM_PREFIX_SUPPRESSION=false to disable and use exact equality only (for benchmarking).
+_CUSTOM_PREFIX_SUPPRESSION_ENABLED = os.environ.get("CKV_CUSTOM_PREFIX_SUPPRESSION", "true").lower() != "false"
+
+
+def _skip_matches_check_id(skip_id: str, check_id: str) -> bool:
+    """Check if a skip comment ID matches a check ID.
+
+    Handles the case where custom checks may have different prefixes
+    (e.g. RANDOM_CUSTOM_* vs CKV_CUSTOM_*) but the same UUID suffix.
+    Only applies fuzzy matching for *_CUSTOM_<uuid> patterns to avoid
+    false positives on built-in checks.
+
+    Fuzzy matching can be disabled by setting CKV_CUSTOM_PREFIX_SUPPRESSION=false.
+    """
+    if not skip_id or not check_id:
+        return False
+    if skip_id == check_id:
+        return True
+    if not _CUSTOM_PREFIX_SUPPRESSION_ENABLED:
+        return False  # env var disabled — fall back to exact equality only
+    m1 = _CUSTOM_CHECK_ID_RE.match(skip_id)
+    if not m1:
+        return False
+    m2 = _CUSTOM_CHECK_ID_RE.match(check_id)
+    if not m2:
+        return False
+    return m1.group(1) == m2.group(1)
 
 
 class BaseTerraformRunner(
@@ -108,7 +141,7 @@ class BaseTerraformRunner(
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str) \
+    def _get_connected_node_data(self, connected_node: dict[str, Any], root_folder: str | None) \
             -> Optional[Dict[str, Any]]:
         if not connected_node:
             return None
@@ -118,7 +151,7 @@ class BaseTerraformRunner(
         full_file_path = connected_node[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data["code_block"] = connected_entity_context.get("code_lines")
-        connected_node_data["file_path"] = f"{os.sep}{os.path.relpath(full_file_path, root_folder)}"
+        connected_node_data["file_path"] = f"{os.sep}{safe_relpath(full_file_path, root_folder)}"
         connected_node_data["file_line_range"] = [
             connected_entity_context.get("start_line"),
             connected_entity_context.get("end_line"),
@@ -131,7 +164,7 @@ class BaseTerraformRunner(
         return connected_node_data
 
     def get_graph_checks_report(
-        self, root_folder: str, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
+        self, root_folder: str | None, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
     ) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)
@@ -150,15 +183,13 @@ class BaseTerraformRunner(
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
                     for skipped_check in entity_context.get("skipped_checks", []):
-                        if skipped_check["id"] == check.id:
+                        if _skip_matches_check_id(skipped_check["id"], check.id):
                             copy_of_check_result["result"] = CheckResult.SKIPPED
                             copy_of_check_result["suppress_comment"] = skipped_check["suppress_comment"]
                             break
                     copy_of_check_result["entity"] = entity[CustomAttributes.CONFIG]
                     connected_node_data = self._get_connected_node_data(entity.get(CustomAttributes.CONNECTED_NODE),  # type: ignore
                                                                         root_folder)
-                    if platform.system() == "Windows":
-                        root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context["definition_path"])
                     resource = resource_id
                     definition_context_file_path = full_file_path
@@ -182,7 +213,7 @@ class BaseTerraformRunner(
                         check_name=check.name,
                         check_result=copy_of_check_result,
                         code_block=censored_code_lines,
-                        file_path=f"{os.sep}{os.path.relpath(full_file_path, root_folder)}",
+                        file_path=f"{os.sep}{safe_relpath(full_file_path, root_folder)}",
                         file_line_range=[
                             entity_context.get("start_line", 1),
                             entity_context.get("end_line", 1),

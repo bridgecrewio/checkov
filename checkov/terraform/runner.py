@@ -127,7 +127,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
-            if root_folder is None:
+            if root_folder is None and files is None:
                 # this shouldn't happen
                 raise Exception("Root directory was not specified")
 
@@ -206,7 +206,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
     def check_tf_definition(
         self,
         report: Report,
-        root_folder: str,
+        root_folder: str | None,
         runner_filter: RunnerFilter,
         collect_skip_comments: bool = True,
     ) -> None:
@@ -298,7 +298,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         definition: dict[str, list[dict[str, Any]]],
         definitions_context: _TerraformContext,
         full_file_path: TFDefinitionKey,
-        root_folder: str,
+        root_folder: str | None,
         report: Report,
         scanned_file: str,
         runner_filter: RunnerFilter,
@@ -327,7 +327,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         entities: list[dict[str, Any]],
         definition_context: _TerraformContext,
         full_file_path: TFDefinitionKey,
-        root_folder: str,
+        root_folder: str | None ,
         report: Report,
         scanned_file: str,
         block_type: str,

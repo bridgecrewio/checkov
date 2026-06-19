@@ -32,7 +32,9 @@ Check: CKV_K8S_27: "Do not expose the docker daemon socket to containers"
 ...
 ```
 
-To do this, we use the helm binary, if the helm binary (v3) is not available via the users `$PATH` for Checkov, Checkov will automatically skip the helm framework, with a message informing the user as below. Checkov will then run with exactly the same behaviour as if running with `checkov --skip-framework helm`.
+To do this, we use the helm binary.\
+If a helm binary greater than v3 is not available via the users `$PATH`, Checkov will automatically skip the helm framework, with a message informing the user.\
+Checkov will then run with exactly the same behaviour as if running with `checkov --skip-framework helm`.
 
 ```
 The following frameworks will automatically be disabled due to missing system dependencies: helm
@@ -105,6 +107,30 @@ helm template gocd/gocd -f gocd.yaml > k8s-template.yaml
 checkov -f k8s-template.yaml --framework kubernetes --skip-check CKV_K8S_21
 ```
 
-Note we skip check `CKV_K8S_21` for this process, which alerts on default namespace usage within Kubernetes manifests. 
+Note we skip check `CKV_K8S_21` for this process, which alerts on default namespace usage within Kubernetes manifests.
 Since helm manages our namespaces, we always skip this internally when using the helm framework, so we want to replicate the same behaviour here.
+
+## Dependency Repository Security
+
+By default, Checkov runs `helm template --dependency-update` normally — all remote dependency repositories in `Chart.yaml` are allowed (original behaviour preserved).
+
+To restrict remote access, set `CHECKOV_HELM_ALLOWED_REMOTE_REPOS` to a comma-separated list of trusted repository URL prefixes (set in CI, not in scanned files). Dependency repos **not** matching any prefix will cause the build to be skipped.
+
+### Usage (set as a CI environment variable, not in scanned files)
+
+```bash
+# Allow only your org's chart repos — block everything else remote:
+CHECKOV_HELM_ALLOWED_REMOTE_REPOS=https://charts.myorg/,https://charts.partner.com/ \
+  checkov -d ./myapp --framework helm
+
+# Block ALL remote repos (no URL starts with "none"):
+CHECKOV_HELM_ALLOWED_REMOTE_REPOS=none \
+  checkov -d ./myapp --framework helm
+```
+
+### Example warning when a dependency repo is blocked
+
+```
+WARNING: Skipping helm template for /path/to/chart: 1 dependency repo(s) not in CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
+```
 
