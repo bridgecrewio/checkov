@@ -87,6 +87,8 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
             if all('Effect' not in statement for statement in statements):
                 return CheckResult.UNKNOWN
             for statement in statements:
+                if not isinstance(statement, dict):
+                    continue
                 if 'Effect' not in statement or statement['Effect'] == 'Deny' or 'Principal' not in statement:
                     continue
                 principal = statement['Principal']
