@@ -12,6 +12,9 @@ VALID_DOCKERFILE_NAMES = [
     "Dockerfile.Product1",
     "dev.Dockerfile",
     "team1.product.dockerfile",
+    "AdtDockerfile",
+    "MyServiceDockerfile",
+    "AdtDockerfile.prod",
 ]
 INVALID_DOCKERFILE_NAMES = [
     "package.json",
