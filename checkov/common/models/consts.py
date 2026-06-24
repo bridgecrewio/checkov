@@ -2,7 +2,7 @@ import re
 
 from checkov.common.sast.consts import SastLanguages
 
-SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template", ".bicep", ".hcl"]
+SUPPORTED_FILE_EXTENSIONS = [".tf", ".tofu", ".yml", ".yaml", ".json", ".template", ".bicep", ".hcl"]
 SUPPORTED_PACKAGE_FILES = {
     "bower.json",
     "build.gradle",
