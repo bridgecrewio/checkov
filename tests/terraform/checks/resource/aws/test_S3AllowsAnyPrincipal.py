@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.S3AllowsAnyPrincipal import check
 from checkov.terraform.runner import Runner
@@ -37,6 +38,9 @@ class TestS3AllowsAnyPrincipal(unittest.TestCase):
             "aws_s3_bucket.fail_w_condition",
             "aws_s3_bucket_policy.fail_w_condition",
         }
+        unknown_resources = {
+            "aws_s3_bucket_policy.concat_mixed_pass",
+        }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
@@ -48,6 +52,26 @@ class TestS3AllowsAnyPrincipal(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+        self.assertFalse(unknown_resources & passed_check_resources)
+        self.assertFalse(unknown_resources & failed_check_resources)
+
+    def test_mixed_concat_unresolved_statement_returns_unknown(self):
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "DenyInsecureTransport",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Action": "s3:*",
+                    "Resource": "*",
+                    "Condition": {"Bool": {"aws:SecureTransport": "false"}},
+                },
+                "{Effect = \"Allow\", Principal = \"*\"}",
+            ],
+        }
+
+        self.assertEqual(check.scan_resource_conf({"policy": [policy]}), CheckResult.UNKNOWN)
 
 
 if __name__ == "__main__":
