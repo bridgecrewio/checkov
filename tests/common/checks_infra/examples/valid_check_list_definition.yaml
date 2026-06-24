@@ -1,0 +1,16 @@
+metadata:
+  name: "Ensure S3 bucket has versioning and encryption"
+  id: CUSTOM_LIST_DEF
+  category: "GENERAL_SECURITY"
+definition:
+  - cond_type: attribute
+    resource_types:
+      - aws_s3_bucket
+    attribute: versioning.enabled
+    operator: equals
+    value: "true"
+  - cond_type: attribute
+    resource_types:
+      - aws_s3_bucket
+    attribute: server_side_encryption_configuration
+    operator: exists
