@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.1...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.2...HEAD)
+
+## [3.3.2](https://github.com/bridgecrewio/checkov/compare/3.3.1...3.3.2) - 2026-06-23
+
+### Bug Fix
+
+- **terraform_plan:** handle computed log_bucket in CKV_GCP_62 and CKV_GCP_63 - [#7582](https://github.com/bridgecrewio/checkov/pull/7582)
+- **terraform:** pass CKV_GCP_123 when remove_default_node_pool is true - [#7575](https://github.com/bridgecrewio/checkov/pull/7575)
 
 ## [3.3.1](https://github.com/bridgecrewio/checkov/compare/3.3.0...3.3.1) - 2026-06-11
 

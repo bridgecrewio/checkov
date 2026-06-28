@@ -35,5 +35,14 @@ class TestCloudStorageLogging(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_computed_log_bucket(self):
+        # When log_bucket references a computed value it is absent from the plan JSON
+        resource_conf = {
+            "name": ["my-bucket"],
+            "logging": [{"log_object_prefix": "my-prefix/"}],
+        }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+
 if __name__ == '__main__':
     unittest.main()
