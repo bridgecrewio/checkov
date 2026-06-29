@@ -154,7 +154,7 @@ class Checkov:
         resource_attributes_to_omit = defaultdict(set)
         for entry in self.config.mask:
             splitted_entry = entry.split(':')
-            # if we have 2 entries, this is resource & variable to mask
+            # if we have 2 entries only, this is resource & variable to mask
             splitted_entry_len = len(splitted_entry)
             if 2 == splitted_entry_len:
                 resource = splitted_entry[0]
