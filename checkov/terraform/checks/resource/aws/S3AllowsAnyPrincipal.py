@@ -84,9 +84,14 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
 
         if isinstance(policy_block, dict) and 'Statement' in policy_block.keys():
             statements = force_list(policy_block['Statement'])
-            if all('Effect' not in statement for statement in statements):
+            if all(not isinstance(statement, dict) or 'Effect' not in statement for statement in statements):
                 return CheckResult.UNKNOWN
+            has_unresolved_statement = False
             for statement in statements:
+                if not isinstance(statement, dict):
+                    # Unresolved statements can be serialized as strings that still contain "Effect".
+                    has_unresolved_statement = True
+                    continue
                 if 'Effect' not in statement or statement['Effect'] == 'Deny' or 'Principal' not in statement:
                     continue
                 principal = statement['Principal']
@@ -101,6 +106,8 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                         if check_conditions(statement):
                             return CheckResult.PASSED
                         return CheckResult.FAILED
+            if has_unresolved_statement:
+                return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
