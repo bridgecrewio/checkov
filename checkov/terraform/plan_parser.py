@@ -25,7 +25,7 @@ TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 COUNT_PATTERN = re.compile(r"\[?\d+\]?$")
 
 RESOURCE_TYPES_JSONIFY = {
-    "aws_batch_job_definition": "container_properties",
+    "aws_batch_job_definition": ("container_properties", "ecs_properties", "eks_properties", "node_properties"),
     "aws_ecs_task_definition": "container_definitions",
     "aws_iam_policy": "policy",
     "aws_iam_role": "assume_role_policy",
@@ -150,24 +150,32 @@ def _hclify(
 
     if resource_type and resource_type in RESOURCE_TYPES_JSONIFY:
         # values shouldn't be encapsulated in lists
-        dict_value = jsonify(obj=obj, resource_type=resource_type)
-        if dict_value is not None:
-            ret_dict[RESOURCE_TYPES_JSONIFY[resource_type]] = force_list(dict_value)
+        result = jsonify(obj=obj, resource_type=resource_type)
+        if result is not None:
+            dict_value, matched_key = result
+            ret_dict[matched_key] = force_list(dict_value)
 
     return ret_dict
 
 
-def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
-    """Tries to create a dict from a string of a supported resource type attribute"""
+def jsonify(obj: dict[str, Any], resource_type: str) -> tuple[dict[str, Any], str] | None:
+    """Tries to create a dict from a string or dict of a supported resource type attribute"""
 
-    jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
-    if jsonify_key in obj:
-        try:
-            return cast("dict[str, Any]", json.loads(obj[jsonify_key]))
-        except json.JSONDecodeError:
-            logging.debug(
-                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
-            )
+    raw_keys = RESOURCE_TYPES_JSONIFY[resource_type]
+    jsonify_keys = (raw_keys,) if isinstance(raw_keys, str) else raw_keys
+
+    for jsonify_key in jsonify_keys:
+        if jsonify_key in obj and obj[jsonify_key] is not None:
+            val = obj[jsonify_key]
+            if isinstance(val, dict):
+                return val, jsonify_key
+            if isinstance(val, (str, bytes, bytearray)):
+                try:
+                    return cast("dict[str, Any]", json.loads(val)), jsonify_key
+                except json.JSONDecodeError:
+                    logging.debug(
+                        f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {val}"
+                    )
 
     return None
 
