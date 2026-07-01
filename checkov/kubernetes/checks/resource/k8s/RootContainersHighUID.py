@@ -21,6 +21,12 @@ class RootContainersHighUID(BaseK8sRootContainerCheck):
 
         # Collect results
         if spec and isinstance(spec, dict):
+            # With a private user namespace (hostUsers: false) container UIDs are
+            # remapped to unprivileged host UIDs, so the high-UID host-collision
+            # concern this check guards against no longer applies.
+            if spec.get("hostUsers") is False:
+                return CheckResult.PASSED
+
             results: dict[str, Any] = {"pod": {}, "container": []}
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 10000)
 
