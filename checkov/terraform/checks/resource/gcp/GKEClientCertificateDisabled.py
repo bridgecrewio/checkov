@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class GKEClientCertificateDisabled(BaseResourceValueCheck):
@@ -8,7 +8,11 @@ class GKEClientCertificateDisabled(BaseResourceValueCheck):
         id = "CKV_GCP_13"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        # The google provider defaults issue_client_certificate to false, which is exactly the
+        # desired state. Omitting master_auth/client_certificate_config therefore leaves client
+        # certificate auth disabled, so a missing block should pass rather than fail.
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_block_result=CheckResult.PASSED)
 
     def get_inspected_key(self):
         """
