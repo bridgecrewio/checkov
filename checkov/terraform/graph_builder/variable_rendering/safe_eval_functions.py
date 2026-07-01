@@ -355,13 +355,18 @@ SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M
 SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 
+# Computed once at import time; passed to every Interpreter so asteval cannot
+# overwrite TF builtins in the shared SAFE_EVAL_DICT via node_assign.
+_SAFE_EVAL_READONLY: frozenset = frozenset(SAFE_EVAL_DICT)
+
 
 def get_asteval() -> Interpreter:
     # asteval provides a safer environment for evaluating expressions by restricting the operations to a secure subset, significantly reducing the risk of executing malicious code.
     return Interpreter(
         symtable=SAFE_EVAL_DICT,
         use_numpy=False,
-        minimal=True
+        minimal=True,
+        readonly_symbols=_SAFE_EVAL_READONLY
     )
 
 
