@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_EVAL_ALL"
+  name: "Ensure apt-get update exists in all RUN instructions"
+  category: "APPLICATION_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - RUN
+  attribute: value
+  operator: contains
+  value: "apt-get update"
