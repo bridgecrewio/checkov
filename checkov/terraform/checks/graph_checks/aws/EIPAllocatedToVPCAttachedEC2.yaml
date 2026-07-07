@@ -54,6 +54,12 @@ definition:
             - aws_transfer_server
           operator: exists
           cond_type: connection
+        - resource_types:
+            - aws_eip
+          connected_resource_types:
+            - aws_lb
+          operator: exists
+          cond_type: connection
         - cond_type: attribute
           resource_types:
           - aws_eip
