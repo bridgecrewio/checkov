@@ -362,10 +362,18 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             o, e = proc.communicate()
             if threading.current_thread() is threading.main_thread():
                 signal.alarm(0)
-            if e:
+            # `helm template` writes non-fatal warnings to stderr while still exiting 0 and
+            # rendering valid manifests to stdout — e.g. OCI dependency "Pulled:"/"Digest:"
+            # messages from --dependency-update and coalesce.go "Ignoring non-table value"
+            # warnings. The real failure signal is a non-zero exit code, so only bail on that;
+            # otherwise a single benign warning would discard the entire rendered chart.
+            if proc.returncode:
                 logging.warning(
                     f"Failed processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Failure details: {str(e, 'utf-8')}")
                 return None, None
+            if e:
+                logging.debug(
+                    f"Non-fatal warnings while templating helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Details: {str(e, 'utf-8')}")
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
             logging.info(f'Done helm run for: {chart_dir}')
