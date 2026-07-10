@@ -62,6 +62,24 @@ class TestPlanFileParser(unittest.TestCase):
         # TODO: this should also verify the flattening but at least shows it parses now.
         assert True
 
+    def test_aws_batch_job_definition_null_container_properties(self):
+        from checkov.terraform.plan_parser import _hclify
+        resource = {
+            "address": "aws_batch_job_definition.fargate_job",
+            "mode": "managed",
+            "type": "aws_batch_job_definition",
+            "name": "fargate_job",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "values": {
+                "container_properties": None,
+                "deregister_on_new_revision": True,
+                "ecs_properties": '{"taskProperties": "containers"}'
+            }
+        }
+        res_conf = _hclify(obj=resource["values"], conf=None, resource_type="aws_batch_job_definition")
+        self.assertIn("ecs_properties", res_conf)
+        self.assertEqual(res_conf["ecs_properties"], [{"taskProperties": "containers"}])
+
     # Check Plan Booleans are treated similar to normal Terraform Parser
     # https://github.com/bridgecrewio/checkov/issues/1764
     def test_simple_type_booleans_clean(self):
