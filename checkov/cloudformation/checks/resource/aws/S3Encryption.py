@@ -19,7 +19,7 @@ class S3Encryption(BaseResourceValueCheck):
         return 'AES256'
 
     def get_expected_values(self):
-        return [self.get_expected_value(), 'aws:kms']
+        return [self.get_expected_value(), 'aws:kms', 'aws:kms:dsse']
 
 
 check = S3Encryption()
