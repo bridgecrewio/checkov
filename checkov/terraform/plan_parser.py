@@ -25,7 +25,7 @@ TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 COUNT_PATTERN = re.compile(r"\[?\d+\]?$")
 
 RESOURCE_TYPES_JSONIFY = {
-    "aws_batch_job_definition": "container_properties",
+    "aws_batch_job_definition": ("container_properties", "ecs_properties", "eks_properties", "node_properties"),
     "aws_ecs_task_definition": "container_definitions",
     "aws_iam_policy": "policy",
     "aws_iam_role": "assume_role_policy",
@@ -158,16 +158,20 @@ def _hclify(
 
 
 def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
-    """Tries to create a dict from a string of a supported resource type attribute"""
+    """Tries to create a dict from a string of a supported resource type attribute"""  
 
-    jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
-    if jsonify_key in obj:
-        try:
-            return cast("dict[str, Any]", json.loads(obj[jsonify_key]))
-        except json.JSONDecodeError:
-            logging.debug(
-                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
-            )
+    mapping = RESOURCE_TYPES_JSONIFY[resource_type]
+    jsonify_keys = [mapping] if isinstance(mapping, str) else mapping
+    for jsonify_key in jsonify_keys:
+        if jsonify_key in obj and obj[jsonify_key]:             
+            if isinstance(obj[jsonify_key], (dict, list)):
+                return obj[jsonify_key]            
+            try:
+                return cast("dict[str, Any]", json.loads(obj[jsonify_key]))
+            except json.JSONDecodeError:
+                logging.debug(
+                    f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
+                )
 
     return None
 
