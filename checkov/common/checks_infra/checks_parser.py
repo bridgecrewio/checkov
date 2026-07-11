@@ -212,6 +212,14 @@ class GraphCheckParser(BaseGraphCheckParser):
             check.severity = severity
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
+
+        # Parse evaluation_mode from top-level definition (supports both simple and complex checks)
+        evaluation_mode = policy_definition.get("evaluation_mode", "all")
+        if evaluation_mode not in ("all", "any"):
+            logging.warning(f"Invalid evaluation_mode '{evaluation_mode}' in check {check.id}, using default 'all'")
+            evaluation_mode = "all"
+        check.evaluation_mode = evaluation_mode
+
         solver = self.get_check_solver(check)
         solver.providers = providers
         check.set_solver(solver)
@@ -301,6 +309,13 @@ class GraphCheckParser(BaseGraphCheckParser):
                 check.operator = raw_check.get("operator", "")
             check.attribute = raw_check.get("attribute")
             check.attribute_value = raw_check.get("value")
+
+            # Parse evaluation_mode for result aggregation (default: "all")
+            evaluation_mode = raw_check.get("evaluation_mode", "all")
+            if evaluation_mode not in ("all", "any"):
+                logging.warning(f"Invalid evaluation_mode '{evaluation_mode}', using default 'all'")
+                evaluation_mode = "all"
+            check.evaluation_mode = evaluation_mode
 
         return check
 
