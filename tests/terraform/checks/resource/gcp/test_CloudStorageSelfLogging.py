@@ -36,6 +36,16 @@ class TestCloudStorageSelfLogging(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+    def test_computed_log_bucket(self):
+        # When log_bucket is a computed value it is absent from the plan JSON; expect UNKNOWN
+        from checkov.common.models.enums import CheckResult
+        resource_conf = {
+            "name": ["my-bucket"],
+            "logging": [{"log_object_prefix": ["my-prefix/"]}],
+        }
+        result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.UNKNOWN, result)
+
 
 if __name__ == '__main__':
     unittest.main()

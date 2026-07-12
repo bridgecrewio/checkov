@@ -1,6 +1,42 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.1...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.8...HEAD)
+
+## [3.3.8](https://github.com/bridgecrewio/checkov/compare/3.3.7...3.3.8) - 2026-07-09
+
+### Bug Fix
+
+- **kubernetes:** CKV_K8S_40 should pass when hostUsers is false - [#7580](https://github.com/bridgecrewio/checkov/pull/7580)
+
+## [3.3.7](https://github.com/bridgecrewio/checkov/compare/3.3.6...3.3.7) - 2026-07-07
+
+### Feature
+
+- **general:** fix github only output for sca - [#7598](https://github.com/bridgecrewio/checkov/pull/7598)
+
+## [3.3.6](https://github.com/bridgecrewio/checkov/compare/3.3.5...3.3.6) - 2026-06-30
+
+### Bug Fix
+
+- **terraform:** prevent crash in S3AllowsAnyPrincipal with unparsed v… - [#7581](https://github.com/bridgecrewio/checkov/pull/7581)
+
+## [3.3.5](https://github.com/bridgecrewio/checkov/compare/3.3.2...3.3.5) - 2026-06-29
+
+### Feature
+
+- **general:** fix danger node version - [#7589](https://github.com/bridgecrewio/checkov/pull/7589)
+
+### Bug Fix
+
+- **general:** retry kustomize/helm install to survive transient GitHub failures - [#7591](https://github.com/bridgecrewio/checkov/pull/7591)
+- **terraform:** CKV_AZURE_190 override singular get_expected_value - [#7592](https://github.com/bridgecrewio/checkov/pull/7592)
+
+## [3.3.2](https://github.com/bridgecrewio/checkov/compare/3.3.1...3.3.2) - 2026-06-23
+
+### Bug Fix
+
+- **terraform_plan:** handle computed log_bucket in CKV_GCP_62 and CKV_GCP_63 - [#7582](https://github.com/bridgecrewio/checkov/pull/7582)
+- **terraform:** pass CKV_GCP_123 when remove_default_node_pool is true - [#7575](https://github.com/bridgecrewio/checkov/pull/7575)
 
 ## [3.3.1](https://github.com/bridgecrewio/checkov/compare/3.3.0...3.3.1) - 2026-06-11
 
