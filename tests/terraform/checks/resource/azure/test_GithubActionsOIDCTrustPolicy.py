@@ -19,6 +19,7 @@ class TestAzureGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "azuread_application_federated_identity_credential.pass2",
             "azuread_application_federated_identity_credential.pass4",
             "azuread_application_federated_identity_credential.pass_special_chars",
+            "azuread_application_federated_identity_credential.pass_immutable",
         }
         failing_resources = {
             "azuread_application_federated_identity_credential.fail1",
