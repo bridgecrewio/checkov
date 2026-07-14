@@ -54,6 +54,19 @@ resource "google_iam_workload_identity_pool_provider" "pass_org_only" {
   }
 }
 
+# pass_immutable - GitHub immutable OIDC subject (owner@id/repo@id numeric suffixes)
+resource "google_iam_workload_identity_pool_provider" "pass_immutable" {
+  workload_identity_pool_id          = "example-pool"
+  workload_identity_pool_provider_id = "example-provider-immutable"
+  attribute_mapping                 = {
+    "google.subject"       = "assertion.sub"
+  }
+  attribute_condition               = "assertion.sub == 'repo:octo-org@123456/octo-repo@456789:ref:refs/heads/main'"
+  oidc {
+    issuer_uri                       = "https://token.actions.githubusercontent.com"
+  }
+}
+
 # fail1 - Missing attribute condition
 resource "google_iam_workload_identity_pool_provider" "fail1" {
   workload_identity_pool_id          = "example-pool"

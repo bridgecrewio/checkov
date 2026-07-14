@@ -35,6 +35,15 @@ resource "azuread_application_federated_identity_credential" "pass_special_chars
   subject             = "repo:${var.github_organisation_target}/${github_repository.project.name}:environment:${var.environment}"
 }
 
+# pass_immutable - GitHub immutable OIDC subject (owner@id/repo@id numeric suffixes)
+resource "azuread_application_federated_identity_credential" "pass_immutable" {
+  application_object_id = "example-app-id"
+  display_name         = "github-actions-oidc"
+  audiences           = ["api://AzureADTokenExchange"]
+  issuer              = "https://token.actions.githubusercontent.com"
+  subject             = "repo:octo-org@123456/octo-repo@456789:ref:refs/heads/main"
+}
+
 # fail1 - Missing subject
 resource "azuread_application_federated_identity_credential" "fail1" {
   application_object_id = "example-app-id"
