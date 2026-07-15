@@ -202,6 +202,9 @@ class GraphCheckParser(BaseGraphCheckParser):
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
         providers = self._get_check_providers(raw_check)
         policy_definition = raw_check.get("definition", {})
+        if isinstance(policy_definition, list):
+            # a list of conditions is treated as an implicit AND
+            policy_definition = {"and": policy_definition}
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"), providers)
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
