@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  LambdaMemorySize:
+    Type: Number
+    Default: 1024
+  CacheSizeLimit:
+    Type: Number
+    Default: 100
+Mappings:
+  MemoryMap:
+    us-east-1:
+      size: 512
+Resources:
+  MyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Handler: index.handler
+      MemorySize:
+        Ref: LambdaMemorySize
+        Fn::FindInMap:
+          - MemoryMap
+          - Ref: CacheSizeLimit
+          - size
