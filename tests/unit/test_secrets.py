@@ -70,3 +70,28 @@ class TestSecrets(unittest.TestCase):
         secret = get_secrets_from_string(s)
 
         assert secret == ["AKIAIOSFODNN7EXAMPLE"]
+
+    # Regression for https://github.com/bridgecrewio/checkov/issues/7542
+    def test_aws_secret_key_pattern_ignores_non_mixed_40_char_values(self):
+        # Legitimate Lambda env values from the issue report (and similar resource names)
+        # must not be treated as AWS secret access keys just because of length.
+        false_positives = [
+            "mdp/feature-logging/FdaCompositePipeline",  # 40-char namespace-like value
+            "https://www.fda.gov/media/76860/download",  # 40-char URL
+            "mdp-test-new-destroy-147997161038-uploads-bucket",  # 48-char bucket name
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",  # 40 identical chars
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmn",  # 40 lower-only
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN",  # 40 upper-only
+            "abcdefghijklmnopqrstuvwxyz0123456789abcd",  # lower+digit, no upper
+        ]
+        for value in false_positives:
+            self.assertFalse(
+                string_has_secrets(value, AWS),
+                msg=f"unexpected AWS secret match for {value!r}",
+            )
+
+        # Real AWS secret access keys mix upper, lower, and digits within 40 base64 chars
+        real_secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
+        self.assertTrue(string_has_secrets(real_secret, AWS))
+        self.assertTrue(get_secrets_from_string(real_secret, AWS))
+
