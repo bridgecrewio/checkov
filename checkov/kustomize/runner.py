@@ -432,6 +432,8 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         self.kustomizeFileMappings: "dict[str, str]" = {}
         self.templateRendererCommand: str | None = None
         self.target_folder_path = ''
+        # Paths where kustomize/kubectl build failed; surfaced as report.parsing_errors (#7599)
+        self.kustomize_build_errors: "list[str]" = []
 
         self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
                                                                                 False))
@@ -637,12 +639,25 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
         full_command = f'{template_renderer_command} {template_render_command_options}'
         proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-        output, _ = proc.communicate()
+        output, err = proc.communicate()
 
         if self.checkov_allow_kustomize_file_edits and add_origin_annotations_return_code == 0:
             # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
             remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
             subprocess.run(remove_origin_annotaions.split(' '), cwd=filePath)  # nosec
+
+        if proc.returncode != 0:
+            stderr_text = (err or b"").decode("utf-8", errors="replace").strip()
+            logging.error(
+                "Error: Kustomize build failed for %s (command: %s, exit code: %s).\n%s",
+                filePath,
+                full_command,
+                proc.returncode,
+                stderr_text or "(no stderr)",
+            )
+            if filePath not in self.kustomize_build_errors:
+                self.kustomize_build_errors.append(filePath)
+            return None
 
         logging.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
@@ -727,11 +742,18 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
         template_renderer_command: str,
         target_folder_path: str,
-    ) -> None:
+    ) -> str | None:
+        """
+        Returns the file_path when kustomize/kubectl build fails (non-zero exit), else None.
+        Parallel runners only return this value to the parent process (#7599).
+        """
         output, _ = self.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
         if not output:
-            return
+            if file_path in self.kustomize_build_errors:
+                return file_path
+            return None
         Runner._parse_output(output, file_path, kustomize_processed_folder_and_meta, target_folder_path, shared_kustomize_file_mappings)
+        return None
 
     def run_kustomize_to_k8s(
         self, root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
@@ -755,13 +777,15 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
             shared_kustomize_file_mappings: dict[str, str] = {}
             for file_path in self.kustomizeProcessedFolderAndMeta:
-                self._run_kustomize_parser(
+                failed_path = self._run_kustomize_parser(
                     file_path=file_path,
                     shared_kustomize_file_mappings=shared_kustomize_file_mappings,
                     kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
                     template_renderer_command=self.templateRendererCommand,
                     target_folder_path=self.target_folder_path,
                 )
+                if failed_path and failed_path not in self.kustomize_build_errors:
+                    self.kustomize_build_errors.append(failed_path)
             self.kustomizeFileMappings = shared_kustomize_file_mappings
             return
 
@@ -780,7 +804,9 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             )
             for filePath in self.kustomizeProcessedFolderAndMeta
         ]
-        list(parallel_runner.run_function(self._run_kustomize_parser, items))
+        for failed_path in parallel_runner.run_function(self._run_kustomize_parser, items):
+            if failed_path and failed_path not in self.kustomize_build_errors:
+                self.kustomize_build_errors.append(failed_path)
 
         self.kustomizeFileMappings = dict(shared_kustomize_file_mappings)
 
@@ -801,6 +827,8 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
         if not self.kustomizeProcessedFolderAndMeta:
             # nothing to process
+            if self.kustomize_build_errors:
+                report.add_parsing_errors(self.kustomize_build_errors)
             return report
 
         target_dir = ""
@@ -825,6 +853,13 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 logging.debug(
                     f"Error running k8s scan on Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
                 shutil.move(target_dir, save_error_dir)
+
+        if self.kustomize_build_errors:
+            if isinstance(report, list):
+                if report:
+                    report[0].add_parsing_errors(self.kustomize_build_errors)
+            else:
+                report.add_parsing_errors(self.kustomize_build_errors)
 
         return report
 
