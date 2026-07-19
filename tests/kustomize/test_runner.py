@@ -251,6 +251,7 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
         runner = self._make_runner()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
+        mock_proc.returncode = 0
         mock_proc.communicate.return_value = (fake_output, b"")
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", None)
@@ -274,6 +275,7 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
         runner = self._make_runner()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
+        mock_proc.returncode = 0
         mock_proc.communicate.return_value = (fake_output, b"")
         env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "http://192.0.2.1/,git::https://example.com/"}
         with mock.patch.dict(os.environ, env):
@@ -288,6 +290,7 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
         local_dir = str(Path(__file__).parent / "runner/resources/example/base")
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
+        mock_proc.returncode = 0
         mock_proc.communicate.return_value = (fake_output, b"")
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", None)
@@ -295,6 +298,41 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
                 result = runner._get_kubectl_output(local_dir, "kustomize", "base")
         mock_popen.assert_called_once()
         self.assertEqual(result, fake_output)
+
+    def test_get_kubectl_output_surfaces_build_failure(self):
+        """Non-zero kustomize/kubectl exit must not look like a successful empty scan (#7599)."""
+        runner = self._make_runner()
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        stderr = b"Error: accumulating resources: no such file or directory"
+        mock_proc = mock.MagicMock()
+        mock_proc.returncode = 1
+        mock_proc.communicate.return_value = (b"", stderr)
+        with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+            with self.assertLogs(level="ERROR") as logs:
+                result = runner._get_kubectl_output(local_dir, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertIsNone(result)
+        self.assertIn(local_dir, runner.kustomize_build_errors)
+        self.assertTrue(any("Kustomize build failed" in line for line in logs.output))
+        self.assertTrue(any("accumulating resources" in line for line in logs.output))
+
+    def test_run_adds_parsing_errors_when_kustomize_build_fails(self):
+        """Failed builds should appear in report.parsing_errors so CI can see them (#7599)."""
+        runner = self._make_runner()
+        scan_dir = Path(__file__).parent / "runner/resources/example/base"
+        mock_proc = mock.MagicMock()
+        mock_proc.returncode = 1
+        mock_proc.communicate.return_value = (b"", b"Error: missing resource")
+        # Force sequential path so the mocked failure stays in-process (parallel fork would hide list mutations)
+        with mock.patch("checkov.kustomize.runner.platform.system", return_value="Windows"):
+            with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc):
+                report = runner.run(root_folder=str(scan_dir), runner_filter=RunnerFilter(framework=["kustomize"]))
+        if isinstance(report, list):
+            report = report[0]
+        self.assertGreaterEqual(len(report.parsing_errors), 1)
+        self.assertTrue(any(str(scan_dir) in path or path.endswith("base") for path in report.parsing_errors))
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
 
 
 if __name__ == '__main__':
