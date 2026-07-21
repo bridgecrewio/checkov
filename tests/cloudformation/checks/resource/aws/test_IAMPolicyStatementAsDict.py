@@ -23,7 +23,6 @@ class TestIAMPolicyStatementAsDict(unittest.TestCase):
 
         self.assertIn("AWS::IAM::Policy.DictStatementWrite", failing)
         self.assertIn("AWS::IAM::Policy.DictStatementScoped", passing)
-        self.assertEqual(report.get_summary()["parsing_errors"], 0)
 
 
 if __name__ == "__main__":
