@@ -350,7 +350,11 @@ class Checkov:
                 report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))),
                 report_sast_reachability=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False)))
             )
-
+            
+            invalid_checks = runner_filter.validate_checks() 
+            if invalid_checks:
+                self.parser.error(f"Invalid Checks: {', '.join(invalid_checks)}" )
+             
             source_env_val = os.getenv('BC_SOURCE', 'cli')
             source = source_type if source_type else get_source_type(source_env_val)
             if source == SourceTypes[BCSourceType.DISABLED]:

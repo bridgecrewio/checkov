@@ -317,7 +317,26 @@ class RunnerFilter(object):
         return any(
             (fnmatch.fnmatch(check_id, pattern) or (bc_check_id and fnmatch.fnmatch(bc_check_id, pattern))) for pattern
             in pattern_list)
+    
+    def validate_checks(self):
+        extract_checks = self.checks
+        if not extract_checks:
+            return
+        pattern_list = [extract_checks] if isinstance(extract_checks, str) else list(extract_checks)
+        # local import to avoid a circular import 
+        from checkov.common.checks.base_check_registry import BaseCheckRegistry
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        invalid_checks = []
+        
+        for pattern in pattern_list:
+            for registered_check in all_checks:
+                if (fnmatch.fnmatch(registered_check.id, pattern) or (registered_check.bc_id and fnmatch.fnmatch(registered_check.bc_id, pattern))):
+                    break
+            else :
+                invalid_checks.append(pattern)
 
+        return invalid_checks 
+            
     def within_threshold(self, severity: Severity) -> bool:
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
