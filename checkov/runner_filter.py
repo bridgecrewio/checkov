@@ -325,9 +325,14 @@ class RunnerFilter(object):
         pattern_list = [extract_checks] if isinstance(extract_checks, str) else list(extract_checks)
         # local import to avoid a circular import 
         from checkov.common.checks.base_check_registry import BaseCheckRegistry
-        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        from checkov.common.checks_infra.registry import get_all_graph_checks_registries
+
+        all_checks = list(BaseCheckRegistry.get_all_registered_checks())
         invalid_checks = []
-        
+
+        for registry in get_all_graph_checks_registries():
+            registry.load_checks()
+            all_checks.extend(registry.checks)
         for pattern in pattern_list:
             for registered_check in all_checks:
                 if (fnmatch.fnmatch(registered_check.id, pattern) or (registered_check.bc_id and fnmatch.fnmatch(registered_check.bc_id, pattern))):
