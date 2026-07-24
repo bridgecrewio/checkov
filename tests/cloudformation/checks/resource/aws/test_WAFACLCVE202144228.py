@@ -1,9 +1,9 @@
+import logging
 import unittest
 from pathlib import Path
 
 from checkov.cloudformation.checks.resource.aws.WAFACLCVE202144228 import check
 from checkov.cloudformation.runner import Runner
-from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 
 
@@ -41,37 +41,20 @@ class TestWAFACLCVE202144228(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
     def test_conditional_rules(self):
-        # a `Fn::If` in `Rules` can't be resolved statically
-        resource_conf = {
-            "Type": "AWS::WAFv2::WebACL",
-            "Properties": {
-                "DefaultAction": {"Allow": {}},
-                "Scope": "REGIONAL",
-                "Rules": {
-                    "Fn::If": [
-                        "SomeCondition",
-                        [
-                            {
-                                "Name": "rule-1",
-                                "Priority": 1,
-                                "Statement": {
-                                    "ManagedRuleGroupStatement": {
-                                        "VendorName": "AWS",
-                                        "Name": "AWSManagedRulesKnownBadInputsRuleSet",
-                                    }
-                                },
-                                "OverrideAction": {"None": {}},
-                            }
-                        ],
-                        [],
-                    ]
-                },
-            },
-        }
+        # given
+        test_files_dir = Path(__file__).parent / "example_WAFACLCVE202144228"
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
+        # when
+        # a `Fn::If` in `Rules` (UNKNOWN.yaml) can't be resolved statically and
+        # must yield UNKNOWN instead of crashing the check; a crash is also
+        # downgraded to UNKNOWN by the check registry, so it is only observable
+        # as an ERROR log
+        with self.assertNoLogs(level=logging.ERROR):
+            report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+        # then
+        reported_resources = {c.resource for c in report.passed_checks + report.failed_checks}
+        self.assertNotIn("AWS::WAFv2::WebACL.ConditionalRules", reported_resources)
 
 
 if __name__ == "__main__":
