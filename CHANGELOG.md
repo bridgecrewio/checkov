@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.6...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.8...HEAD)
+
+## [3.3.8](https://github.com/bridgecrewio/checkov/compare/3.3.7...3.3.8) - 2026-07-09
+
+### Bug Fix
+
+- **kubernetes:** CKV_K8S_40 should pass when hostUsers is false - [#7580](https://github.com/bridgecrewio/checkov/pull/7580)
+
+## [3.3.7](https://github.com/bridgecrewio/checkov/compare/3.3.6...3.3.7) - 2026-07-07
+
+### Feature
+
+- **general:** fix github only output for sca - [#7598](https://github.com/bridgecrewio/checkov/pull/7598)
 
 ## [3.3.6](https://github.com/bridgecrewio/checkov/compare/3.3.5...3.3.6) - 2026-06-30
 

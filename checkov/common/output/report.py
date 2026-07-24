@@ -359,16 +359,34 @@ class Report:
 
     def print_failed_github_md(self, use_bc_ids: bool = False) -> str:
         result = []
-        for record in self.failed_checks:
-            result.append(
-                [
-                    record.get_output_id(use_bc_ids),
-                    record.check_name,
-                    record.resource,
-                    f"[Link]({record.guideline})",
-                    record.file_path,
-                ]
-            )
+        if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
+            headers = ["CVE ID", "Package", "Version", "Severity", "Fixed Version", "File"]
+            for record in self.failed_checks:
+                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME or not record.vulnerability_details:
+                    continue
+                vd = record.vulnerability_details
+                result.append(
+                    [
+                        vd.get("id", ""),
+                        vd.get("package_name", ""),
+                        vd.get("package_version", ""),
+                        vd.get("severity", ""),
+                        vd.get("lowest_fixed_version") or vd.get("fix_version", "N/A"),
+                        record.file_path,
+                    ]
+                )
+        else:
+            headers = ["Check ID", "Check Name", "Resource", "Guideline", "File"]
+            for record in self.failed_checks:
+                result.append(
+                    [
+                        record.get_output_id(use_bc_ids),
+                        record.check_name,
+                        record.resource,
+                        f"[Link]({record.guideline})",
+                        record.file_path,
+                    ]
+                )
         if result:
             summary = self.get_summary()
             if self.parsing_errors:
@@ -383,7 +401,7 @@ class Report:
 
             table = tabulate(
                 result,
-                headers=["Check ID", "Check Name", "Resource", "Guideline", "File"],
+                headers=headers,
                 tablefmt="github",
             )
             output_data = f"### {self.check_type.replace('_', ' ').title()} Scan Results:\n\n{message}{table}\n\n---\n"
