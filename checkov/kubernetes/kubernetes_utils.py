@@ -41,7 +41,7 @@ def should_include_path(full_path: str, ignore_hidden_dir: bool) -> bool:
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: list[str] | None
+        root_folder: str, excluded_paths: list[str] | None, out_parsing_errors: dict[str, str] | None = None
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
@@ -55,24 +55,33 @@ def get_folder_definitions(
                 if should_include_path(full_path, env_vars_config.IGNORE_HIDDEN_DIRECTORIES):
                     # skip temp directories
                     files_list.append(full_path)
-    return get_files_definitions(files_list)
+    return get_files_definitions(files_list, out_parsing_errors)
 
 
-def get_files_definitions(files: list[str]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
+def get_files_definitions(
+    files: list[str], out_parsing_errors: dict[str, str] | None = None
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
     results = parallel_runner.run_function(_parse_file, files)
     for result in results:
         if result:
-            path, parse_result = result
+            path, parse_result, file_parsing_errors = result
+            if file_parsing_errors and out_parsing_errors is not None:
+                out_parsing_errors.update(file_parsing_errors)
             if parse_result:
                 definitions[path], definitions_raw[path] = parse_result
     return definitions, definitions_raw
 
 
-def _parse_file(filename: str) -> tuple[str, tuple[list[dict[str, Any]], list[tuple[int, str]]] | None] | None:
+def _parse_file(
+    filename: str,
+) -> tuple[str, tuple[list[dict[str, Any]], list[tuple[int, str]]] | None, dict[str, str]] | None:
+    # the parsing errors are collected per file and merged by the caller,
+    # because the parsing itself may run in a separate process
+    parsing_errors: dict[str, str] = {}
     try:
-        return filename, parse(filename)
+        return filename, parse(filename, out_parsing_errors=parsing_errors), parsing_errors
     except (TypeError, ValueError):
         logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
 
@@ -117,15 +126,21 @@ def create_definitions(
     root_folder: str | None,
     files: list[str] | None = None,
     runner_filter: RunnerFilter | None = None,
+    out_parsing_errors: dict[str, str] | None = None,
 ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     runner_filter = runner_filter or RunnerFilter()
     definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
-        definitions, definitions_raw = get_files_definitions(files)
+        definitions, definitions_raw = get_files_definitions(files, out_parsing_errors)
 
     if root_folder:
-        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths)
+        definitions, definitions_raw = get_folder_definitions(
+            root_folder, runner_filter.excluded_paths, out_parsing_errors
+        )
+
+    if out_parsing_errors:
+        logging.warning(f"[kubernetes] found errors while parsing definitions: {list(out_parsing_errors.keys())}")
 
     return definitions, definitions_raw
 
