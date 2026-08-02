@@ -1,5 +1,14 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+
+
+def _rule_no_sort_key(rule):
+    rule_no = rule.get('rule_no')
+    if isinstance(rule_no, list):
+        rule_no = rule_no[0] if rule_no else None
+    rule_no = force_int(rule_no)
+    return (0, rule_no) if rule_no is not None else (1, 0)
 
 
 class AbsNACLUnrestrictedIngress(BaseResourceCheck):
@@ -35,9 +44,9 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                 if isinstance(entry, list):
                     entry = ingress[0]
                     if isinstance(entry, dict) and entry.get('rule_no'):
-                        ingress[0].sort(key=lambda x: x.get('rule_no'))
+                        ingress[0].sort(key=_rule_no_sort_key)
                 elif isinstance(ingress[0], dict) and ingress[0].get('rule_no'):
-                    ingress.sort(key=lambda x: x.get('rule_no'))
+                    ingress.sort(key=_rule_no_sort_key)
 
             for rule in ingress:
                 rule_lst = rule
