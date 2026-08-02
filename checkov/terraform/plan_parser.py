@@ -161,12 +161,13 @@ def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
     """Tries to create a dict from a string of a supported resource type attribute"""
 
     jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
-    if jsonify_key in obj:
+    attr_value = obj.get(jsonify_key)
+    if attr_value:
         try:
-            return cast("dict[str, Any]", json.loads(obj[jsonify_key]))
-        except json.JSONDecodeError:
+            return cast("dict[str, Any]", json.loads(attr_value))
+        except (json.JSONDecodeError, TypeError):
             logging.debug(
-                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
+                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {attr_value}"
             )
 
     return None

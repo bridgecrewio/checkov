@@ -1,0 +1,92 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.7",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_batch_job_definition.eks_job",
+          "mode": "managed",
+          "type": "aws_batch_job_definition",
+          "name": "eks_job",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "name": "eks-job-def",
+            "type": "container",
+            "container_properties": null,
+            "eks_properties": [
+              {
+                "pod_properties": [
+                  {
+                    "containers": [
+                      { "image": "busybox" }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_batch_job_definition.eks_job",
+      "mode": "managed",
+      "type": "aws_batch_job_definition",
+      "name": "eks_job",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "eks-job-def",
+          "type": "container",
+          "container_properties": null,
+          "eks_properties": [
+            {
+              "pod_properties": [
+                {
+                  "containers": [
+                    { "image": "busybox" }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_batch_job_definition.eks_job",
+          "mode": "managed",
+          "type": "aws_batch_job_definition",
+          "name": "eks_job",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": { "constant_value": "eks-job-def" },
+            "type": { "constant_value": "container" },
+            "eks_properties": [
+              {
+                "pod_properties": [
+                  {
+                    "containers": [
+                      { "image": { "constant_value": "busybox" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}
