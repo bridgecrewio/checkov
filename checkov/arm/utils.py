@@ -94,7 +94,13 @@ def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
         Examples:
             resourceId('Microsoft.Network/virtualNetworks/', virtualNetworkName) -> virtualNetworkName
     '''
-    return clean_string(resource_id.split(',')[1].split(')')[0])
+    parts = resource_id.split(',')
+    if len(parts) < 2:
+        # not the expected "resourceId(type, name, ...)" shape, e.g. a
+        # single-argument resourceId() call - fall back to the raw string
+        # instead of crashing with an IndexError.
+        return clean_string(resource_id)
+    return clean_string(parts[1].split(')')[0])
 
 
 def extract_resource_name_from_reference_func(reference: str) -> str:
@@ -107,7 +113,9 @@ def extract_resource_name_from_reference_func(reference: str) -> str:
                 reference(resourceId('Microsoft.Network/publicIPAddresses', 'ipAddressName')) -> ipAddressName
     '''
     resource_name = ')'.join(reference.split('reference(', 1)[1].split(')')[:-1])
-    if 'resourceId' in resource_name:
+    if 'resourceId(' in resource_name:
+        # guard on 'resourceId(' (not just 'resourceId') so the split below is
+        # guaranteed to find a match and can't raise an IndexError
         return clean_string(
             ''.join(resource_name.split('resourceId(', 1)[1].split(')')[0]).split(',')[-1])
     else:
