@@ -217,6 +217,36 @@ def test_runner_with_block(graph_connector):
         RustworkxConnector,
     ],
 )
+def test_runner_with_block_skip(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "block_skip.yml"
+    checks = ["CKV2_ANSIBLE_3"]
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 1
+    assert summary["parsing_errors"] == 0
+
+    skipped_check = next(iter(report.skipped_checks))
+    assert skipped_check.check_id == "CKV2_ANSIBLE_3"
+    assert skipped_check.resource == "block.Block with inline skip comment"
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector,
+    ],
+)
 def test_runner_with_nested_blocks(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "nested_blocks.yml"
