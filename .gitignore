@@ -178,6 +178,9 @@ tests/20*
 !tests/terraform/graph/variable_rendering/test_resources/tfvar_module_variables/modules/instance
 tests/common/runner_registry/packages_csv_results/
 tests/console
+**/*_oss_packages.csv
+**/*_iac.csv
+**/*_container_images.csv
 
 # sast go mod
 checkov/sast_core/vendor
