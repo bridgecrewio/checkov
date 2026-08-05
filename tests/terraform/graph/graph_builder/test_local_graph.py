@@ -434,3 +434,30 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_module_output_edge_with_same_source_siblings(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_source_module_edge'))
+        hcl_config_parser = TFParser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        # Find the azurerm_storage_account.sa vertex (inside module "c")
+        sa_vertices = [
+            v for v in local_graph.vertices
+            if v.block_type == BlockType.RESOURCE
+            and v.name == "azurerm_storage_account.sa"
+        ]
+        self.assertEqual(1, len(sa_vertices))
+        sa_vertex = sa_vertices[0]
+
+        # The key assertion: var.default_action must have been resolved to "Deny"
+        # Without the fix, the edge connects to module "a"'s output (wrong module),
+        # corrupting variable resolution and leaving "var.default_action" unresolved.
+        network_rules = sa_vertex.config.get("azurerm_storage_account", {}).get("sa", {}).get("network_rules", {})
+        if isinstance(network_rules, list):
+            network_rules = network_rules[0]
+        default_action = network_rules.get("default_action", [None])
+        if isinstance(default_action, list):
+            default_action = default_action[0]
+        self.assertEqual("Deny", default_action)
