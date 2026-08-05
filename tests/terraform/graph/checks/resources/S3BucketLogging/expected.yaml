@@ -1,5 +1,9 @@
 pass:
   - "aws_s3_bucket.bucket_good_1"
   - "aws_s3_bucket.bucket_good_2"
+  - "aws_s3_bucket.bucket_good_count[0]"
+  - "aws_s3_bucket.bucket_good_multi_count[0]"
+  - "aws_s3_bucket.bucket_good_multi_count[1]"
 fail:
   - "aws_s3_bucket.bucket_bad_1"
+  - "aws_s3_bucket.bucket_bad_count[0]"
