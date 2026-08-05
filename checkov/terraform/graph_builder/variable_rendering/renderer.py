@@ -26,6 +26,7 @@ from checkov.terraform.graph_builder.utils import (
     remove_index_pattern_from_str,
     attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
+from checkov.terraform.graph_builder.variable_rendering.optional_type_parser import apply_optional_defaults
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
 
@@ -108,9 +109,14 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             origin_vertex = self.local_graph.vertices[edge.origin]
             destination_vertex = self.local_graph.vertices[edge.dest]
             if origin_vertex.block_type == BlockType.VARIABLE and destination_vertex.block_type == BlockType.MODULE:
+                value = destination_vertex.attributes[origin_vertex.name]
+                # Idempotent -- only sets missing keys
+                var_type = origin_vertex_attributes.get('type')
+                if var_type:
+                    value = apply_optional_defaults(value, var_type)
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
-                    changed_attribute_value=destination_vertex.attributes[origin_vertex.name],
+                    changed_attribute_value=value,
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
@@ -120,9 +126,13 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
+                value = destination_vertex.attributes['default']
+                var_type = origin_vertex_attributes.get('type')
+                if var_type:
+                    value = apply_optional_defaults(value, var_type)
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
-                    changed_attribute_value=destination_vertex.attributes['default'],
+                    changed_attribute_value=value,
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
@@ -198,6 +208,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         if attributes.get(CustomAttributes.BLOCK_TYPE) in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
             var_type = attributes.get('type')
             default_val = attributes.get("default")
+            if default_val is not None and var_type:
+                default_val = apply_optional_defaults(default_val, var_type)
             if default_val is None:
                 # this allows functions like merge(var.xyz, ...) to work even with no default value
                 default_val = self.get_default_placeholder_value(var_type)
