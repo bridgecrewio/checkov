@@ -147,6 +147,23 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(5, len(local_graph.vertices))
         self.assertEqual(4, len(local_graph.edges))
 
+    def test_NetworkPolicyEdgeBuilder_respects_namespace_scoping(self) -> None:
+        relative_file_path = "resources/Keyword/network-policy-namespace-scoping.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder]
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        # 2 pods + 2 network policies = 4 vertices
+        self.assertEqual(4, len(local_graph.vertices))
+        # Only pod-in-namespace-a should be connected; pod-in-namespace-b is in a different namespace
+        # allow-all-in-namespace-a -> pod-in-namespace-a (empty podSelector, same namespace)
+        # label-policy-in-namespace-a -> pod-in-namespace-a (matchLabels match, same namespace)
+        self.assertEqual(2, len(local_graph.edges))
+
     def test_extracting_pod_from_container_types(self) -> None:
         relative_file_path = "resources/statefulstate_nested_resource.yaml"
         definitions = {}
