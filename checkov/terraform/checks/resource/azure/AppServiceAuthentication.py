@@ -16,14 +16,14 @@ class AppServiceAuthentication(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get('auth_settings') and isinstance(conf.get('auth_settings'), list):
             auth = conf.get('auth_settings')[0]
-            if auth.get("enabled") and isinstance(auth.get("enabled"), list):
+            if isinstance(auth, dict) and auth.get("enabled") and isinstance(auth.get("enabled"), list):
                 enabled = auth.get("enabled")[0]
                 if enabled:
                     return CheckResult.PASSED
                 return CheckResult.FAILED
         if conf.get('auth_settings_v2') and isinstance(conf.get('auth_settings_v2'), list):
             auth = conf.get('auth_settings_v2')[0]
-            if auth.get("auth_enabled") and isinstance(auth.get("auth_enabled"), list):
+            if isinstance(auth, dict) and auth.get("auth_enabled") and isinstance(auth.get("auth_enabled"), list):
                 enabled = auth.get("auth_enabled")[0]
                 if enabled:
                     return CheckResult.PASSED
