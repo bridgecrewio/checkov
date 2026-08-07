@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.8...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.9...HEAD)
+
+## [3.3.9](https://github.com/bridgecrewio/checkov/compare/3.3.8...3.3.9) - 2026-08-02
+
+### Bug Fix
+
+- **terraform:** handle null container_properties in aws_batch_job_def… - [#7636](https://github.com/bridgecrewio/checkov/pull/7636)
 
 ## [3.3.8](https://github.com/bridgecrewio/checkov/compare/3.3.7...3.3.8) - 2026-07-09
 

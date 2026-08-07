@@ -97,6 +97,18 @@ class TestPlanFileParser(unittest.TestCase):
             resource_attributes = next(iter(resource_definition.values()))
             self.assertTrue(resource_attributes['provisioner'])
 
+    def test_aws_batch_job_definition_null_container_properties(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan_batch_job_null_container_properties/tfplan.json"
+
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+
+        file_resource_definition = tf_definition['resource'][0]
+        resource_definition = next(iter(file_resource_definition.values()))
+        resource_attributes = next(iter(resource_definition.values()))
+        self.assertIsNone(resource_attributes['container_properties'][0])
+        self.assertTrue(resource_attributes['eks_properties'])
+
     def test_module_with_connected_resources(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_module_with_connected_resources/tfplan.json"
