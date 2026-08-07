@@ -12,6 +12,13 @@ class GKEClientCertificateDisabled(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_omitted_block(self):
+        # The google provider defaults issue_client_certificate to false, so a cluster that omits
+        # master_auth/client_certificate_config still has client certificate auth disabled.
+        resource_conf = {'name': ['google_cluster'], 'location': ['us-central1']}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_failure(self):
         resource_conf = {'name': ['google_cluster'], 'master_auth': [{'client_certificate_config': [{'issue_client_certificate': [True]}]}]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
