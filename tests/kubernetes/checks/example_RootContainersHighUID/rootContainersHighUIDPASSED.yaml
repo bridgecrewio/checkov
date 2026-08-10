@@ -38,3 +38,16 @@ spec:
     command: ["/bin/sleep", "999999"]
     securityContext:
       runAsUser: 12000
+---
+# runAsUser not set, but hostUsers: false enables a private user namespace,
+# so host UID collisions cannot occur (PASSED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod4
+spec:
+  hostUsers: false
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]

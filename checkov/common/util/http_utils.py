@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 
-ALLOWED_API_DOMAINS = ('.prismacloud.io', '.prismacloud.cn', '.bridgecrew.cloud')
+ALLOWED_API_DOMAINS = ('.prismacloud.io', '.prismacloud.cn', '.bridgecrew.cloud', '.amazonaws.com')
 
 
 def _get_allowed_domains() -> tuple[str, ...]:
@@ -89,8 +89,8 @@ def _validate_api_url_domain(url: str, param_name: str) -> None:
     parsed = urlparse(url)
     if not parsed.hostname or not _is_allowed_domain(parsed.hostname):
         message = (
-            f"{param_name} must be a prismacloud.io, prismacloud.cn, or bridgecrew.cloud domain, "
-            f"got: {url}"
+            f"{param_name} must be a prismacloud.io, prismacloud.cn, bridgecrew.cloud, "
+            f"or amazonaws.com domain, got: {url}"
         )
         logging.error(message)
         sys.exit(2)

@@ -22,11 +22,11 @@ class SecretManagerSecret90days(BaseResourceCheck):
             unit = rate_match.group(2)
 
             if unit.startswith('day'):
-                return value < 90
+                return value <= 90
             elif unit.startswith('hour'):
-                return value < 2160  # 90 days * 24 hours
+                return value <= 2160  # 90 days * 24 hours
             elif unit.startswith('minute'):
-                return value < 129600  # 90 days * 24 hours * 60 minutes
+                return value <= 129600  # 90 days * 24 hours * 60 minutes
         return False
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
@@ -40,7 +40,7 @@ class SecretManagerSecret90days(BaseResourceCheck):
             if days and isinstance(days, list):
                 self.evaluated_keys = ["rotation_rules/[0]/automatically_after_days"]
                 days = force_int(days[0])
-                if days is not None and days < 90:
+                if days is not None and days <= 90:
                     return CheckResult.PASSED
 
             # Check for schedule_expression

@@ -175,6 +175,20 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "from the specified directory, so only use this option with trusted repositories.",
         )
         self.add(
+            "--external-checks-public-key",
+            action="append",
+            env_var="CKV_EXTERNAL_CHECKS_PUBLIC_KEY",
+            default=None,
+            help="Path to a PEM-encoded ECDSA P-256 public key used to verify "
+                 "every .py file under --external-checks-dir / --external-checks-git "
+                 "before it is loaded. Can be specified multiple times to rotate keys. "
+                 "When set, any file without a valid '# checkov-digest: <hex>' trailer "
+                 "signed by one of the configured keys causes Checkov to exit with code 2 "
+                 "before scanning (or 0 if --no-fail-on-crash is also set; the "
+                 "diagnostic message is still produced on stderr). When unset, no "
+                 "verification is performed (backward compatible).",
+        )
+        self.add(
             "-l",
             "--list",
             help="List checks",

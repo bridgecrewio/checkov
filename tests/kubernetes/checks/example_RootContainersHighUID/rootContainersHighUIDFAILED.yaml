@@ -88,3 +88,16 @@ spec:
   - name: main2
     image: alpine
     command: ["/bin/sleep", "999999"]
+---
+# hostUsers: true keeps the host user namespace, so the high-UID check still
+# applies and a missing runAsUser must FAIL (guards the hostUsers exemption)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod5
+spec:
+  hostUsers: true
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]

@@ -12,7 +12,7 @@ resource "aws_secretsmanager_secret_rotation" "fail" {
   rotation_lambda_arn = aws_lambda_function.example.arn
 
   rotation_rules {
-    automatically_after_days = 90
+    automatically_after_days = 91
   }
 }
 
@@ -49,6 +49,22 @@ resource "aws_secretsmanager_secret_rotation" "pass_scheduled_days" {
 
   rotation_rules {
     schedule_expression = "rate(89 days)"
+  }
+
+  depends_on = [
+    time_sleep.wait_for_lambda_permissions_for_secrets_manager,
+    module.rotation_lambda
+  ]
+}
+
+resource "aws_secretsmanager_secret_rotation" "pass_scheduled_days_90" {
+  secret_id           = aws_secretsmanager_secret.this.id
+  rotation_lambda_arn = aws_lambda_function.this.arn
+
+  rotate_immediately = true
+
+  rotation_rules {
+    schedule_expression = "rate(90 days)"
   }
 
   depends_on = [

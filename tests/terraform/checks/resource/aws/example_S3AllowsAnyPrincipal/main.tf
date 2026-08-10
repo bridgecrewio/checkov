@@ -518,3 +518,27 @@ resource "aws_s3_bucket_policy" "logs" {
     )
   })
 }
+# Test for Issue 7571: Unparsed variables in concat should not crash the parser
+variable "additional_policy_statements" {
+  default = []
+}
+
+resource "aws_s3_bucket_policy" "mixed_concat_crash" {
+  bucket = "bucket"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      [
+        {
+          Sid       = "DenyInsecureTransport"
+          Effect    = "Deny"
+          Principal = "*"
+          Action    = "s3:*"
+          Resource  = ["arn:aws:s3:::bucket/*"]
+        }
+      ],
+      var.additional_policy_statements
+    )
+  })
+}

@@ -15,8 +15,12 @@ class CloudStorageLogging(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         # check for logging
         if 'logging' in conf:
-            if conf['logging'][0]:
-                log_bucket_name = conf['logging'][0]['log_bucket']
+            logging_block = conf['logging'][0]
+            if logging_block:
+                if 'log_bucket' not in logging_block:
+                    # log_bucket is a computed/unknown value (e.g. at terraform plan time)
+                    return CheckResult.UNKNOWN
+                log_bucket_name = logging_block['log_bucket']
                 if log_bucket_name:
                     return CheckResult.PASSED
                 else:

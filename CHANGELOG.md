@@ -1,6 +1,108 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.526...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.9...HEAD)
+
+## [3.3.9](https://github.com/bridgecrewio/checkov/compare/3.3.8...3.3.9) - 2026-08-02
+
+### Bug Fix
+
+- **terraform:** handle null container_properties in aws_batch_job_def… - [#7636](https://github.com/bridgecrewio/checkov/pull/7636)
+
+## [3.3.8](https://github.com/bridgecrewio/checkov/compare/3.3.7...3.3.8) - 2026-07-09
+
+### Bug Fix
+
+- **kubernetes:** CKV_K8S_40 should pass when hostUsers is false - [#7580](https://github.com/bridgecrewio/checkov/pull/7580)
+
+## [3.3.7](https://github.com/bridgecrewio/checkov/compare/3.3.6...3.3.7) - 2026-07-07
+
+### Feature
+
+- **general:** fix github only output for sca - [#7598](https://github.com/bridgecrewio/checkov/pull/7598)
+
+## [3.3.6](https://github.com/bridgecrewio/checkov/compare/3.3.5...3.3.6) - 2026-06-30
+
+### Bug Fix
+
+- **terraform:** prevent crash in S3AllowsAnyPrincipal with unparsed v… - [#7581](https://github.com/bridgecrewio/checkov/pull/7581)
+
+## [3.3.5](https://github.com/bridgecrewio/checkov/compare/3.3.2...3.3.5) - 2026-06-29
+
+### Feature
+
+- **general:** fix danger node version - [#7589](https://github.com/bridgecrewio/checkov/pull/7589)
+
+### Bug Fix
+
+- **general:** retry kustomize/helm install to survive transient GitHub failures - [#7591](https://github.com/bridgecrewio/checkov/pull/7591)
+- **terraform:** CKV_AZURE_190 override singular get_expected_value - [#7592](https://github.com/bridgecrewio/checkov/pull/7592)
+
+## [3.3.2](https://github.com/bridgecrewio/checkov/compare/3.3.1...3.3.2) - 2026-06-23
+
+### Bug Fix
+
+- **terraform_plan:** handle computed log_bucket in CKV_GCP_62 and CKV_GCP_63 - [#7582](https://github.com/bridgecrewio/checkov/pull/7582)
+- **terraform:** pass CKV_GCP_123 when remove_default_node_pool is true - [#7575](https://github.com/bridgecrewio/checkov/pull/7575)
+
+## [3.3.1](https://github.com/bridgecrewio/checkov/compare/3.3.0...3.3.1) - 2026-06-11
+
+### Feature
+
+- **serverless:** disable vars opt out - [#7574](https://github.com/bridgecrewio/checkov/pull/7574)
+
+## [3.3.0](https://github.com/bridgecrewio/checkov/compare/3.2.534...3.3.0) - 2026-06-10
+
+- no noteworthy changes
+
+## [3.2.534](https://github.com/bridgecrewio/checkov/compare/3.2.533...3.2.534) - 2026-06-09
+
+### Feature
+
+- **general:** fix regex to include hyphen - [#7566](https://github.com/bridgecrewio/checkov/pull/7566)
+
+## [3.2.533](https://github.com/bridgecrewio/checkov/compare/3.2.532...3.2.533) - 2026-06-04
+
+### Bug Fix
+
+- **general:** increase domain allow list as it blocks prisma release - [#7567](https://github.com/bridgecrewio/checkov/pull/7567)
+- **sca:** Kustomize and Helm improvements - [#7568](https://github.com/bridgecrewio/checkov/pull/7568)
+- **terraform:** pin security-group module to 5.3.1 in linked-module test - [#7570](https://github.com/bridgecrewio/checkov/pull/7570)
+
+## [3.2.532](https://github.com/bridgecrewio/checkov/compare/3.2.531...3.2.532) - 2026-06-02
+
+### Feature
+
+- **general:** verify ECDSA-P256 signatures on external custom checks before loading - [#7556](https://github.com/bridgecrewio/checkov/pull/7556)
+
+## [3.2.531](https://github.com/bridgecrewio/checkov/compare/3.2.530...3.2.531) - 2026-06-01
+
+### Feature
+
+- **terraform:** add CKV_AWS_393 for GitHub OIDC trust on aws_iam_role - [#7561](https://github.com/bridgecrewio/checkov/pull/7561)
+
+## [3.2.530](https://github.com/bridgecrewio/checkov/compare/3.2.529...3.2.530) - 2026-05-28
+
+### Bug Fix
+
+- **serverless:** disable env/file variable resolution by default - [#7554](https://github.com/bridgecrewio/checkov/pull/7554)
+
+## [3.2.529](https://github.com/bridgecrewio/checkov/compare/3.2.528...3.2.529) - 2026-05-14
+
+### Bug Fix
+
+- **terraform:** include 90-day boundary in rotation check CKV_AWS_304 - [#7544](https://github.com/bridgecrewio/checkov/pull/7544)
+
+## [3.2.528](https://github.com/bridgecrewio/checkov/compare/3.2.527...3.2.528) - 2026-05-10
+
+### Bug Fix
+
+- **secrets:** report all multiline regex matches per file, not just first occurrence - FIX - [#7540](https://github.com/bridgecrewio/checkov/pull/7540)
+
+## [3.2.527](https://github.com/bridgecrewio/checkov/compare/3.2.526...3.2.527) - 2026-05-07
+
+### Feature
+
+- **secrets:** Revert "fix(secrets): report all multiline regex matches per file, not just first occurrence" - [#7537](https://github.com/bridgecrewio/checkov/pull/7537)
 
 ## [3.2.526](https://github.com/bridgecrewio/checkov/compare/3.2.525...3.2.526) - 2026-04-30
 
