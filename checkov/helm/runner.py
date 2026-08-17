@@ -4,6 +4,7 @@ import io
 import itertools
 import logging
 import os
+import re
 import shutil
 import subprocess  # nosec
 import tempfile
@@ -29,6 +30,54 @@ import signal
 if TYPE_CHECKING:
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
     from networkx import DiGraph
+
+
+# Regex matching remote helm repository URLs (http/https).
+# OCI refs (oci://) use a separate pull mechanism and are not affected by --dependency-update.
+_HELM_REMOTE_REPO = re.compile(r'^https?://', re.IGNORECASE)
+
+
+def _get_chart_remote_repos(chart_dir: str) -> list[str]:
+    """Return all remote repository URLs from Chart.yaml dependencies.
+
+    Returns an empty list when the file cannot be read or has no remote repos.
+    """
+    chart_yaml_path = os.path.join(chart_dir, 'Chart.yaml')
+    if not os.path.isfile(chart_yaml_path):
+        return []
+    try:
+        with open(chart_yaml_path, 'r', encoding='utf-8') as f:
+            doc = yaml.safe_load(f)
+    except Exception:
+        logging.debug(f"Could not parse {chart_yaml_path} for remote repo check.", exc_info=True)
+        return []
+
+    if not isinstance(doc, dict):
+        return []
+
+    remote_repos: list[str] = []
+    for dep in doc.get('dependencies') or []:
+        if not isinstance(dep, dict):
+            continue
+        repo = dep.get('repository', '')
+        if isinstance(repo, str) and _HELM_REMOTE_REPO.match(repo):
+            remote_repos.append(repo)
+    return remote_repos
+
+
+def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
+    """Return dependency repos blocked by the CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
+
+    Not set → [] (allow all). Set → returns repos not matching any allowed prefix (these are blocked).
+    To block all remote repos, set the var to a non-matching value (e.g. 'none').
+    """
+    allowed_prefixes_raw = os.getenv("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", "")
+    if not allowed_prefixes_raw.strip():
+        return []  # no allowlist configured → allow everything (original behaviour)
+
+    allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
+    remote_repos = _get_chart_remote_repos(chart_dir)
+    return [repo for repo in remote_repos if not any(repo.lower().startswith(p) for p in allowed_prefixes)]
 
 
 class K8sHelmRunner(k8_runner):
@@ -286,6 +335,16 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             else:
                 logging.warning(
                     f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+
+        # Default = allow all. Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS
+        # to a comma-separated allowlist of trusted repo URL prefixes to block everything else.
+        blocked_repos = _get_blocked_helm_repos(chart_dir)
+        if blocked_repos:
+            logging.warning(
+                f"Skipping helm template for {chart_dir}: {len(blocked_repos)} dependency repo(s) "
+                f"not in CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist."
+            )
+            return None, None
 
         helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
         if runner_filter.var_files:

@@ -6,7 +6,7 @@ from unittest import mock
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
-from checkov.kustomize.runner import Runner
+from checkov.kustomize.runner import Runner, _get_blocked_remote_refs, _get_kustomization_remote_refs
 from tests.kustomize.utils import kustomize_exists
 
 
@@ -169,6 +169,132 @@ class TestRunnerValid(unittest.TestCase):
                                                                         runner.templateRendererCommand)
         assert regular_result == result_from_directory
 
+
+
+class TestRemoteBaseAllowlist(unittest.TestCase):
+    """Tests for kustomize remote base allowlist.
+
+    Default behaviour: kustomize runs normally (original behaviour preserved).
+    Blocking is opt-in via CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES — an allowlist of
+    trusted URL prefixes. Remote refs NOT in the allowlist are blocked.
+    """
+
+    _REMOTE_BASE_DIR = str(Path(__file__).parent / "runner/resources/example_remote_base")
+
+    def _make_runner(self) -> Runner:
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        return runner
+
+    # ------------------------------------------------------------------
+    # _get_kustomization_remote_refs() unit tests
+    # ------------------------------------------------------------------
+
+    def test_get_kustomization_remote_refs_detects_http_url(self):
+        """_get_kustomization_remote_refs() must return http:// entries."""
+        refs = _get_kustomization_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertIn("http://192.0.2.1/example-base.yaml", refs)
+
+    def test_get_kustomization_remote_refs_detects_git_url(self):
+        """_get_kustomization_remote_refs() must return git:: entries."""
+        refs = _get_kustomization_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertTrue(any(r.startswith("git::") for r in refs))
+
+    def test_get_kustomization_remote_refs_returns_empty_for_local_only(self):
+        """_get_kustomization_remote_refs() must return [] for local-only kustomizations."""
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        self.assertEqual(_get_kustomization_remote_refs(local_dir), [])
+
+    def test_get_kustomization_remote_refs_returns_empty_for_missing_dir(self):
+        """_get_kustomization_remote_refs() must not raise for a missing directory."""
+        self.assertEqual(_get_kustomization_remote_refs("/nonexistent/path"), [])
+
+    # ------------------------------------------------------------------
+    # _get_blocked_remote_refs() unit tests (allowlist logic)
+    # ------------------------------------------------------------------
+
+    def test_get_blocked_remote_refs_returns_empty_when_no_env_var(self):
+        """Default: no env var → _get_blocked_remote_refs() returns [] (allow all)."""
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", None)
+            refs = _get_blocked_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertEqual(refs, [])
+
+    def test_get_blocked_remote_refs_returns_blocked_when_not_in_allowlist(self):
+        """Remote refs NOT in the allowlist must be returned (they will be blocked)."""
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "https://github.com/trusted-org/"}
+        with mock.patch.dict(os.environ, env):
+            refs = _get_blocked_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertIn("http://192.0.2.1/example-base.yaml", refs)
+
+    def test_get_blocked_remote_refs_returns_empty_when_all_in_allowlist(self):
+        """When all remote refs are in the allowlist, nothing is blocked."""
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "http://192.0.2.1/,git::https://example.com/"}
+        with mock.patch.dict(os.environ, env):
+            refs = _get_blocked_remote_refs(self._REMOTE_BASE_DIR)
+        self.assertEqual(refs, [])
+
+    def test_get_blocked_remote_refs_returns_empty_for_local_only(self):
+        """Local-only kustomizations are never blocked."""
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "https://github.com/trusted-org/"}
+        with mock.patch.dict(os.environ, env):
+            refs = _get_blocked_remote_refs(local_dir)
+        self.assertEqual(refs, [])
+
+    # ------------------------------------------------------------------
+    # _get_kubectl_output() integration tests
+    # ------------------------------------------------------------------
+
+    def test_get_kubectl_output_allows_remote_refs_by_default(self):
+        """Default (no env var): kustomize build runs even with remote refs."""
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", None)
+            with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
+
+    def test_get_kubectl_output_blocks_when_not_in_allowlist(self):
+        """When CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES is set and a ref is not in it, build is skipped."""
+        runner = self._make_runner()
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "https://github.com/trusted-org/"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("checkov.kustomize.runner.subprocess.Popen") as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        self.assertIsNone(result)
+        mock_popen.assert_not_called()
+
+    def test_get_kubectl_output_allows_when_all_in_allowlist(self):
+        """When all remote refs are in the allowlist, build proceeds normally."""
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        env = {"CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES": "http://192.0.2.1/,git::https://example.com/"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
+
+    def test_get_kubectl_output_allows_local_refs_without_env(self):
+        """Local-only kustomizations always run regardless of env var."""
+        runner = self._make_runner()
+        local_dir = str(Path(__file__).parent / "runner/resources/example/base")
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES", None)
+            with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+                result = runner._get_kubectl_output(local_dir, "kustomize", "base")
+        mock_popen.assert_called_once()
+        self.assertEqual(result, fake_output)
 
 
 if __name__ == '__main__':

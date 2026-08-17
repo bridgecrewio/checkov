@@ -22,8 +22,8 @@ class StorageBlobRestrictPublicAccess(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "allow_nested_items_to_be_public"
 
-    def get_expected_values(self) -> list[Any]:
-        return [False]
+    def get_expected_value(self) -> Any:
+        return False
 
 
 check = StorageBlobRestrictPublicAccess()

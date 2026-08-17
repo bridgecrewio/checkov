@@ -17,8 +17,12 @@ class CloudStorageSelfLogging(BaseResourceCheck):
         # check for logging
         if "logging" in conf:
             self.evaluated_keys = ["logging"]
-            if conf["logging"][0]:
-                log_bucket_name = conf["logging"][0]["log_bucket"]
+            logging_block = conf["logging"][0]
+            if logging_block:
+                if "log_bucket" not in logging_block:
+                    # log_bucket is a computed/unknown value (e.g. at terraform plan time)
+                    return CheckResult.UNKNOWN
+                log_bucket_name = logging_block["log_bucket"]
                 self.evaluated_keys = ["logging/[0]/log_bucket", "name"]
                 if log_bucket_name != bucket_name:
                     return CheckResult.PASSED

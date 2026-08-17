@@ -1,0 +1,7 @@
+apiVersion: v2
+name: example-chart
+version: 0.1.0
+dependencies:
+  - name: example-dep
+    version: "1.0.0"
+    repository: "http://192.0.2.1"

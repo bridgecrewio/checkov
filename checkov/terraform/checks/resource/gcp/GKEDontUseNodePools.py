@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories
@@ -28,6 +28,12 @@ class GKEDontUseNodePools(BaseResourceNegativeValueCheck):
 
     def get_forbidden_values(self) -> Any:
         return [ANY_VALUE]
+
+    def get_excluded_key(self) -> Optional[str]:
+        return 'remove_default_node_pool'
+
+    def check_excluded_condition(self, value: Any) -> bool:
+        return value is True
 
 
 check = GKEDontUseNodePools()
