@@ -92,13 +92,10 @@ def test_get_rootless_path(input_path: str, expected: str) -> None:
     ids=["abs_nested", "rel_nested", "single_file", "abs_requirements"],
 )
 def test_get_rootless_path_posix_behaviour_unchanged(input_path: str) -> None:
-    """For POSIX-shaped paths the new helper must match the previous expression exactly.
+    """For POSIX-shaped paths the helper must match the previous expression exactly.
 
-    Old expression: ``path.replace(Path(path).anchor, "", 1)``. POSIX paths contain no
-    backslashes, so this proves the fix does not alter behaviour on Linux/macOS agents.
-
-    ``PurePosixPath`` is used rather than ``Path`` so the assertion models POSIX
-    semantics deterministically regardless of the host the test suite runs on.
+    ``PurePosixPath`` is used rather than ``Path`` so the assertion holds regardless of
+    the host the suite runs on.
     """
     legacy = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
 

@@ -21,16 +21,12 @@ def align_path(path: str) -> str:
 def get_rootless_path(path: str) -> str:
     """Strip a leading drive, UNC share or root prefix from a path.
 
-    Replaces the ``path.replace(Path(path).anchor, "", 1)`` idiom, which is not
-    positionally aware. On Windows, when a path mixes separators
-    (e.g. ``/repo\\client\\Dockerfile``), ``anchor`` is a bare ``'\\'`` and
-    ``str.replace`` removes the *first* separator anywhere in the string::
+    Replaces ``path.replace(Path(path).anchor, "", 1)``, which is not positionally
+    aware: for a mixed-separator path like ``/repo\\client\\Dockerfile`` the anchor is a
+    bare ``'\\'``, so ``str.replace`` removes the first separator anywhere in the string
+    and yields ``/repoclient\\Dockerfile``.
 
-        '/repo\\client\\Dockerfile'  ->  '/repoclient\\Dockerfile'   # separator removed
-
-    This function strips only a genuine leading root and never mutates the interior.
-    Separators are left as-is, so a Windows path keeps its native ``\\``; callers that
-    need a platform-independent form apply ``align_path()`` themselves.
+    Separators are left as-is; use ``align_path()`` for a platform-independent form.
     """
     win_anchor = PureWindowsPath(path).anchor
     if win_anchor not in ('', '\\', '/'):  # a real drive (C:\) or UNC (\\srv\share\)

@@ -38,16 +38,11 @@ class TestImageReferencerBase(unittest.TestCase):
     def test_add_image_records_preserves_windows_path_separator(self):
         """A Windows-style dockerfile path must keep its separators in the record file_path.
 
-        On Windows, dockerfile/runner.py prepends '/' to a native relative path, producing
-        a mixed-separator string. The previous `path.replace(Path(path).anchor, "", 1)`
-        idiom resolved `anchor` to a bare backslash and removed the first backslash
-        anywhere in the string, dropping the separator between path segments.
+        The previous `path.replace(Path(path).anchor, "", 1)` resolved `anchor` to a bare
+        backslash and removed the first backslash anywhere in the string, dropping the
+        separator between path segments.
 
-        Separators are kept native (as in PR #7529, which fixed Windows file_path via
-        safe_relpath without converting to forward slashes); only the leading root is
-        stripped.
-
-        Patching `Path` to `PureWindowsPath` reproduces that Windows condition on any host.
+        Patching `Path` to `PureWindowsPath` reproduces the Windows condition on any host.
         """
         from checkov.common.bridgecrew.check_type import CheckType
         from checkov.common.images.image_referencer import Image, ImageReferencerMixin
