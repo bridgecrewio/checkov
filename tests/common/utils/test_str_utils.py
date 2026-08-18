@@ -82,21 +82,20 @@ def test_get_rootless_path(input_path: str, expected: str) -> None:
 
 
 @pytest.mark.parametrize(
-    "input_path",
+    "input_path,expected",
     [
-        "/my-project.api/client/Dockerfile.base",
-        "my-project.api/client/Dockerfile.base",
-        "Dockerfile",
-        "/repo/requirements.txt",
+        ("//srv/share/repo/Dockerfile", "repo/Dockerfile"),
+        ("///Dockerfile", "Dockerfile"),
     ],
-    ids=["abs_nested", "rel_nested", "single_file", "abs_requirements"],
+    ids=["double_slash_read_as_unc", "triple_slash"],
 )
-def test_get_rootless_path_posix_behaviour_unchanged(input_path: str) -> None:
-    """For POSIX-shaped paths the helper must match the previous expression exactly.
+def test_get_rootless_path_must_not_be_used_on_posix(input_path: str, expected: str) -> None:
+    """Documents why callers guard on ``IS_WINDOWS``.
 
-    ``PurePosixPath`` is used rather than ``Path`` so the assertion holds regardless of
-    the host the suite runs on.
+    A leading '//' is a valid POSIX root, but Windows semantics read it as a UNC share
+    and drop two segments. Callers must keep the ``anchor`` expression on POSIX.
     """
-    legacy = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
+    posix_result = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
 
-    assert get_rootless_path(input_path) == legacy
+    assert get_rootless_path(input_path) == expected
+    assert posix_result != expected

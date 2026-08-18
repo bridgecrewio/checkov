@@ -42,7 +42,7 @@ class TestImageReferencerBase(unittest.TestCase):
         backslash and removed the first backslash anywhere in the string, dropping the
         separator between path segments.
 
-        Patching `Path` to `PureWindowsPath` reproduces the Windows condition on any host.
+        Patching `IS_WINDOWS` and `Path` reproduces the Windows condition on any host.
         """
         from checkov.common.bridgecrew.check_type import CheckType
         from checkov.common.images.image_referencer import Image, ImageReferencerMixin
@@ -86,7 +86,8 @@ class TestImageReferencerBase(unittest.TestCase):
         report = Report(CheckType.SCA_IMAGE)
         image = Image(file_path=dockerfile_path, name="node:24.15.0", start_line=1, end_line=1)
 
-        with mock.patch("checkov.common.images.image_referencer.Path", PureWindowsPath), \
+        with mock.patch("checkov.common.images.image_referencer.IS_WINDOWS", True), \
+                mock.patch("checkov.common.images.image_referencer.Path", PureWindowsPath), \
                 mock.patch(
                     "checkov.common.images.image_referencer."
                     "docker_image_scanning_integration.create_report",

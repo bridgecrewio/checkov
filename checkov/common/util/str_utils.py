@@ -1,8 +1,11 @@
+import platform
 import re
 from pathlib import PureWindowsPath
 
 seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
 seconds_per_unit_regex = r"^\d+[s|m|h|d|w]"
+
+IS_WINDOWS = platform.system() == "Windows"
 
 
 # method 'str.removeprefix()' was added in Python 3.9
@@ -19,7 +22,10 @@ def align_path(path: str) -> str:
 
 
 def get_rootless_path(path: str) -> str:
-    """Strip a leading drive, UNC share or root prefix from a path.
+    """Strip a leading drive, UNC share or root prefix from a Windows path.
+
+    Only for use on Windows -- guard calls with ``IS_WINDOWS``. On POSIX a leading '//'
+    is a valid root, which Windows semantics would misread as a UNC share.
 
     Replaces ``path.replace(Path(path).anchor, "", 1)``, which is not positionally
     aware: for a mixed-separator path like ``/repo\\client\\Dockerfile`` the anchor is a
