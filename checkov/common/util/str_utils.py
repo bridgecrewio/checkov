@@ -1,4 +1,5 @@
 import re
+from pathlib import PureWindowsPath
 
 seconds_per_unit = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
 seconds_per_unit_regex = r"^\d+[s|m|h|d|w]"
@@ -15,6 +16,26 @@ def removeprefix(input_str: str, prefix: str) -> str:
 # e.g: in windows the separator for the path is '\' while in linux/max it is '/'
 def align_path(path: str) -> str:
     return path.replace('\\', '/')
+
+
+def get_rootless_path(path: str) -> str:
+    """Strip a leading drive, UNC share or root prefix from a path.
+
+    Replaces the ``path.replace(Path(path).anchor, "", 1)`` idiom, which is not
+    positionally aware. On Windows, when a path mixes separators
+    (e.g. ``/repo\\client\\Dockerfile``), ``anchor`` is a bare ``'\\'`` and
+    ``str.replace`` removes the *first* separator anywhere in the string::
+
+        '/repo\\client\\Dockerfile'  ->  '/repoclient\\Dockerfile'   # separator removed
+
+    This function strips only a genuine leading root and never mutates the interior.
+    Separators are left as-is, so a Windows path keeps its native ``\\``; callers that
+    need a platform-independent form apply ``align_path()`` themselves.
+    """
+    win_anchor = PureWindowsPath(path).anchor
+    if win_anchor not in ('', '\\', '/'):  # a real drive (C:\) or UNC (\\srv\share\)
+        path = path[len(win_anchor):]
+    return path.lstrip('\\/')
 
 
 def convert_to_seconds(input_str: str) -> int:

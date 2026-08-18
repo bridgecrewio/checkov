@@ -1,7 +1,10 @@
+from pathlib import PurePosixPath
+
 import pytest
 
 from checkov.common.util.str_utils import removeprefix
 from checkov.common.util.str_utils import convert_to_seconds
+from checkov.common.util.str_utils import get_rootless_path
 
 
 @pytest.mark.parametrize(
@@ -47,3 +50,56 @@ def test_convert_to_seconds_fails(input_str: str) -> None:
     with pytest.raises(Exception) as a:
         convert_to_seconds(input_str)
         print(a)
+
+
+@pytest.mark.parametrize(
+    "input_path,expected",
+    [
+        ("/my-project.api\\client\\Dockerfile.base", "my-project.api\\client\\Dockerfile.base"),
+        ("C:\\work\\repo\\Dockerfile", "work\\repo\\Dockerfile"),
+        ("\\\\srv\\share\\repo\\Dockerfile", "repo\\Dockerfile"),
+        ("\\work\\repo\\Dockerfile", "work\\repo\\Dockerfile"),
+        ("my-project.api\\client\\Dockerfile.base", "my-project.api\\client\\Dockerfile.base"),
+        ("/my-project.api/client/Dockerfile.base", "my-project.api/client/Dockerfile.base"),
+        ("my-project.api/client/Dockerfile.base", "my-project.api/client/Dockerfile.base"),
+        ("/a\\b\\c\\d\\Dockerfile", "a\\b\\c\\d\\Dockerfile"),
+        ("Dockerfile", "Dockerfile"),
+    ],
+    ids=[
+        "win_slash_prefixed",
+        "win_drive_absolute",
+        "win_unc",
+        "win_root_relative",
+        "win_plain_relative",
+        "posix_slash_prefixed",
+        "posix_relative",
+        "nested_deep",
+        "single_file",
+    ],
+)
+def test_get_rootless_path(input_path: str, expected: str) -> None:
+    assert get_rootless_path(input_path) == expected
+
+
+@pytest.mark.parametrize(
+    "input_path",
+    [
+        "/my-project.api/client/Dockerfile.base",
+        "my-project.api/client/Dockerfile.base",
+        "Dockerfile",
+        "/repo/requirements.txt",
+    ],
+    ids=["abs_nested", "rel_nested", "single_file", "abs_requirements"],
+)
+def test_get_rootless_path_posix_behaviour_unchanged(input_path: str) -> None:
+    """For POSIX-shaped paths the new helper must match the previous expression exactly.
+
+    Old expression: ``path.replace(Path(path).anchor, "", 1)``. POSIX paths contain no
+    backslashes, so this proves the fix does not alter behaviour on Linux/macOS agents.
+
+    ``PurePosixPath`` is used rather than ``Path`` so the assertion models POSIX
+    semantics deterministically regardless of the host the test suite runs on.
+    """
+    legacy = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
+
+    assert get_rootless_path(input_path) == legacy
