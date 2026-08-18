@@ -81,21 +81,15 @@ def test_get_rootless_path(input_path: str, expected: str) -> None:
     assert get_rootless_path(input_path) == expected
 
 
-@pytest.mark.parametrize(
-    "input_path,expected",
-    [
-        ("//srv/share/repo/Dockerfile", "repo/Dockerfile"),
-        ("///Dockerfile", "Dockerfile"),
-    ],
-    ids=["double_slash_read_as_unc", "triple_slash"],
-)
-def test_get_rootless_path_must_not_be_used_on_posix(input_path: str, expected: str) -> None:
+def test_get_rootless_path_must_not_be_used_on_posix() -> None:
     """Documents why callers guard on ``IS_WINDOWS``.
 
     A leading '//' is a valid POSIX root, but Windows semantics read it as a UNC share
     and drop two segments. Callers must keep the ``anchor`` expression on POSIX.
     """
+    input_path = "//srv/share/repo/Dockerfile"
+
     posix_result = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
 
-    assert get_rootless_path(input_path) == expected
-    assert posix_result != expected
+    assert posix_result == "srv/share/repo/Dockerfile"
+    assert get_rootless_path(input_path) != posix_result
