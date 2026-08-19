@@ -16,6 +16,7 @@ from checkov.common.output.report import Report, CheckType
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses_async
 from checkov.common.typing import _LicenseStatus
+from checkov.common.util.str_utils import IS_WINDOWS, get_rootless_path
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -227,7 +228,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 except ValueError:
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
-            rootless_file_path = dockerfile_rel_path.replace(Path(dockerfile_rel_path).anchor, "", 1)
+            rootless_file_path = get_rootless_path(dockerfile_rel_path) if IS_WINDOWS \
+                else dockerfile_rel_path.replace(Path(dockerfile_rel_path).anchor, "", 1)
             rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
 
