@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.9...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.12...HEAD)
+
+## [3.3.12](https://github.com/bridgecrewio/checkov/compare/3.3.9...3.3.12) - 2026-08-19
+
+### Bug Fix
+
+- **sca:** correct Windows path handling in image referencer - [#7650](https://github.com/bridgecrewio/checkov/pull/7650)
 
 ## [3.3.9](https://github.com/bridgecrewio/checkov/compare/3.3.8...3.3.9) - 2026-08-02
 
