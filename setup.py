@@ -106,7 +106,7 @@ setup(
         "rustworkx>=0.13.0,<1.0.0",
         "pydantic>=2.0.0,<3.0.0",
         "asteval==1.0.6",
-        "bc-detect-secrets==1.5.49",
+        "bc-detect-secrets==1.5.50",
         "urllib3>=1.26.20",
         "bc-python-hcl2==0.4.3",
         "platformdirs>=4.0.0,<5.0.0",
