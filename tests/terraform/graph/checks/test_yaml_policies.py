@@ -133,6 +133,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_CloudFrontHasResponseHeadersPolicy(self):
         self.go("CloudFrontHasResponseHeadersPolicy")
 
+    def test_CloudFrontLoggingEnabled(self):
+        self.go("CloudfrontDistributionLogging")
+
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
 
