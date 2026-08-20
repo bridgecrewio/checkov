@@ -17,6 +17,23 @@ resource "aws_iam_policy" "allowed_action" {
 POLICY
 }
 
+resource "aws_iam_policy" "allowed_action_ecr_public" {
+  policy = <<POLICY
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ecr-public:GetAuthorizationToken"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+POLICY
+}
+
 resource "aws_iam_policy" "deny" {
     policy = <<POLICY
   {
