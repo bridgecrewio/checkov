@@ -25,6 +25,7 @@ from checkov.common.sca.output import add_to_report_sca_data, get_license_status
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import request_wrapper
+from checkov.common.util.str_utils import IS_WINDOWS, get_rootless_path
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner as PackageRunner
 
@@ -294,7 +295,8 @@ class Runner(PackageRunner):
                 except ValueError:
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
-            rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
+            rootless_file_path = get_rootless_path(dockerfile_path) if IS_WINDOWS \
+                else dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
             rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
             return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report,
@@ -322,7 +324,8 @@ class Runner(PackageRunner):
             except ValueError:
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
-        rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
+        rootless_file_path = get_rootless_path(dockerfile_path) if IS_WINDOWS \
+            else dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
         rootless_file_path_to_report = f"{rootless_file_path} ({image_id})"
         return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, image_details,
                                                 runner_filter)

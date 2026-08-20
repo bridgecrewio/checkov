@@ -24,6 +24,7 @@ EXCLUDED_FILE_NAMES = {"package.json", "package-lock.json"}
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
 SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet", "Job", "ReplicaSet", "ReplicationController", "StatefulSet"}
+SKIP_ANNOTATION_PREFIXES = ("checkov.io/skip", "bridgecrew.io/skip", "cortex.io/skip")
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
@@ -96,7 +97,7 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[_SkippedCheck]:
                 continue
             for key in annotation:
                 skipped_item: "_SkippedCheck" = {}
-                if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
+                if any(prefix in key for prefix in SKIP_ANNOTATION_PREFIXES):
                     if "=" in annotation[key]:
                         (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
                     else:
