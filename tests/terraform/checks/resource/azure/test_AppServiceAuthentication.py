@@ -1,12 +1,24 @@
 import os
 import unittest
 
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AppServiceAuthentication import check
 
 
 class TestAppServiceAuthentication(unittest.TestCase):
+
+    def test_non_dict_auth_settings_does_not_crash(self):
+        # When auth_settings[0] is a non-dict type (e.g. a StrNode from Terraform plan JSON),
+        # the check must return FAILED instead of raising TemplateAttributeError.
+        conf = {"auth_settings": ["some_template_expression"]}
+        result = check.scan_resource_conf(conf=conf)
+        self.assertEqual(result, CheckResult.FAILED)
+
+        conf_v2 = {"auth_settings_v2": ["some_template_expression"]}
+        result_v2 = check.scan_resource_conf(conf=conf_v2)
+        self.assertEqual(result_v2, CheckResult.FAILED)
 
     def test(self):
         runner = Runner()
