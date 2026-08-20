@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 class cloudsplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
     excluded_actions = {  # noqa: CCE003  # a static attribute
-        "ecr:GetAuthorizationToken"
+        "ecr:GetAuthorizationToken",
+        "ecr-public:GetAuthorizationToken",
     }
 
     def __init__(self) -> None:
