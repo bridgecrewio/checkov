@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.13...HEAD)
+
+## [3.3.13](https://github.com/bridgecrewio/checkov/compare/3.3.12...3.3.13) - 2026-08-20
+
+### Bug Fix
+
+- **kubernetes:** Fix K8S suppressions annotations - [#7651](https://github.com/bridgecrewio/checkov/pull/7651)
 
 ## [3.3.12](https://github.com/bridgecrewio/checkov/compare/3.3.9...3.3.12) - 2026-08-19
 
