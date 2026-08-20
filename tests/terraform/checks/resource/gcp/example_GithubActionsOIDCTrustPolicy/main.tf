@@ -54,6 +54,19 @@ resource "google_iam_workload_identity_pool_provider" "pass_org_only" {
   }
 }
 
+# pass5 - Non-OIDC (AWS-federated) provider should pass, not crash
+resource "google_iam_workload_identity_pool_provider" "pass_non_oidc" {
+  workload_identity_pool_id          = "example-pool"
+  workload_identity_pool_provider_id = "example-provider-aws"
+  attribute_mapping                 = {
+    "google.subject" = "assertion.arn"
+  }
+  attribute_condition               = "assertion.arn.startsWith(\"arn:aws:sts::123456789012:assumed-role/foo-\")"
+  aws {
+    account_id = "123456789012"
+  }
+}
+
 # fail1 - Missing attribute condition
 resource "google_iam_workload_identity_pool_provider" "fail1" {
   workload_identity_pool_id          = "example-pool"
