@@ -27,7 +27,7 @@ SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet",
 SKIP_ANNOTATION_PREFIXES = ("checkov.io/skip", "bridgecrew.io/skip", "cortex.io/skip")
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
-FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
+FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy", "CiliumNetworkPolicy"]
 
 
 def should_include_path(full_path: str, ignore_hidden_dir: bool) -> bool:
