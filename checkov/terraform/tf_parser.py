@@ -547,8 +547,8 @@ class TFParser:
             file_to_load = file.file_path
             # fix by pankhuriVarshney: use absolute path to ensure relative module sources are resolved
             # from the declaring file's directory, not Checkov's CWD
-            file_dir = os.path.abspath(os.path.dirname(remove_module_dependency_from_path(file_to_load)))
-            source = os.path.normpath(os.path.join(file_dir, source))
+            source = os.path.normpath(
+                os.path.join(os.path.dirname(os.path.abspath(remove_module_dependency_from_path(file_to_load))), source))
         return source
 
     def handle_variables(
