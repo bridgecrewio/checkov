@@ -9,7 +9,10 @@ if TYPE_CHECKING:
 
 
 class CloudSplainingCredentialsExposure(BaseTerraformCloudsplainingDataIAMCheck):
-    excluded_actions = {"ecr:GetAuthorizationToken"}  # noqa: CCE003  # a static attribute
+    excluded_actions = {  # noqa: CCE003  # a static attribute
+        "ecr:GetAuthorizationToken",
+        "ecr-public:GetAuthorizationToken",
+    }
 
     def __init__(self) -> None:
         name = "Ensure IAM policies does not allow credentials exposure"
