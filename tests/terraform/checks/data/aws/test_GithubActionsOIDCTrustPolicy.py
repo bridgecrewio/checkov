@@ -22,6 +22,7 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "aws_iam_policy_document.pass-org-only",
             "aws_iam_policy_document.pass_aud_first",
             "aws_iam_policy_document.pass-gh-org",
+            "aws_iam_policy_document.pass_immutable",
         }
         failing_resources = {
             "aws_iam_policy_document.fail1",
@@ -56,6 +57,7 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             'module.poc.data.aws_iam_policy_document.r4["p2"]',
             'module.poc.data.aws_iam_policy_document.r3["p1"]',
             'module.poc.data.aws_iam_policy_document.r3["p2"]',
+            'module.poc.data.aws_iam_policy_document.pass_immutable',
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
