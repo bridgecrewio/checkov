@@ -9,6 +9,7 @@ from checkov.common.bridgecrew.bc_source import IDEsSourceTypes
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
+from checkov.common.util.str_utils import align_path
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
 from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES_EXTENSIONS, SCANNABLE_PACKAGE_FILES, \
     SUPPORTED_PACKAGE_FILES
@@ -130,10 +131,16 @@ class Runner(BaseRunner[None, None, None]):
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
             inline_suppressions = result.get("inlineSuppressions")
 
+            # 's3_file_key_to_abs_path' is keyed on os.path.relpath output, which uses the
+            # native separator, so it has to be looked up before aligning. The reported
+            # path is matched against the indexed file path, which always uses '/'.
+            scanned_file_path = s3_file_key_to_abs_path.get(rootless_file_path, str(package_file_path))
+            rootless_file_path = align_path(rootless_file_path)
+
             add_to_report_sca_data(
                 report=report,
                 check_class=self._check_class,
-                scanned_file_path=s3_file_key_to_abs_path.get(rootless_file_path, str(package_file_path)),
+                scanned_file_path=scanned_file_path,
                 rootless_file_path=rootless_file_path,
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
