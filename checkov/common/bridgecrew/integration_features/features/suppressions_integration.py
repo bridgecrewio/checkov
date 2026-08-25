@@ -184,8 +184,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     file_abs_path.endswith("".join([repo_name, suppression_path])) or \
                     removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/') \
                     or record.file_path == suppression_path:
-                return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
-                           for cve in suppression['cves'])
+                if not record.vulnerability_details:
+                    return False
+                record_cve_id = record.vulnerability_details['id'].lower()
+                return any(record_cve_id == cve['cve'].lower() for cve in suppression['cves'])
         return False
 
     def _check_suppression(self, record: Record, suppression: dict[str, Any]) -> bool:
@@ -231,7 +233,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             if 'accountIds' not in suppression:
                 return False
             if self.bc_integration.source_id in suppression['accountIds']:
-                if record.vulnerability_details and record.vulnerability_details['id'] in suppression['cves']:
+                if record.vulnerability_details and record.vulnerability_details['id'].lower() in {
+                        cve.lower() for cve in suppression['cves']}:
                     return True
             return False
 

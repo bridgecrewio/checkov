@@ -529,6 +529,37 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
         self.assertTrue(suppressions_integration._check_suppression(record5, suppression))
 
+    def test_supress_by_cve_is_case_insensitive(self):
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'Cves',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress ghsa',
+            'accountIds': ['customer_some/repo'],
+            'cves': [{'uuid': '11111111-2222-3333-4444-555555555555', 'id': '/package.json',
+                      'cve': 'GHSA-aaaa-bbbb-cccc'}],
+            'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        matching = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                          code_block=None, file_path=None, file_line_range=None,
+                          resource=None, evaluations=None, check_class=None,
+                          file_abs_path='package.json', entity_tags=None,
+                          vulnerability_details={'id': 'GHSA-AAAA-BBBB-CCCC'})
+        other_cve = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                           code_block=None, file_path=None, file_line_range=None,
+                           resource=None, evaluations=None, check_class=None,
+                           file_abs_path='package.json', entity_tags=None,
+                           vulnerability_details={'id': 'GHSA-dddd-eeee-ffff'})
+
+        self.assertTrue(suppressions_integration._check_suppression(matching, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(other_cve, suppression))
+
     def test_suppress_by_cve_with_empty_cves(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'repo/path'
