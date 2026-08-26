@@ -352,6 +352,36 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
 
+    def test_suppress_by_cve_accounts_unprefixed_account_id(self):
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'CvesAccounts',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress by accounts',
+            'cves': ['CVE-2021-44420'],
+            'accountIds': ['some/repo'],
+            'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        matching = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                          code_block=None, file_path=None, file_line_range=None,
+                          resource=None, evaluations=None, check_class=None,
+                          file_abs_path='.', entity_tags=None,
+                          vulnerability_details={'id': 'CVE-2021-44420'})
+        other_repo = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                            code_block=None, file_path=None, file_line_range=None,
+                            resource=None, evaluations=None, check_class=None,
+                            file_abs_path='.', entity_tags=None,
+                            vulnerability_details={'id': 'CVE-2021-99999'})
+
+        self.assertTrue(suppressions_integration._check_suppression(matching, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(other_repo, suppression))
+
     def test_suppress_by_cve_accounts_without_repo_id_package_scan(self):
         instance = BcPlatformIntegration()
         suppressions_integration = SuppressionsIntegration(instance)
