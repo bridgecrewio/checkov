@@ -331,6 +331,47 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=alb, node_to=output,
                         expected_label='security_groups')
 
+    def test_build_graph_module_count_connects_every_instance(self):
+        # The numeric instance index never survives tokenisation, so a reference
+        # like module.security_group[1].security_group_id resolves by name alone.
+        # Every expanded instance must end up connected: they are expansions of
+        # one configuration block, and binding all references to whichever
+        # instance the best-match picks first orphans the rest from the graph.
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_with_count_multiple'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        outputs = [v for v in local_graph.vertices
+                   if v.block_type == BlockType.OUTPUT and v.name == 'security_group_id']
+        self.assertEqual(len(outputs), 2)
+        for output in outputs:
+            incoming = [e for e in local_graph.edges
+                        if local_graph.vertices[e.dest] == output
+                        and local_graph.vertices[e.origin].block_type == BlockType.RESOURCE]
+            self.assertGreater(len(incoming), 0,
+                               f'output of instance {output.source_module_object.foreach_idx} '
+                               f'has no incoming edge from any resource')
+
+    def test_build_graph_module_foreach_binds_exact_instance(self):
+        # A for_each string key DOES survive tokenisation, so the reference must
+        # bind to exactly its own instance: aws_lb.alpha to the "alpha" output
+        # and never to "beta". Before this fix the binding depended on iteration
+        # order and flipped between runs.
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_with_foreach_output'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        for key in ('alpha', 'beta'):
+            lb = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, f'aws_lb.{key}')
+            targets = [local_graph.vertices[e.dest] for e in local_graph.edges
+                       if local_graph.vertices[e.origin] == lb
+                       and local_graph.vertices[e.dest].block_type == BlockType.OUTPUT]
+            self.assertEqual(len(targets), 1, f'aws_lb.{key} should reach exactly one output')
+            self.assertEqual(targets[0].source_module_object.foreach_idx, key,
+                             f'aws_lb.{key} bound to instance {targets[0].source_module_object.foreach_idx}')
+
     def test_nested_modules_address_attribute(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/nested_modules_address'))
         graph_manager = TerraformGraphManager(NetworkxConnector())
