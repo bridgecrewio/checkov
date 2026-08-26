@@ -592,7 +592,22 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
-        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        if possible_vertices:
+            return possible_vertices
+        if block_type == BlockType.MODULE:
+            # A module called with count or for_each is expanded into vertices named
+            # "name[idx]", but references to it arrive with the index stripped by
+            # remove_index_pattern_from_str. Looking up the stripped name therefore
+            # misses every expanded module vertex, no edge is created to the module's
+            # outputs, and graph checks fail for resources that reference them.
+            by_name = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {})
+            matches: list[int] = []
+            for vertex_name, vertex_indexes in by_name.items():
+                if remove_index_pattern_from_str(vertex_name) == name:
+                    matches.extend(vertex_indexes)
+            return matches
+        return []
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:

@@ -314,6 +314,23 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
                         expected_label="[cross-variable] bucket")
 
+    def test_build_graph_module_with_count_output_edge(self):
+        # A module called with count is expanded into a vertex named "name[idx]",
+        # while references to its outputs arrive with the index stripped. The
+        # lookup has to bridge that, or the referencing resource never gets an
+        # edge to the module output and every graph check involving the module
+        # fails regardless of the configuration.
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_with_count_output'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        alb = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_lb.alb')
+        output = self.get_vertex_by_name_and_type(local_graph, BlockType.OUTPUT, 'security_group_id')
+
+        self.check_edge(local_graph, node_from=alb, node_to=output,
+                        expected_label='security_groups')
+
     def test_nested_modules_address_attribute(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/nested_modules_address'))
         graph_manager = TerraformGraphManager(NetworkxConnector())
