@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.13...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.15...HEAD)
+
+## [3.3.15](https://github.com/bridgecrewio/checkov/compare/3.3.13...3.3.15) - 2026-08-27
+
+### Bug Fix
+
+- **sca:** match CVE suppressions case-insensitively - [#7659](https://github.com/bridgecrewio/checkov/pull/7659)
+- **sca:** match CvesAccounts suppressions on unprefixed account ids - [#7660](https://github.com/bridgecrewio/checkov/pull/7660)
 
 ## [3.3.13](https://github.com/bridgecrewio/checkov/compare/3.3.12...3.3.13) - 2026-08-20
 
