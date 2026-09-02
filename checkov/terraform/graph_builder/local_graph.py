@@ -845,8 +845,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         return (self.get_dirname(vertex.path) == dest_module_path) and \
             (
                 vertex.source_module_object == module_node.source_module_object  # The vertex is in the same file
-                or self.get_abspath(vertex.source_module_object.path)
-                == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
+                or vertex.source_module_object == get_vertex_as_tf_module(module_node)  # The vertex belongs to this specific module instance
         )
 
     def _build_virtual_resources_edges(self, origin_node_index: int, vertex: TerraformBlock) -> None:
