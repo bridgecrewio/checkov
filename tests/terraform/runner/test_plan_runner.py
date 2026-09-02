@@ -694,6 +694,36 @@ class TestRunnerValid(unittest.TestCase):
         failed_check = next(check for check in report.failed_checks if check.check_id == "CUSTOM_DELETE_1")
         self.assertEqual(failed_check.details, ["some great details"])
 
+    def test_runner_pure_delete_check(self):
+        """Test that resources with pure delete actions (not replacements) are processed correctly"""
+        # given
+        current_dir = Path(__file__).parent
+        tf_dir_path = str(current_dir / "resources/plan_with_pure_deleted_resources")
+        extra_checks_dir_path = [str(current_dir / "extra_tf_plan_checks")]
+
+        # when
+        report = Runner().run(
+            root_folder=tf_dir_path,
+            external_checks_dir=extra_checks_dir_path,
+            runner_filter=RunnerFilter(checks=["CUSTOM_PURE_DELETE_1"])
+        )
+
+        # then
+        summary = report.get_summary()
+
+        # CUSTOM_PURE_DELETE_1 should fail for the secret with pure delete action
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 0)
+
+        # Verify the specific resource that failed
+        failed_resource_ids = [check.resource for check in report.failed_checks]
+        self.assertIn("aws_secretsmanager_secret.deleted", failed_resource_ids)
+
+        # Verify the check details
+        secret_check = next((c for c in report.failed_checks if c.check_id == "CUSTOM_PURE_DELETE_1"), None)
+        self.assertIsNotNone(secret_check)
+        self.assertEqual(secret_check.resource, "aws_secretsmanager_secret.deleted")
+
     def test_runner_nested_child_modules_with_connections(self):
         # given
         tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"

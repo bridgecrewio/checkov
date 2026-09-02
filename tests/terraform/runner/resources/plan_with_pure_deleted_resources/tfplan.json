@@ -1,0 +1,79 @@
+{
+  "format_version": "1.1",
+  "terraform_version": "1.2.4",
+  "planned_values": {
+    "root_module": {
+      "resources": []
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_secretsmanager_secret.deleted",
+      "mode": "managed",
+      "type": "aws_secretsmanager_secret",
+      "name": "deleted",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "arn": "arn:aws:secretsmanager:us-west-2:123456789012:secret:test-secret",
+          "description": "Test secret to be deleted",
+          "force_overwrite_replica_secret": false,
+          "kms_key_id": "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012",
+          "name": "test-secret",
+          "recovery_window_in_days": 30,
+          "tags": {
+            "Environment": "test"
+          }
+        },
+        "after": null,
+        "after_unknown": {},
+        "before_sensitive": {
+          "replica": [],
+          "rotation_rules": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_sensitive": false
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_secretsmanager_secret.deleted",
+          "mode": "managed",
+          "type": "aws_secretsmanager_secret",
+          "name": "deleted",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "test-secret"
+            },
+            "kms_key_id": {
+              "constant_value": "arn:aws:kms:us-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}
