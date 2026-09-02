@@ -532,7 +532,12 @@ class RunnerRegistry:
 
             report_json_output: "list[dict[str, Any]] | dict[str, Any]" = report_jsons
             if not report_jsons:
-                report_json_output = Report("").get_summary()
+                report_json_output = Report("").get_dict(
+                    is_quiet=config.quiet,
+                    url=url,
+                    s3_setup_failed=bc_integration.s3_setup_failed,
+                    support_path=bc_integration.support_repo_path
+                    )
             elif len(report_jsons) == 1:
                 report_json_output = report_jsons[0]
 
