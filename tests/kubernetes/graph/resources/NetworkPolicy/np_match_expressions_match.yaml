@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+        tier: worker
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: workers-only
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: tier
+        operator: In
+        values:
+          - worker
+  policyTypes:
+    - Ingress
