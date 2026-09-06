@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.16...HEAD)
 
+### Bug Fix
+
+- **cloudformation:** don't crash when a security group's FromPort/ToPort references a parameter that resolves to an unparseable value (e.g. empty string); the resource now reports UNKNOWN instead of producing no result
+
 ## [3.3.16](https://github.com/bridgecrewio/checkov/compare/3.3.15...3.3.16) - 2026-08-30
 
 ### Bug Fix
