@@ -22,7 +22,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4
         with:
-          node-version: "18"
+          node-version: "20"
       - name: Install and run DangerJS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,12 +92,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
-          if [ "${{ matrix.python }}" = "3.12" ] || [ "${{ matrix.python }}" = "3.13" ]; then
-            # needed for numpy
-            python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
-          else
-            python -m pip install --no-cache-dir --upgrade pipenv
-          fi
+          python -m pip install --no-cache-dir --upgrade pipenv==2024.4.0
       - name: Install dependencies
         run: |
           # remove venv, if exists
