@@ -267,5 +267,31 @@ class TestGitGetter(unittest.TestCase):
         mock_repo.clone_from.assert_called_once()
 
 
+    def test_parse_branch_name_starting_with_hex_chars(self):
+        """Branch names that start with hex characters should not be mistaken for commit IDs.
+
+        Regression test for https://github.com/bridgecrewio/checkov/issues/XXXX:
+        A ref like '1014016-chekov-branch-bug' starts with 7 valid hex characters.
+        The old COMMIT_ID_PATTERN (without an end anchor) partially matched '1014016',
+        stripped only that portion from the URL, and left '-chekov-branch-bug' dangling
+        — corrupting the repo name in the resulting git clone command.
+        """
+        url = "ssh://git@ssh.dev.azure.com/v3/Company/cat-tf-modules?ref=1014016-chekov-branch-bug"
+        getter = GitGetter(url)
+        git_url = getter.extract_git_ref(url)
+
+        self.assertEqual(
+            "ssh://git@ssh.dev.azure.com/v3/Company/cat-tf-modules",
+            git_url,
+            "URL should not have the branch name appended to the repo path",
+        )
+        self.assertIsNone(getter.commit_id, "Should not be parsed as a commit ID")
+        self.assertEqual(
+            "1014016-chekov-branch-bug",
+            getter.tag,
+            "Branch/tag name should be captured in full",
+        )
+
+
 if __name__ == '__main__':
     unittest.main()
