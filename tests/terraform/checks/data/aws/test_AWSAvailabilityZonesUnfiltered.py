@@ -18,8 +18,6 @@ class TestAWSAvailabilityZonesUnfiltered(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'aws_availability_zones.excluded_by_name',
-            'aws_availability_zones.excluded_by_id',
             'aws_availability_zones.filtered_by_name',
             'aws_availability_zones.filtered_by_id',
         }
@@ -27,6 +25,8 @@ class TestAWSAvailabilityZonesUnfiltered(unittest.TestCase):
             'aws_availability_zones.unfiltered',
             'aws_availability_zones.state_only',
             'aws_availability_zones.filter_opt_in_status',
+            'aws_availability_zones.excluded_by_name',
+            'aws_availability_zones.excluded_by_id',
         }
         skipped_resources = {}
 

@@ -14,12 +14,12 @@ data "aws_availability_zones" "filter_opt_in_status" {
   }
 }
 
-## SHOULD PASS: constrained via exclude_names (pins identity)
+## SHOULD FAIL: exclude_names is a denylist; a newly-added AZ not in the list still leaks through
 data "aws_availability_zones" "excluded_by_name" {
   exclude_names = ["us-east-1e"]
 }
 
-## SHOULD PASS: constrained via exclude_zone_ids (pins identity)
+## SHOULD FAIL: exclude_zone_ids is a denylist; a newly-added AZ not in the list still leaks through
 data "aws_availability_zones" "excluded_by_id" {
   exclude_zone_ids = ["use1-az3"]
 }
