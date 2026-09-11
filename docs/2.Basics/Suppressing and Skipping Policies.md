@@ -347,6 +347,57 @@ kube-system namespace:
 checkov -d . --skip-check kube-system
 ```
 
+# Protecting checks from being skipped
+
+In some cases you may want to guarantee that certain checks are always executed, regardless of any skip configuration applied by developers. Use the `--protect-check` flag to mark checks as mandatory. A protected check will run even if it is present in `--skip-check`, in the YAML config file, or in an inline comment.
+
+This is especially useful in CI/CD pipelines where a security team wants to enforce that critical checks cannot be skipped by developers.
+
+## Usage
+
+Via CLI:
+```sh
+checkov -d . --protect-check CKV_AWS_20,CKV_AWS_57
+```
+
+Via YAML config file:
+```yaml
+protect-check:
+  - CKV_AWS_20
+  - CKV_AWS_57
+```
+
+Via environment variable:
+```sh
+export CKV_PROTECT_CHECK=CKV_AWS_20,CKV_AWS_57
+checkov -d .
+```
+
+## Priority order
+
+When multiple skip mechanisms are in play, the resolution order from highest to lowest priority is:
+
+1. `--protect-check` — always runs the check, overrides everything below
+2. `--skip-check` (CLI or YAML config)
+3. Inline `#checkov:skip=` comment in code
+
+## Example
+
+Given a resource with an inline skip comment:
+
+```python
+resource "aws_s3_bucket" "foo-bucket" {
+  #checkov:skip=CKV_AWS_20:The bucket is a public static content host
+  acl = "public-read"
+}
+```
+
+Running with `--protect-check CKV_AWS_20` will **ignore** the inline comment and execute `CKV_AWS_20`, reporting a PASS or FAIL result instead of SKIPPED.
+
+```sh
+checkov -d . --protect-check CKV_AWS_20
+```
+
 # Platform enforcement rules
 
 Checkov can download [enforcement rules](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/enforcement) that you configure in Prisma Cloud. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
