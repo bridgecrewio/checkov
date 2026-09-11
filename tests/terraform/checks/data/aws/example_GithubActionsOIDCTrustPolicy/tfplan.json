@@ -513,6 +513,88 @@
                   }
                 ]
               }
+            },
+            {
+              "address": "module.poc.data.aws_iam_policy_document.pass_immutable",
+              "mode": "data",
+              "type": "aws_iam_policy_document",
+              "name": "pass_immutable",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                  {
+                    "actions": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "condition": [
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "sts.amazonaws.com"
+                        ],
+                        "variable": "token.actions.githubusercontent.com:aud"
+                      },
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "repo:octo-org@123456/octo-repo@456789:ref:refs/heads/main"
+                        ],
+                        "variable": "token.actions.githubusercontent.com:sub"
+                      }
+                    ],
+                    "effect": "Allow",
+                    "not_actions": null,
+                    "not_principals": [],
+                    "not_resources": null,
+                    "principals": [
+                      {
+                        "identifiers": [
+                          "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+                        ],
+                        "type": "Federated"
+                      }
+                    ],
+                    "resources": null,
+                    "sid": null
+                  }
+                ],
+                "version": null
+              },
+              "sensitive_values": {
+                "statement": [
+                  {
+                    "actions": [
+                      false
+                    ],
+                    "condition": [
+                      {
+                        "values": [
+                          false
+                        ]
+                      },
+                      {
+                        "values": [
+                          false
+                        ]
+                      }
+                    ],
+                    "not_principals": [],
+                    "principals": [
+                      {
+                        "identifiers": [
+                          false
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
             }
           ],
           "address": "module.poc"
