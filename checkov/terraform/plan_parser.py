@@ -19,6 +19,7 @@ SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
+TF_PLAN_RESOURCE_FORGET_ACTION = "forget"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 
@@ -211,7 +212,13 @@ def _prepare_resource_block(
 
         changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # because it can be None
         if changes:
-            resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
+            actions = changes.get("change", {}).get("actions") or []
+            # Skip resources being removed from state ('forget' action). 'Forgotten' resources are mistakenly
+            # included with no values in planned_values due to Terraform bug (issue: hashicorp/terraform#38641).
+            if actions == [TF_PLAN_RESOURCE_FORGET_ACTION]:
+                return resource_block, block_type, False
+
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = actions
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
             # enrich conf with after_unknown values
             _eval_after_unknown(changes, resource_conf)
