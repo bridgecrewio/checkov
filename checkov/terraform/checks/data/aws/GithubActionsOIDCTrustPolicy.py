@@ -66,30 +66,38 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                         if isinstance(condition_values, list):
                             for condition_value in condition_values:
                                 if isinstance(condition_value, list):
-                                    # First -> check if the value is a mere wildcard. If so, it's a fail
-                                    # This covers the case where the condition is ['sub':'*']
-                                    if len(condition_value) == 1 and condition_value[0] == "*":
-                                        return CheckResult.FAILED
-                                    # Split the claims by ':' for deeper inspection
-                                    split_claims = condition_value[0].split(":")
-                                    # The assertion MUST be of the form ['{claim_name_1}:{claim_value_1}:{claim_name_2}:{claim_value_2}...']
-                                    # If the length of the split claims is 1, it means that the assertion is ['sub':'{claim_name}'] - this is a fail
-                                    if len(split_claims) == 1:
-                                        return CheckResult.FAILED
-                                    # Second -> Check if the value is a wildcard assertion
-                                    # This covers the case where the condition is ['sub':'{claim_name}:*']
-                                    if split_claims[1] == "*":
-                                        return CheckResult.FAILED
-                                    # Third -> Check if the value is an abusable claim
-                                    # This covers the case where the condition is ['sub':'{abusable_claim}:{any_value}']
-                                    for abusable_claim in gh_abusable_claims:
-                                        if split_claims[0].startswith(abusable_claim):
+                                    # IAM evaluates multiple values of one condition key with a logical OR,
+                                    # so a single loose value admits every subject it matches no matter how
+                                    # tight the other values are. Every value must therefore be inspected;
+                                    # one safe value cannot vouch for the rest of the list.
+                                    for sub_value in condition_value:
+                                        if not isinstance(sub_value, str):
+                                            continue
+                                        # First -> check if the value is a mere wildcard. If so, it's a fail
+                                        # This covers the case where the condition is ['sub':'*']
+                                        if sub_value == "*":
                                             return CheckResult.FAILED
-                                    # Fourth -> Check if the value is a repo:org/* -> this is a pass with a warning
-                                    if split_claims[0] == "repo" and not gh_repo_regex.match(split_claims[1]):
-                                        return CheckResult.FAILED
-                                    found_sub_condition_value = True
-                                    break
+                                        # Split the claims by ':' for deeper inspection
+                                        split_claims = sub_value.split(":")
+                                        # The assertion MUST be of the form ['{claim_name_1}:{claim_value_1}:{claim_name_2}:{claim_value_2}...']
+                                        # If the length of the split claims is 1, it means that the assertion is ['sub':'{claim_name}'] - this is a fail
+                                        if len(split_claims) == 1:
+                                            return CheckResult.FAILED
+                                        # Second -> Check if the value is a wildcard assertion
+                                        # This covers the case where the condition is ['sub':'{claim_name}:*']
+                                        if split_claims[1] == "*":
+                                            return CheckResult.FAILED
+                                        # Third -> Check if the value is an abusable claim
+                                        # This covers the case where the condition is ['sub':'{abusable_claim}:{any_value}']
+                                        for abusable_claim in gh_abusable_claims:
+                                            if split_claims[0].startswith(abusable_claim):
+                                                return CheckResult.FAILED
+                                        # Fourth -> Check if the value is a repo:org/* -> this is a pass with a warning
+                                        if split_claims[0] == "repo" and not gh_repo_regex.match(split_claims[1]):
+                                            return CheckResult.FAILED
+                                        found_sub_condition_value = True
+                                    if found_sub_condition_value:
+                                        break
                         if found_sub_condition_value and found_sub_condition_variable:
                             return CheckResult.PASSED
 
