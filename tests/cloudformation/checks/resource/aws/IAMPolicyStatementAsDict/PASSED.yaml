@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM policy whose PolicyDocument Statement is a single object (dict), not a list
+Resources:
+  DictStatementScoped:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Action:
+            - 's3:PutObject'
+          Resource:
+            - 'arn:aws:s3:::my-bucket/*'
+      Roles:
+        - example_role
