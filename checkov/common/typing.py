@@ -95,6 +95,7 @@ class _ReducedScanReportCheck(TypedDict):
     failed_checks: list[dict[str, Any]]
     passed_checks: list[dict[str, Any]]
     skipped_checks: list[dict[str, Any]]
+    unknown_checks: list[dict[str, Any]]
 
 
 class _CicdDetails(TypedDict, total=False):
