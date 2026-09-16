@@ -19,4 +19,5 @@ class CloudfrontDistributionLogging(BaseResourceValueCheck):
         return ANY_VALUE
 
 
-check = CloudfrontDistributionLogging()
+# CKV_AWS_86 is implemented as a graph check to support both legacy and v2 logging models.
+# This legacy resource check remains as reference-only and is intentionally not registered.
