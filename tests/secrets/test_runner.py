@@ -419,5 +419,22 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 2)
 
+    def test_spawn_mode_disabled_when_frozen(self):
+        import sys
+        from unittest.mock import patch
+        from checkov.common.parallelizer.parallel_runner import ParallelRunner
+        from detect_secrets import SecretsCollection
+        from checkov.common.util.tqdm_utils import ProgressBar
+
+        pbar = ProgressBar("secrets")
+        pbar.turn_off_progress_bar()
+        secrets = SecretsCollection()
+
+        with patch("checkov.secrets.runner.SECRETS_PARALLEL_MODE", "spawn"), \
+             patch("sys.frozen", True, create=True), \
+             patch.object(ParallelRunner, "__init__", side_effect=AssertionError("Should not create spawn runner")):
+            # When sys.frozen is True, spawn mode must be bypassed without error
+            Runner._scan_files([], secrets, pbar, plugins_used=[])
+
 if __name__ == '__main__':
     unittest.main()
