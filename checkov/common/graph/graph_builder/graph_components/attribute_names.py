@@ -54,3 +54,4 @@ class EncryptionTypes(str, Enum):
     DEFAULT_KMS = "Default KMS"
     AES256 = "AES256"
     AWS_KMS_VALUE = "aws:kms"
+    AWS_KMS_DSSE_VALUE = "aws:kms:dsse"
