@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.17...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.19...HEAD)
+
+## [3.3.19](https://github.com/bridgecrewio/checkov/compare/3.3.17...3.3.19) - 2026-09-17
+
+### Feature
+
+- **terraform:** add CKV_AWS_394 for unconstrained aws_availability_zones data source - [#7658](https://github.com/bridgecrewio/checkov/pull/7658)
 
 ## [3.3.17](https://github.com/bridgecrewio/checkov/compare/3.3.16...3.3.17) - 2026-09-10
 
