@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.16...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.17...HEAD)
+
+## [3.3.17](https://github.com/bridgecrewio/checkov/compare/3.3.16...3.3.17) - 2026-09-10
+
+### Bug Fix
+
+- **general:** honour scope.provider for platform-downloaded custom po… - [#7677](https://github.com/bridgecrewio/checkov/pull/7677)
 
 ## [3.3.16](https://github.com/bridgecrewio/checkov/compare/3.3.15...3.3.16) - 2026-08-30
 
