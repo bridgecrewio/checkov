@@ -127,6 +127,7 @@ class ParallelRunner:
             )
             processes.append((process, parent_conn, len(group_of_items)))
             process.start()
+            child_conn.close()
 
         if _INTERLEAVED_DRAIN_ENABLED:
             yield from self._drain_interleaved(processes)
