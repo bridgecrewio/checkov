@@ -4,6 +4,7 @@ import datetime
 import linecache
 import logging
 import os
+import sys
 import re
 import tempfile
 import threading
@@ -569,7 +570,14 @@ class Runner(BaseRunner[None, None, None]):
             for file in files_to_scan
         ]
 
-        if SECRETS_PARALLEL_MODE == "spawn" and plugins_used is not None:
+        is_frozen = getattr(sys, "frozen", False)
+        if SECRETS_PARALLEL_MODE == "spawn" and is_frozen:
+            logging.warning(
+                "SPAWN parallel mode for secrets scan is not supported in frozen mode; "
+                "falling back to default runner"
+            )
+
+        if SECRETS_PARALLEL_MODE == "spawn" and not is_frozen and plugins_used is not None:
             # Dedicated spawn runner for the secrets scan only (plugins_used is
             # required so workers can rebuild their detect-secrets config).
             # ParallelRunner downgrades spawn->thread on macOS/Windows in
