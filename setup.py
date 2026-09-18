@@ -79,7 +79,7 @@ setup(
         "tqdm>=4.65.0,<5.0.0",
         "packaging<24.0,>=23.0",
         "cloudsplaining<0.8.0,>=0.7.0",
-        "networkx<2.7",
+        "networkx>=2.6.3,<4.0.0",
         "dockerfile-parse>=2.0.0,<3.0.0",
         "docker>=6.0.1,<8.0.0",
         "configargparse>=1.5.3,<2.0.0",
