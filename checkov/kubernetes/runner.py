@@ -95,7 +95,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         report = Report(self.check_type)
         if self.context is None or self.definitions is None:
             if files or root_folder:
-                self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter)
+                parsing_errors: dict[str, str] = {}
+                self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter,
+                                                                            parsing_errors)
+                report.add_parsing_errors(parsing_errors.keys())
             else:
                 return report
             if external_checks_dir:

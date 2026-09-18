@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 
-def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] | None:
+def parse(
+    filename: str, out_parsing_errors: dict[str, str] | None = None
+) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] | None:
     template = None
     template_lines: "list[tuple[int, str]]" = []
     valid_templates = []
@@ -50,9 +52,11 @@ def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] |
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return None
-    except YAMLError:
+    except YAMLError as e:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
+            if out_parsing_errors is not None:
+                out_parsing_errors[filename] = str(e)
         return None
 
     return valid_templates, template_lines
