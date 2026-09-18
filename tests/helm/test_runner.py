@@ -67,13 +67,14 @@ class TestRunnerValid(unittest.TestCase):
 
         runner = Runner()
         filter = RunnerFilter(framework=['helm'], use_enforcement_rules=False)
-        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
-        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        # `helm template` for this chart exits 0 and renders valid manifests while emitting
+        # non-fatal coalesce.go "Not a table" warnings to stderr; the chart must still be
+        # scanned rather than discarded on account of those warnings.
         report = runner.run(
             root_folder=scan_dir_path, runner_filter=filter
         )
 
-        self.assertEqual(len(report.failed_checks), 0)
+        self.assertGreater(len(report.failed_checks), 0)
 
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_get_binary_output_from_directory_equals_to_get_binary_result(self):
@@ -82,7 +83,8 @@ class TestRunnerValid(unittest.TestCase):
 
         runner_filter = RunnerFilter(framework=['helm'], use_enforcement_rules=False)
 
-        chart_meta = Runner.parse_helm_chart_details(scan_dir_path)
+        # parse_helm_chart_details returns (path, meta); get_binary_output expects the meta dict.
+        _, chart_meta = Runner.parse_helm_chart_details(scan_dir_path)
         chart_item = (scan_dir_path, chart_meta)
         regular_result = Runner.get_binary_output(chart_item, target_dir='./tmp', helm_command="helm",
                                                   runner_filter=runner_filter)
@@ -332,6 +334,7 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         dep_list_proc = mock.MagicMock()
         dep_list_proc.communicate.return_value = (b"", b"")
         template_proc = mock.MagicMock()
+        template_proc.returncode = 0
         template_proc.communicate.return_value = (fake_output, b"")
         env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "http://192.0.2.1"}
         with mock.patch.dict(os.environ, env):
@@ -352,6 +355,41 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
                 Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
         call_args = mock_popen.call_args[0][0]
         self.assertEqual(call_args[-1], self._REMOTE_DEP_DIR)
+
+    def test_stderr_warnings_do_not_discard_output(self):
+        """helm warnings on stderr with a 0 exit code must NOT discard the rendered chart."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        # Mirrors the real litellm case: OCI pull messages + a coalesce.go warning on stderr,
+        # while helm still exits 0 and renders valid manifests on stdout.
+        warning_stderr = (
+            b"Pulled: ghcr.io/berriai/litellm-helm:0.1.832\n"
+            b"Digest: sha256:9dfea2195c0b2adde8c83eac7c5e9b16f80282cbba3d14d5e81746686e7d73af\n"
+            b"coalesce.go:319: warning: destination for litellm-helm.ingress.tls is a table. "
+            b"Ignoring non-table value ([])\n"
+        )
+        mock_proc = mock.MagicMock()
+        mock_proc.returncode = 0
+        mock_proc.communicate.return_value = (fake_output, warning_stderr)
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
+            with mock.patch("subprocess.Popen", return_value=mock_proc):
+                result, returned_item = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        self.assertEqual(result, fake_output)
+        self.assertEqual(returned_item, chart_item)
+
+    def test_nonzero_exit_code_discards_output(self):
+        """A real helm failure (non-zero exit code) must still discard the chart."""
+        chart_item = self._make_chart_item()
+        mock_proc = mock.MagicMock()
+        mock_proc.returncode = 1
+        mock_proc.communicate.return_value = (b"", b"Error: template: parse error")
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
+            with mock.patch("subprocess.Popen", return_value=mock_proc):
+                result, returned_item = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        self.assertIsNone(result)
+        self.assertIsNone(returned_item)
 
 
 if __name__ == "__main__":
