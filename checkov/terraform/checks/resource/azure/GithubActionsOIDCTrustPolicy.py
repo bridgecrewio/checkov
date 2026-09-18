@@ -6,6 +6,12 @@ from checkov.common.util.oidc_utils import gh_abusable_claims, gh_repo_regex
 
 
 class AzureGithubActionsOIDCTrustPolicy(BaseResourceCheck):
+    # Subjects of the form "repo:<org>/<repo>:pull_request" trust tokens minted by
+    # pull_request-triggered workflows, which run proposed changes rather than the
+    # protected default branch. Only the event segment (index 2) is matched, so an
+    # environment or ref that happens to be named "pull_request" is unaffected.
+    GH_PULL_REQUEST_EVENT = "pull_request"
+
     def __init__(self) -> None:
         name = "Ensure Azure GitHub Actions OIDC trust policy is configured securely"
         id = "CKV_AZURE_249"
@@ -39,6 +45,10 @@ class AzureGithubActionsOIDCTrustPolicy(BaseResourceCheck):
             if not gh_repo_regex.match(claim_parts[1]):
                 return False
 
+            # Reject pull_request-triggered subjects
+            if len(claim_parts) > 2 and claim_parts[2] == self.GH_PULL_REQUEST_EVENT:
+                return False
+
         return True
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
@@ -65,6 +75,14 @@ class AzureGithubActionsOIDCTrustPolicy(BaseResourceCheck):
 
             # Third check -> repo format
             if split_condition[0] == "repo" and not gh_repo_regex.match(split_condition[1]):
+                return CheckResult.FAILED
+
+            # Fourth check -> pull_request event
+            if (
+                split_condition[0] == "repo"
+                and len(split_condition) > 2
+                and split_condition[2] == self.GH_PULL_REQUEST_EVENT
+            ):
                 return CheckResult.FAILED
 
             return CheckResult.PASSED
