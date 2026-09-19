@@ -68,7 +68,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                         policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
-                    resource_types = Registry._get_resource_types(converted_check['metadata'])
+                    resource_types = Registry._get_resource_types(converted_check)
 
                     if policy.get('category') == LICENSES_CATEGORY:
                         continue
@@ -105,10 +105,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'name': policy['title'],
             'category': policy['category'],
             'frameworks': policy.get('frameworks', []),
-            'scope': {'provider': policy.get('provider', '').lower()}
         }
         check = {
             'metadata': metadata,
+            'scope': {'provider': policy.get('provider', '').lower()},
             'definition': json.loads(policy['code'])
         }
         return check

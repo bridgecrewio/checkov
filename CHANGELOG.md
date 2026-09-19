@@ -1,6 +1,37 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.19...HEAD)
+
+## [3.3.19](https://github.com/bridgecrewio/checkov/compare/3.3.17...3.3.19) - 2026-09-17
+
+### Feature
+
+- **terraform:** add CKV_AWS_394 for unconstrained aws_availability_zones data source - [#7658](https://github.com/bridgecrewio/checkov/pull/7658)
+
+## [3.3.17](https://github.com/bridgecrewio/checkov/compare/3.3.16...3.3.17) - 2026-09-10
+
+### Bug Fix
+
+- **general:** honour scope.provider for platform-downloaded custom po… - [#7677](https://github.com/bridgecrewio/checkov/pull/7677)
+
+## [3.3.16](https://github.com/bridgecrewio/checkov/compare/3.3.15...3.3.16) - 2026-08-30
+
+### Bug Fix
+
+- **terraform:** Added current Azure Terraform resources and taggable resources as of hashicorp/azurerm provider version 4.81 - [#7652](https://github.com/bridgecrewio/checkov/pull/7652)
+
+## [3.3.15](https://github.com/bridgecrewio/checkov/compare/3.3.13...3.3.15) - 2026-08-27
+
+### Bug Fix
+
+- **sca:** match CVE suppressions case-insensitively - [#7659](https://github.com/bridgecrewio/checkov/pull/7659)
+- **sca:** match CvesAccounts suppressions on unprefixed account ids - [#7660](https://github.com/bridgecrewio/checkov/pull/7660)
+
+## [3.3.13](https://github.com/bridgecrewio/checkov/compare/3.3.12...3.3.13) - 2026-08-20
+
+### Bug Fix
+
+- **kubernetes:** Fix K8S suppressions annotations - [#7651](https://github.com/bridgecrewio/checkov/pull/7651)
 
 ## [3.3.12](https://github.com/bridgecrewio/checkov/compare/3.3.9...3.3.12) - 2026-08-19
 
