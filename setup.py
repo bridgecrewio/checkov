@@ -66,6 +66,9 @@ setup(
     },
     install_requires=[
         "bc-jsonpath-ng==1.6.1",
+        "pycep-parser==0.7.0",
+        "tabulate>=0.9.0,<0.10.0",
+        "colorama>=0.4.3,<0.5.0",
         "pycep-parser==0.5.1",
         "tabulate<0.10.0,>=0.9.0",
         "colorama<0.5.0,>=0.4.3",
@@ -116,7 +119,7 @@ setup(
     license="Apache License 2.0",
     name="checkov",
     version=version,
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
