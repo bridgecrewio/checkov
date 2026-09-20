@@ -1,3 +1,4 @@
+import logging
 import unittest
 from pathlib import Path
 
@@ -38,6 +39,22 @@ class TestWAFACLCVE202144228(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_conditional_rules(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_WAFACLCVE202144228"
+
+        # when
+        # a `Fn::If` in `Rules` (UNKNOWN.yaml) can't be resolved statically and
+        # must yield UNKNOWN instead of crashing the check; a crash is also
+        # downgraded to UNKNOWN by the check registry, so it is only observable
+        # as an ERROR log
+        with self.assertNoLogs(level=logging.ERROR):
+            report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        reported_resources = {c.resource for c in report.passed_checks + report.failed_checks}
+        self.assertNotIn("AWS::WAFv2::WebACL.ConditionalRules", reported_resources)
 
 
 if __name__ == "__main__":
