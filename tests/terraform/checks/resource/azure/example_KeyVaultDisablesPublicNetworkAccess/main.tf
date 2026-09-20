@@ -139,6 +139,24 @@ resource "azurerm_key_vault" "pass5" {
   }
 }
 
+resource "azurerm_key_vault" "pass6" {
+  name                                   = "examplepass6"
+  location                               = azurerm_resource_group.example.location
+  resource_group_name                    = azurerm_resource_group.example.name
+  enabled_for_disk_encryption            = true
+  tenant_id                              = data.azurerm_client_config.current.tenant_id
+  soft_delete_retention_days             = 90
+  purge_protection_enabled               = enabled
+  public_network_access_enabled          = true
+  sku_name                               = "standard"
+  network_acls {
+    default_action = "Deny"
+    bypass         = "None"
+    ip_rules       = []
+  }
+}
+
+
 resource "azurerm_key_vault" "fail1" {
   name                                   = "examplefail1"
   location                               = azurerm_resource_group.example.location

@@ -38,6 +38,14 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
                         ip_rules = ip_rules[0] if ip_rules and isinstance(ip_rules, list) else ip_rules
                         if ip_rules:
                             return CheckResult.PASSED
+                        # An explicitly empty or rendered-empty ip_rules list (e.g. [[]] or [])
+                        # combined with an explicitly resolved default_action = "Deny" also blocks
+                        # public access.
+                        if isinstance(ip_rules, list) and not ip_rules:
+                            default_action = network_acl.get("default_action")
+                            default_action = default_action[0] if isinstance(default_action, list) else default_action
+                            if default_action == "Deny":
+                                return CheckResult.PASSED
                         virtual_network_subnet_ids = network_acl.get("virtual_network_subnet_ids")
                         # Get first element in virtual_network_subnet_ids (as parser wrap it with list).
                         virtual_network_subnet_ids = virtual_network_subnet_ids[0] \
