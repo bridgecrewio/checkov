@@ -22,12 +22,17 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
             "aws_s3_bucket_lifecycle_configuration.pass",
             "aws_s3_bucket_lifecycle_configuration.pass2",
             "aws_s3_bucket_lifecycle_configuration.pass3",
-            "aws_s3_bucket_lifecycle_configuration.resource_with_dynamic_rule_pass4"
+            "aws_s3_bucket_lifecycle_configuration.resource_with_dynamic_rule_pass4",
+            "aws_s3_bucket_lifecycle_configuration.pass_static_then_dynamic",
+            "aws_s3_bucket_lifecycle_configuration.pass_dynamic_then_static",
+            "aws_s3_bucket_lifecycle_configuration.pass_disabled_dynamic_rule",
+            "aws_s3_bucket_lifecycle_configuration.pass_multiple_dynamic_rules",
         }
         failing_resources = {
             "aws_s3_bucket_lifecycle_configuration.fail",
             "aws_s3_bucket_lifecycle_configuration.fail2",
             "aws_s3_bucket_lifecycle_configuration.fail3",
+            "aws_s3_bucket_lifecycle_configuration.fail_dynamic_only",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

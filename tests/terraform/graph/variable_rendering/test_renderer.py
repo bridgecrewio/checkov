@@ -280,6 +280,22 @@ class TestRenderer(TestCase):
             {'rule': {'apply_server_side_encryption_by_default': {'kms_master_key_id': 'testkey2',
                                                                   'sse_algorithm': 'aws:notkms'}}}]
 
+    def test_dynamic_blocks_with_static_block(self):
+        # a block written out statically and a 'dynamic' block of the same name can live in the
+        # same resource. rendering the dynamic one must not drop the static one
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_block_with_static_block")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+
+        resource_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))[0]
+
+        assert resource_vertex.attributes.get('rule') == [
+            {'abort_incomplete_multipart_upload': {'days_after_initiation': 7},
+             'id': 'abort-incomplete-uploads', 'status': 'Enabled'},
+            {'id': 'expire-noncurrent-versions', 'noncurrent_version_expiration': {'noncurrent_days': 1},
+             'status': 'Enabled'},
+        ]
+
     def test_extract_dynamic_value_in_map(self):
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1.value2'), 'value2')
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1["value2"]'), 'value2')
