@@ -262,3 +262,63 @@ data "aws_iam_policy_document" "pass-gh-org" {
     }
   }
 }
+
+# fail for unrestricted GitHub OIDC statement that comes AFTER a non-GitHub (service) statement
+data "aws_iam_policy_document" "fail-service-first" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      identifiers = ["ec2.amazonaws.com"]
+      type        = "Service"
+    }
+  }
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+  }
+}
+
+# pass for restricted GitHub OIDC statement that comes AFTER a non-GitHub (service) statement
+data "aws_iam_policy_document" "pass-service-first" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      identifiers = ["ec2.amazonaws.com"]
+      type        = "Service"
+    }
+  }
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:myOrg/myRepo:ref:refs/heads/main"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
