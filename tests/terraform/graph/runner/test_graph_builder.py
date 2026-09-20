@@ -48,6 +48,11 @@ class TestGraphBuilder(TestCase):
     def test_run_clean(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         runner = Runner(db_connector=self.db_connector())
+        # Isolate from cross-test pollution of the shared terraform graph_checks
+        # registry (same pattern used by tests in tests/terraform/runner/test_runner.py,
+        # e.g. lines 1220-1221) so the hard-coded pass/fail counts below stay stable.
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
         report = runner.run(root_folder=resources_path)
         self.assertEqual(6, len(report.failed_checks))
         self.assertEqual(5, len(report.passed_checks))

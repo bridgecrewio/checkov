@@ -4,6 +4,7 @@ import datetime
 import linecache
 import logging
 import os
+import sys
 import re
 import tempfile
 import threading
@@ -39,9 +40,9 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ParallelizationType
 from checkov.common.output.report import Report
-from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.parallelizer.parallel_runner import parallel_runner, ParallelRunner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
 from checkov.common.util.dockerfile import is_dockerfile
@@ -92,6 +93,42 @@ GENERIC_AWS_CHECK_ID = 'CKV_SECRET_2'
 SPECIFIC_AWS_CHECK_IDS = {'CKV_SECRET_380', 'CKV_SECRET_381'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
+
+# Optional process-based parallelism for the secrets scan (opt-in, default off).
+#
+# Default THREAD mode is GIL-bound for the mostly-Python per-line work, so it
+# uses roughly one core. CHECKOV_SECRETS_PARALLEL_MODE=spawn runs the scan on a
+# dedicated spawn pool (separate processes and GILs) for better multi-core use.
+# spawn is safe on all platforms (it is the default context on macOS/Windows).
+#
+# Spawned workers start with blank memory, so each rebuilds the detect-secrets
+# settings and disables the same filters as the parent via _init_secrets_worker;
+# otherwise a worker would run unconfigured and miss findings.
+SECRETS_PARALLEL_MODE = os.getenv("CHECKOV_SECRETS_PARALLEL_MODE", "thread").lower()
+
+# Single source of truth for the filters the non-git-history scan disables.
+_SECRETS_DISABLED_FILTERS = [
+    'detect_secrets.filters.heuristic.is_indirect_reference',
+    'detect_secrets.filters.heuristic.is_potential_uuid',
+]
+
+
+def _init_secrets_worker(config: Dict[str, Any], disabled_filters: List[str]) -> None:
+    """Pool initializer for SPAWN workers. Runs once per worker process.
+
+    Rebuilds detect-secrets settings from the parent-provided config and disables
+    the same filters the parent disabled, so a spawned worker produces
+    byte-identical findings to the thread/in-process path.
+    """
+    settings = get_settings()
+    settings.clear()
+    configure_settings_from_baseline(config)
+    if disabled_filters:
+        settings.disable_filters(*disabled_filters)
+    # Pre-warm LRU caches so the first scanned file does not pay a cold miss.
+    get_mapping_from_secret_type_to_class()
+    get_plugins()
+
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
@@ -350,7 +387,7 @@ class Runner(BaseRunner[None, None, None]):
 
             if not runner_filter.enable_git_history_secret_scan:
                 self.pbar.initiate(len(files_to_scan))
-                self._scan_files(files_to_scan, secrets, self.pbar)
+                self._scan_files(files_to_scan, secrets, self.pbar, plugins_used)
                 self.pbar.close()
 
         history_store = None
@@ -524,14 +561,42 @@ class Runner(BaseRunner[None, None, None]):
         return False
 
     @staticmethod
-    def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
+    def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar,
+                    plugins_used: Optional[List[Dict[str, Any]]] = None) -> None:
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
         items = [
             (file, base_path)
             for file in files_to_scan
         ]
-        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
+
+        is_frozen = getattr(sys, "frozen", False)
+        if SECRETS_PARALLEL_MODE == "spawn" and is_frozen:
+            logging.warning(
+                "SPAWN parallel mode for secrets scan is not supported in frozen mode; "
+                "falling back to default runner"
+            )
+
+        if SECRETS_PARALLEL_MODE == "spawn" and not is_frozen and plugins_used is not None:
+            # Dedicated spawn runner for the secrets scan only (plugins_used is
+            # required so workers can rebuild their detect-secrets config).
+            # ParallelRunner downgrades spawn->thread on macOS/Windows in
+            # __init__; re-assert the type to opt this scan into real
+            # multi-process parallelism on every platform.
+            spawn_runner = ParallelRunner(parallelization_type=ParallelizationType.SPAWN)
+            spawn_runner.type = ParallelizationType.SPAWN
+            worker_config: Dict[str, Any] = {'plugins_used': plugins_used}
+            logging.info(
+                f"Secrets scan using SPAWN parallelism ({spawn_runner.workers_number} workers)"
+            )
+            results = spawn_runner.run_function(
+                func=Runner._safe_scan,
+                items=items,
+                pool_initializer=_init_secrets_worker,
+                pool_initargs=(worker_config, _SECRETS_DISABLED_FILTERS),
+            )
+        else:
+            results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
@@ -842,7 +907,7 @@ class Runner(BaseRunner[None, None, None]):
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
 
-            self._scan_files(files_to_scan, secrets, self.pbar)
+            self._scan_files(files_to_scan, secrets, self.pbar, plugins_used)
 
         for file in files_to_scan:
             with open(file, "r+") as f:

@@ -495,8 +495,39 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
-        
-        
+
+    def test_convert_raw_check_places_scope_at_top_level(self):
+        policy = {
+            "id": "test_azure_taggable_1",
+            "title": "Ensure taggable Azure resources are tagged",
+            "category": "General",
+            "provider": "azure",
+            "frameworks": ["Terraform"],
+            "severity": "MEDIUM",
+            "code": json.dumps({
+                "cond_type": "attribute",
+                "resource_types": "taggable",
+                "attribute": "tags",
+                "operator": "exists",
+            }),
+        }
+
+        converted = CustomPoliciesIntegration._convert_raw_check(policy)
+
+        self.assertEqual(converted["scope"], {"provider": "azure"})
+        self.assertNotIn("scope", converted["metadata"])
+
+        parser = GraphCheckParser()
+        resource_types = Registry._get_resource_types(converted)
+        check = parser.parse_raw_check(converted, resources_types=resource_types)
+        self.assertTrue(check.resource_types)
+        self.assertTrue(
+            all(rt.startswith("azurerm_") for rt in check.resource_types),
+            f"Azure-scoped taggable policy leaked to non-azure resources: "
+            f"{[rt for rt in check.resource_types if not rt.startswith('azurerm_')][:5]}"
+        )
+
+
 def mock_custom_policies_response():
     return {
         "customPolicies": [

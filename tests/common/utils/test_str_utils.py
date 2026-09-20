@@ -1,7 +1,10 @@
+from pathlib import PurePosixPath
+
 import pytest
 
 from checkov.common.util.str_utils import removeprefix
 from checkov.common.util.str_utils import convert_to_seconds
+from checkov.common.util.str_utils import get_rootless_path
 
 
 @pytest.mark.parametrize(
@@ -47,3 +50,46 @@ def test_convert_to_seconds_fails(input_str: str) -> None:
     with pytest.raises(Exception) as a:
         convert_to_seconds(input_str)
         print(a)
+
+
+@pytest.mark.parametrize(
+    "input_path,expected",
+    [
+        ("/my-project.api\\client\\Dockerfile.base", "my-project.api\\client\\Dockerfile.base"),
+        ("C:\\work\\repo\\Dockerfile", "work\\repo\\Dockerfile"),
+        ("\\\\srv\\share\\repo\\Dockerfile", "repo\\Dockerfile"),
+        ("\\work\\repo\\Dockerfile", "work\\repo\\Dockerfile"),
+        ("my-project.api\\client\\Dockerfile.base", "my-project.api\\client\\Dockerfile.base"),
+        ("/my-project.api/client/Dockerfile.base", "my-project.api/client/Dockerfile.base"),
+        ("my-project.api/client/Dockerfile.base", "my-project.api/client/Dockerfile.base"),
+        ("/a\\b\\c\\d\\Dockerfile", "a\\b\\c\\d\\Dockerfile"),
+        ("Dockerfile", "Dockerfile"),
+    ],
+    ids=[
+        "win_slash_prefixed",
+        "win_drive_absolute",
+        "win_unc",
+        "win_root_relative",
+        "win_plain_relative",
+        "posix_slash_prefixed",
+        "posix_relative",
+        "nested_deep",
+        "single_file",
+    ],
+)
+def test_get_rootless_path(input_path: str, expected: str) -> None:
+    assert get_rootless_path(input_path) == expected
+
+
+def test_get_rootless_path_must_not_be_used_on_posix() -> None:
+    """Documents why callers guard on ``IS_WINDOWS``.
+
+    A leading '//' is a valid POSIX root, but Windows semantics read it as a UNC share
+    and drop two segments. Callers must keep the ``anchor`` expression on POSIX.
+    """
+    input_path = "//srv/share/repo/Dockerfile"
+
+    posix_result = input_path.replace(PurePosixPath(input_path).anchor, "", 1)
+
+    assert posix_result == "srv/share/repo/Dockerfile"
+    assert get_rootless_path(input_path) != posix_result
