@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import re
 from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.azure_pipelines.checks.registry import registry
@@ -11,6 +13,24 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from collections.abc import Iterable
+
+
+# File-name suffixes that the runner recognizes as Azure Pipelines configs out
+# of the box. Supplemental suffixes can be supplied via the
+# CHECKOV_AZURE_PIPELINES_FILE_NAMES environment variable as a comma- or
+# whitespace-separated list (e.g. "ci.yml,pr-pipeline.yaml" or
+# ".azuredevops/pr-pipeline.yaml").
+DEFAULT_AZURE_PIPELINES_FILE_NAMES: tuple[str, ...] = (
+    'azure-pipelines.yml',
+    'azure-pipelines.yaml',
+)
+
+
+def _extra_pipelines_file_names() -> tuple[str, ...]:
+    raw = os.environ.get('CHECKOV_AZURE_PIPELINES_FILE_NAMES')
+    if not raw:
+        return ()
+    return tuple(part.strip() for part in re.split(r'[,\s]+', raw) if part.strip())
 
 
 class Runner(YamlRunner):
@@ -32,7 +52,8 @@ class Runner(YamlRunner):
 
     @staticmethod
     def is_workflow_file(file_path: str) -> bool:
-        return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
+        suffixes = DEFAULT_AZURE_PIPELINES_FILE_NAMES + _extra_pipelines_file_names()
+        return file_path.endswith(suffixes)
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
