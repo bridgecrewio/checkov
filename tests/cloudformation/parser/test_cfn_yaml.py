@@ -153,7 +153,7 @@ class TestCfnYaml(unittest.TestCase):
         report = Runner().run(None, files=[f'{current_dir}/{f}' for f in test_files], runner_filter=RunnerFilter())
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 6)
+        self.assertEqual(summary['passed'], 7)
         self.assertEqual(summary['failed'], 0)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 2)
