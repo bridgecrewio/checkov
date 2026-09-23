@@ -489,6 +489,11 @@ class TestTerraformEvaluation(TestCase):
         expected = {'key3': 'true', 'key4': 'true'}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_handle_for_loop_in_dict_with_simple_iterable(self):
+        input_str = "{for v in ['a', 'b'] : v => v}"
+        expected = {'a': 'a', 'b': 'b'}
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
     def test_handle_for_loop_in_list(self):
         input_str = "[for val in ['k', 'v'] : val]"
         expected = ['k', 'v']
