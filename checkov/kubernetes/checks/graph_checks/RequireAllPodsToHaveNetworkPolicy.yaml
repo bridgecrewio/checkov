@@ -16,3 +16,5 @@ definition:
         - Deployment
       connected_resource_types:
         - NetworkPolicy
+        - CiliumNetworkPolicy
+        - CiliumClusterwideNetworkPolicy
