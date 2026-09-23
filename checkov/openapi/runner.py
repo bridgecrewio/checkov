@@ -57,7 +57,7 @@ class Runner(YamlRunner, JsonRunner):
 
             if isinstance(parsed_file, tuple) and Runner.is_valid(parsed_file[0]):
                 return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
-        except ValueError:
+        except (ValueError, OSError):
             logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
         return None
 
