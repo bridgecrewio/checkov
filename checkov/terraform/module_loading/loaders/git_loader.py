@@ -97,12 +97,12 @@ class GenericGitLoader(ModuleLoader):
     def _parse_module_source(self, module_params: ModuleParams) -> ModuleSource:
         module_source_components = module_params.module_source.split("//")
 
-        if "?ref=" in module_source_components[-1]:
-            module_version_components = module_source_components[-1].rsplit("?ref=", maxsplit=1)
-            module_source_components[-1] = module_version_components[0]
-            version = module_version_components[1]
-        else:
-            version = "HEAD"
+        version = "HEAD"
+        if "?" in module_source_components[-1]:
+            module_source_components[-1], query = module_source_components[-1].split("?", 1)
+            for param in query.split("&"):
+                if param.startswith("ref="):
+                    version = param.partition("=")[-1]
 
         if len(module_source_components) < 3:
             if len(module_source_components) == 2 and "git::git" in module_source_components[0]:
