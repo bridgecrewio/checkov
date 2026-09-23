@@ -158,6 +158,26 @@ class TestCfnYaml(unittest.TestCase):
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 2)
 
+    def test_set_in_dict_skips_when_path_replaced_by_scalar(self):
+        """_set_in_dict should not crash when a prior ref substitution replaced a dict with a scalar."""
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file = f'{current_dir}/cfn_nested_findinmap_ref.yaml'
+        definitions, definitions_raw = parse(file)
+        cf_context_parser = ContextParser(file, definitions, definitions_raw)
+
+        # Simulate the state after graph conversion injects a phantom Ref as a sibling
+        # to Fn::FindInMap, and a prior substitution replaces the parent dict with a scalar.
+        # evaluate_default_refs finds all Ref paths upfront, then iterates. If an earlier
+        # substitution replaces a dict with a scalar (e.g., Number default), later paths
+        # through that dict become invalid.
+        cf_context_parser.cf_template["Resources"]["MyFunction"]["Properties"]["MemorySize"] = 1024
+        # This path would have been valid before the substitution above
+        cf_context_parser._set_in_dict(
+            cf_context_parser.cf_template,
+            ["Resources", "MyFunction", "Properties", "MemorySize", "Fn::FindInMap", 1],
+            "100"
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
