@@ -36,6 +36,11 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
                 if isinstance(references_definition, dict):
                     for potential_vertex_key, vertex_key in references_definition.items():
                         match = KeywordEdgeBuilder._find_match_in_attributes(vertex, potential_vertex, potential_vertex_key, vertex_key, match)
+                    if match and vertex.attributes.get("kind") == "RoleBinding" and potential_vertex.attributes.get("kind") == "Role":
+                        # Role references are local to the binding's namespace; ClusterRole references are not.
+                        match = vertex.attributes.get("metadata.namespace", "default") == potential_vertex.attributes.get(
+                            "metadata.namespace", "default"
+                        )
                     if match:
                         connections.append(potential_vertex_index)
 
