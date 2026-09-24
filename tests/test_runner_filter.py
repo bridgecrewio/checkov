@@ -1,4 +1,5 @@
 from typing import Optional, List, Set
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -65,3 +66,38 @@ def test_runner_filter_constructor_framework(
 
     # then
     assert set(runner_filter.framework) == expected_frameworks
+
+@patch("checkov.common.checks_infra.registry.get_all_graph_checks_registries")
+@patch('checkov.common.checks.base_check_registry.BaseCheckRegistry.get_all_registered_checks')
+def test_validate_checks(test_registry, graph_test_registry):
+    runner_filter = RunnerFilter(
+        checks= ['CKV_T_1', 'CKV_FAKE', 'CKV2_T_2', 'CKV_T*', 'CKV_BC_T_1', 'CKV2_BC_T_2', 'CKV2_BC_FAKE', 'CKV2_T*']
+    )
+    # Basechecks
+    check1 = MagicMock()
+    check1.id = 'CKV_T_1'
+    check1.bc_id = 'CKV_BC_T_1'
+
+    check2 = MagicMock()
+    check2.id = 'CKV_T_2'
+    check2.bc_id = 'CKV_BC_T_2'
+
+    # graph checks 
+    check3 = MagicMock()
+    check3.id = 'CKV2_T_1'
+    check3.bc_id = 'CKV2_BC_T_1'
+
+    check4 = MagicMock()
+    check4.id = 'CKV2_T_2'
+    check4.bc_id = 'CKV2_BC_T_2'
+
+    test_registry.return_value = [check1, check2]
+    
+    graph_test_registry.checks = [check3, check4]
+    graph_test_registry.return_value = [graph_test_registry]
+    
+    invalid = runner_filter.validate_checks()
+    assert invalid == ['CKV_FAKE', 'CKV2_BC_FAKE']
+
+    test_registry.assert_called_once()
+    graph_test_registry.assert_called_once() 
