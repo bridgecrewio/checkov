@@ -60,6 +60,7 @@ If you have modules stored in a private repository or a private Terraform regist
 | GITHUB_PAT             | Github personal access token with read access to the private repository                          |
 | BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository                       |
 | TF_HOST_NAME           | (defaults to app.terraform.io) Terraform registry host name. Example: gitlab.com / example.com   |
+| TF_REGISTRY_BASE_URL   | (defaults to https://registry.terraform.io/v1/modules/) Base URL of a registry/mirror that implements the module registry protocol. Redirects public-style sources (namespace/name/provider) to the mirror without embedding the host in each source. |
 | TFC_TOKEN\*            | (deprecated, use TF_REGISTRY_TOKEN) Terraform Cloud token which can access the private registry  |
 | TF_REGISTRY_TOKEN      | Private registry access token (supports Terraform Cloud / Enterprise and third-party registries) |
 | BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD)                              |
@@ -95,6 +96,16 @@ checkov -d . --download-external-modules true
 
 ```shell
 export TF_HOST_NAME=gitlab.com
+checkov -d . --download-external-modules true
+```
+
+- Private registry / mirror scan (module registry protocol) using a base URL override
+
+```shell
+# Resolve public-style sources (e.g. Azure/naming/azurerm) against a private mirror
+# without embedding the host in each module source or relying on service discovery.
+export TF_REGISTRY_BASE_URL=https://artifactory.example.com/artifactory/api/terraform/v1/modules/
+export TF_REGISTRY_TOKEN=xxxxxx
 checkov -d . --download-external-modules true
 ```
 
