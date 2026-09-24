@@ -112,3 +112,18 @@ resource "aws_eip" "ok_eip_data" {
   instance = data.aws_instance.id
   vpc      = true
 }
+
+# EIP attached to a Network Load Balancer via subnet_mapping — valid attachment
+resource "aws_eip" "ok_eip_nlb" {
+  domain = "vpc"
+}
+
+resource "aws_lb" "nlb" {
+  name               = "example-nlb"
+  load_balancer_type = "network"
+
+  subnet_mapping {
+    subnet_id     = aws_subnet.public.id
+    allocation_id = aws_eip.ok_eip_nlb.id
+  }
+}
