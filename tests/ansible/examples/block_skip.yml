@@ -1,0 +1,12 @@
+---
+
+- name: Verify tests
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Block with inline skip comment
+      #checkov:skip=CKV2_ANSIBLE_3:no rescue needed, natural failure is more informative
+      block:
+        - name: Run a command
+          ansible.builtin.command: echo hello
+          changed_when: false
