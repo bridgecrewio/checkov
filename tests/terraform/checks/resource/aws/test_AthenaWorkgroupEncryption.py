@@ -18,16 +18,19 @@ class TestAthenaWorkgroupEncryption(unittest.TestCase):
 
         passing_resources = {
             "aws_athena_workgroup.pass",
+            "aws_athena_workgroup.pass_managed_results",
+            "aws_athena_workgroup.pass_managed_results_kms",
         }
         failing_resources = {
             "aws_athena_workgroup.fail",
+            "aws_athena_workgroup.fail_managed_results_disabled",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
