@@ -1,0 +1,16 @@
+apiVersion: example.com/v1
+kind: CanaryRelease
+metadata:
+  name: release-admin
+spec:
+  selector:
+    matchLabels:
+      app: admin
+  template:
+    metadata:
+      labels:
+        app: admin
+    spec:
+      containers:
+        - name: app
+          image: example.com/admin:1.0.0
