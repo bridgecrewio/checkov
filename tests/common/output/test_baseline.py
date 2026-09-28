@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import json 
 
 from checkov.common.output.baseline import Baseline
 from checkov.runner_filter import RunnerFilter
@@ -45,3 +46,31 @@ def test_to_dict():
             },
         ]
     }
+
+def test_baseline_same_resource_in_different_directories():
+    test_folder = Path(__file__).parent / "fixtures" / "baseline_same_resources"
+    check = ["CKV_AWS_356"] 
+    report = Runner().run(root_folder=str(test_folder), runner_filter=RunnerFilter(checks=check))
+    
+    baseline = Baseline()
+    baseline.add_findings_from_report(report)
+
+    baseline_dict = baseline.to_dict()
+    baseline_dict["failed_checks"] = [item for item in baseline_dict["failed_checks"] if "prod" not in item["file"]]
+
+    baseline_file_path = test_folder / ".checkov.baseline"
+    try:
+        with open(baseline_file_path, "w") as f :
+            json.dump(baseline_dict, f, indent=4)
+        baseline.from_json(str(baseline_file_path))
+
+        modified_report = Runner().run(root_folder=str(test_folder), runner_filter=RunnerFilter(checks=check))
+        baseline.compare_and_reduce_reports([modified_report])
+        failed_files = [item.file_path for item in modified_report.failed_checks]
+
+        assert any("prod" in f for f in failed_files)
+        assert not any("dev" in f for f in failed_files)
+
+    finally:
+        if baseline_file_path.exists():
+            baseline_file_path.unlink()

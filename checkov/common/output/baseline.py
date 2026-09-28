@@ -85,10 +85,12 @@ class Baseline:
     def _is_check_in_baseline(self, check: Record) -> bool:
         failed_check_id = check.check_id
         failed_check_resource = check.resource
+        failed_check_path = check.file_path
         for baseline_failed_check in self.failed_checks:
-            for finding in baseline_failed_check["findings"]:
-                if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:
-                    return True
+            if baseline_failed_check["file"] == failed_check_path :
+                for finding in baseline_failed_check["findings"]:
+                    if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:
+                        return True
         return False
 
     def from_json(self, file_path: str) -> None:
