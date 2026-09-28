@@ -112,7 +112,11 @@ def handle_block_type(block_type: str, blocks: dict[str, Any]) -> list[dict[str,
             # a local block is stored as single dict
             return [hclify(obj=blocks)]
         else:
-            result.append({block_name: hclify(obj=config)})
+            if _is_simple_type(config) or _is_list_of_simple_types(config):
+                # simple top-level attributes like terraform.required_version = ">= 1.5.0"
+                result.append({block_name: _clean_simple_type_list([config])})
+            else:
+                result.append({block_name: hclify(obj=config)})
 
     return result
 
