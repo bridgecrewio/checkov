@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.19...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.20...HEAD)
+
+## [3.3.20](https://github.com/bridgecrewio/checkov/compare/3.3.19...3.3.20) - 2026-09-27
+
+### Bug Fix
+
+- **terraform_plan:** skip resources being removed from state ('forget' action) - [#7676](https://github.com/bridgecrewio/checkov/pull/7676)
 
 ## [3.3.19](https://github.com/bridgecrewio/checkov/compare/3.3.17...3.3.19) - 2026-09-17
 
