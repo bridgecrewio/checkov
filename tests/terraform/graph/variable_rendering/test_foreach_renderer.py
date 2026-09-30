@@ -439,6 +439,21 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     assert len(tf_definitions.keys()) == 17
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
+def test_foreach_module_with_for_expression(checkov_source_path):
+    dir_name = 'foreach_module_for_expression'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    module_vertices = [b for b in graph.vertices if b.block_type == 'module']
+    assert len(module_vertices) == 2
+
+    module_names = sorted([v.name for v in module_vertices])
+    assert module_names == ['child["a"]', 'child["b"]']
+
+    resource_vertices = [b for b in graph.vertices if b.block_type == 'resource']
+    assert len(resource_vertices) == 2
+
+
 @pytest.mark.parametrize(
     "statement,expected",
     [
