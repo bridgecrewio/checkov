@@ -397,6 +397,27 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertCountEqual(passed_check_ids, expected_passed_check_ids)
 
+    def test_runner_skip_forget_action_resources(self):
+        # A resource being removed from state (no destroy) via a 'removed' block has a 'forget' change action and will
+        # appear in planned_values without values due to a Terraform bug (issue: hashicorp/terraform#38641), causing false positives.
+        # This test verifies 'forgotten' resources are getting skipped to account for the bug.
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        plan_path = current_dir + "/resources/plan_forget_action/tfplan.json"
+
+        report = Runner().run(
+            root_folder=None,
+            files=[plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        scanned_resources = {
+            record.resource
+            for record in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)
+        }
+
+        self.assertNotIn("aws_s3_bucket.forgotten", scanned_resources)
+
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
         # Often 'data' does not even appear in the *_modules[x].resources field within planned_values and is not scanned as expected
