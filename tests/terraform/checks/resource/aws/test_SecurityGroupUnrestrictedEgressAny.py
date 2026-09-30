@@ -20,7 +20,9 @@ class TestSecurityGroupUnrestrictedEgressAny(unittest.TestCase):
         passing_resources = {
             "aws_security_group.pass",
             "aws_security_group_rule.pass",
-            "aws_vpc_security_group_egress_rule.pass"
+            "aws_vpc_security_group_egress_rule.pass",
+            "aws_vpc_security_group_egress_rule.pass_ip_protocol_all_restricted_cidr",
+            "aws_vpc_security_group_egress_rule.pass_ip_protocol_all_referenced_sg",
         }
 
         failing_resources = {
@@ -28,6 +30,8 @@ class TestSecurityGroupUnrestrictedEgressAny(unittest.TestCase):
             "aws_security_group.fail",
             "aws_security_group_rule.fail",
             "aws_vpc_security_group_egress_rule.fail",
+            "aws_vpc_security_group_egress_rule.fail_ip_protocol_all_ipv4",
+            "aws_vpc_security_group_egress_rule.fail_ip_protocol_all_ipv6",
             "aws_security_group_rule.fail2"
         }
 
