@@ -1,0 +1,16 @@
+{
+  "provider": {
+    "artifactory": {
+      "url": "https://example.com",
+      "access_token": "token123"
+    }
+  },
+  "resource": {
+    "aws_instance": {
+      "example": {
+        "ami": "abc-123",
+        "instance_type": "t2.micro"
+      }
+    }
+  }
+}

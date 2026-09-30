@@ -1,0 +1,14 @@
+{
+  "provider": [
+    {"aws": {"region": "us-east-1"}},
+    {"aws": {"alias": "west", "region": "us-west-2"}}
+  ],
+  "resource": {
+    "aws_instance": {
+      "example": {
+        "ami": "abc-123",
+        "instance_type": "t2.micro"
+      }
+    }
+  }
+}
