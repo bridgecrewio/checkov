@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from dataclasses import dataclass
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -50,9 +52,15 @@ class GenericGitLoader(ModuleLoader):
         module_source_prefix = module_params.module_source_prefix if module_params.module_source_prefix else self.module_source_prefix
         if module_params.module_source.startswith(module_source_prefix):
             source = module_params.module_source.split(DEFAULT_MODULE_SOURCE_PREFIX)[-1]
-            if module_params.token and module_params.username:
+            if module_params.token and module_params.username and module_params.vcs_base_url:
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
             else:
+                if module_params.token and module_params.username and not module_params.vcs_base_url:
+                    logger.debug(
+                        "VCS credentials available but VCS_BASE_URL is not set; "
+                        "credentials will not be injected into the module source URL. "
+                        "Set VCS_BASE_URL to scope credential injection to a specific server."
+                    )
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"
             return True
         # https://www.terraform.io/docs/modules/sources.html#generic-git-repository
