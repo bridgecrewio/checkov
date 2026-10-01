@@ -54,9 +54,11 @@ def extract_module_dependency_path(module_dependency: str | List[str]) -> List[s
         return ["", ""]
     if isinstance(module_dependency, list):
         module_dependency = module_dependency[0]
+    start_index = len(TERRAFORM_NESTED_MODULE_PATH_PREFIX)
+    separator_index = module_dependency.index(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR)
     return [
-        module_dependency[3:module_dependency.index(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}') + len('.tf')],
-        module_dependency[module_dependency.index(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}') + len(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}'):-TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
+        module_dependency[start_index:separator_index],
+        module_dependency[separator_index + len(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR):-TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     ]
 
 

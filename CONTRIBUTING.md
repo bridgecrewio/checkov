@@ -67,12 +67,20 @@ If you are using conda, create a new environment with Python 3.10.14 version:
 conda create -n python310 python=3.10.17
 conda activate python310
 ```
-Then, we need pipenv installation and run the tests and coverage modules 
+Then, we need pipenv installation and run the tests and coverage modules
 ```sh
 pip install pipenv
 pipenv install --dev
 pipenv run python -m coverage run -m pytest tests
 ```
+
+To validate that Terraform and OpenTofu files are both parsed consistently, you can run the focused regression test that compares `.tf` and `.tofu` sources:
+
+```sh
+pipenv run pytest tests/terraform/parser/test_parse_file_vs_dir.py
+```
+
+It exercises `tests/terraform/parser/resources/parse_file_vs_dir/main.tf` and `main.tofu` with the same parser and will fail if either format diverges.
 
 ### Build package locally
 Change the version number on the file with your version : `<checkov>/checkov/version.py`
