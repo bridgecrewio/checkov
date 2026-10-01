@@ -227,9 +227,21 @@ class RegistryLoader(ModuleLoader):
             self.logger.debug(f"Service discovery response: {response.json()}")
             module_params.tf_modules_endpoint = self._normalize_module_download_url(module_params, response.json().get('modules.v1'))
         else:
-            # use terraform cloud host name and url for the public registry
-            module_params.tf_host_name = TFC_HOST_NAME
-            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules/"
+            # Public registry (registry.terraform.io) is used by default. A private registry or
+            # mirror that implements the module registry protocol can be targeted by setting the
+            # TF_REGISTRY_BASE_URL env var. This lets checkov resolve public-style module sources
+            # (namespace/name/provider) against the mirror without embedding the host name in each
+            # module source, and without relying on remote service discovery.
+            registry_base_url = os.getenv("TF_REGISTRY_BASE_URL")
+            if registry_base_url:
+                if not registry_base_url.endswith("/"):
+                    registry_base_url = f"{registry_base_url}/"
+                module_params.tf_modules_endpoint = registry_base_url
+                module_params.tf_host_name = urlparse(registry_base_url).netloc or module_params.tf_host_name
+            else:
+                # use terraform cloud host name and url for the public registry
+                module_params.tf_host_name = TFC_HOST_NAME
+                module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules/"
 
         # assume module_params.tf_modules_endpoint ends with a slash as per https://developer.hashicorp.com/terraform/internals/module-registry-protocol#service-discovery
         module_params.tf_modules_versions_endpoint = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, "versions")))
