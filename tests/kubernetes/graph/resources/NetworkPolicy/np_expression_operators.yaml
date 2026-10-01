@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo
+  namespace: default
+  labels:
+    app: demo
+    tier: worker
+spec:
+  containers:
+    - name: demo
+      image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tier-exists
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: tier
+        operator: Exists
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: missing-does-not-exist
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: decommissioned
+        operator: DoesNotExist
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tier-not-in
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: tier
+        operator: NotIn
+        values:
+          - api
+          - db
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tier-in-api
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: tier
+        operator: In
+        values:
+          - api
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: missing-exists
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: decommissioned
+        operator: Exists
