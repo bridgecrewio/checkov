@@ -16,7 +16,11 @@ from checkov.terraform.module_loading.module_params import ModuleParams
     ("https://github.com:test-only-outer-module/out-module",
      "github.com:test-only-outer-module/out-module", ""),
     ("https://github.com:test-with-inner-module-no-git-prefix/out-module//in-module",
-     "github.com:test-with-inner-module-no-git-prefix/out-module", "in-module")
+     "github.com:test-with-inner-module-no-git-prefix/out-module", "in-module"),
+    ("git::https://github.com:test-inner-module/out-module//inner-module?depth=1&ref=main",
+     "github.com:test-inner-module/out-module", "inner-module"),
+    ("git::https://github.com:test-inner-module/out-module//inner-module?ref=main&depth=100",
+     "github.com:test-inner-module/out-module", "inner-module"),
 ]
                          )
 def test__parse_module_source(source: str, expected_root_module: str, expected_inner_module: str) -> None:
