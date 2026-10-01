@@ -80,4 +80,5 @@ SUPPORTED_K8S_IMAGE_RESOURCE_TYPES: "dict[str, _ExtractImagesCallableAlias]" = {
     "ReplicaSet": extract_images_from_template,
     "ReplicationController": extract_images_from_template,
     "StatefulSet": extract_images_from_template,
+    "Rollout": extract_images_from_template,
 }

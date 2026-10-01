@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: insecure
+  namespace: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: insecure
+  template:
+    metadata:
+      labels:
+        app: insecure
+    spec:
+      containers:
+        - name: app
+          image: example.com/app:1.0.0
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
