@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Iterable, List
 
 from checkov.common.bridgecrew.bc_source import IDEsSourceTypes
 from checkov.common.sca.commons import should_run_scan
@@ -15,7 +15,7 @@ from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES_EXTENSIONS, SCA
 from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, ignored_directories
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.scanner import Scanner
 
@@ -69,14 +69,11 @@ class Runner(BaseRunner[None, None, None]):
             bc_integration.setup_http_manager()
             bc_integration.set_s3_client()
 
-        excluded_paths = {*ignored_directories}
-        if runner_filter.excluded_paths:
-            excluded_paths.update(runner_filter.excluded_paths)
-
+        # ignored directories (ex. 'node_modules') and hidden directories are handled by 'filter_ignored_paths'
         uploaded_files: List[FileToPersist] | None = self.upload_package_files(
             root_path=self._code_repo_path,
             files=files,
-            excluded_paths=excluded_paths,
+            excluded_paths=set(runner_filter.excluded_paths or []),
             excluded_file_names=excluded_file_names,
         )
         if uploaded_files is None:
@@ -147,6 +144,20 @@ class Runner(BaseRunner[None, None, None]):
 
         return report
 
+    def included_paths(self) -> Iterable[str]:
+        return ['.github', '.circleci']
+
+    def _walk_files(self, root_path: Path, excluded_paths: Iterable[str]) -> Iterable[Path]:
+        """Walks the given root path and yields the not excluded files, same as other runners via 'filter_ignored_paths'"""
+        excluded_paths_list = list(excluded_paths)
+        included_paths = self.included_paths()
+        for root, d_names, f_names in os.walk(root_path):
+            filter_ignored_paths(root, d_names, excluded_paths_list, included_paths)
+            filter_ignored_paths(root, f_names, excluded_paths_list, included_paths)
+            for file_name in f_names:
+                # 'Path' normalizes the path and drops a leading './' to keep it aligned with 'Path.glob()' output
+                yield Path(root) / file_name
+
     def _persist_file_if_required(self, package_files_to_persist: List[FileToPersist],
                                   file_path: Path, root_path: Path | None) -> None:
         if file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS:
@@ -167,8 +178,8 @@ class Runner(BaseRunner[None, None, None]):
         package_files_to_persist: List[FileToPersist] = []
         try:
             if root_path:
-                for file_path in root_path.glob("**/*"):
-                    if any(p in file_path.parts for p in excluded_paths) or file_path.name in excluded_file_names:
+                for file_path in self._walk_files(root_path, excluded_paths):
+                    if file_path.name in excluded_file_names:
                         logging.debug(f"[sca_package:runner](upload_package_files) - File {file_path} was excluded")
                         continue
                     self._persist_file_if_required(package_files_to_persist, file_path, root_path)
@@ -205,8 +216,8 @@ class Runner(BaseRunner[None, None, None]):
         if root_path:
             input_paths = {
                 file_path
-                for file_path in root_path.glob("**/*")
-                if file_path.name in SUPPORTED_PACKAGE_FILES.union(extra_supported_package_files) and not any(p in file_path.parts for p in excluded_paths)
+                for file_path in self._walk_files(root_path, excluded_paths)
+                if file_path.name in SUPPORTED_PACKAGE_FILES.union(extra_supported_package_files)
             }
 
             package_json_lock_parent_paths = set()
