@@ -300,3 +300,55 @@ resource "aws_iam_role" "pass-fm-customer" {
     ]
   })
 }
+
+# fail-service-first -- a benign EC2 service-trust statement comes FIRST, then a
+# GH OIDC federated statement with NO condition. The check must keep walking
+# past the first statement and FAIL on the second.
+resource "aws_iam_role" "fail-service-first" {
+  name = "fail-service-first"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+      }
+    ]
+  })
+}
+
+# pass-service-first -- same shape as fail-service-first, but the GH OIDC
+# statement is fully pinned to repo:org/repo:ref:refs/heads/branch -> PASS
+resource "aws_iam_role" "pass-service-first" {
+  name = "pass-service-first"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action    = "sts:AssumeRole"
+      },
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:sub" = "repo:myOrg/myRepo:ref:refs/heads/main"
+          }
+        }
+      }
+    ]
+  })
+}
