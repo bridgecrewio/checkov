@@ -12,3 +12,14 @@ Resources:
             Resource: '*'
       Roles:
         - example_role
+  ECRPublicGetAuthTokenPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: ECRPublicGetAuthTokenPolicy
+      PolicyDocument:
+        Statement:
+          - Action: 'ecr-public:GetAuthorizationToken'
+            Effect: Allow
+            Resource: '*'
+      Roles:
+        - example_role

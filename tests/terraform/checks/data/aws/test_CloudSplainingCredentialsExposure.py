@@ -20,6 +20,7 @@ class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
 
         passing_resources = {
             "aws_iam_policy_document.allowed_action",
+            "aws_iam_policy_document.allowed_action_ecr_public",
             "aws_iam_policy_document.deny",
             "aws_iam_policy_document.pass",
         }
@@ -30,7 +31,7 @@ class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["passed"], 4)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
