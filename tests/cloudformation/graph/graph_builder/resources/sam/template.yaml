@@ -17,7 +17,7 @@ Globals:
   Function:
     Timeout: 5
     CodeUri: src/
-    Runtime: python3.9
+    Runtime: python3.13
     Tracing: Active
     Environment:
       Variables:
@@ -43,7 +43,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       Events:
         SQSEvent:
           Type: SQS
