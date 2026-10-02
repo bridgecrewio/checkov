@@ -1,4 +1,6 @@
-from checkov.common.models.enums import CheckCategories
+from typing import Any
+
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
@@ -10,8 +12,16 @@ class SQLServerEmailAlertsToAdminsEnabled(BaseResourceValueCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
-        return 'email_account_admins'
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        # Prefer the renamed attribute while retaining support for older providers.
+        if 'email_account_admins_enabled' in conf:
+            self.evaluated_keys = ['email_account_admins_enabled']
+        else:
+            self.evaluated_keys = ['email_account_admins']
+        return super().scan_resource_conf(conf)
+
+    def get_inspected_key(self) -> str:
+        return self.evaluated_keys[0] if self.evaluated_keys else 'email_account_admins'
 
 
 check = SQLServerEmailAlertsToAdminsEnabled()
