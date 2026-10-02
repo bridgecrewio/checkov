@@ -56,13 +56,13 @@ class CSVSBOM:
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
-            for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
+            for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks, report.unknown_checks):
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
             for resource in sorted(report.extra_resources):
                 self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
         else:
-            for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
+            for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks, report.unknown_checks):
                 self.add_iac_resources(resource=record, git_org=git_org, git_repository=git_repository)
             for resource in sorted(report.extra_resources):
                 self.add_iac_resources(resource=resource, git_org=git_org, git_repository=git_repository)
