@@ -25,7 +25,13 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult, _EntityContext
-from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.consts import (
+    END_LINE,
+    KUSTOMIZE_COMMAND_AUTO,
+    KUSTOMIZE_COMMAND_KUBECTL,
+    KUSTOMIZE_COMMAND_STANDALONE,
+    START_LINE,
+)
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
@@ -51,6 +57,10 @@ _REMOTE_REF = re.compile(r'^(https?://|git::|ssh://|github\.com/)', re.IGNORECAS
 
 # Keys in kustomization.yaml that may contain remote references
 _REMOTE_REF_KEYS = ('resources', 'bases', 'components', 'crds')
+
+
+class KustomizeCommandError(RuntimeError):
+    pass
 
 
 def _get_kustomization_remote_refs(kustomization_dir: str) -> list[str]:
@@ -431,6 +441,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         self.kustomizeProcessedFolderAndMeta: "dict[str, dict[str, str]]" = {}
         self.kustomizeFileMappings: "dict[str, str]" = {}
         self.templateRendererCommand: str | None = None
+        self.kustomize_command_mode = KUSTOMIZE_COMMAND_AUTO
         self.target_folder_path = ''
 
         self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
@@ -514,15 +525,31 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
         logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
 
-        if shutil.which(self.kubectl_command) is not None:
+        if self.kustomize_command_mode == KUSTOMIZE_COMMAND_KUBECTL:
+            if shutil.which(self.kubectl_command) is None:
+                raise KustomizeCommandError(
+                    "Explicit Kustomize implementation 'kubectl' was selected, but kubectl was not found. "
+                    "Install kubectl 1.14 or newer, or select --kustomize-command kustomize."
+                )
             kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
             if kubectl_version and kubectl_version >= 1.14:
-                logging.info(f"Found working version of {self.check_type} dependency {self.kubectl_command}: {kubectl_version}")
+                logging.info(
+                    f"Found working version of {self.check_type} dependency "
+                    f"{self.kubectl_command}: {kubectl_version}"
+                )
                 self.templateRendererCommand = self.kubectl_command
                 return None
-            else:
-                return self.check_type
-        elif shutil.which(self.kustomize_command) is not None:
+            raise KustomizeCommandError(
+                "Explicit Kustomize implementation 'kubectl' was selected, but its version is unusable. "
+                "Install kubectl 1.14 or newer, or select --kustomize-command kustomize."
+            )
+
+        if self.kustomize_command_mode == KUSTOMIZE_COMMAND_STANDALONE:
+            if shutil.which(self.kustomize_command) is None:
+                raise KustomizeCommandError(
+                    "Explicit Kustomize implementation 'kustomize' was selected, but kustomize was not found. "
+                    "Install standalone kustomize, or select --kustomize-command kubectl."
+                )
             kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
             if kustomize_version:
                 logging.info(
@@ -530,11 +557,31 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 )
                 self.templateRendererCommand = self.kustomize_command
                 return None
-            else:
-                return self.check_type
-        else:
-            logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
+            raise KustomizeCommandError(
+                "Explicit Kustomize implementation 'kustomize' was selected, but its version is unusable. "
+                "Install standalone kustomize, or select --kustomize-command kubectl."
+            )
+
+        if shutil.which(self.kubectl_command) is not None:
+            kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
+            if kubectl_version and kubectl_version >= 1.14:
+                logging.info(f"Found working version of {self.check_type} dependency {self.kubectl_command}: {kubectl_version}")
+                self.templateRendererCommand = self.kubectl_command
+                return None
             return self.check_type
+
+        if shutil.which(self.kustomize_command) is not None:
+            kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
+            if kustomize_version:
+                logging.info(
+                    f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
+                )
+                self.templateRendererCommand = self.kustomize_command
+                return None
+            return self.check_type
+
+        logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
+        return self.check_type
 
     def _handle_overlay_case(self, file_path: str,
                              kustomizeProcessedFolderAndMeta: dict[str, dict[str, Any]] | None = None) -> None:
