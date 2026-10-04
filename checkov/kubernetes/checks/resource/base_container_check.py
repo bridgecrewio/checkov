@@ -43,7 +43,13 @@ class BaseK8sContainerCheck(BaseK8Check):
             supported_entities=supported_entities,
             guideline=guideline,
         )
-        self.supported_container_types = supported_container_types or ("containers", "initContainers")
+        # Include ephemeralContainers so debug/sidecar-style ephemeral workloads are
+        # subject to the same container security checks as containers/initContainers.
+        self.supported_container_types = supported_container_types or (
+            "containers",
+            "initContainers",
+            "ephemeralContainers",
+        )
         self.evaluated_container_keys: List[str] = []
 
         registry.register(self)
@@ -92,6 +98,11 @@ class BaseK8sContainerCheck(BaseK8Check):
         init_containers: List[Dict[str, Any]] = (
             spec.get("initContainers", []) if "initContainers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
+        ephemeral_containers: List[Dict[str, Any]] = (
+            spec.get("ephemeralContainers", [])
+            if "ephemeralContainers" in self.supported_container_types and isinstance(spec, dict)
+            else []
+        ) or []
 
         results = set()
         result = self._check_containers(
@@ -109,6 +120,16 @@ class BaseK8sContainerCheck(BaseK8Check):
             container_type="initContainers",
             metadata=metadata,
             containers=init_containers,
+        )
+        results.add(result)
+        if result == CheckResult.FAILED:
+            return CheckResult.FAILED
+
+        result = self._check_containers(
+            evaluated_key_prefix=evaluated_key_prefix,
+            container_type="ephemeralContainers",
+            metadata=metadata,
+            containers=ephemeral_containers,
         )
         results.add(result)
         if result == CheckResult.FAILED:
@@ -135,7 +156,7 @@ class BaseK8sContainerCheck(BaseK8Check):
                         for key in self.evaluated_container_keys
                     ]
                 else:
-                    self.evaluated_keys = [f"{evaluated_key_prefix}/initContainers/[{idx}]"]
+                    self.evaluated_keys = [f"{evaluated_key_prefix}/{container_type}/[{idx}]"]
                 return CheckResult.FAILED
 
         return CheckResult.PASSED if CheckResult.PASSED in results else CheckResult.UNKNOWN
