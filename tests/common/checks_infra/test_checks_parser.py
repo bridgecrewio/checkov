@@ -91,3 +91,11 @@ def test_parse_taggable_resource_list():
     providers = ["azure"]
     check = parser._parse_raw_check(raw_check, [], providers)
     assert check.resource_types == raw_resources_types.get("azure_taggable")
+
+
+def test_gcp_taggable_includes_resources_with_non_standard_label_keys():
+    # these resources use 'user_labels' / 'resource_labels' instead of 'labels'
+    gcp_taggable = raw_resources_types.get("gcp_taggable")
+    assert "google_sql_database_instance" in gcp_taggable
+    assert "google_container_cluster" in gcp_taggable
+    assert len(gcp_taggable) == len(set(gcp_taggable))
