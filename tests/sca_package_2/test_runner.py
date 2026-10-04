@@ -301,6 +301,12 @@ TREE_FILES = (
 )
 
 
+@pytest.fixture()
+def mock_bc_api_key(mocker: MockerFixture) -> None:
+    # patched (not assigned) to avoid leaking the api key into other tests
+    mocker.patch.object(bc_integration, "bc_api_key", "abcd1234-abcd-1234-abcd-1234abcd1234")
+
+
 def _create_tree(base: Path) -> None:
     for rel in TREE_FILES:
         file_path = base / rel
@@ -311,7 +317,6 @@ def _create_tree(base: Path) -> None:
 def _upload_relative(tmp_path: Path, excluded_paths, excluded_file_names=None):
     """simulates 'checkov -d .' from within tmp_path"""
     _create_tree(tmp_path)
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     origin_cwd = os.getcwd()
     try:
         os.chdir(tmp_path)
@@ -329,6 +334,7 @@ def _s3_keys(uploaded):
     return {item.s3_file_key for item in uploaded}
 
 
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_default_filtering(tmp_path: Path):
     uploaded = _upload_relative(tmp_path, excluded_paths=set())
 
@@ -341,6 +347,7 @@ def test_upload_package_files_default_filtering(tmp_path: Path):
     }
 
 
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_hidden_dirs_not_ignored(tmp_path: Path, mocker: MockerFixture):
     mocker.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", False)
 
@@ -356,6 +363,7 @@ def test_upload_package_files_hidden_dirs_not_ignored(tmp_path: Path, mocker: Mo
 
 
 @pytest.mark.parametrize("skip_path", [r"^\./\.cache(/|$)", r"\./\.cache(/|$)", ".cache"])
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_skip_path_regex_hidden_dir(tmp_path: Path, mocker: MockerFixture, skip_path: str):
     mocker.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", False)
 
@@ -376,6 +384,7 @@ def test_upload_package_files_skip_path_regex_hidden_dir(tmp_path: Path, mocker:
         ("app", "app/package.json"),
     ],
 )
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_skip_path_regex(tmp_path: Path, skip_path: str, excluded_key: str):
     uploaded = _upload_relative(tmp_path, excluded_paths={skip_path})
 
@@ -384,9 +393,9 @@ def test_upload_package_files_skip_path_regex(tmp_path: Path, skip_path: str, ex
     assert _s3_keys(uploaded) == expected
 
 
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_skip_path_regex_absolute_root(tmp_path: Path):
     _create_tree(tmp_path)
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
 
     uploaded = Runner().upload_package_files(
         root_path=tmp_path,
@@ -402,6 +411,7 @@ def test_upload_package_files_skip_path_regex_absolute_root(tmp_path: Path):
     }
 
 
+@pytest.mark.usefixtures("mock_bc_api_key")
 def test_upload_package_files_excluded_file_names_with_tree(tmp_path: Path):
     uploaded = _upload_relative(tmp_path, excluded_paths=set(), excluded_file_names={"requirements.txt"})
 
