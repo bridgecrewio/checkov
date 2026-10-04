@@ -10,6 +10,8 @@ from packaging import version as packaging_version
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
+from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES, SCANNABLE_PACKAGE_FILES_EXTENSIONS
+from checkov.common.runners.base_runner import ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
@@ -338,35 +340,60 @@ def _s3_keys(uploaded):
 def test_upload_package_files_default_filtering(tmp_path: Path):
     uploaded = _upload_relative(tmp_path, excluded_paths=set())
 
-    # hidden dir and node_modules are skipped, .github is kept
+    # only ignored directories (ex. node_modules) are skipped, hidden directories are still scanned
     assert set(uploaded) == {
         FileToPersist(full_file_path="app/package.json", s3_file_key="app/package.json"),
+        FileToPersist(full_file_path=HIDDEN_CACHE_FILE, s3_file_key=HIDDEN_CACHE_FILE),
         FileToPersist(full_file_path=".github/actions/foo/package.json",
                       s3_file_key=".github/actions/foo/package.json"),
         FileToPersist(full_file_path="sub/dir1/requirements.txt", s3_file_key="sub/dir1/requirements.txt"),
     }
 
 
+@pytest.mark.parametrize("ignore_hidden", [True, False])
 @pytest.mark.usefixtures("mock_bc_api_key")
-def test_upload_package_files_hidden_dirs_not_ignored(tmp_path: Path, mocker: MockerFixture):
-    mocker.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", False)
+def test_upload_package_files_same_files_as_glob_without_skip_path(
+    tmp_path: Path, mocker: MockerFixture, ignore_hidden: bool
+):
+    # without '--skip-path' the scanned files must stay the same as in the previous 'Path.glob' based implementation,
+    # independent of the 'CKV_IGNORE_HIDDEN_DIRECTORIES' setting
+    mocker.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", ignore_hidden)
+    for rel in (
+        *TREE_FILES,
+        ".hidden.csproj",
+        ".venv/lib/requirements.txt",
+        ".config/.nested/go.sum",
+        "app/.yarn/cache/package.json",
+        "app/node_modules/y/package.json",
+        "infra/.terraform/modules/m/package.json",
+        "svc/.serverless/package.json",
+        "svc/Pipfile",
+        "svc/Pipfile.lock",
+        "svc/README.md",
+    ):
+        file_path = tmp_path / rel
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text("{}")
 
-    uploaded = _upload_relative(tmp_path, excluded_paths=set())
+    uploaded = Runner().upload_package_files(root_path=tmp_path, files=None, excluded_paths=set())
 
-    assert _s3_keys(uploaded) == {
-        "app/package.json",
-        HIDDEN_CACHE_FILE,
-        ".github/actions/foo/package.json",
-        "sub/dir1/requirements.txt",
+    # previous implementation
+    expected = set()
+    for file_path in tmp_path.glob("**/*"):
+        if any(p in file_path.parts for p in ignored_directories):
+            continue
+        if file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS:
+            expected.add(FileToPersist(str(file_path), os.path.relpath(str(file_path), tmp_path)))
+
+    assert set(uploaded) == expected
+    assert {item.s3_file_key for item in expected} >= {
+        ".hidden.csproj", ".venv/lib/requirements.txt", ".config/.nested/go.sum", "app/.yarn/cache/package.json"
     }
-    assert FileToPersist(full_file_path=HIDDEN_CACHE_FILE, s3_file_key=HIDDEN_CACHE_FILE) in uploaded
 
 
 @pytest.mark.parametrize("skip_path", [r"^\./\.cache(/|$)", r"\./\.cache(/|$)", ".cache"])
 @pytest.mark.usefixtures("mock_bc_api_key")
-def test_upload_package_files_skip_path_regex_hidden_dir(tmp_path: Path, mocker: MockerFixture, skip_path: str):
-    mocker.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", False)
-
+def test_upload_package_files_skip_path_regex_hidden_dir(tmp_path: Path, skip_path: str):
     uploaded = _upload_relative(tmp_path, excluded_paths={skip_path})
 
     assert _s3_keys(uploaded) == {
@@ -377,20 +404,21 @@ def test_upload_package_files_skip_path_regex_hidden_dir(tmp_path: Path, mocker:
 
 
 @pytest.mark.parametrize(
-    "skip_path, excluded_key",
+    "skip_path, excluded_keys",
     [
-        ("sub/dir1", "sub/dir1/requirements.txt"),
-        (r"^\./sub/", "sub/dir1/requirements.txt"),
-        ("app", "app/package.json"),
+        ("sub/dir1", {"sub/dir1/requirements.txt"}),
+        (r"^\./sub/", {"sub/dir1/requirements.txt"}),
+        (r"^\./app(/|$)", {"app/package.json"}),
+        # plain values are matched as regex/substring against the whole path, like in all other frameworks
+        ("app", {"app/package.json", HIDDEN_CACHE_FILE}),
     ],
 )
 @pytest.mark.usefixtures("mock_bc_api_key")
-def test_upload_package_files_skip_path_regex(tmp_path: Path, skip_path: str, excluded_key: str):
+def test_upload_package_files_skip_path_regex(tmp_path: Path, skip_path: str, excluded_keys: set[str]):
     uploaded = _upload_relative(tmp_path, excluded_paths={skip_path})
 
-    expected = {"app/package.json", ".github/actions/foo/package.json", "sub/dir1/requirements.txt"}
-    expected.remove(excluded_key)
-    assert _s3_keys(uploaded) == expected
+    expected = {"app/package.json", HIDDEN_CACHE_FILE, ".github/actions/foo/package.json", "sub/dir1/requirements.txt"}
+    assert _s3_keys(uploaded) == expected - excluded_keys
 
 
 @pytest.mark.usefixtures("mock_bc_api_key")
@@ -406,6 +434,7 @@ def test_upload_package_files_skip_path_regex_absolute_root(tmp_path: Path):
 
     assert set(uploaded) == {
         FileToPersist(full_file_path=str(tmp_path / "app/package.json"), s3_file_key="app/package.json"),
+        FileToPersist(full_file_path=str(tmp_path / HIDDEN_CACHE_FILE), s3_file_key=HIDDEN_CACHE_FILE),
         FileToPersist(full_file_path=str(tmp_path / ".github/actions/foo/package.json"),
                       s3_file_key=".github/actions/foo/package.json"),
     }
@@ -415,7 +444,7 @@ def test_upload_package_files_skip_path_regex_absolute_root(tmp_path: Path):
 def test_upload_package_files_excluded_file_names_with_tree(tmp_path: Path):
     uploaded = _upload_relative(tmp_path, excluded_paths=set(), excluded_file_names={"requirements.txt"})
 
-    assert _s3_keys(uploaded) == {"app/package.json", ".github/actions/foo/package.json"}
+    assert _s3_keys(uploaded) == {"app/package.json", HIDDEN_CACHE_FILE, ".github/actions/foo/package.json"}
 
 
 def test_find_scannable_files_skip_path_regex(tmp_path: Path):
@@ -432,7 +461,8 @@ def test_find_scannable_files_skip_path_regex(tmp_path: Path):
 
     assert default_result == {
         Path("app/package.json"),
+        Path(HIDDEN_CACHE_FILE),
         Path(".github/actions/foo/package.json"),
         Path("sub/dir1/requirements.txt"),
     }
-    assert regex_result == {Path("app/package.json"), Path(".github/actions/foo/package.json")}
+    assert regex_result == {Path("app/package.json"), Path(HIDDEN_CACHE_FILE), Path(".github/actions/foo/package.json")}

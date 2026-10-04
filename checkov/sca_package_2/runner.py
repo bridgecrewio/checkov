@@ -69,7 +69,7 @@ class Runner(BaseRunner[None, None, None]):
             bc_integration.setup_http_manager()
             bc_integration.set_s3_client()
 
-        # ignored directories (ex. 'node_modules') and hidden directories are handled by 'filter_ignored_paths'
+        # ignored directories (ex. 'node_modules') are handled by 'filter_ignored_paths'
         uploaded_files: List[FileToPersist] | None = self.upload_package_files(
             root_path=self._code_repo_path,
             files=files,
@@ -144,16 +144,15 @@ class Runner(BaseRunner[None, None, None]):
 
         return report
 
-    def included_paths(self) -> Iterable[str]:
-        return ['.github', '.circleci']
-
     def _walk_files(self, root_path: Path, excluded_paths: Iterable[str]) -> Iterable[Path]:
-        """Walks the given root path and yields the not excluded files, same as other runners via 'filter_ignored_paths'"""
+        """Walks the given root path and yields the not excluded files via 'filter_ignored_paths'"""
         excluded_paths_list = list(excluded_paths)
-        included_paths = self.included_paths()
         for root, d_names, f_names in os.walk(root_path):
-            filter_ignored_paths(root, d_names, excluded_paths_list, included_paths)
-            filter_ignored_paths(root, f_names, excluded_paths_list, included_paths)
+            # unlike other frameworks, hidden directories and files are scanned to keep the existing SCA coverage,
+            # therefore they are passed as included paths. Ignored directories (ex. 'node_modules') are still skipped.
+            hidden_names = [name for name in (*d_names, *f_names) if name.startswith(".")]
+            filter_ignored_paths(root, d_names, excluded_paths_list, hidden_names)
+            filter_ignored_paths(root, f_names, excluded_paths_list, hidden_names)
             for file_name in f_names:
                 # 'Path' normalizes the path and drops a leading './' to keep it aligned with 'Path.glob()' output
                 yield Path(root) / file_name
