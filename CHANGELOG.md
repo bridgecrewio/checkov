@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.21...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.23...HEAD)
+
+## [3.3.23](https://github.com/bridgecrewio/checkov/compare/3.3.21...3.3.23) - 2026-10-05
+
+### Bug Fix
+
+- **sca:** apply --skip-path regex and hidden-dir filtering to sca_package - [#7712](https://github.com/bridgecrewio/checkov/pull/7712)
 
 ## [3.3.21](https://github.com/bridgecrewio/checkov/compare/3.3.20...3.3.21) - 2026-09-30
 
