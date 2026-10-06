@@ -4,3 +4,5 @@ pass:
 fail:
   - "ClusterRoleBinding.default.read-secrets-global"
   - "ClusterRoleBinding.default.mixed-secrets-global"
+  - "RoleBinding.my-namespace.null-secrets-binding"
+  - "ClusterRoleBinding.my-namespace.empty-secrets-binding"
