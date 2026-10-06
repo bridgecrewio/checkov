@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -295,6 +297,164 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
                 result = runner._get_kubectl_output(local_dir, "kustomize", "base")
         mock_popen.assert_called_once()
         self.assertEqual(result, fake_output)
+
+
+class TestRenderedManifestFilename(unittest.TestCase):
+    """Rendered manifests are renamed using K8s metadata - make sure it can't be used to escape the target folder"""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = os.path.realpath(self._tmp.name)
+        self.extract_dir = os.path.join(self.root, "extract")
+        self.outside_dir = os.path.join(self.root, "outside")
+        os.makedirs(self.extract_dir)
+        os.makedirs(self.outside_dir)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _render(self, manifest: str) -> dict:
+        writer = open(os.path.join(self.extract_dir, "0"), "a")
+        writer.write(manifest)
+        mappings = {}
+        Runner._curWriterValidateStoreMapAndClose(writer, "/repo/kustomize/base", mappings)
+        return mappings
+
+    def _assert_all_files_inside_extract_dir(self, mappings: dict) -> None:
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        for dirpath, _, filenames in os.walk(self.root):
+            for name in filenames:
+                self.assertTrue(
+                    os.path.join(dirpath, name).startswith(self.extract_dir + os.sep),
+                    f"file written outside of extract dir: {os.path.join(dirpath, name)}",
+                )
+        self.assertEqual(len(mappings), 1)
+        for path in mappings:
+            self.assertEqual(os.path.dirname(path), self.extract_dir)
+            self.assertTrue(os.path.isfile(path))
+
+    # --- regression: valid manifests keep the exact same file name ---
+
+    def test_valid_manifest_file_name_unchanged(self):
+        mappings = self._render(
+            "---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\n  namespace: prod\n"
+        )
+        expected = os.path.join(self.extract_dir, "Deployment-prod-web.yaml")
+        self.assertEqual(mappings, {expected: "/repo/kustomize/base"})
+        self.assertTrue(os.path.isfile(expected))
+        self.assertFalse(os.path.exists(os.path.join(self.extract_dir, "0")))
+
+    def test_valid_manifest_defaults_namespace_and_name(self):
+        mappings = self._render("---\napiVersion: v1\nkind: ConfigMap\nmetadata: {}\n")
+        self.assertEqual(list(mappings), [os.path.join(self.extract_dir, "ConfigMap-default-noname.yaml")])
+
+    def test_valid_manifest_with_dots_in_name_unchanged(self):
+        mappings = self._render(
+            "---\napiVersion: v1\nkind: Service\nmetadata:\n  name: my.svc..v2\n  namespace: a.b\n"
+        )
+        self.assertEqual(list(mappings), [os.path.join(self.extract_dir, "Service-a.b-my.svc..v2.yaml")])
+
+    @unittest.skipIf(os.name == "nt", "':' is not a valid file name character on Windows")
+    def test_valid_rbac_manifest_with_colon_unchanged(self):
+        mappings = self._render(
+            "---\napiVersion: rbac.authorization.k8s.io/v1\nkind: ClusterRole\n"
+            "metadata:\n  name: system:aggregate-to-edit\n"
+        )
+        self.assertEqual(
+            list(mappings), [os.path.join(self.extract_dir, "ClusterRole-default-system:aggregate-to-edit.yaml")]
+        )
+
+    def test_file_name_matches_caller_resource_id_lookup(self):
+        # _get_caller_line_range() reconstructs the rendered file name from the resource id
+        resource_id = "Deployment.prod.web"
+        mappings = self._render(
+            "---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\n  namespace: prod\n"
+        )
+        self.assertEqual(os.path.basename(next(iter(mappings))), f'{resource_id.replace(".", "-")}.yaml')
+
+    # --- path traversal ---
+
+    def test_absolute_path_in_kind_stays_in_extract_dir(self):
+        mappings = self._render(
+            f"---\napiVersion: v1\nkind: {self.outside_dir}/custom\nmetadata:\n  name: test\nspec: {{}}\n"
+        )
+        self._assert_all_files_inside_extract_dir(mappings)
+
+    def test_relative_traversal_in_name_stays_in_extract_dir(self):
+        mappings = self._render(
+            "---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: ../outside/test\n"
+        )
+        self._assert_all_files_inside_extract_dir(mappings)
+
+    def test_relative_traversal_in_namespace_stays_in_extract_dir(self):
+        mappings = self._render(
+            "---\napiVersion: v1\nkind: Pod\nmetadata:\n  namespace: x/../../outside\n  name: test\n"
+        )
+        self._assert_all_files_inside_extract_dir(mappings)
+
+    def test_backslash_traversal_stays_in_extract_dir(self):
+        mappings = self._render(
+            "---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: '..\\\\outside\\\\test'\n"
+        )
+        self._assert_all_files_inside_extract_dir(mappings)
+
+    def test_rename_skipped_when_destination_outside_target(self):
+        # defense in depth - even if sanitization is bypassed, the rename must not happen
+        with mock.patch.object(Runner, "_build_rendered_manifest_filename", return_value="../outside/test.yaml"):
+            mappings = self._render("---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: test\n")
+        self.assertEqual(mappings, {})
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertTrue(os.path.isfile(os.path.join(self.extract_dir, "0")))
+
+    @unittest.skipIf(
+        os.name == "nt" or not (kustomize_exists() or shutil.which(Runner.kubectl_command)),
+        "kustomize/kubectl not installed or Windows OS",
+    )
+    def test_run_with_absolute_path_in_kind_keeps_files_in_target_folder(self):
+        # end-to-end: a resource with an absolute path as its kind, rendered by kustomize
+        project_dir = os.path.join(self.root, "project")
+        os.makedirs(project_dir)
+        with open(os.path.join(project_dir, "kustomization.yaml"), "w") as f:
+            f.write("resources:\n  - pod.yaml\n")
+        with open(os.path.join(project_dir, "pod.yaml"), "w") as f:
+            f.write(f"apiVersion: v1\nkind: {self.outside_dir}/custom\nmetadata:\n  name: test\nspec: {{}}\n")
+
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize" if kustomize_exists() else Runner.kubectl_command
+        with mock.patch("checkov.kustomize.runner.parallel_runner.run_function",
+                        side_effect=lambda func, items: [func(*item) for item in items]):
+            runner.run(root_folder=project_dir, runner_filter=RunnerFilter(framework=["kustomize"]))
+
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(len(runner.kustomizeFileMappings), 1)
+        rendered_path = next(iter(runner.kustomizeFileMappings))
+        self.assertTrue(rendered_path.startswith(runner.target_folder_path + os.sep))
+        self.assertTrue(os.path.basename(rendered_path).endswith("custom-default-test.yaml"))
+
+    # --- helpers ---
+
+    def test_sanitize_filename_component(self):
+        cases = {
+            "Deployment": "Deployment",
+            "my.app-1": "my.app-1",
+            "..": "..",
+            "/tmp/x": "_tmp_x",
+            "../../etc": ".._.._etc",
+            "a\\b": "a_b",
+            "a\0b": "a_b",
+            123: "123",
+        }
+        for value, expected in cases.items():
+            with self.subTest(value=value):
+                self.assertEqual(Runner._sanitize_filename_component(value), expected)
+
+    def test_build_rendered_manifest_filename_is_single_path_segment(self):
+        for parts in (["/abs/kind", "ns", "n"], ["Pod", "../..", "../x"], ["Pod", "default", ".."]):
+            with self.subTest(parts=parts):
+                filename = Runner._build_rendered_manifest_filename(parts)
+                self.assertEqual(os.path.basename(filename), filename)
+                self.assertNotIn(filename, (".", ".."))
+                self.assertTrue(filename.endswith(".yaml"))
 
 
 if __name__ == '__main__':
