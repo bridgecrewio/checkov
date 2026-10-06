@@ -46,6 +46,13 @@ def test__parse_module_source(source: str, expected_root_module: str, expected_i
     assert module_source.inner_module == expected_inner_module
 
 
+@pytest.fixture
+def root_dir() -> Path:
+    # these tests only compute paths and never write to disk, so a fixed (non existing) folder is enough.
+    # avoids pytest's tmp_path, which crashes the xdist worker on python 3.9/3.10 (see verification/conftest.py)
+    return Path(os.path.abspath("checkov_git_loader_test_root"))
+
+
 def _module_params(root_dir: Path, source: str) -> ModuleParams:
     return ModuleParams(
         root_dir=str(root_dir),
@@ -58,7 +65,7 @@ def _module_params(root_dir: Path, source: str) -> ModuleParams:
 
 
 def _is_inside(base: Path, path: str) -> bool:
-    return os.path.commonpath([os.path.realpath(base), os.path.realpath(path)]) == os.path.realpath(base)
+    return os.path.commonpath([os.path.abspath(base), os.path.abspath(path)]) == os.path.abspath(base)
 
 
 @pytest.mark.parametrize(
@@ -126,13 +133,13 @@ def _is_inside(base: Path, path: str) -> bool:
     ],
 )
 def test_valid_sources_stay_in_external_modules_dir(
-    tmp_path: Path, source: str, expected_dest_dir: str, expected_module_path: str
+    root_dir: Path, source: str, expected_dest_dir: str, expected_module_path: str
 ) -> None:
-    external_modules_dir = tmp_path / EXTERNAL_MODULES_FOLDER_NAME
+    external_modules_dir = root_dir / EXTERNAL_MODULES_FOLDER_NAME
     loader = GenericGitLoader()
 
-    module_path = loader._find_module_path(_module_params(tmp_path, source))
-    module_params = _module_params(tmp_path, source)
+    module_path = loader._find_module_path(_module_params(root_dir, source))
+    module_params = _module_params(root_dir, source)
     loader._process_generic_git_repo(module_params)
 
     assert module_params.dest_dir == str(external_modules_dir / expected_dest_dir)
@@ -168,31 +175,31 @@ def test_valid_sources_stay_in_external_modules_dir(
         "local_file_repo_traversal",
     ],
 )
-def test_path_traversal_in_source_is_rejected(tmp_path: Path, source: str) -> None:
+def test_path_traversal_in_source_is_rejected(root_dir: Path, source: str) -> None:
     loader = GenericGitLoader()
 
     with pytest.raises(ValueError):
-        loader._process_generic_git_repo(_module_params(tmp_path, source))
+        loader._process_generic_git_repo(_module_params(root_dir, source))
     with pytest.raises(ValueError):
-        loader._find_module_path(_module_params(tmp_path, source))
+        loader._find_module_path(_module_params(root_dir, source))
 
 
-def test_traversal_in_inner_module_param_is_rejected(tmp_path: Path) -> None:
-    module_params = _module_params(tmp_path, "git::https://github.com/org/repo.git?ref=v1")
+def test_traversal_in_inner_module_param_is_rejected(root_dir: Path) -> None:
+    module_params = _module_params(root_dir, "git::https://github.com/org/repo.git?ref=v1")
     module_params.inner_module = "../../../../../tmp"
 
     with pytest.raises(ValueError):
         GenericGitLoader()._find_module_path(module_params)
 
 
-def test_dest_dir_outside_external_modules_dir_is_rejected(tmp_path: Path) -> None:
+def test_dest_dir_outside_external_modules_dir_is_rejected(root_dir: Path) -> None:
     # defense in depth - even if parsing returns an unexpected value, never use a folder outside the modules folder
     loader = GenericGitLoader()
-    with mock.patch.object(GenericGitLoader, "_get_module_dir", return_value=tmp_path / "outside"):
+    with mock.patch.object(GenericGitLoader, "_get_module_dir", return_value=root_dir / "outside"):
         with pytest.raises(ValueError):
-            loader._process_generic_git_repo(_module_params(tmp_path, "git::https://github.com/org/repo.git"))
+            loader._process_generic_git_repo(_module_params(root_dir, "git::https://github.com/org/repo.git"))
         with pytest.raises(ValueError):
-            loader._find_module_path(_module_params(tmp_path, "git::https://github.com/org/repo.git"))
+            loader._find_module_path(_module_params(root_dir, "git::https://github.com/org/repo.git"))
 
 
 TRAVERSAL_REF = "?ref=../../../../../../../../tmp/target"
@@ -225,21 +232,21 @@ TRAVERSAL_REF = "?ref=../../../../../../../../tmp/target"
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_git_based_loaders_do_not_clone_outside_external_modules_dir(
-    git_getter, tmp_path: Path, loader_class, source: str, env: dict
+    git_getter, root_dir: Path, loader_class, source: str, env: dict
 ) -> None:
     with mock.patch.dict(os.environ, env):
         loader = loader_class()
-        module_params = _module_params(tmp_path, source)
+        module_params = _module_params(root_dir, source)
         loader.discover(module_params)
         assert loader._is_matching_loader(module_params)
 
         with pytest.raises(ValueError):
-            loader.load(_module_params(tmp_path, source))
+            loader.load(_module_params(root_dir, source))
         content = loader._load_module(module_params)
 
     assert not content.loaded()
     git_getter.assert_not_called()
-    assert not module_params.dest_dir or _is_inside(tmp_path / EXTERNAL_MODULES_FOLDER_NAME, module_params.dest_dir)
+    assert not module_params.dest_dir or _is_inside(root_dir / EXTERNAL_MODULES_FOLDER_NAME, module_params.dest_dir)
 
 
 @pytest.mark.parametrize(
