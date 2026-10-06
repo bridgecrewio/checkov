@@ -878,16 +878,16 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
                     filename = Runner._build_rendered_manifest_filename(itemName)
                     parent_dir = str(pathlib.Path(currentFileName).parent)
-                    newFullPathFilename = str(pathlib.Path(parent_dir) / filename)
-                    if not _is_within(parent_dir, newFullPathFilename):
+                    new_full_path_filename = str(pathlib.Path(parent_dir) / filename)
+                    if not _is_within(parent_dir, new_full_path_filename):
                         # Defense in depth - should be unreachable after sanitization
                         logging.warning(
                             f"Kustomize: refusing to write rendered manifest outside of {parent_dir}. "
                             f"Kustomization: {file_path}"
                         )
                         return
-                    os.rename(currentFileName, newFullPathFilename)
-                    shared_kustomize_file_mappings[newFullPathFilename] = file_path
+                    os.rename(currentFileName, new_full_path_filename)
+                    shared_kustomize_file_mappings[new_full_path_filename] = file_path
                 else:
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {file_path}. Templated output: {currentFileName}.')
         except IsADirectoryError:
