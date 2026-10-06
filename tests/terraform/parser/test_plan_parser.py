@@ -8,9 +8,10 @@ from unittest import mock
 import pytest
 from pytest_mock import MockerFixture
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.consts import TRUE_AFTER_UNKNOWN
-from checkov.terraform.plan_parser import parse_tf_plan, _sanitize_count_from_name, _handle_complex_after_unknown, \
-    _update_after_unknown_in_complex_types
+from checkov.terraform.plan_parser import parse_tf_plan, _handle_complex_after_unknown, \
+    _update_after_unknown_in_complex_types, _get_module_call_resources
 from checkov.common.parsers.node import StrNode
 
 
@@ -128,15 +129,6 @@ class TestPlanFileParser(unittest.TestCase):
         resource_attributes = next(iter(resource_definition.values()))
         self.assertEqual(resource_attributes['logging_config'][0]["bucket"], [TRUE_AFTER_UNKNOWN])
 
-    def test___sanitize_count_from_name_with_count(self):
-        name = "aws_s3_bucket.bucket[0]"
-        result = _sanitize_count_from_name(name)
-        self.assertEqual(result, "aws_s3_bucket.bucket")
-
-        name = "aws_s3_bucket.bucket"
-        result = _sanitize_count_from_name(name)
-        self.assertEqual(result, "aws_s3_bucket.bucket")
-
     def test_handle_complex_after_unknown(self):
         resource = {
             "tags": [
@@ -229,6 +221,90 @@ def test_large_file(mocker: MockerFixture):
         self.assertIn('policy', resource_attributes)
         policy = resource_attributes['policy'][0]
         self.assertIn('Statement', policy)
+
+
+def _module_conf(name: str, inner: dict[str, Any]) -> dict[str, Any]:
+    return {"module_calls": {name: {"source": f"./{name}", "module": inner}}}
+
+
+def _leaf(address: str) -> dict[str, Any]:
+    return {"resources": [{"address": address}]}
+
+
+MODULE_CALLS_CONF: dict[str, Any] = {
+    "module_calls": {
+        "vnet": {"module": _leaf("res.vnet")},
+        "vnet2": {"module": _leaf("res.vnet2")},
+        "parent": {"module": _module_conf("child", _leaf("res.parent_child"))},
+        "a": {"module": _module_conf("b", _module_conf("c", _leaf("res.a_b_c")))},
+        "foo": {"module": {**_leaf("res.foo"), **_module_conf("bar", _leaf("res.foo_bar"))}},
+    }
+}
+
+
+@pytest.mark.parametrize(
+    "module_address,expected_address",
+    [
+        ("module.vnet", "res.vnet"),
+        ("module.vnet[0]", "res.vnet"),
+        ('module.vnet["a"]', "res.vnet"),
+        ("module.vnet2", "res.vnet2"),
+        ("module.vnet2[0]", "res.vnet2"),
+        ('module.parent["prod"].module.child', "res.parent_child"),
+        ("module.parent[0].module.child", "res.parent_child"),
+        ('module.parent["prod"].module.child["x"]', "res.parent_child"),
+        ('module.a["k1"].module.b[2].module.c["k3"]', "res.a_b_c"),
+        ('module.foo["a.b"].module.bar', "res.foo_bar"),
+        ('module.foo["br[0]acket"].module.bar', "res.foo_bar"),
+        ('module.foo["with space"]', "res.foo"),
+        ('module.foo["q\\"uote"].module.bar', "res.foo_bar"),
+        ('module.foo["back\\\\slash"].module.bar', "res.foo_bar"),
+        ('module.foo["module.x"].module.bar', "res.foo_bar"),
+    ],
+)
+def test_get_module_call_resources(module_address: str, expected_address: str) -> None:
+    resources = _get_module_call_resources(module_address=module_address, root_module_conf=MODULE_CALLS_CONF)
+
+    assert resources == [{"address": expected_address}]
+
+
+@pytest.mark.parametrize(
+    "module_address",
+    [
+        "module.missing",
+        'module.missing["prod"].module.child',
+        'module.parent["prod"].module.missing',
+    ],
+)
+def test_get_module_call_resources_missing_module(module_address: str) -> None:
+    resources = _get_module_call_resources(module_address=module_address, root_module_conf=MODULE_CALLS_CONF)
+
+    assert resources == []
+
+
+def test_for_each_module_resources_have_references() -> None:
+    # given
+    plan_path = (
+        Path(__file__).parents[1] / "runner/resources/plan_for_each_nested_modules_with_connections/tfplan.json"
+    )
+
+    # when
+    tf_definition, _ = parse_tf_plan(str(plan_path), {})
+
+    # then
+    assoc = next(
+        conf
+        for resource in tf_definition["resource"]
+        for resource_type, named in resource.items()
+        if resource_type == "azurerm_subnet_network_security_group_association"
+        for conf in named.values()
+    )
+    assert assoc["subnet_id"] == ["azurerm_subnet.subnet"]
+    assert assoc["network_security_group_id"] == ["azurerm_network_security_group.main"]
+    assert assoc[CustomAttributes.REFERENCES] == [
+        ["azurerm_network_security_group.main", "each.key"],
+        ["azurerm_subnet.subnet", "each.key"],
+    ]
 
 
 if __name__ == '__main__':
