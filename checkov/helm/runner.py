@@ -10,6 +10,7 @@ import subprocess  # nosec
 import tempfile
 import threading
 from typing import Any, Type, TYPE_CHECKING
+from urllib.parse import urlparse
 import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -66,13 +67,20 @@ def _get_chart_remote_repos(chart_dir: str) -> list[str]:
     return remote_repos
 
 
+def _host_matches_prefix(repo_url: str, prefix: str) -> bool:
+    """Check if a repo URL's host matches an allowed prefix's host."""
+    repo_host = urlparse(repo_url).hostname
+    prefix_host = urlparse(prefix).hostname
+    return repo_host is not None and repo_host == prefix_host
+
+
 def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
     """Return dependency repos blocked by the CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
 
-    Not set / empty → block all remote repos (safe default).
-    Set to '*'      → allow all remote repos (opt-in, restores legacy behaviour).
-    Set to prefixes → allow only repos matching at least one prefix; block the rest.
-    To block all remote repos explicitly, set the var to 'none'.
+    Not set / empty → allow all remote repos (opt-in; legacy behaviour).
+    Set to '*'      → allow all remote repos (explicit).
+    Set to prefixes → allow only repos whose host matches at least one prefix; block the rest.
+    Set to 'none'   → block all remote repos.
     """
     remote_repos = _get_chart_remote_repos(chart_dir)
     if not remote_repos:
@@ -80,16 +88,19 @@ def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
 
     allowed = os.getenv("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", "")
     if not allowed:
-        # Safe default: block all remote dependency fetching when no allowlist is configured.
-        # Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS=* to allow all, or provide a comma-separated
-        # list of URL prefixes to allow specific repositories.
-        return remote_repos
+        # Opt-in: allow all remote dependency fetching when no allowlist is configured.
+        # Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS to a comma-separated list of URL prefixes
+        # to restrict which repositories are allowed, or 'none' to block all.
+        return []
 
     if allowed.strip() == "*":
         return []
 
     allowed_prefixes = [prefix.strip() for prefix in allowed.split(",") if prefix.strip()]
-    blocked = [repo for repo in remote_repos if not any(repo.startswith(prefix) for prefix in allowed_prefixes)]
+    blocked = [
+        repo for repo in remote_repos
+        if not any(_host_matches_prefix(repo, prefix) for prefix in allowed_prefixes)
+    ]
     return blocked
 
 
@@ -371,8 +382,8 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 logging.warning(
                     f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
-        # Default = block all remote repos. Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS
-        # to '*' (allow all) or a comma-separated allowlist of trusted repo URL prefixes.
+        # Opt-in: remote repos are allowed by default. Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS
+        # to a comma-separated allowlist of trusted repo URL prefixes, or 'none' to block all.
         blocked_remote_repos = _get_blocked_helm_repos(chart_dir)
         use_dependency_update = not blocked_remote_repos
         if blocked_remote_repos:

@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.util.file_utils import _is_within
@@ -78,7 +79,18 @@ class GenericGitLoader(ModuleLoader):
         if module_params.module_source.startswith(module_source_prefix):
             source = module_params.module_source.split(DEFAULT_MODULE_SOURCE_PREFIX)[-1]
             if module_params.token and module_params.username and module_params.vcs_base_url:
-                module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
+                # Parse hosts to ensure credentials are only sent to the configured VCS server
+                source_host = urlparse(f"https://{source}").hostname
+                vcs_host = urlparse(module_params.vcs_base_url).hostname
+                if source_host and vcs_host and source_host == vcs_host:
+                    module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
+                else:
+                    logger.debug(
+                        "Module source host '%s' does not match VCS_BASE_URL host '%s'. "
+                        "Credentials will not be injected.",
+                        source_host, vcs_host,
+                    )
+                    module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"
             else:
                 if module_params.token and module_params.username and not module_params.vcs_base_url:
                     logger.debug(

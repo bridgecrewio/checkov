@@ -9,7 +9,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
-from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos
+from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos, \
+    _host_matches_prefix
 from tests.helm.utils import helm_exists
 
 
@@ -246,9 +247,9 @@ class TestRunnerValid(unittest.TestCase):
 class TestHelmDependencyRemoteRepos(unittest.TestCase):
     """Tests for helm remote dependency repository allowlist.
 
-    Default behaviour: remote dependency repos are blocked (safe default).
-    Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS='*' to allow all, or provide a
-    comma-separated list of URL prefixes to allow specific repositories.
+    Default behaviour: remote dependency repos are allowed (opt-in).
+    Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS to a comma-separated list of URL
+    prefixes to restrict which repositories are allowed, or 'none' to block all.
     Charts with blocked remote deps are still scanned (without --dependency-update).
     """
 
@@ -274,13 +275,12 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
     # _get_blocked_helm_repos() unit tests (allowlist logic)
     # ------------------------------------------------------------------
 
-    def test_get_blocked_helm_repos_blocks_all_when_no_env_var(self):
-        """Default: no env var → all remote repos are blocked (safe default)."""
+    def test_get_blocked_helm_repos_allows_all_when_no_env_var(self):
+        """Default: no env var → all remote repos are allowed (opt-in)."""
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
-        self.assertIn("http://192.0.2.1", repos)
-        self.assertGreater(len(repos), 0)
+        self.assertEqual(repos, [])
 
     def test_get_blocked_helm_repos_returns_empty_when_wildcard(self):
         """Wildcard '*' → allow all remote repos (legacy behaviour)."""
@@ -307,8 +307,8 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
     # get_binary_output() integration tests
     # ------------------------------------------------------------------
 
-    def test_no_dependency_update_by_default(self):
-        """Default (no env var): --dependency-update is NOT in helm args (remote deps blocked)."""
+    def test_dependency_update_by_default(self):
+        """Default (no env var): --dependency-update IS in helm args (remote deps allowed)."""
         chart_item = self._make_chart_item()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
@@ -317,10 +317,9 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
             with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
                 result, _ = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
-        # helm template should still be called (graceful degradation), just without --dependency-update
         self.assertEqual(mock_popen.call_count, 2)  # dependency list + template
         template_call_args = mock_popen.call_args[0][0]
-        self.assertNotIn("--dependency-update", template_call_args)
+        self.assertIn("--dependency-update", template_call_args)
         self.assertIn("template", template_call_args)
         self.assertIsNotNone(result)
 
@@ -379,7 +378,7 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
         mock_proc.communicate.return_value = (fake_output, b"")
-        # Test with default (blocked) — chart_dir should still be last when no var_files
+        # Test with default (allowed) — chart_dir should still be last when no var_files
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
             with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
@@ -409,16 +408,31 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "https://charts.myorg.com/,"}
         with mock.patch.dict(os.environ, env):
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
-        # http://192.0.2.1 does NOT start with https://charts.myorg.com/ so it must be blocked
+        # http://192.0.2.1 host does NOT match https://charts.myorg.com/ host so it must be blocked
         self.assertIn("http://192.0.2.1", repos)
 
     def test_none_value_blocks_all_repos(self):
-        """Setting the env var to 'none' blocks all repos (no URL starts with 'none')."""
+        """Setting the env var to 'none' blocks all repos ('none' has no valid host)."""
         env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "none"}
         with mock.patch.dict(os.environ, env):
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
         self.assertIn("http://192.0.2.1", repos)
         self.assertGreater(len(repos), 0)
+
+    def test_host_match_prevents_subdomain_confusion(self):
+        """An allowed prefix like 'https://charts.example.com' must NOT match
+        'https://charts.example.com.other.net' — host comparison prevents this."""
+        self.assertTrue(_host_matches_prefix("https://charts.example.com/stable", "https://charts.example.com/repo"))
+        self.assertFalse(
+            _host_matches_prefix("https://charts.example.com.other.net/repo", "https://charts.example.com/repo"))
+
+    def test_blocked_repos_uses_host_matching_not_prefix(self):
+        """Allowlist with 'http://192.0.2.1' must match the repo 'http://192.0.2.1'
+        by host, not by string prefix."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "http://192.0.2.1"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertEqual(repos, [])
 
 
 class TestRenderedSourcePaths(unittest.TestCase):
