@@ -46,11 +46,15 @@ def safe_relpath(file_path: str, root_folder: str | Path | None) -> str:
 
 
 def _is_within(base: str, target: str) -> bool:
-    """Return True iff target resolves inside base (both realpath'd)."""
-    base_real = os.path.realpath(base)
-    target_real = os.path.realpath(target)
+    """Return True iff target is inside base, after normalizing both paths ('..', '.', duplicate separators).
+
+    The check is lexical only (os.path.abspath), without accessing the file system. os.path.realpath segfaults
+    on Python 3.9/3.10 in some environments, which hangs scans running in a subprocess.
+    """
+    base_abs = os.path.abspath(base)
+    target_abs = os.path.abspath(target)
     try:
-        return os.path.commonpath([base_real, target_real]) == base_real
+        return os.path.commonpath([base_abs, target_abs]) == base_abs
     except ValueError:
         return False
 
