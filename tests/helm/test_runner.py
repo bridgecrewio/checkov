@@ -421,5 +421,157 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         self.assertGreater(len(repos), 0)
 
 
+class TestRenderedSourcePaths(unittest.TestCase):
+    """The '# Source: ' lines of the helm template output are used as file paths - they must stay in the target dir"""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = os.path.realpath(self._tmp.name)
+        self.target_dir = os.path.join(self.root, "target")
+        self.outside_dir = os.path.join(self.root, "outside")
+        self.chart_dir = os.path.join(self.root, "chart")
+        for d in (self.target_dir, self.outside_dir, os.path.join(self.chart_dir, "templates")):
+            os.makedirs(d)
+        with open(os.path.join(self.chart_dir, "templates", "cm.yaml"), "w") as f:
+            f.write("# template")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _parse(self, output: str) -> dict:
+        template_mapping = {}
+        Runner._parse_output(self.target_dir, output.encode(), self.chart_dir, template_mapping)
+        return template_mapping
+
+    def _written_files(self) -> list:
+        return sorted(
+            os.path.relpath(os.path.join(dirpath, name), self.root)
+            for dirpath, _, filenames in os.walk(self.root)
+            for name in filenames
+            if not os.path.join(dirpath, name).startswith(self.chart_dir + os.sep)
+        )
+
+    def _read(self, relative_path: str) -> str:
+        with open(os.path.join(self.target_dir, relative_path)) as f:
+            return f.read()
+
+    def test_valid_sources_written_and_mapped_as_before(self):
+        mapping = self._parse(
+            "---\n# Source: mychart/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: a\n"
+            "---\n# Source: mychart/templates/sub/dir/other.yaml\napiVersion: v1\nkind: Secret\n"
+        )
+        self.assertEqual(
+            self._written_files(),
+            [os.path.join("target", "mychart", "templates", "cm.yaml"),
+             os.path.join("target", "mychart", "templates", "sub", "dir", "other.yaml")],
+        )
+        self.assertEqual(
+            mapping,
+            {f"{self.target_dir}/mychart/templates/cm.yaml": os.path.join(self.chart_dir, "templates/cm.yaml")},
+        )
+        self.assertIn("kind: ConfigMap", self._read("mychart/templates/cm.yaml"))
+
+    def test_valid_source_with_dots_in_names(self):
+        self._parse("---\n# Source: my.chart/templates/..hidden..yaml\napiVersion: v1\nkind: ConfigMap\n")
+        self.assertEqual(self._written_files(), [os.path.join("target", "my.chart", "templates", "..hidden..yaml")])
+
+    def test_valid_subchart_source(self):
+        self._parse("---\n# Source: parent/charts/child/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\n")
+        self.assertEqual(
+            self._written_files(), [os.path.join("target", "parent", "charts", "child", "templates", "cm.yaml")]
+        )
+
+    def test_relative_traversal_source_is_not_written(self):
+        mapping = self._parse(
+            "---\n# Source: mychart/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\n"
+            "---\n# Source: ../outside/.checkov.yml\nexternal-checks-dir: x\n"
+        )
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(self._written_files(), [os.path.join("target", "mychart", "templates", "cm.yaml")])
+        self.assertNotIn("external-checks-dir", self._read("mychart/templates/cm.yaml"))
+        self.assertTrue(all(k.startswith(self.target_dir + "/") for k in mapping))
+
+    def test_absolute_source_is_not_written(self):
+        self._parse(f"---\n# Source: {self.outside_dir}/file.yaml\nkey: value\n")
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(self._written_files(), [])
+
+    def test_nested_traversal_source_is_not_written(self):
+        self._parse("---\n# Source: mychart/templates/../../../outside/file.yaml\nkey: value\n")
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(self._written_files(), [])
+
+    def test_backslash_traversal_source_is_not_written(self):
+        self._parse("---\n# Source: ..\\outside\\file.yaml\nkey: value\n")
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(self._written_files(), [])
+
+    def test_document_after_skipped_source_is_written(self):
+        self._parse(
+            "---\n# Source: ../outside/file.yaml\nkey: value\n"
+            "---\n# Source: mychart/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\n"
+        )
+        self.assertEqual(os.listdir(self.outside_dir), [])
+        self.assertEqual(self._written_files(), [os.path.join("target", "mychart", "templates", "cm.yaml")])
+        content = self._read("mychart/templates/cm.yaml")
+        self.assertIn("kind: ConfigMap", content)
+        self.assertNotIn("key: value", content)
+
+    def test_same_valid_source_repeated_is_appended(self):
+        self._parse(
+            "---\n# Source: mychart/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: a\n"
+            "---\n# Source: ../outside/file.yaml\nkey: value\n"
+            "---\n# Source: mychart/templates/cm.yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: b\n"
+        )
+        content = self._read("mychart/templates/cm.yaml")
+        self.assertIn("name: a", content)
+        self.assertIn("name: b", content)
+        self.assertNotIn("key: value", content)
+
+    def test_is_safe_source_path(self):
+        cases = {
+            "mychart/templates/cm.yaml": True,
+            "my.chart/templates/a..b.yaml": True,
+            "parent/charts/child/templates/cm.yaml": True,
+            "cm.yaml": True,
+            "": False,
+            "..": False,
+            "../cm.yaml": False,
+            "mychart/../../cm.yaml": False,
+            "/abs/cm.yaml": False,
+            "..\\cm.yaml": False,
+            "\\abs\\cm.yaml": False,
+            "a\0b": False,
+        }
+        for source, expected in cases.items():
+            with self.subTest(source=source):
+                self.assertEqual(Runner._is_safe_source_path(self.target_dir, source), expected)
+
+    @unittest.skipIf(not helm_exists(), "helm not installed")
+    def test_run_does_not_write_outside_target_dir(self):
+        scan_dir = os.path.join(self.root, "scan")
+        templates_dir = os.path.join(scan_dir, "chart", "templates")
+        os.makedirs(templates_dir)
+        with open(os.path.join(scan_dir, "chart", "Chart.yaml"), "w") as f:
+            f.write("apiVersion: v2\nname: test\nversion: 1.0.0\n")
+        traversal = "../" * 30 + self.outside_dir.lstrip("/")
+        with open(os.path.join(templates_dir, "cm.yaml"), "w") as f:
+            f.write(
+                "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: test\n"
+                f"---\n---\n# Source: {traversal}/file.yaml\nkey: value\n"
+                f"---\n---\n# Source: {traversal}/.checkov.yml\nexternal-checks-dir: x\n"
+            )
+
+        runner = Runner()
+        with mock.patch("checkov.helm.runner.parallel_runner.run_function",
+                        side_effect=lambda func, items, *a, **k: [func(*i) if isinstance(i, tuple) else func(i)
+                                                                  for i in items]):
+            runner.run(root_folder=scan_dir, runner_filter=RunnerFilter(framework=["helm"]))
+
+        # how the injected lines are laid out depends on the helm version, so only the file system is asserted here.
+        # parsing of the documents around a skipped source is covered by the _parse_output tests above.
+        self.assertEqual(os.listdir(self.outside_dir), [])
+
+
 if __name__ == "__main__":
     unittest.main()

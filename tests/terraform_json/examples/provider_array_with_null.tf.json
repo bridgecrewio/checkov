@@ -1,0 +1,18 @@
+{
+  "provider": [
+    {
+      "aws": {
+        "region": "us-west-2",
+        "profile": null
+      }
+    }
+  ],
+  "resource": {
+    "aws_instance": {
+      "example": {
+        "ami": "abc-123",
+        "instance_type": "t2.micro"
+      }
+    }
+  }
+}

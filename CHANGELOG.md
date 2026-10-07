@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.19...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.25...HEAD)
+
+## [3.3.25](https://github.com/bridgecrewio/checkov/compare/3.3.23...3.3.25) - 2026-10-06
+
+### Bug Fix
+
+- **helm:** source folder should be within the directory - [#7722](https://github.com/bridgecrewio/checkov/pull/7722)
+- **kustomize:** fix file path logic - [#7720](https://github.com/bridgecrewio/checkov/pull/7720)
+- **terraform:** avoid tmp_path in git loader tests - [#7726](https://github.com/bridgecrewio/checkov/pull/7726)
+- **terraform:** external module ref keeps inside directory - [#7721](https://github.com/bridgecrewio/checkov/pull/7721)
+
+## [3.3.23](https://github.com/bridgecrewio/checkov/compare/3.3.21...3.3.23) - 2026-10-05
+
+### Bug Fix
+
+- **sca:** apply --skip-path regex and hidden-dir filtering to sca_package - [#7712](https://github.com/bridgecrewio/checkov/pull/7712)
+
+## [3.3.21](https://github.com/bridgecrewio/checkov/compare/3.3.20...3.3.21) - 2026-09-30
+
+### Bug Fix
+
+- **terraform_json:** handle HCL JSON array and single-dict block formats in parser - [#7707](https://github.com/bridgecrewio/checkov/pull/7707)
+
+## [3.3.20](https://github.com/bridgecrewio/checkov/compare/3.3.19...3.3.20) - 2026-09-27
+
+### Bug Fix
+
+- **terraform_plan:** skip resources being removed from state ('forget' action) - [#7676](https://github.com/bridgecrewio/checkov/pull/7676)
 
 ## [3.3.19](https://github.com/bridgecrewio/checkov/compare/3.3.17...3.3.19) - 2026-09-17
 
