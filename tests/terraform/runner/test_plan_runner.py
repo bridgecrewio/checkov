@@ -746,6 +746,32 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+    def test_runner_for_each_nested_modules_with_connections(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_for_each_nested_modules_with_connections/tfplan.json"
+
+        passing_resources = {
+            'module.parent["prod"].module.child.azurerm_subnet.subnet["app"]',
+        }
+        failing_resources = {
+            'module.parent["prod"].module.child.azurerm_subnet.unassociated["data"]',
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AZURE_31"]),
+        )
+
+        # then
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
     def test_runner_with_iam_policies(self):
         # given
         tf_file_path = Path(__file__).parent / "resources/plan_with_iam_policies/tfplan.json"

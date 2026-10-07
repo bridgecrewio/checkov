@@ -1,0 +1,354 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.13.2",
+  "planned_values": {
+    "root_module": {
+      "child_modules": [
+        {
+          "address": "module.parent[\"prod\"]",
+          "child_modules": [
+            {
+              "resources": [
+                {
+                  "address": "module.parent[\"prod\"].module.child.azurerm_network_security_group.main[\"app\"]",
+                  "mode": "managed",
+                  "type": "azurerm_network_security_group",
+                  "name": "main",
+                  "index": "app",
+                  "provider_name": "registry.terraform.io/hashicorp/azurerm",
+                  "schema_version": 0,
+                  "values": {
+                    "location": "westeurope",
+                    "name": "nsg-app",
+                    "resource_group_name": "rg-example",
+                    "tags": null,
+                    "timeouts": null
+                  },
+                  "sensitive_values": {}
+                },
+                {
+                  "address": "module.parent[\"prod\"].module.child.azurerm_subnet.subnet[\"app\"]",
+                  "mode": "managed",
+                  "type": "azurerm_subnet",
+                  "name": "subnet",
+                  "index": "app",
+                  "provider_name": "registry.terraform.io/hashicorp/azurerm",
+                  "schema_version": 0,
+                  "values": {
+                    "address_prefixes": [
+                      "10.0.1.0/24"
+                    ],
+                    "delegation": [],
+                    "name": "snet-app",
+                    "resource_group_name": "rg-example",
+                    "service_endpoint_policy_ids": null,
+                    "service_endpoints": null,
+                    "timeouts": null,
+                    "virtual_network_name": "vnet-example"
+                  },
+                  "sensitive_values": {}
+                },
+                {
+                  "address": "module.parent[\"prod\"].module.child.azurerm_subnet.unassociated[\"data\"]",
+                  "mode": "managed",
+                  "type": "azurerm_subnet",
+                  "name": "unassociated",
+                  "index": "data",
+                  "provider_name": "registry.terraform.io/hashicorp/azurerm",
+                  "schema_version": 0,
+                  "values": {
+                    "address_prefixes": [
+                      "10.0.2.0/24"
+                    ],
+                    "delegation": [],
+                    "name": "snet-data",
+                    "resource_group_name": "rg-example",
+                    "service_endpoint_policy_ids": null,
+                    "service_endpoints": null,
+                    "timeouts": null,
+                    "virtual_network_name": "vnet-example"
+                  },
+                  "sensitive_values": {}
+                },
+                {
+                  "address": "module.parent[\"prod\"].module.child.azurerm_subnet_network_security_group_association.assoc[\"app\"]",
+                  "mode": "managed",
+                  "type": "azurerm_subnet_network_security_group_association",
+                  "name": "assoc",
+                  "index": "app",
+                  "provider_name": "registry.terraform.io/hashicorp/azurerm",
+                  "schema_version": 0,
+                  "values": {
+                    "timeouts": null
+                  },
+                  "sensitive_values": {}
+                }
+              ],
+              "address": "module.parent[\"prod\"].module.child"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "module.parent[\"prod\"].module.child.azurerm_network_security_group.main[\"app\"]",
+      "module_address": "module.parent[\"prod\"].module.child",
+      "mode": "managed",
+      "type": "azurerm_network_security_group",
+      "name": "main",
+      "index": "app",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "location": "westeurope",
+          "name": "nsg-app",
+          "resource_group_name": "rg-example",
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "security_rule": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.parent[\"prod\"].module.child.azurerm_subnet.subnet[\"app\"]",
+      "module_address": "module.parent[\"prod\"].module.child",
+      "mode": "managed",
+      "type": "azurerm_subnet",
+      "name": "subnet",
+      "index": "app",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "address_prefixes": [
+            "10.0.1.0/24"
+          ],
+          "delegation": [],
+          "name": "snet-app",
+          "resource_group_name": "rg-example",
+          "service_endpoint_policy_ids": null,
+          "service_endpoints": null,
+          "timeouts": null,
+          "virtual_network_name": "vnet-example"
+        },
+        "after_unknown": {
+          "address_prefixes": [
+            false
+          ],
+          "delegation": [],
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.parent[\"prod\"].module.child.azurerm_subnet.unassociated[\"data\"]",
+      "module_address": "module.parent[\"prod\"].module.child",
+      "mode": "managed",
+      "type": "azurerm_subnet",
+      "name": "unassociated",
+      "index": "data",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "address_prefixes": [
+            "10.0.2.0/24"
+          ],
+          "delegation": [],
+          "name": "snet-data",
+          "resource_group_name": "rg-example",
+          "service_endpoint_policy_ids": null,
+          "service_endpoints": null,
+          "timeouts": null,
+          "virtual_network_name": "vnet-example"
+        },
+        "after_unknown": {
+          "address_prefixes": [
+            false
+          ],
+          "delegation": [],
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "module.parent[\"prod\"].module.child.azurerm_subnet_network_security_group_association.assoc[\"app\"]",
+      "module_address": "module.parent[\"prod\"].module.child",
+      "mode": "managed",
+      "type": "azurerm_subnet_network_security_group_association",
+      "name": "assoc",
+      "index": "app",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "network_security_group_id": true,
+          "subnet_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "azurerm": {
+        "name": "azurerm",
+        "full_name": "registry.terraform.io/hashicorp/azurerm",
+        "expressions": {
+          "features": [
+            {}
+          ],
+          "subscription_id": {
+            "constant_value": "00000000-0000-0000-0000-000000000000"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "module_calls": {
+        "parent": {
+          "source": "./modules/parent",
+          "module": {
+            "module_calls": {
+              "child": {
+                "source": "../child",
+                "module": {
+                  "resources": [
+                    {
+                      "address": "azurerm_network_security_group.main",
+                      "mode": "managed",
+                      "type": "azurerm_network_security_group",
+                      "name": "main",
+                      "provider_config_key": "module.parent.module.child:azurerm",
+                      "expressions": {
+                        "location": {
+                          "constant_value": "westeurope"
+                        },
+                        "name": {
+                          "references": [
+                            "each.key"
+                          ]
+                        },
+                        "resource_group_name": {
+                          "constant_value": "rg-example"
+                        }
+                      },
+                      "schema_version": 0
+                    },
+                    {
+                      "address": "azurerm_subnet.subnet",
+                      "mode": "managed",
+                      "type": "azurerm_subnet",
+                      "name": "subnet",
+                      "provider_config_key": "module.parent.module.child:azurerm",
+                      "expressions": {
+                        "address_prefixes": {
+                          "constant_value": [
+                            "10.0.1.0/24"
+                          ]
+                        },
+                        "name": {
+                          "references": [
+                            "each.key"
+                          ]
+                        },
+                        "resource_group_name": {
+                          "constant_value": "rg-example"
+                        },
+                        "virtual_network_name": {
+                          "constant_value": "vnet-example"
+                        }
+                      },
+                      "schema_version": 0
+                    },
+                    {
+                      "address": "azurerm_subnet.unassociated",
+                      "mode": "managed",
+                      "type": "azurerm_subnet",
+                      "name": "unassociated",
+                      "provider_config_key": "module.parent.module.child:azurerm",
+                      "expressions": {
+                        "address_prefixes": {
+                          "constant_value": [
+                            "10.0.2.0/24"
+                          ]
+                        },
+                        "name": {
+                          "references": [
+                            "each.key"
+                          ]
+                        },
+                        "resource_group_name": {
+                          "constant_value": "rg-example"
+                        },
+                        "virtual_network_name": {
+                          "constant_value": "vnet-example"
+                        }
+                      },
+                      "schema_version": 0
+                    },
+                    {
+                      "address": "azurerm_subnet_network_security_group_association.assoc",
+                      "mode": "managed",
+                      "type": "azurerm_subnet_network_security_group_association",
+                      "name": "assoc",
+                      "provider_config_key": "module.parent.module.child:azurerm",
+                      "expressions": {
+                        "network_security_group_id": {
+                          "references": [
+                            "azurerm_network_security_group.main",
+                            "each.key"
+                          ]
+                        },
+                        "subnet_id": {
+                          "references": [
+                            "azurerm_subnet.subnet",
+                            "each.key"
+                          ]
+                        }
+                      },
+                      "schema_version": 0
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "timestamp": "2026-01-01T00:00:00Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}
