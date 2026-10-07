@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.25...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.26...HEAD)
+
+## [3.3.26](https://github.com/bridgecrewio/checkov/compare/3.3.25...3.3.26) - 2026-10-07
+
+### Bug Fix
+
+- **terraform_plan:** resolve for_each module calls in plan parser - [#7723](https://github.com/bridgecrewio/checkov/pull/7723)
 
 ## [3.3.25](https://github.com/bridgecrewio/checkov/compare/3.3.23...3.3.25) - 2026-10-06
 
