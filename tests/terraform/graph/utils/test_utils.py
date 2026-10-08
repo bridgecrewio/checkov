@@ -6,7 +6,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value, \
     replace_map_attribute_access_with_dot, generate_possible_strings_from_wildcards, \
-    attribute_has_nested_attributes
+    attribute_has_nested_attributes, get_literal_indexes_of_reference
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
 
@@ -156,3 +156,15 @@ class TestUtils(TestCase):
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
         self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
+
+    def test_get_literal_indexes_of_reference(self):
+        name = 'aws_lb_target_group.x'
+        self.assertEqual({0}, get_literal_indexes_of_reference(['${aws_lb_target_group.x[0].arn}'], name))
+        self.assertEqual({0, 2}, get_literal_indexes_of_reference(
+            {'a': 'aws_lb_target_group.x[0].arn', 'b': ['${aws_lb_target_group.x[2].arn}']}, name))
+        self.assertEqual(set(), get_literal_indexes_of_reference('${aws_lb_target_group.x[*].arn}', name))
+        self.assertEqual(set(), get_literal_indexes_of_reference('${aws_lb_target_group.x[var.i].arn}', name))
+        self.assertEqual(set(), get_literal_indexes_of_reference('${aws_lb_target_group.x["key"].arn}', name))
+        self.assertEqual(set(), get_literal_indexes_of_reference('${my_aws_lb_target_group.x[0].arn}', name))
+        self.assertEqual(set(), get_literal_indexes_of_reference('${aws_lb_target_group.xy[0].arn}', name))
+        self.assertEqual(set(), get_literal_indexes_of_reference(True, name))

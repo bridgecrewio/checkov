@@ -31,7 +31,8 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
-    remove_index_pattern_from_str, )
+    remove_index_pattern_from_str,
+    get_literal_indexes_of_reference, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
     get_sanitized_terraform_resource_id
 from checkov.terraform.graph_builder.utils import is_local_path
@@ -364,6 +365,16 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                         self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
                                                          vertex_reference, cross_variable_edges)
                         break
+                    if vertex_reference.block_type == BlockType.RESOURCE and reference_name.count(".") == 1:
+                        count_instance_indexes = self._find_count_instance_indexes(
+                            reference_name, attribute_value, vertex.path, source_module_object,
+                            None if source_module_object else origin_node_index
+                        )
+                        for dest_node_index in count_instance_indexes:
+                            self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index,
+                                                             sub_values, vertex_reference, cross_variable_edges)
+                        if count_instance_indexes:
+                            break
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
                 and isinstance(vertex.attributes['source'][0], str):
@@ -587,6 +598,37 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         else:
             relative_vertex = self._find_vertex_with_best_match(relative_vertices, block_path, origin_vertex_index)
         return relative_vertex
+
+    def _find_count_instance_indexes(
+        self,
+        reference_name: str,
+        attribute_value: Any,
+        block_path: str,
+        source_module_object: Optional[TFModule],
+        origin_vertex_index: Optional[int],
+    ) -> list[int]:
+        """
+        Resources expanded by `count` get vertices named `name[0]`, `name[1]`, ..., but a literal numeric index
+        in a reference (`aws_lb_target_group.x[0].arn`) is stripped during tokenisation, so the lookup of the
+        plain name `aws_lb_target_group.x` finds nothing. Recover the literal indexes from the raw attribute value
+        and connect to those instances. Without a literal index (e.g. a splat `x[*].arn`), connect only when the
+        resource has exactly one instance, since any reference to the block must then point at it.
+        """
+        def find_instance(idx: int) -> int:
+            return self._find_vertex_index_relative_to_path(
+                BlockType.RESOURCE, f"{reference_name}[{idx}]", block_path,
+                source_module_object=source_module_object, origin_vertex_index=origin_vertex_index
+            )
+
+        literal_indexes = get_literal_indexes_of_reference(attribute_value, reference_name)
+        if literal_indexes:
+            instances = (find_instance(idx) for idx in sorted(literal_indexes))
+            return [instance for instance in instances if instance > -1]
+
+        first_instance = find_instance(0)
+        if first_instance > -1 and find_instance(1) == -1:
+            return [first_instance]
+        return []
 
     def _get_possible_vertices(self, module_dependency_by_name_key: TFModule | None, block_type: str, name: str) -> list[int]:
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])

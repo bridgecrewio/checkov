@@ -184,6 +184,34 @@ def remove_index_pattern_from_str(str_value: str) -> str:
     return str_value
 
 
+def get_literal_indexes_of_reference(value: Any, reference_name: str) -> set[int]:
+    """
+    Returns the literal numeric indexes used with `reference_name` in `value`,
+    e.g. {0, 2} for 'aws_lb_target_group.x[0].arn' and 'aws_lb_target_group.x[2].arn'.
+    The indexes are needed, because `remove_index_pattern_from_str` strips them from the references.
+    """
+    indexes: set[int] = set()
+    if isinstance(value, list):
+        for sub_value in value:
+            indexes |= get_literal_indexes_of_reference(sub_value, reference_name)
+    elif isinstance(value, dict):
+        for sub_value in value.values():
+            indexes |= get_literal_indexes_of_reference(sub_value, reference_name)
+    elif isinstance(value, str):
+        prefix = f"{reference_name}["
+        start = value.find(prefix)
+        while start != -1:
+            # make sure the match is not just the end of a longer name, ex. 'my_aws_lb.x[0]' for 'aws_lb.x'
+            if start == 0 or not (value[start - 1].isalnum() or value[start - 1] in ("_", "-", ".")):
+                index_start = start + len(prefix)
+                index_end = value.find("]", index_start)
+                index = value[index_start:index_end]
+                if index_end != -1 and index.isdigit():
+                    indexes.add(int(index))
+            start = value.find(prefix, start + len(prefix))
+    return indexes
+
+
 def remove_interpolation(str_value: str) -> str:
     if "${" not in str_value:
         # otherwise it can't be a string interpolation
