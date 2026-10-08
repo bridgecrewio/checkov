@@ -19,12 +19,14 @@ class TestAzureGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "azuread_application_federated_identity_credential.pass2",
             "azuread_application_federated_identity_credential.pass4",
             "azuread_application_federated_identity_credential.pass_special_chars",
+            "azuread_application_federated_identity_credential.pass_environment_named_pull_request",
         }
         failing_resources = {
             "azuread_application_federated_identity_credential.fail1",
             "azuread_application_federated_identity_credential.fail2",
             "azuread_application_federated_identity_credential.fail3",
             "azuread_application_federated_identity_credential.fail5",
+            "azuread_application_federated_identity_credential.fail_pull_request",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
