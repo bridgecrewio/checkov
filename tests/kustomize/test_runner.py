@@ -298,6 +298,50 @@ class TestRemoteBaseAllowlist(unittest.TestCase):
         mock_popen.assert_called_once()
         self.assertEqual(result, fake_output)
 
+    def test_get_kubectl_output_uses_configured_kubectl_kustomize_command(self):
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+            result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "kubectl kustomize", "base")
+
+        self.assertEqual(mock_popen.call_args.args[0], ["kubectl", "kustomize"])
+        self.assertEqual(result, fake_output)
+
+    def test_get_kubectl_output_uses_custom_kustomize_binary(self):
+        runner = self._make_runner()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        with mock.patch("checkov.kustomize.runner.subprocess.Popen", return_value=mock_proc) as mock_popen:
+            result = runner._get_kubectl_output(self._REMOTE_BASE_DIR, "/opt/custom/kustomize", "base")
+
+        self.assertEqual(mock_popen.call_args.args[0], ["/opt/custom/kustomize", "build"])
+        self.assertEqual(result, fake_output)
+
+    def test_check_system_deps_uses_configured_command(self):
+        runner = self._make_runner()
+        env = {"CHECKOV_KUSTOMIZE_COMMAND": "kubectl kustomize"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("checkov.kustomize.runner.shutil.which", return_value="/usr/bin/kubectl"):
+                with mock.patch("checkov.kustomize.runner.get_kubectl_version", return_value=1.30):
+                    result = runner.check_system_deps()
+
+        self.assertIsNone(result)
+        self.assertEqual(runner.templateRendererCommand, "kubectl kustomize")
+
+    def test_check_system_deps_uses_configured_standalone_kustomize(self):
+        runner = self._make_runner()
+        env = {"CHECKOV_KUSTOMIZE_COMMAND": "kustomize"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("checkov.kustomize.runner.shutil.which", return_value="/usr/bin/kustomize"):
+                with mock.patch("checkov.kustomize.runner.get_kustomize_version", return_value="v5.8.0"):
+                    result = runner.check_system_deps()
+
+        self.assertIsNone(result)
+        self.assertEqual(runner.templateRendererCommand, "kustomize")
+
 
 class TestRenderedManifestFilename(unittest.TestCase):
     """Rendered manifests are renamed using K8s metadata - make sure it can't be used to escape the target folder"""
