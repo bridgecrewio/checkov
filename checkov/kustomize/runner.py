@@ -7,6 +7,7 @@ import os
 import pathlib
 import platform
 import re
+import shlex
 import shutil
 import subprocess  # nosec
 import tempfile
@@ -519,6 +520,34 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
         logging.info(f"Checking necessary system dependencies for {self.check_type} checks.")
 
+        configured_command = os.getenv("CHECKOV_KUSTOMIZE_COMMAND", "").strip()
+        if configured_command:
+            try:
+                command_parts = shlex.split(configured_command)
+            except ValueError:
+                logging.warning(f"Invalid CHECKOV_KUSTOMIZE_COMMAND value: {configured_command!r}")
+                return self.check_type
+            if not command_parts or shutil.which(command_parts[0]) is None:
+                logging.info(
+                    f"Could not find configured Kustomize command {configured_command!r}. "
+                    f"Framework will be disabled for this run."
+                )
+                return self.check_type
+
+            # Validate the known command forms with the same minimum-version checks as auto-detection.
+            if os.path.basename(command_parts[0]).lower() == self.kubectl_command:
+                kubectl_version = get_kubectl_version(command_parts[0])
+                if not kubectl_version or kubectl_version < 1.14:
+                    return self.check_type
+            elif len(command_parts) == 1:
+                kustomize_version = get_kustomize_version(command_parts[0])
+                if not kustomize_version:
+                    return self.check_type
+
+            self.templateRendererCommand = configured_command
+            logging.info(f"Using configured Kustomize command: {configured_command}")
+            return None
+
         if shutil.which(self.kubectl_command) is not None:
             kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
             if kubectl_version and kubectl_version >= 1.14:
@@ -615,13 +644,15 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
 
     def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes | None:
         # Template out the Kustomizations to Kubernetes YAML
-        if template_renderer_command == "kubectl":
-            template_render_command_options = "kustomize"
-        elif template_renderer_command == "kustomize":
-            template_render_command_options = "build"
-        else:
-            logging.error(f"Template renderer command has an invalid value: {template_renderer_command}")
+        command_parts = shlex.split(template_renderer_command)
+        if not command_parts:
+            logging.error("Template renderer command is empty")
             return None
+        executable_name = os.path.basename(command_parts[0]).lower()
+        if executable_name == "kubectl" and command_parts == [command_parts[0]]:
+            command_parts.append("kustomize")
+        elif executable_name == "kustomize" and len(command_parts) == 1:
+            command_parts.append("build")
 
         # Default = allow all. Set CHECKOV_KUSTOMIZE_ALLOWED_REMOTE_PREFIXES
         # to a comma-separated allowlist of trusted URL prefixes to block everything else.
@@ -640,8 +671,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             add_origin_annotations_return_code = subprocess.run(add_origin_annotations_command.split(' '),  # nosec
                                                                 cwd=filePath).returncode
 
-        full_command = f'{template_renderer_command} {template_render_command_options}'
-        proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+        proc = subprocess.Popen(command_parts, cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
 
         if self.checkov_allow_kustomize_file_edits and add_origin_annotations_return_code == 0:
@@ -650,7 +680,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             subprocess.run(remove_origin_annotaions.split(' '), cwd=filePath)  # nosec
 
         logging.info(
-            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
+            f"Ran configured Kustomize renderer to build output. DIR: {filePath}. TYPE: {source_type}.")
         return output
 
     @staticmethod
