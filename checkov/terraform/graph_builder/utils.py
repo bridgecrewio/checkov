@@ -168,6 +168,14 @@ def remove_function_calls_from_str(str_value: str) -> str:
     return str_value.replace(")", "")
 
 
+def remove_module_instance_suffix(str_value: str) -> str:
+    """Strip a trailing instance suffix from an expanded module vertex name:
+    'sg[0]' and 'sg["key"]' both become 'sg'. Unlike remove_index_pattern_from_str
+    this also handles for_each string keys, and only a single trailing suffix, so
+    a name that legitimately contains brackets elsewhere is left alone."""
+    return re.sub(r"\[(?:\d+|\"[^\"]*\")\]$", "", str_value)
+
+
 def remove_index_pattern_from_str(str_value: str) -> str:
     if "[" not in str_value:
         # otherwise it can't be accessed via index

@@ -31,7 +31,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
-    remove_index_pattern_from_str, )
+    remove_index_pattern_from_str, remove_module_instance_suffix, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
     get_sanitized_terraform_resource_id
 from checkov.terraform.graph_builder.utils import is_local_path
@@ -363,6 +363,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if dest_node_index > -1 and origin_node_index > -1:
                         self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
                                                          vertex_reference, cross_variable_edges)
+                        if vertex_reference.block_type == BlockType.MODULE:
+                            # A numeric instance index never survives tokenisation, so a
+                            # reference to one instance of a counted module resolves by
+                            # name alone. Connect the remaining instances too: they are
+                            # expansions of the same configuration block, and dropping
+                            # them orphans every instance the best-match did not pick.
+                            for extra_index in self._find_all_module_instance_indexes(
+                                reference_name, vertex.path, source_module_object
+                            ):
+                                if extra_index != dest_node_index:
+                                    self._create_edge_from_reference(attribute_key, origin_node_index, extra_index,
+                                                                     sub_values, vertex_reference, cross_variable_edges)
                         break
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
@@ -532,11 +544,19 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             )
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
-                if self._should_add_edge(vertex, dest_module_path, module_node):
-                    added_edge = self.create_edge(origin_node_index, vertex_index, attribute_key, cross_variable_edges)
-                    if added_edge:
-                        self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
-                    break
+                if not self._should_add_edge(vertex, dest_module_path, module_node):
+                    continue
+                if module_node.for_each_index is not None and vertex.source_module_object:
+                    # An expanded module instance must connect to ITS OWN output
+                    # vertex, or every instance's references collapse onto whichever
+                    # output the iteration order yields first and the rest are
+                    # orphaned from the graph.
+                    if vertex.source_module_object.foreach_idx != module_node.for_each_index:
+                        continue
+                added_edge = self.create_edge(origin_node_index, vertex_index, attribute_key, cross_variable_edges)
+                if added_edge:
+                    self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
+                break
 
     def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
         """
@@ -592,7 +612,46 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
-        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        if possible_vertices:
+            return possible_vertices
+        if block_type == BlockType.MODULE:
+            # A module called with count or for_each is expanded into vertices named
+            # "name[idx]" or 'name["key"]', but numeric indexes are stripped from
+            # references before lookup (and the tokenizer already drops them from
+            # sub_parts), so looking up the plain name misses every expanded module
+            # vertex, no edge is created to the module's outputs, and graph checks
+            # fail for resources that reference them.
+            by_name = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {})
+            matches: list[int] = []
+            for vertex_name, vertex_indexes in by_name.items():
+                if remove_module_instance_suffix(vertex_name) == name:
+                    matches.extend(vertex_indexes)
+            return matches
+        return []
+
+    def _find_all_module_instance_indexes(
+        self,
+        name: str,
+        block_path: str,
+        source_module_object: Optional[TFModule] = None,
+    ) -> list[int]:
+        """All expanded instances of the module block `name` in scope, path-filtered
+        the same way as _find_vertex_index_relative_to_path. Used when a reference
+        to a counted module cannot be tied to one instance, because the numeric
+        index never survives tokenisation: the instances are expansions of a single
+        configuration block, so connecting the reference to every instance keeps
+        the graph a faithful superset instead of dropping the edge entirely."""
+        by_name = self.vertices_by_module_dependency_by_name.get(source_module_object, {}).get(BlockType.MODULE, {})
+        matches = []
+        for vertex_name, vertex_indexes in by_name.items():
+            if remove_module_instance_suffix(vertex_name) == name:
+                matches.extend(vertex_indexes)
+        return [
+            vertex_index
+            for vertex_index in matches
+            if self.get_dirname(self.vertices[vertex_index].path) == self.get_dirname(block_path)
+        ]
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
