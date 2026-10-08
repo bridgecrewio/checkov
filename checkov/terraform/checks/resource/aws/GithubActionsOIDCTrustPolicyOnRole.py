@@ -87,10 +87,16 @@ class GithubActionsOIDCTrustPolicyOnRole(BaseResourceCheck):
         Walk Condition operators looking for the `:sub` claim constraint.
 
         Mirrors CKV_AWS_358's inner loop: returns FAILED on the first unsafe
-        value found, PASSED on the first safe value found, or None if no
-        `:sub` claim constraint exists in any operator (the caller then
-        returns FAILED, matching the data check's "Found a federated GitHub
-        user, but no restrictions" path).
+        value found, PASSED once every value of the first `:sub` constraint has
+        been inspected and found safe, or None if no `:sub` claim constraint
+        exists in any operator (the caller then returns FAILED, matching the
+        data check's "Found a federated GitHub user, but no restrictions"
+        path).
+
+        IAM evaluates multiple values of one condition key with a logical OR,
+        so a single loose value admits every subject it matches no matter how
+        tight the other values are -- one safe value cannot vouch for the rest
+        of the list.
         """
         for operator_values in condition.values():
             if not isinstance(operator_values, dict):
@@ -98,12 +104,17 @@ class GithubActionsOIDCTrustPolicyOnRole(BaseResourceCheck):
             for variable_name, values in operator_values.items():
                 if not isinstance(variable_name, str) or not gh_sub_condition.match(variable_name):
                     continue
+                verdict: CheckResult | None = None
                 for value in force_list(values):
                     if not isinstance(value, str):
                         continue
-                    verdict = self._classify_sub_value(value)
-                    if verdict is not None:
-                        return verdict
+                    value_verdict = self._classify_sub_value(value)
+                    if value_verdict == CheckResult.FAILED:
+                        return CheckResult.FAILED
+                    if value_verdict == CheckResult.PASSED:
+                        verdict = CheckResult.PASSED
+                if verdict is not None:
+                    return verdict
         return None
 
     @staticmethod
