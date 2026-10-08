@@ -1,6 +1,8 @@
 import os
 import unittest
 import json
+import tempfile
+from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -125,6 +127,63 @@ class TestRunnerValid(unittest.TestCase):
         )
         result = runner.pre_validate_file(file_content)
         self.assertTrue(result)
+
+    def test_parse_format_ignores_missing_file(self) -> None:
+        # FileNotFoundError is an OSError and should not propagate
+        self.assertIsNone(Runner._parse_file("does_not_exist.json"))
+        self.assertIsNone(Runner._parse_file("does_not_exist.yaml"))
+
+    def test_runner_skips_unreadable_file(self) -> None:
+        # see https://github.com/bridgecrewio/checkov/issues/7693
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            valid_file_path = os.path.join(tmp_dir, "openapi.yaml")
+            with open(valid_file_path, "w") as f:
+                f.write(
+                    """openapi: 3.0.0
+info:
+  title: test api
+  version: 1.0.0
+paths:
+  /ping:
+    get:
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: ok
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+"""
+                )
+
+            unreadable_file_path = os.path.join(tmp_dir, "report.json")
+            with open(unreadable_file_path, "w") as f:
+                f.write(json.dumps({"not": "readable"}))
+
+            def read_file(file_path: object) -> str:
+                # simulate a file owned by another uid, which raises PermissionError on open
+                if str(file_path) == unreadable_file_path:
+                    raise PermissionError(13, "Permission denied")
+                with open(file_path) as f:  # type:ignore[arg-type]
+                    return f.read()
+
+            runner = Runner()
+            with mock.patch("checkov.openapi.runner.read_file_with_any_encoding", side_effect=read_file):
+                report = runner.run(
+                    root_folder=tmp_dir,
+                    runner_filter=RunnerFilter(framework=["openapi"], checks=["CKV_OPENAPI_1", "CKV_OPENAPI_3"]),
+                )
+
+        # the unreadable file is skipped, but the scan still completes
+        self.assertEqual(report.parsing_errors, [])
+        scanned_files = {record.file_path for record in report.get_all_records()}
+        self.assertTrue(scanned_files)
+        for file_path in scanned_files:
+            self.assertTrue(file_path.startswith("/openapi.yaml"), f"unexpected file was scanned: {file_path}")
+        self.assertTrue(report.passed_checks or report.failed_checks)
 
     def test_runner_results_consistency(self) -> None:
         current_dir = os.path.dirname(__file__)
