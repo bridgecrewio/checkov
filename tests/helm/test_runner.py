@@ -9,7 +9,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
-from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos
+from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos, \
+    _host_matches_prefix
 from tests.helm.utils import helm_exists
 
 
@@ -59,7 +60,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
-        
+
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_invalid_chart(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -206,7 +207,8 @@ class TestRunnerValid(unittest.TestCase):
                 # Check template mapping was populated correctly
                 expected_mapping = {
                     f'{target_dir}/mychart/templates/service.yaml': os.path.join(chart_dir, "templates/service.yaml"),
-                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir, "templates/deployment.yaml")
+                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir,
+                                                                                    "templates/deployment.yaml")
                 }
 
                 # Compare the mappings - normalize paths for comparison
@@ -241,12 +243,14 @@ class TestRunnerValid(unittest.TestCase):
         r.helm_command = 'thisshouldfail'
         assert r.check_system_deps() == "helm"
 
+
 class TestHelmDependencyRemoteRepos(unittest.TestCase):
     """Tests for helm remote dependency repository allowlist.
 
-    Default behaviour: helm template --dependency-update runs normally (original behaviour preserved).
-    Blocking is opt-in via CHECKOV_HELM_ALLOWED_REMOTE_REPOS — an allowlist of trusted repo URL prefixes.
-    Dependency repos NOT in the allowlist cause the build to be skipped.
+    Default behaviour: remote dependency repos are allowed (opt-in).
+    Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS to a comma-separated list of URL
+    prefixes to restrict which repositories are allowed, or 'none' to block all.
+    Charts with blocked remote deps are still scanned (without --dependency-update).
     """
 
     _REMOTE_DEP_DIR = str(Path(__file__).parent / "runner/resources/example_remote_dep")
@@ -271,10 +275,17 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
     # _get_blocked_helm_repos() unit tests (allowlist logic)
     # ------------------------------------------------------------------
 
-    def test_get_blocked_helm_repos_returns_empty_when_no_env_var(self):
-        """Default: no env var → _get_blocked_helm_repos() returns [] (allow all)."""
+    def test_get_blocked_helm_repos_allows_all_when_no_env_var(self):
+        """Default: no env var → all remote repos are allowed (opt-in)."""
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertEqual(repos, [])
+
+    def test_get_blocked_helm_repos_returns_empty_when_wildcard(self):
+        """Wildcard '*' → allow all remote repos (legacy behaviour)."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "*"}
+        with mock.patch.dict(os.environ, env):
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
         self.assertEqual(repos, [])
 
@@ -296,8 +307,8 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
     # get_binary_output() integration tests
     # ------------------------------------------------------------------
 
-    def test_dependency_update_in_args_by_default(self):
-        """Default (no env var): --dependency-update is in helm args (original behaviour)."""
+    def test_dependency_update_by_default(self):
+        """Default (no env var): --dependency-update IS in helm args (remote deps allowed)."""
         chart_item = self._make_chart_item()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
@@ -305,28 +316,47 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
             with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
-                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
-        call_args = mock_popen.call_args[0][0]
-        self.assertIn("--dependency-update", call_args)
+                result, _ = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        self.assertEqual(mock_popen.call_count, 2)  # dependency list + template
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertIn("--dependency-update", template_call_args)
+        self.assertIn("template", template_call_args)
+        self.assertIsNotNone(result)
 
-    def test_build_skipped_when_repo_not_in_allowlist(self):
-        """When CHECKOV_HELM_ALLOWED_REMOTE_REPOS is set and a repo is not in it, build is skipped."""
+    def test_dependency_update_in_args_when_wildcard(self):
+        """When CHECKOV_HELM_ALLOWED_REMOTE_REPOS='*', --dependency-update is used."""
         chart_item = self._make_chart_item()
-        # The first subprocess.Popen call is 'helm dependency list' (before the allowlist check).
-        # We must mock it so it does not crash; the allowlist check then returns None before the second call.
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "*"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertIn("--dependency-update", template_call_args)
+
+    def test_no_dependency_update_when_repo_not_in_allowlist(self):
+        """When repos are blocked by allowlist, helm template runs without --dependency-update."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         dep_list_proc = mock.MagicMock()
         dep_list_proc.communicate.return_value = (b"", b"")
+        template_proc = mock.MagicMock()
+        template_proc.communicate.return_value = (fake_output, b"")
         env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "https://charts.trusted.org/"}
         with mock.patch.dict(os.environ, env):
-            with mock.patch("subprocess.Popen", return_value=dep_list_proc) as mock_popen:
+            with mock.patch("subprocess.Popen", side_effect=[dep_list_proc, template_proc]) as mock_popen:
                 result, _ = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
-        self.assertIsNone(result)
-        # Only the dependency list call should have been made; helm template must NOT be called.
-        self.assertEqual(mock_popen.call_count, 1)
-        self.assertIn("dependency", mock_popen.call_args[0][0])
+        # Both calls should be made (graceful degradation — template without --dependency-update)
+        self.assertEqual(mock_popen.call_count, 2)
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertNotIn("--dependency-update", template_call_args)
+        self.assertIn("template", template_call_args)
+        self.assertIsNotNone(result)
 
     def test_build_proceeds_when_all_repos_in_allowlist(self):
-        """When all repos are in the allowlist, build proceeds normally."""
+        """When all repos are in the allowlist, build proceeds normally with --dependency-update."""
         chart_item = self._make_chart_item()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         dep_list_proc = mock.MagicMock()
@@ -338,20 +368,71 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
             with mock.patch("subprocess.Popen", side_effect=[dep_list_proc, template_proc]) as mock_popen:
                 result, _ = Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
         self.assertEqual(mock_popen.call_count, 2)
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertIn("--dependency-update", template_call_args)
         self.assertEqual(result, fake_output)
 
-    def test_chart_dir_always_last_arg(self):
-        """chart_dir must always be the last argument."""
+    def test_chart_dir_after_template_args(self):
+        """chart_dir must appear after 'helm template' args (before any --values flags)."""
         chart_item = self._make_chart_item()
         fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
         mock_proc = mock.MagicMock()
         mock_proc.communicate.return_value = (fake_output, b"")
+        # Test with default (allowed) — chart_dir should still be last when no var_files
         with mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", None)
             with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
                 Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
-        call_args = mock_popen.call_args[0][0]
-        self.assertEqual(call_args[-1], self._REMOTE_DEP_DIR)
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertEqual(template_call_args[-1], self._REMOTE_DEP_DIR)
+
+    def test_chart_dir_after_dependency_update_when_wildcard(self):
+        """chart_dir must appear after --dependency-update when wildcard allows all."""
+        chart_item = self._make_chart_item()
+        fake_output = b"apiVersion: v1\nkind: ConfigMap\n"
+        mock_proc = mock.MagicMock()
+        mock_proc.communicate.return_value = (fake_output, b"")
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "*"}
+        with mock.patch.dict(os.environ, env):
+            with mock.patch("subprocess.Popen", return_value=mock_proc) as mock_popen:
+                Runner.get_binary_output(chart_item, "./tmp", "helm", RunnerFilter())
+        template_call_args = mock_popen.call_args[0][0]
+        self.assertEqual(template_call_args[-1], self._REMOTE_DEP_DIR)
+
+    # ------------------------------------------------------------------
+    # Edge-case tests for allowlist parsing
+    # ------------------------------------------------------------------
+
+    def test_trailing_comma_does_not_allow_all_repos(self):
+        """A trailing comma must NOT produce an empty-string prefix that matches everything."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "https://charts.myorg.com/,"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        # http://192.0.2.1 host does NOT match https://charts.myorg.com/ host so it must be blocked
+        self.assertIn("http://192.0.2.1", repos)
+
+    def test_none_value_blocks_all_repos(self):
+        """Setting the env var to 'none' blocks all repos ('none' has no valid host)."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "none"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertIn("http://192.0.2.1", repos)
+        self.assertGreater(len(repos), 0)
+
+    def test_host_match_prevents_subdomain_confusion(self):
+        """An allowed prefix like 'https://charts.example.com' must NOT match
+        'https://charts.example.com.other.net' — host comparison prevents this."""
+        self.assertTrue(_host_matches_prefix("https://charts.example.com/stable", "https://charts.example.com/repo"))
+        self.assertFalse(
+            _host_matches_prefix("https://charts.example.com.other.net/repo", "https://charts.example.com/repo"))
+
+    def test_blocked_repos_uses_host_matching_not_prefix(self):
+        """Allowlist with 'http://192.0.2.1' must match the repo 'http://192.0.2.1'
+        by host, not by string prefix."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "http://192.0.2.1"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertEqual(repos, [])
 
 
 class TestRenderedSourcePaths(unittest.TestCase):
