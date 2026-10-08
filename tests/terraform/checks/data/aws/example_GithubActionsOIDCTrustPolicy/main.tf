@@ -262,3 +262,30 @@ data "aws_iam_policy_document" "pass-gh-org" {
     }
   }
 }
+
+# pass_immutable - GitHub immutable OIDC subject (owner@id/repo@id numeric suffixes)
+data "aws_iam_policy_document" "pass_immutable" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:octo-org@123456/octo-repo@456789:ref:refs/heads/main"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+  }
+}
