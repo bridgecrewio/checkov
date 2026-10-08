@@ -64,6 +64,9 @@ def _extract_images_from_spec(spec: dict[str, Any] | None) -> list[str]:
         containers = spec.get("initContainers")
         image_names.update(extract_images_from_containers(containers=containers))
 
+        containers = spec.get("ephemeralContainers")
+        image_names.update(extract_images_from_containers(containers=containers))
+
     # Makes sure we return no duplications
     return list(image_names)
 
