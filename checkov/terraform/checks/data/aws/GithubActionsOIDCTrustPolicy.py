@@ -41,7 +41,7 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                                     found_federated_gh_oidc = True
                                     break
                 if not found_federated_gh_oidc:
-                    return CheckResult.PASSED
+                    continue
 
                 # By now we know that the statement is a federated GitHub OIDC provider
                 # First check - if the statement is a federated GitHub OIDC provider, it MUST have a condition
