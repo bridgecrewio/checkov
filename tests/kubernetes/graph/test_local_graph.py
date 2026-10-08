@@ -59,6 +59,28 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[1].metadata.selector.match_labels is None
         assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'
 
+    def test_build_graph_with_rollout_nested_resources(self) -> None:  
+        file = os.path.join(TEST_DIRNAME, 'resources', 'rollout_nested_resource.yaml')  
+        definitions = {}  
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=False)  
+        (definitions[file], definitions_raw) = parse(file)  
+        local_graph = KubernetesLocalGraph(definitions)  
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)  
+        self.assertEqual(2, len(local_graph.vertices))  
+        assert local_graph.vertices[0].id == 'Rollout.default.rollout_name'  
+        assert local_graph.vertices[0].attributes.get('spec').get('template') is None  
+        assert local_graph.vertices[0].metadata.name == 'rollout_name'    
+        assert local_graph.vertices[0].metadata.labels is None  
+        assert local_graph.vertices[1].id == 'Pod.default.rollout_name.app-myapp'  
+        assert local_graph.vertices[1].config[PARENT_RESOURCE_KEY_NAME] == 'rollout_name'  
+        assert local_graph.vertices[1].config[PARENT_RESOURCE_ID_KEY_NAME] == 'Rollout.default.rollout_name'  
+        assert local_graph.vertices[1].config.get('kind') == 'Pod'  
+        assert local_graph.vertices[1].config.get('apiVersion') == local_graph.vertices[0].config.get('apiVersion')  
+        assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1  
+        assert local_graph.vertices[1].metadata.name is None  
+        assert local_graph.vertices[1].metadata.selector.match_labels is None  
+        assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'    
+
     def test_LabelSelectorEdgeBuilder_on_template_with_matched_label_and_selector(self) -> None:
         relative_file_path = "resources/LabelSelector/label_selector_match.yaml"
         definitions = {}
@@ -199,7 +221,7 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(0, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
 
-    def test_custom_resource_should_not_extract_pod(self) -> None:
+    def test_rollout_should_extract_pod(self) -> None:
         relative_file_path = "resources/custom_resource.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -209,5 +231,5 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
-        self.assertEqual(1, len(local_graph.vertices))
-        self.assertEqual(0, len(local_graph.edges))
+        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.edges))
