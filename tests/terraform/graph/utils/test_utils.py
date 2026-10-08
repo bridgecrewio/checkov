@@ -6,7 +6,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value, \
     replace_map_attribute_access_with_dot, generate_possible_strings_from_wildcards, \
-    attribute_has_nested_attributes
+    attribute_has_nested_attributes, get_reference_indexes_in_expressions
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
 
@@ -156,3 +156,81 @@ class TestUtils(TestCase):
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
         self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
+
+    def test_get_reference_indexes_in_expressions(self):
+        name = 'aws_lb_target_group.x'
+        get_indexes = get_reference_indexes_in_expressions
+        # literal indexes
+        self.assertEqual({0}, get_indexes(['${aws_lb_target_group.x[0].arn}'], name))
+        self.assertEqual({0, 2}, get_indexes(
+            {'a': ['${aws_lb_target_group.x[0].arn}'], 'b': 'prefix-${aws_lb_target_group.x[2].arn}'}, name))
+        self.assertEqual({1}, get_indexes("${jsonencode({'a': '${aws_lb_target_group.x[1].arn}', 'b': 'c'})}", name))
+        self.assertEqual({1}, get_indexes('${aws_lb_target_group.x[ 1 ].arn}', name))
+        self.assertEqual({1}, get_indexes('${aws_lb_target_group.x[1.0].arn}', name))
+        self.assertEqual({1}, get_indexes('${aws_lb_target_group.x.1.arn}', name))
+        self.assertEqual({1}, get_indexes('prefix-${aws_lb_target_group.x.1}', name))
+        self.assertEqual({None}, get_indexes('${aws_lb_target_group.x.1a}', name))
+        # uses without a literal index
+        self.assertEqual({None}, get_indexes('${aws_lb_target_group.x[*].arn}', name))
+        self.assertEqual({None}, get_indexes('${aws_lb_target_group.x[var.i].arn}', name))
+        self.assertEqual({None}, get_indexes('${aws_lb_target_group.x["key"].arn}', name))
+        self.assertEqual({None}, get_indexes('${length(aws_lb_target_group.x)}', name))
+        self.assertEqual({None}, get_indexes('${aws_lb_target_group.x.*.arn}', name))
+        # other names
+        self.assertEqual(set(), get_indexes('${my_aws_lb_target_group.x[0].arn}', name))
+        self.assertEqual(set(), get_indexes('${aws_lb_target_group.xy[0].arn}', name))
+        self.assertEqual(set(), get_indexes('${aws_lb_target_group.x-y[0].arn}', name))
+        self.assertEqual(set(), get_indexes('${data.aws_lb_target_group.x[0].arn}', name))
+        self.assertEqual(set(), get_indexes(True, name))
+        # plain text
+        self.assertEqual(set(), get_indexes('see aws_lb_target_group.x for details', name))
+        self.assertEqual(set(), get_indexes('see aws_lb_target_group.x[0] for details', name))
+        self.assertEqual(set(), get_indexes('see length(aws_lb_target_group.x) for ${var.details}', name))
+        self.assertEqual(set(), get_indexes('${upper("see aws_lb_target_group.x for details")}', name))
+        self.assertEqual({1}, get_indexes('${aws_lb_target_group.x[1].arn} not aws_lb_target_group.x[2]', name))
+        # template directives
+        self.assertEqual({None}, get_indexes('%{ for x in aws_lb_target_group.x }${x.arn}%{ endfor }', name))
+        self.assertEqual({0}, get_indexes('%{ if aws_lb_target_group.x[0].arn != "" }a%{ endif }', name))
+        self.assertEqual(set(), get_indexes('%{ if var.a }aws_lb_target_group.x%{ endif }', name))
+        self.assertEqual({None}, get_indexes('%{ if length({a=true}) > 0 && length(aws_lb_target_group.x) > 0 }a%{ endif }', name))
+        self.assertEqual({0}, get_indexes('%{ if length({a=true}) > 0 && aws_lb_target_group.x[0].arn != "" }a%{ endif }', name))
+        self.assertEqual(set(), get_indexes('%%{ if aws_lb_target_group.x }', name))
+        # quotes and backslashes in the strings of an expression, as the parser stores them
+        self.assertEqual({0}, get_indexes('${format("%s\\",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('${format("%s\\\\",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('${format("a\\"%s",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('${format("a\\\\\\"%s",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('${format("it\'s %s",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('${format("}{%s",aws_lb_target_group.x[0].arn)}', name))
+        self.assertEqual({0}, get_indexes('it\'s a\\"${aws_lb_target_group.x[0].arn}', name))
+        self.assertEqual(set(), get_indexes('${format("\\"aws_lb_target_group.x\\"",var.y)}', name))
+        self.assertEqual(set(), get_indexes('$${aws_lb_target_group.x[0].arn}', name))
+        # a backslash doesn't escape the start of a template sequence
+        self.assertEqual({0}, get_indexes('${format("%s","C:\\${aws_lb_target_group.x[0].arn}")}', name))
+        self.assertEqual(set(), get_indexes('${format("%s","C:\\$${aws_lb_target_group.x[0].arn}")}', name))
+        # a heredoc in a function keeps its own quotes
+        self.assertEqual(set(), get_indexes('${trimspace("see " aws_lb_target_group.x " for details")}', name))
+        self.assertEqual(set(), get_indexes('${trimspace("a "b c" aws_lb_target_group.x[0] "d e"")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("{"Resource": "${aws_lb_target_group.x[0].arn}"}")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("a ${aws_lb_target_group.x[0].arn} "b"")}', name))
+        self.assertEqual(set(), get_indexes('${trimspace("see " aws_lb_target_group.x for: details " end")}', name))
+        self.assertEqual(set(), get_indexes('${trimspace("see ", aws_lb_target_group.x " end")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("{"a": "b", "c": "${aws_lb_target_group.x[0].arn}"}")}', name))
+        self.assertEqual({0}, get_indexes('${f(g("see "a" b"),aws_lb_target_group.x[0].arn,"c")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("a "${aws_lb_target_group.x[0].arn}" b")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("a "see ${aws_lb_target_group.x[0].arn}" b")}', name))
+        self.assertEqual({0}, get_indexes('${trimspace("a "${aws_lb_target_group.x[0].arn} see" b")}', name))
+        # strings in valid code
+        self.assertEqual({0}, get_indexes('${"a" == aws_lb_target_group.x[0].arn ? "b" : "c"}', name))
+        self.assertEqual({0}, get_indexes('${"5" - aws_lb_target_group.x[0].size - "2"}', name))
+        self.assertEqual({0}, get_indexes('${[for s in "a" : "b" if s != aws_lb_target_group.x[0].arn || s == "c"]}', name))
+        self.assertEqual({0}, get_indexes('${f("a", aws_lb_target_group.x[0].arn, "b")}', name))
+        self.assertEqual({0}, get_indexes('${f("a\\"b", aws_lb_target_group.x[0].arn, "c\\"d")}', name))
+        self.assertEqual({0}, get_indexes('${f("a", [for s in aws_lb_target_group.x[0].y : s], [for t in "b" : t])}', name))
+        # both kinds of use
+        self.assertEqual({1, None}, get_indexes('${try(aws_lb_target_group.x[1].arn, one(aws_lb_target_group.x[*].arn))}', name))
+        # rendered values have no markers left
+        self.assertEqual({0}, get_indexes('aws_lb_target_group.x[0].arn', name, is_rendered=True))
+        self.assertEqual({None}, get_indexes('length(aws_lb_target_group.x)', name, is_rendered=True))
+        self.assertEqual({0}, get_indexes('f("${aws_lb_target_group.x[0].arn}")', name, is_rendered=True))
+        self.assertEqual({0}, get_indexes('f("it\'s aws_lb_target_group.x[0].arn")', name, is_rendered=True))
