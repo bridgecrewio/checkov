@@ -1,5 +1,7 @@
 pass:
   - "ClusterRoleBinding.default.read-pods-global"
   - "RoleBinding.my-namespace.my-role-binding"
+  - "RoleBinding.namespace-a.full-access-binding"
 fail:
   - "ClusterRoleBinding.default.read-secrets-global"
+  - "RoleBinding.namespace-b.full-access-binding"
