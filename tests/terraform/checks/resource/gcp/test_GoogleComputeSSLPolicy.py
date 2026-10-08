@@ -57,6 +57,41 @@ class TestGoogleComputeSSLPolicy(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_success_3(self):
+        hcl_res = hcl2.loads("""
+                        resource "google_compute_ssl_policy" "fips-profile" {
+                          name            = "fips-ssl-policy"
+                          profile         = "FIPS_202205"
+                          min_tls_version = "TLS_1_2"
+                        }
+                        """)
+        resource_conf = hcl_res['resource'][0]['google_compute_ssl_policy']['fips-profile']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_success_restricted(self):
+        hcl_res = hcl2.loads("""
+                        resource "google_compute_ssl_policy" "restricted-profile" {
+                          name            = "restricted-ssl-policy"
+                          profile         = "RESTRICTED"
+                        }
+                        """)
+        resource_conf = hcl_res['resource'][0]['google_compute_ssl_policy']['restricted-profile']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_failure_compatible(self):
+        hcl_res = hcl2.loads("""
+                        resource "google_compute_ssl_policy" "compatible-profile" {
+                          name            = "compatible-ssl-policy"
+                          profile         = "COMPATIBLE"
+                          min_tls_version = "TLS_1_2"
+                        }
+                        """)
+        resource_conf = hcl_res['resource'][0]['google_compute_ssl_policy']['compatible-profile']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
