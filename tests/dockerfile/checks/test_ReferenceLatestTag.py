@@ -22,6 +22,7 @@ class TestReferenceLatestTag(unittest.TestCase):
             "/success_scratch/Dockerfile.FROM",
             "/success_multi_stage_scratch/Dockerfile.FROM",
             "/success_multi_stage_platform/Dockerfile.FROM",
+            "/success_arg_default_tag/Dockerfile.FROM",
         }
         
         failing_resources = {
