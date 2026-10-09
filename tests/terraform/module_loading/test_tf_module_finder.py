@@ -48,6 +48,18 @@ class TestModuleFinder(unittest.TestCase):
         self.assertEqual(1, len(modules))
         self.assertEqual("3.14.0", modules[0].version)
 
+    def test_module_finder_excluded_paths_multiple_patterns(self):
+        cur_dir = os.path.abspath(os.path.dirname(__file__))
+        src_dir = os.path.join(cur_dir, 'data', 'tf_module_downloader')
+        # public_modules/main.tf defines two modules and
+        # private_registry_modules/main.tf defines one. Excluding
+        # public_modules leaves just the private one.
+        modules = find_modules(
+            src_dir,
+            excluded_paths=['public_modules', 'no_such_dir'],
+        )
+        self.assertEqual(1, len(modules))
+
     def test_downloader(self):
         modules = find_modules(self.get_src_dir())
 
