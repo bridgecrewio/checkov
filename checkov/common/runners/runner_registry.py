@@ -391,8 +391,17 @@ class RunnerRegistry:
     ) -> Literal[0, 1]:
         output_formats: "dict[str, str]" = {}
 
-        if config.output_file_path and "," in config.output_file_path:
-            output_paths = config.output_file_path.split(",")
+        if config.output_file_path:
+            output_paths = [output_file.strip() for output_file in config.output_file_path.split(",") if output_file.strip()]
+            diff = len(output_paths) - len(config.output)
+
+            # In case the output formats specified is greater than the number
+            # of the output file paths given,
+            # print others to console(stdout).
+            # In case diff > 0, we can safely ignore the extra output file paths.
+            if diff < 0:
+                # avoids out of bounds.
+                output_paths.extend(CONSOLE_OUTPUT for output_format in range(-diff))
             for idx, output_format in enumerate(config.output):
                 output_formats[output_format] = output_paths[idx]
         else:
