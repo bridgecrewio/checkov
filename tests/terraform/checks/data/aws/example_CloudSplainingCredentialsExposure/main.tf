@@ -14,6 +14,20 @@ data "aws_iam_policy_document" "allowed_action" {
   }
 }
 
+data "aws_iam_policy_document" "allowed_action_ecr_public" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    actions = [
+        "ecr-public:GetAuthorizationToken",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "deny" {
   version = "2012-10-17"
 
