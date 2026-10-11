@@ -15,6 +15,18 @@ resource "aws_athena_workgroup" "pass" {
   }
 }
 
+resource "aws_athena_workgroup" "managed_results" {
+  name = "wg-managed-results"
+
+  configuration {
+    enforce_workgroup_configuration = true
+
+    managed_query_results_configuration {
+      enabled = true
+    }
+  }
+}
+
 resource "aws_athena_workgroup" "fail" {
   name = "wg-non-encrypted"
 
