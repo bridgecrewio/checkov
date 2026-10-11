@@ -81,11 +81,12 @@ class ConnectionSolver(TestBaseSolver):
 # Helpers for value-based fallback unit tests
 # ---------------------------------------------------------------------------
 
-def _make_vertex(resource_type: str, name: str, **extra: str) -> dict:
+def _make_vertex(resource_type: str, name: str, file_path: str = "", **extra: str) -> dict:
     """Build a minimal vertex dict matching the graph node schema."""
     vertex: dict = {
         CustomAttributes.RESOURCE_TYPE: resource_type,
         CustomAttributes.BLOCK_TYPE: "resource",
+        CustomAttributes.FILE_PATH: file_path,
         "name": name,
     }
     vertex.update(extra)
@@ -132,8 +133,8 @@ class TestValueBasedFallbackNetworkx(TestCase):
 
     def test_value_based_fallback_matches_by_rendered_name(self):
         """A resource whose name appears in a connected resource's attribute values should pass."""
-        origin = _make_vertex("resource_type_A", "my-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="my-resource")
+        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
 
         solver = _make_solver(["resource_type_A"], ["resource_type_B"])
         solver.vertices_under_resource_types = [origin]
@@ -208,8 +209,8 @@ class TestValueBasedFallbackNetworkx(TestCase):
 
     def test_value_based_fallback_does_not_duplicate_already_passed(self):
         """If a resource is already in passed, it should not be added again."""
-        origin = _make_vertex("resource_type_A", "my-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="my-resource")
+        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
 
         solver = _make_solver(["resource_type_A"], ["resource_type_B"])
         solver.vertices_under_resource_types = [origin]
@@ -247,9 +248,9 @@ class TestValueBasedFallbackNetworkx(TestCase):
 
     def test_value_based_fallback_handles_multiple_resources(self):
         """Multiple origin resources: matched ones pass, unmatched ones stay failed."""
-        origin_a = _make_vertex("resource_type_A", "resource-a")
-        origin_b = _make_vertex("resource_type_A", "resource-b")
-        connected_a = _make_vertex("resource_type_B", "conn-a", ref="resource-a")
+        origin_a = _make_vertex("resource_type_A", "resource-a", file_path="/modules/origin/main.tf")
+        origin_b = _make_vertex("resource_type_A", "resource-b", file_path="/modules/origin/main.tf")
+        connected_a = _make_vertex("resource_type_B", "conn-a", file_path="/modules/connected/main.tf", ref="resource-a")
 
         solver = _make_solver(["resource_type_A"], ["resource_type_B"])
         solver.vertices_under_resource_types = [origin_a, origin_b]
@@ -293,8 +294,8 @@ class TestValueBasedFallbackRustworkx(TestCase):
 
     def test_value_based_fallback_matches_by_rendered_name(self):
         """A resource whose name appears in a connected resource's attribute values should pass."""
-        origin = _make_vertex("resource_type_A", "my-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="my-resource")
+        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
 
         solver = _make_solver(["resource_type_A"], ["resource_type_B"])
         solver.vertices_under_resource_types = [origin]
@@ -350,9 +351,9 @@ class TestValueBasedFallbackRustworkx(TestCase):
 
     def test_value_based_fallback_handles_multiple_resources(self):
         """Multiple origin resources: matched ones pass, unmatched ones stay failed."""
-        origin_a = _make_vertex("resource_type_A", "resource-a")
-        origin_b = _make_vertex("resource_type_A", "resource-b")
-        connected_a = _make_vertex("resource_type_B", "conn-a", ref="resource-a")
+        origin_a = _make_vertex("resource_type_A", "resource-a", file_path="/modules/origin/main.tf")
+        origin_b = _make_vertex("resource_type_A", "resource-b", file_path="/modules/origin/main.tf")
+        connected_a = _make_vertex("resource_type_B", "conn-a", file_path="/modules/connected/main.tf", ref="resource-a")
 
         solver = _make_solver(["resource_type_A"], ["resource_type_B"])
         solver.vertices_under_resource_types = [origin_a, origin_b]
@@ -372,8 +373,8 @@ class TestValueBasedFallbackRustworkx(TestCase):
 
     def test_value_based_fallback_works_with_any_resource_types(self):
         """Fallback should work for any resource type pair, not just specific providers."""
-        vpc = _make_vertex("aws_vpc", "my-vpc-id")
-        subnet = _make_vertex("aws_subnet", "my-subnet", vpc_id="my-vpc-id")
+        vpc = _make_vertex("aws_vpc", "my-vpc-id", file_path="/modules/vpc/main.tf")
+        subnet = _make_vertex("aws_subnet", "my-subnet", file_path="/modules/subnet/main.tf", vpc_id="my-vpc-id")
 
         solver = _make_solver(["aws_vpc"], ["aws_subnet"])
         solver.vertices_under_resource_types = [vpc]
