@@ -592,7 +592,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
-        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
+        if possible_vertices:
+            return possible_vertices
+        # Fallback for count/for_each indexed resources: when the index was stripped
+        # from the reference (e.g. "s3_default" from "s3_default[0]"), try matching
+        # vertices whose name starts with the base name followed by "["
+        block_map = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {})
+        indexed_prefix = f"{name}["
+        for key, indices in block_map.items():
+            if key.startswith(indexed_prefix):
+                return indices
+        return []
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
