@@ -376,6 +376,22 @@ class TestRunnerValid(unittest.TestCase):
             else:
                 self.fail(f'Got a bad result: {failed}')
 
+    def test_runner_aws_key_pair_csv_format(self):
+        # Bare AWS pairs ("AKIA...,<secret>") must surface both the key (CKV_SECRET_2)
+        # and the paired secret (CKV_SECRET_6) on the same lines.
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/aws_csv_pair"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+        check_ids_by_line = {}
+        for failed in report.failed_checks:
+            check_ids_by_line.setdefault(tuple(failed.file_line_range), set()).add(failed.check_id)
+        self.assertEqual(check_ids_by_line, {
+            (2, 3): {'CKV_SECRET_2', 'CKV_SECRET_6'},
+            (5, 6): {'CKV_SECRET_2', 'CKV_SECRET_6'},
+        })
+
     def test_runner_omit_multiple_secrets_in_line(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/omit_multiple_secrets/test"

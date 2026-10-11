@@ -115,6 +115,14 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
     flags=re.IGNORECASE,
 )
 
+# AWS access key id token shape (prefix + 16 uppercase alnum).
+AWS_ACCESS_KEY_ID_PREFIXES = r'AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASCA'
+# Matches a bare access key id followed by a delimiter (CSV/TSV/space), e.g. "AKIA...,<secret>".
+# The delimiter is normalised to '=' so the paired secret triggers the high-entropy scanner.
+AWS_KEY_PAIR_DELIMITER_REGEX = re.compile(
+    r'((?:{prefixes})[A-Z0-9]{{16}})([,\t ]+)'.format(prefixes=AWS_ACCESS_KEY_ID_PREFIXES)
+)
+
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
@@ -218,6 +226,10 @@ class EntropyKeywordCombinator(BasePlugin):
                         # return a possible secret, otherwise check with next parser
                         return potential_secrets
         else:
+            # Bare AWS credential pairs (e.g. CSV exports: "AKIA...,<secret>") have no quote/'='/':'
+            # prefix on the secret, so the high-entropy scanner never sees it. Normalise the delimiter
+            # after an access key id to '=' so the paired secret is surfaced.
+            line = AWS_KEY_PAIR_DELIMITER_REGEX.sub(r'\1=', line)
             detected_secrets = detect_secret(
                 # If we found a keyword (i.e. db_pass = ), lower the threshold to the iac threshold
                 scanners=self.high_entropy_scanners if not keyword_on_key else self.entropy_scanners_non_iac_with_keyword,
