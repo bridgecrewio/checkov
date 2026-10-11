@@ -81,6 +81,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             ]
         )
 
+        # Value-based fallback for cross-module references where graph edges
+        # are not created (e.g. resources linked through module outputs/variables)
         self._value_based_fallback(passed, failed, graph_connector)
 
         return passed, failed, unknown
@@ -185,24 +187,39 @@ class ConnectionExistsSolver(BaseConnectionSolver):
         graph_connector: DiGraph | Any,
     ) -> None:
         """Move origin resources from failed to passed when a connected resource
-        references them by rendered attribute value (handles cross-module refs)."""
+        in a *different* file references them by rendered attribute value.
+
+        This handles cross-module references where graph edges are not created
+        (e.g. resources linked through module outputs/variables).  The fallback
+        is intentionally restricted to cross-file scenarios: when origin and
+        connected resources live in the same file the normal edge-based
+        resolution should have found the connection — if it didn't, the
+        resources genuinely aren't connected and the fallback must not
+        create a false positive.
+        """
         if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
             return
 
-        # Collect all rendered string attribute values from connected-type vertices
+        # Build a mapping: file_path -> set of string attribute values
+        # for connected-type vertices.  We only care about connected resources
+        # whose file differs from the origin being checked.
         connected_type_set = set(self.connected_resources_types)
-        connected_attr_values: set[str] = set()
+        # file_path -> set[str]  (attribute values from connected resources in that file)
+        connected_values_by_file: dict[str, set[str]] = {}
         if isinstance(graph_connector, PyDiGraph):
             nodes = (n[1] for n in graph_connector.nodes())
         else:
             nodes = (data for _, data in graph_connector.nodes(data=True))
         for node in nodes:
             if node.get(CustomAttributes.RESOURCE_TYPE) in connected_type_set:
+                file_path = node.get(CustomAttributes.FILE_PATH, "")
+                vals = connected_values_by_file.setdefault(file_path, set())
                 for val in node.values():
                     if isinstance(val, str):
-                        connected_attr_values.add(val)
+                        vals.add(val)
 
-        # For each failed origin, check if its name appears in connected resources
+        # For each failed origin, check if its name appears in a connected
+        # resource that lives in a *different* file (cross-module reference).
         unresolved_prefixes = ("var.", "module.", "local.")
         to_pass: list[dict[str, Any]] = []
         for vertex in failed:
@@ -211,8 +228,14 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             name = vertex.get("name", "")
             if not isinstance(name, str) or not name or name.startswith(unresolved_prefixes):
                 continue
-            if name in connected_attr_values:
-                to_pass.append(vertex)
+            origin_file = vertex.get(CustomAttributes.FILE_PATH, "")
+            # Only match against connected resources in OTHER files
+            for file_path, attr_values in connected_values_by_file.items():
+                if file_path == origin_file:
+                    continue  # same file — skip, edge-based check is authoritative
+                if name in attr_values:
+                    to_pass.append(vertex)
+                    break
 
         for vertex in to_pass:
             failed.remove(vertex)
