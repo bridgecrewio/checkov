@@ -59,6 +59,24 @@ class TestCloudDNSKeySpecsRSASHA1(unittest.TestCase):
                          }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
+    def test_unknown_unresolved_key_spec(self):
+        resource_conf = {
+            "dnssec_config": [{"default_key_specs": ["${default_key_specs.value.algorithm}"]}]
+        }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+
+    def test_failure_takes_precedence_over_unresolved_key_spec(self):
+        resource_conf = {
+            "dnssec_config": [{
+                "default_key_specs": [
+                    "${default_key_specs.value.algorithm}",
+                    {"algorithm": ["rsasha1"]},
+                ]
+            }]
+        }
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
 if __name__ == '__main__':

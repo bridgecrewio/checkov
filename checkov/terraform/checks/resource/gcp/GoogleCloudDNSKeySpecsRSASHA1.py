@@ -11,25 +11,38 @@ class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        """
-            Looks for DNSSEC key algorithm at dns_managed_zone:
-            https://www.terraform.io/docs/providers/google/r/dns_managed_zone.html#algorithm
-        :param conf: dns_managed_zone configuration
-        :return: <CheckResult>
-        """
-        if "dnssec_config" in conf.keys():
-            dnssec_config = conf["dnssec_config"][0]
-            self.evaluated_keys = ['dnssec_config']
-            # default algo RSASHA256 as per the documentation:
-            # https://cloud.google.com/dns/docs/dnssec-advanced#advanced-signing-options
-            if "default_key_specs" in dnssec_config:
-                for default_key_specs in dnssec_config["default_key_specs"]:
-                    if "algorithm" in default_key_specs and default_key_specs["algorithm"] == ["rsasha1"]:
-                        self.evaluated_keys = [f'dnssec_config/[0]/default_key_specs/'
-                                               f'[{dnssec_config["default_key_specs"].index(default_key_specs)}]/'
-                                               f'algorithm']
-                        return CheckResult.FAILED
-                self.evaluated_keys = ['dnssec_config/[0]/default_key_specs']
+        dnssec_configs = conf.get("dnssec_config")
+        if not dnssec_configs:
+            return CheckResult.PASSED
+
+        has_unknown_key_specs = False
+        self.evaluated_keys = ["dnssec_config"]
+        for dnssec_config in dnssec_configs:
+            if not isinstance(dnssec_config, dict):
+                has_unknown_key_specs = True
+                continue
+
+            default_key_specs = dnssec_config.get("default_key_specs")
+            if default_key_specs is None:
+                continue
+            if not isinstance(default_key_specs, list):
+                has_unknown_key_specs = True
+                continue
+
+            for index, key_specs in enumerate(default_key_specs):
+                if not isinstance(key_specs, dict):
+                    has_unknown_key_specs = True
+                    continue
+                if key_specs.get("algorithm") == ["rsasha1"]:
+                    self.evaluated_keys = [f"dnssec_config/[0]/default_key_specs/[{index}]/algorithm"]
+                    return CheckResult.FAILED
+                algorithm = key_specs.get("algorithm")
+                if algorithm is not None and not isinstance(algorithm, list):
+                    has_unknown_key_specs = True
+
+        self.evaluated_keys = ["dnssec_config/[0]/default_key_specs"]
+        if has_unknown_key_specs:
+            return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
 
