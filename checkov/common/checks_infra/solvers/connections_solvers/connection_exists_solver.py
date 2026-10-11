@@ -81,6 +81,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             ]
         )
 
+        self._value_based_fallback(passed, failed, graph_connector)
+
         return passed, failed, unknown
 
     def _set_connected_node(self, source: Any, target: Any) -> None:
@@ -114,8 +116,6 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 )
                 self._set_connected_node(destination_attributes, origin_attributes)
                 continue
-            if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
-                print(1)
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
             if destination_block_type == BlockType.OUTPUT:
                 try:
@@ -175,3 +175,44 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         passed.extend([origin_attributes, output_destination])
                 except StopIteration:
                     continue
+
+    def _value_based_fallback(
+        self,
+        passed: list[dict[str, Any]],
+        failed: list[dict[str, Any]],
+        graph_connector: DiGraph | Any,
+    ) -> None:
+        """Move origin resources from failed to passed when a connected resource
+        references them by rendered attribute value (handles cross-module refs)."""
+        if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
+            return
+
+        # Collect all rendered string attribute values from connected-type vertices
+        connected_type_set = set(self.connected_resources_types)
+        connected_attr_values: set[str] = set()
+        if isinstance(graph_connector, PyDiGraph):
+            nodes = (n[1] for n in graph_connector.nodes())
+        else:
+            nodes = (data for _, data in graph_connector.nodes(data=True))
+        for node in nodes:
+            if node.get(CustomAttributes.RESOURCE_TYPE) in connected_type_set:
+                for val in node.values():
+                    if isinstance(val, str):
+                        connected_attr_values.add(val)
+
+        # For each failed origin, check if its name appears in connected resources
+        unresolved_prefixes = ("var.", "module.", "local.")
+        to_pass: list[dict[str, Any]] = []
+        for vertex in failed:
+            if vertex.get(CustomAttributes.RESOURCE_TYPE) not in self.resource_types:
+                continue
+            name = vertex.get("name", "")
+            if not isinstance(name, str) or not name or name.startswith(unresolved_prefixes):
+                continue
+            if name in connected_attr_values:
+                to_pass.append(vertex)
+
+        for vertex in to_pass:
+            failed.remove(vertex)
+            if vertex not in passed:
+                passed.append(vertex)
