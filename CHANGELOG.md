@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.27...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.28...HEAD)
+
+## [3.3.28](https://github.com/bridgecrewio/checkov/compare/3.3.27...3.3.28) - 2026-10-12
+
+### Bug Fix
+
+- **terraform:** resolve graph edges for count/for_each indexed resource references - [#7736](https://github.com/bridgecrewio/checkov/pull/7736)
 
 ## [3.3.27](https://github.com/bridgecrewio/checkov/compare/3.3.26...3.3.27) - 2026-10-11
 
