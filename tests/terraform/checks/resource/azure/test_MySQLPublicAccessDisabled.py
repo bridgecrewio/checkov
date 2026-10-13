@@ -54,7 +54,7 @@ class TestMySQLPublicAccessDisabled(unittest.TestCase):
         resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['examplea']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
-        
+
     def test_success(self):
         hcl_res = hcl2.loads("""
 resource "azurerm_mysql_server" "examplea" {
@@ -76,6 +76,70 @@ resource "azurerm_mysql_server" "examplea" {
 }
                 """)
         resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['examplea']
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_flexible_server_failure(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_mysql_flexible_server" "examplea" {
+  name                = var.mysqlserver_name
+  location            = var.resource_group.location
+  resource_group_name = var.resource_group.name
+
+  administrator_login          = var.admin_name
+  administrator_login_password = var.password
+  sku_name = var.sku_name
+  version    = var.server_version
+
+  public_network_access_enabled = true
+}
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_mysql_flexible_server']['examplea']
+        # First verify the check covers this resource type at all
+        self.assertIn("azurerm_mysql_flexible_server", check.supported_resources,
+                      "CKV_AZURE_53 must support azurerm_mysql_flexible_server")
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_flexible_server_missing_failure(self):
+        hcl_res = hcl2.loads("""
+            resource "azurerm_mysql_flexible_server" "examplea" {
+  name                = var.mysqlserver_name
+  location            = var.resource_group.location
+  resource_group_name = var.resource_group.name
+
+  administrator_login          = var.admin_name
+  administrator_login_password = var.password
+  sku_name = var.sku_name
+  version    = var.server_version
+}
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_mysql_flexible_server']['examplea']
+        # First verify the check covers this resource type at all
+        self.assertIn("azurerm_mysql_flexible_server", check.supported_resources,
+                      "CKV_AZURE_53 must support azurerm_mysql_flexible_server")
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_flexible_server_success(self):
+        hcl_res = hcl2.loads("""
+resource "azurerm_mysql_flexible_server" "examplea" {
+  name                = var.mysqlserver_name
+  location            = var.resource_group.location
+  resource_group_name = var.resource_group.name
+
+  administrator_login          = var.admin_name
+  administrator_login_password = var.password
+  sku_name = var.sku_name
+  version    = var.server_version
+
+  public_network_access_enabled = false
+}
+                """)
+        resource_conf = hcl_res['resource'][0]['azurerm_mysql_flexible_server']['examplea']
+        # First verify the check covers this resource type at all
+        self.assertIn("azurerm_mysql_flexible_server", check.supported_resources,
+                      "CKV_AZURE_53 must support azurerm_mysql_flexible_server")
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
