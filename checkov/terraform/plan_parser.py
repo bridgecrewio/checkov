@@ -23,7 +23,8 @@ TF_PLAN_RESOURCE_FORGET_ACTION = "forget"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 
-COUNT_PATTERN = re.compile(r"\[?\d+\]?$")
+# matches a single module part of an address and captures its name, ex. module.parent["prod"] -> parent
+MODULE_ADDRESS_PART = re.compile(r'module\.([^.\[]+)(?:\[(?:\d+|"(?:[^"\\]|\\.)*")\])?')
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -387,26 +388,11 @@ def _find_child_modules(
 def _get_module_call_resources(module_address: str, root_module_conf: dict[str, Any]) -> list[dict[str, Any]]:
     """Extracts the resources from the 'module_calls' block under 'configuration'"""
 
-    for module_name in module_address.split("."):
-        if module_name == "module":
-            # module names are always prefixed with 'module.', therefore skip it
-            continue
-        found_root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
-        if not found_root_module_conf:
-            sanitized_module_name = _sanitize_count_from_name(module_name)
-            found_root_module_conf = root_module_conf.get("module_calls", {}).get(sanitized_module_name, {}).get("module", {})
-        root_module_conf = found_root_module_conf
+    for match in MODULE_ADDRESS_PART.finditer(module_address):
+        module_name = match.group(1)
+        root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
-
-
-def _sanitize_count_from_name(name: str) -> str:
-    """Sanitize the count from the resource name"""
-    if re.search(COUNT_PATTERN, name):
-        name_parts = re.split(COUNT_PATTERN, name)
-        if len(name_parts) == 2:
-            return name_parts[0]
-    return name
 
 
 def _is_provider_key(key: str) -> bool:

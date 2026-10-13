@@ -8,7 +8,7 @@ class MySQLPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure 'public network access enabled' is set to 'False' for mySQL servers"
         id = "CKV_AZURE_53"
-        supported_resources = ("azurerm_mysql_server",)
+        supported_resources = ("azurerm_mysql_server", "azurerm_mysql_flexible_server",)
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

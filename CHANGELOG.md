@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.25...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.28...HEAD)
+
+## [3.3.28](https://github.com/bridgecrewio/checkov/compare/3.3.27...3.3.28) - 2026-10-12
+
+### Bug Fix
+
+- **terraform:** resolve graph edges for count/for_each indexed resource references - [#7736](https://github.com/bridgecrewio/checkov/pull/7736)
+
+## [3.3.27](https://github.com/bridgecrewio/checkov/compare/3.3.26...3.3.27) - 2026-10-11
+
+### Bug Fix
+
+- **secrets:** detect paired AWS secret in bare CSV/delimited format - [#7734](https://github.com/bridgecrewio/checkov/pull/7734)
+
+## [3.3.26](https://github.com/bridgecrewio/checkov/compare/3.3.25...3.3.26) - 2026-10-07
+
+### Bug Fix
+
+- **terraform_plan:** resolve for_each module calls in plan parser - [#7723](https://github.com/bridgecrewio/checkov/pull/7723)
 
 ## [3.3.25](https://github.com/bridgecrewio/checkov/compare/3.3.23...3.3.25) - 2026-10-06
 
