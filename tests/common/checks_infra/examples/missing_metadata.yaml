@@ -4,4 +4,4 @@ definition:
     - aws_lambda_function
   attribute: runtime
   operator: equals
-  value: python3.9
+  value: python3.13

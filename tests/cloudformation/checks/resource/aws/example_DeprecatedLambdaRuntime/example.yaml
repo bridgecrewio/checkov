@@ -4,11 +4,11 @@ Resources:
     Properties:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::123456789012:role/execution_role'
-      FunctionName: 'MyFunction'
+      FunctionName: 'MyFunctionPass'
       Code:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'
-      Runtime: 'nodejs18.x'
+      Runtime: 'nodejs22.x'
   Fail:
     Type: 'AWS::Lambda::Function'
     Metadata:
@@ -20,7 +20,7 @@ Resources:
     Properties:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::123456789012:role/execution_role'
-      FunctionName: 'MyFunction'
+      FunctionName: 'MyFunctionFailure'
       Code:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'

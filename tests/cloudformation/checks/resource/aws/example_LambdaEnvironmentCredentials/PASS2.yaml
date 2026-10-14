@@ -4,7 +4,7 @@ Resources:
     Properties:
       FunctionName: "NameOfLambdaFunction"
       Handler: "handler.handlerverylongcustomhandlernameforservi"
-      Runtime: "python3.9"
+      Runtime: "python3.13"
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: "your-code-bucket"
