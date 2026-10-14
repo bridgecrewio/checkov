@@ -64,6 +64,20 @@ def _module_params(root_dir: Path, source: str) -> ModuleParams:
     )
 
 
+def _make_module_params(source: str) -> ModuleParams:
+    """Helper to create a ModuleParams instance with default test values."""
+    return ModuleParams(
+        root_dir="test",
+        current_dir="test",
+        source=source,
+        source_version="latest",
+        dest_dir="test",
+        external_modules_folder_name="test",
+        inner_module="",
+        tf_managed=False,
+    )
+
+
 def _is_inside(base: Path, path: str) -> bool:
     return os.path.commonpath([os.path.abspath(base), os.path.abspath(path)]) == os.path.abspath(base)
 
@@ -153,7 +167,7 @@ def test_valid_sources_stay_in_external_modules_dir(
         "git::https://github.com/some/repo.git?ref=..",
         "git::https://github.com/some/repo.git?ref=v1/../../../../target",
         "git::https://github.com/some/repo.git?ref=/tmp/target",
-        "git::https://github.com/some/repo.git?ref=..\\..\\target",
+        "git::https://github.com/some/repo.git?ref=..\\\\..\\\\target",
         "git::https://github.com/some/repo.git//../../../../../../tmp?ref=v1",
         "git::https://github.com/some/repo.git//modules/../../../../../../../tmp?ref=v1",
         "git::https://github.com/some/repo.git//..?ref=v1",
@@ -213,10 +227,10 @@ TRAVERSAL_REF = "?ref=../../../../../../../../tmp/target"
         (GithubLoader, f"github.com/org/repo{TRAVERSAL_REF}", {}),
         (GithubLoader, f"git@github.com:org/repo.git{TRAVERSAL_REF}", {}),
         (GithubLoader, f"git::git@github.com:org/repo.git{TRAVERSAL_REF}", {}),
-        (GithubAccessTokenLoader, f"github.com/org/repo{TRAVERSAL_REF}", {"GITHUB_PAT": "test"}),
-        (GithubAccessTokenLoader, f"git@github.com:org/repo.git{TRAVERSAL_REF}", {"GITHUB_PAT": "test"}),
+        (GithubAccessTokenLoader, f"github.com/org/repo{TRAVERSAL_REF}", {"GITHUB_PAT": "test", "GITHUB_PAT_ALLOWED_ORGS": "*"}),
+        (GithubAccessTokenLoader, f"git@github.com:org/repo.git{TRAVERSAL_REF}", {"GITHUB_PAT": "test", "GITHUB_PAT_ALLOWED_ORGS": "*"}),
         (BitbucketLoader, f"bitbucket.org/org/repo{TRAVERSAL_REF}", {}),
-        (BitbucketAccessTokenLoader, f"bitbucket.org/org/repo{TRAVERSAL_REF}", {"BITBUCKET_TOKEN": "test"}),
+        (BitbucketAccessTokenLoader, f"bitbucket.org/org/repo{TRAVERSAL_REF}", {"BITBUCKET_TOKEN": "test", "BITBUCKET_ALLOWED_WORKSPACES": "*"}),
     ],
     ids=[
         "generic_git_https",
@@ -275,3 +289,80 @@ def test_validate_subdir_allows_paths_inside_package(subdir: str) -> None:
 def test_validate_subdir_rejects_paths_outside_package(subdir: str) -> None:
     with pytest.raises(ValueError):
         _validate_subdir(subdir)
+
+
+class TestCredentialScoping:
+    """Tests for VCS credential injection scoping.
+
+    Credentials should only be injected when VCS_BASE_URL is configured
+    and the module source host matches the VCS_BASE_URL host.
+    """
+
+    def test_credentials_not_injected_when_vcs_base_url_not_set(self) -> None:
+        """When VCS_BASE_URL is not set, credentials should not be injected."""
+        with mock.patch.dict(os.environ, {"VCS_TOKEN": "test-token", "VCS_USERNAME": "test-user"}, clear=False):
+            loader = GenericGitLoader()
+            module_params = _make_module_params("git::https://some-server.example.com/org/repo")
+            loader.discover(module_params)
+            result = loader._is_matching_loader(module_params)
+            assert result is True
+            assert "test-token" not in module_params.module_source
+            assert "test-user" not in module_params.module_source
+
+    def test_credentials_injected_when_vcs_base_url_matches(self) -> None:
+        """When VCS_BASE_URL matches the module source host, credentials should be injected."""
+        with mock.patch.dict(os.environ, {
+            "VCS_TOKEN": "test-token",
+            "VCS_USERNAME": "test-user",
+            "VCS_BASE_URL": "https://gitlab.example.com",
+        }, clear=False):
+            loader = GenericGitLoader()
+            module_params = _make_module_params("git::https://gitlab.example.com/org/repo")
+            loader.discover(module_params)
+            result = loader._is_matching_loader(module_params)
+            assert result is True
+            assert "test-token" in module_params.module_source
+            assert "test-user" in module_params.module_source
+
+    def test_credentials_not_injected_when_vcs_base_url_does_not_match(self) -> None:
+        """When VCS_BASE_URL does not match the module source host, credentials should not be injected."""
+        with mock.patch.dict(os.environ, {
+            "VCS_TOKEN": "test-token",
+            "VCS_USERNAME": "test-user",
+            "VCS_BASE_URL": "https://gitlab.example.com",
+        }, clear=False):
+            loader = GenericGitLoader()
+            module_params = _make_module_params("git::https://other-server.example.com/org/repo")
+            loader.discover(module_params)
+            result = loader._is_matching_loader(module_params)
+            assert result is True
+            assert "test-token" not in module_params.module_source
+            assert "test-user" not in module_params.module_source
+
+    def test_credentials_injected_when_host_matches_default_prefix(self) -> None:
+        """When VCS_BASE_URL host matches the source host, credentials should be injected."""
+        with mock.patch.dict(os.environ, {
+            "VCS_TOKEN": "test-token",
+            "VCS_USERNAME": "test-user",
+            "VCS_BASE_URL": "https://gitlab.example.com",
+        }, clear=False):
+            loader = GenericGitLoader()
+            module_params = _make_module_params("git::https://gitlab.example.com/org/repo.git?ref=v1")
+            loader.discover(module_params)
+            result = loader._is_matching_loader(module_params)
+            assert result is True
+            assert "test-token" in module_params.module_source
+
+    def test_credentials_not_injected_when_host_differs_default_prefix(self) -> None:
+        """When VCS_BASE_URL host differs from source host, credentials should not be injected."""
+        with mock.patch.dict(os.environ, {
+            "VCS_TOKEN": "test-token",
+            "VCS_USERNAME": "test-user",
+            "VCS_BASE_URL": "https://gitlab.example.com",
+        }, clear=False):
+            loader = GenericGitLoader()
+            module_params = _make_module_params("git::https://other.example.com/org/repo.git?ref=v1")
+            loader.discover(module_params)
+            result = loader._is_matching_loader(module_params)
+            assert result is True
+            assert "test-token" not in module_params.module_source

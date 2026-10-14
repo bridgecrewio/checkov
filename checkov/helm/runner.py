@@ -10,6 +10,7 @@ import subprocess  # nosec
 import tempfile
 import threading
 from typing import Any, Type, TYPE_CHECKING
+from urllib.parse import urlparse
 import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -66,19 +67,41 @@ def _get_chart_remote_repos(chart_dir: str) -> list[str]:
     return remote_repos
 
 
+def _host_matches_prefix(repo_url: str, prefix: str) -> bool:
+    """Check if a repo URL's host matches an allowed prefix's host."""
+    repo_host = urlparse(repo_url).hostname
+    prefix_host = urlparse(prefix).hostname
+    return repo_host is not None and repo_host == prefix_host
+
+
 def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
     """Return dependency repos blocked by the CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
 
-    Not set → [] (allow all). Set → returns repos not matching any allowed prefix (these are blocked).
-    To block all remote repos, set the var to a non-matching value (e.g. 'none').
+    Not set / empty → allow all remote repos (opt-in; legacy behaviour).
+    Set to '*'      → allow all remote repos (explicit).
+    Set to prefixes → allow only repos whose host matches at least one prefix; block the rest.
+    Set to 'none'   → block all remote repos.
     """
-    allowed_prefixes_raw = os.getenv("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", "")
-    if not allowed_prefixes_raw.strip():
-        return []  # no allowlist configured → allow everything (original behaviour)
-
-    allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
     remote_repos = _get_chart_remote_repos(chart_dir)
-    return [repo for repo in remote_repos if not any(repo.lower().startswith(p) for p in allowed_prefixes)]
+    if not remote_repos:
+        return []
+
+    allowed = os.getenv("CHECKOV_HELM_ALLOWED_REMOTE_REPOS", "")
+    if not allowed:
+        # Opt-in: allow all remote dependency fetching when no allowlist is configured.
+        # Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS to a comma-separated list of URL prefixes
+        # to restrict which repositories are allowed, or 'none' to block all.
+        return []
+
+    if allowed.strip() == "*":
+        return []
+
+    allowed_prefixes = [prefix.strip() for prefix in allowed.split(",") if prefix.strip()]
+    blocked = [
+        repo for repo in remote_repos
+        if not any(_host_matches_prefix(repo, prefix) for prefix in allowed_prefixes)
+    ]
+    return blocked
 
 
 class K8sHelmRunner(k8_runner):
@@ -359,17 +382,24 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 logging.warning(
                     f"Error processing helm dependencies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
-        # Default = allow all. Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS
-        # to a comma-separated allowlist of trusted repo URL prefixes to block everything else.
-        blocked_repos = _get_blocked_helm_repos(chart_dir)
-        if blocked_repos:
-            logging.warning(
-                f"Skipping helm template for {chart_dir}: {len(blocked_repos)} dependency repo(s) "
-                f"not in CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist."
+        # Opt-in: remote repos are allowed by default. Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS
+        # to a comma-separated allowlist of trusted repo URL prefixes, or 'none' to block all.
+        blocked_remote_repos = _get_blocked_helm_repos(chart_dir)
+        use_dependency_update = not blocked_remote_repos
+        if blocked_remote_repos:
+            logging.info(
+                "Remote Helm dependency repos blocked for chart '%s': %s. "
+                "Running 'helm template' without --dependency-update. "
+                "Set CHECKOV_HELM_ALLOWED_REMOTE_REPOS to allow specific repos or '*' to allow all.",
+                chart_dir,
+                ", ".join(blocked_remote_repos),
             )
-            return None, None
 
-        helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
+        # Build the helm template command
+        helm_command_args = [helm_command, 'template']
+        if use_dependency_update:
+            helm_command_args.append('--dependency-update')
+        helm_command_args.append(chart_dir)
         if runner_filter.var_files:
             for var in runner_filter.var_files:
                 helm_command_args.append("--values")
@@ -380,7 +410,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             signal.alarm(timeout)
 
         try:
-            # --dependency-update needed to pull in deps before templating.
+            # Run helm template (with --dependency-update only when remote deps are allowed).
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
             if threading.current_thread() is threading.main_thread():
