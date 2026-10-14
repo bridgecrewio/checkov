@@ -118,6 +118,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             scan_report.failed_checks = self.extend_records_with_cloned_policies(scan_report.failed_checks)
             scan_report.passed_checks = self.extend_records_with_cloned_policies(scan_report.passed_checks)
             scan_report.skipped_checks = self.extend_records_with_cloned_policies(scan_report.skipped_checks)
+            scan_report.unknown_checks = self.extend_records_with_cloned_policies(scan_report.unknown_checks)
 
     def extend_records_with_cloned_policies(self, records: list[Record]) -> list[Record]:
         bc_check_ids = [record.bc_check_id for record in records]
