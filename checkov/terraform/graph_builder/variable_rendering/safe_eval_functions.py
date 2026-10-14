@@ -10,6 +10,7 @@ from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
 from asteval import Interpreter
 
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
@@ -25,6 +26,21 @@ https://www.terraform.io/docs/configuration/functions.html
 
 Not all of the functions are implemented yet. If a function doesn't exist, the original value is returned.
 """
+
+
+class _OrderedSet(set):  # type: ignore[type-arg]
+    """A set whose repr lists elements in sorted order (Terraform sets are ordered lexically)."""
+
+    def __repr__(self) -> str:
+        return "{" + ", ".join(repr(e) for e in sorted(self, key=repr)) + "}" if self else "set()"
+
+
+def toset(origin: Any) -> set[Any]:
+    if deterministic_graph_enabled():
+        # a plain set's str() follows the per-process string hash seed, so rendered values and every vertex attribute
+        # built from them would differ between two scans of the same tree
+        return _OrderedSet(origin)
+    return set(origin)
 
 
 def _find_regex_groups(pattern: str, input_str: str) -> Optional[Union[Dict[str, str], List[str]]]:
@@ -344,7 +360,7 @@ SAFE_EVAL_DICT["tobool"] = lambda arg: wrap_func(tobool, arg)
 SAFE_EVAL_DICT["tolist"] = lambda *args: list(*args)
 # SAFE_EVAL_DICT["tomap"] = lambda arg: wrap_func(tomap, str(arg))
 SAFE_EVAL_DICT["tonumber"] = lambda arg: arg if type(arg) in [int, float] else wrap_func(tonumber, arg)
-SAFE_EVAL_DICT["toset"] = lambda origin: set(origin)
+SAFE_EVAL_DICT["toset"] = lambda origin: toset(origin)
 SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_func(tostring, str(arg))
 
 # encoding

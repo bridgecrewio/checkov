@@ -322,6 +322,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         vertex_indices = self.local_graph.vertices_by_block_type[BlockType.RESOURCE]
 
         for idx in vertex_indices:
+            if idx in self.frozen_vertices:
+                continue
             vertex = self.local_graph.vertices[idx]
             if vertex.has_dynamic_block:
                 # only check dynamic blocks on the root level for now
@@ -503,6 +505,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
+            if index in self.frozen_vertices:
+                continue
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
