@@ -4,7 +4,14 @@ from typing import Dict, Any, Optional
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.kubernetes.checks.resource.registry import registry
+
+
+def is_rollout_without_template(conf: Dict[str, Any]) -> bool:
+    """An Argo Rollout using spec.workloadRef has no pod template of its own. Its pods come from
+    the referenced Deployment, which is scanned itself, so pod spec checks don't apply to it."""
+    return conf.get("kind") == "Rollout" and not find_in_dict(input_dict=conf, key_path="spec/template")
 
 
 class BaseK8Check(BaseCheck):
