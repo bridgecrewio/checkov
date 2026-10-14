@@ -7,7 +7,8 @@ import pytest
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
-from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, get_asteval
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate, get_asteval, \
+    SAFE_EVAL_DICT
 
 
 class TestTerraformEvaluation(TestCase):
@@ -595,3 +596,18 @@ def test_evaluate_malicious_code(description: str, input_str: str)-> None:
     asteval = get_asteval()
     asteval(input_str)
     assert asteval.error
+
+
+def test_asteval_symtable_is_isolated_per_call() -> None:
+    # Attacker-controlled assignments must not clobber TF builtins in SAFE_EVAL_DICT.
+    # Specifically: a quote-breakout that delivers "merge = 0" to asteval must not
+    # overwrite the merge() builtin for subsequent evaluations (F-005).
+    before_merge = SAFE_EVAL_DICT["merge"]
+
+    asteval = get_asteval()
+    asteval("merge = 0")
+
+    # The builtin must still be the original callable — not 0
+    assert SAFE_EVAL_DICT["merge"] is before_merge
+    assert callable(SAFE_EVAL_DICT["merge"])
+    assert evaluate('merge({"a": 1}, {"b": 2})') == {"a": 1, "b": 2}
