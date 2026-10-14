@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import os
 from typing import List, Optional, Dict, Any, Tuple
 
 from rustworkx import PyDiGraph
@@ -180,6 +181,26 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 except StopIteration:
                     continue
 
+    @staticmethod
+    def _module_scope(vertex: dict[str, Any]) -> tuple[str, bool]:
+        """Return (project root directory, is inside a module) for a vertex.
+
+        Resources inside a module carry a source module object whose path is the
+        file containing the module call; ``nested_tf_module`` points to the parent
+        call.  The project root is the directory of the outermost call.  Root-level
+        resources have no source module object, so their own directory is the root.
+        """
+        module = vertex.get(CustomAttributes.SOURCE_MODULE_OBJECT)
+        if not module:
+            return os.path.dirname(vertex.get(CustomAttributes.FILE_PATH) or ""), False
+        while True:
+            parent = module.get("nested_tf_module") if isinstance(module, dict) else module.nested_tf_module
+            if not parent:
+                break
+            module = parent
+        path = module.get("path") if isinstance(module, dict) else module.path
+        return os.path.dirname(path or ""), True
+
     def _value_based_fallback(
         self,
         passed: list[dict[str, Any]],
@@ -187,53 +208,66 @@ class ConnectionExistsSolver(BaseConnectionSolver):
         graph_connector: DiGraph | Any,
     ) -> None:
         """Move origin resources from failed to passed when a connected resource
-        in a *different* file references them by rendered attribute value.
+        references them by rendered attribute value across a module boundary.
 
-        This handles cross-module references where graph edges are not created
-        (e.g. resources linked through module outputs/variables).  The fallback
-        is intentionally restricted to cross-file scenarios: when origin and
-        connected resources live in the same file the normal edge-based
-        resolution should have found the connection — if it didn't, the
-        resources genuinely aren't connected and the fallback must not
-        create a false positive.
+        This handles references between sibling modules (e.g. a value passed from
+        one module's output into another module's variable), where no graph edge
+        is created.  A match requires all of the following:
+          * at least one of the two resources is inside a module,
+          * both resources belong to the same project (same root module directory),
+          * the resources are defined in different files,
+          * the origin name is resolved and unique among origin resources of
+            that project (ambiguous names are left to the edge-based result).
         """
         if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
             return
 
-        # Build a mapping: file_path -> set of string attribute values
-        # for connected-type vertices.  We only care about connected resources
-        # whose file differs from the origin being checked.
+        unresolved_prefixes = ("var.", "module.", "local.")
+
+        def resolved_name(vertex: dict[str, Any]) -> str | None:
+            name = vertex.get("name")
+            if not isinstance(name, str) or not name or name.startswith(unresolved_prefixes):
+                return None
+            return name
+
+        # (project root, name) -> number of origin resources using that name
+        name_counts: dict[tuple[str, str], int] = {}
+        for vertex in self.vertices_under_resource_types:
+            name = resolved_name(vertex)
+            if name:
+                key = (self._module_scope(vertex)[0], name)
+                name_counts[key] = name_counts.get(key, 0) + 1
+
+        # (project root, string value) -> [(file path, inside module)] of connected resources
         connected_type_set = set(self.connected_resources_types)
-        # file_path -> set[str]  (attribute values from connected resources in that file)
-        connected_values_by_file: dict[str, set[str]] = {}
+        connected_values: dict[tuple[str, str], list[tuple[str, bool]]] = {}
         if isinstance(graph_connector, PyDiGraph):
             nodes = (n[1] for n in graph_connector.nodes())
         else:
             nodes = (data for _, data in graph_connector.nodes(data=True))
         for node in nodes:
-            if node.get(CustomAttributes.RESOURCE_TYPE) in connected_type_set:
-                file_path = node.get(CustomAttributes.FILE_PATH, "")
-                vals = connected_values_by_file.setdefault(file_path, set())
-                for val in node.values():
-                    if isinstance(val, str):
-                        vals.add(val)
+            if node.get(CustomAttributes.RESOURCE_TYPE) not in connected_type_set:
+                continue
+            root, in_module = self._module_scope(node)
+            entry = (node.get(CustomAttributes.FILE_PATH, ""), in_module)
+            for val in {v for v in node.values() if isinstance(v, str)}:
+                connected_values.setdefault((root, val), []).append(entry)
 
-        # For each failed origin, check if its name appears in a connected
-        # resource that lives in a *different* file (cross-module reference).
-        unresolved_prefixes = ("var.", "module.", "local.")
         to_pass: list[dict[str, Any]] = []
         for vertex in failed:
             if vertex.get(CustomAttributes.RESOURCE_TYPE) not in self.resource_types:
                 continue
-            name = vertex.get("name", "")
-            if not isinstance(name, str) or not name or name.startswith(unresolved_prefixes):
+            name = resolved_name(vertex)
+            if not name:
                 continue
+            root, origin_in_module = self._module_scope(vertex)
+            if name_counts.get((root, name), 0) != 1:
+                continue  # ambiguous name within the project
             origin_file = vertex.get(CustomAttributes.FILE_PATH, "")
-            # Only match against connected resources in OTHER files
-            for file_path, attr_values in connected_values_by_file.items():
-                if file_path == origin_file:
-                    continue  # same file — skip, edge-based check is authoritative
-                if name in attr_values:
+            for file_path, connected_in_module in connected_values.get((root, name), ()):
+                # same file: the edge-based check is authoritative;
+                # both root-level: no module boundary, edges would exist
+                if file_path != origin_file and (origin_in_module or connected_in_module):
                     to_pass.append(vertex)
                     break
 

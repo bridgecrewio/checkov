@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
 from unittest import TestCase
@@ -11,6 +13,7 @@ from checkov.common.checks_infra.solvers.connections_solvers.connection_exists_s
 )
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.modules.module_objects import TFModule
 from tests.graph_utils.utils import PARAMETERIZED_GRAPH_FRAMEWORKS
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 
@@ -81,16 +84,31 @@ class ConnectionSolver(TestBaseSolver):
 # Helpers for value-based fallback unit tests
 # ---------------------------------------------------------------------------
 
-def _make_vertex(resource_type: str, name: str, file_path: str = "", **extra: str) -> dict:
-    """Build a minimal vertex dict matching the graph node schema."""
+def _make_vertex(
+    resource_type: str,
+    name: str,
+    file_path: str = "",
+    module_call: TFModule | None = None,
+    **extra: str,
+) -> dict:
+    """Build a minimal vertex dict matching the graph node schema.
+
+    ``module_call`` is the module call that instantiates the resource
+    (``None`` for a root-level resource).
+    """
     vertex: dict = {
         CustomAttributes.RESOURCE_TYPE: resource_type,
         CustomAttributes.BLOCK_TYPE: "resource",
         CustomAttributes.FILE_PATH: file_path,
+        CustomAttributes.SOURCE_MODULE_OBJECT: module_call,
         "name": name,
     }
     vertex.update(extra)
     return vertex
+
+
+def _module_call(root_dir: str, call_file: str, name: str, parent: TFModule | None = None) -> TFModule:
+    return TFModule(path=f"{root_dir}/{call_file}", name=name, nested_tf_module=parent)
 
 
 def _build_networkx_graph(nodes: list[dict]) -> DiGraph:
@@ -114,278 +132,163 @@ def _build_rustworkx_graph(nodes: list[dict]) -> PyDiGraph:
     return g
 
 
-def _make_solver(
-    resource_types: list[str],
-    connected_resource_types: list[str],
-) -> ConnectionExistsSolver:
-    return ConnectionExistsSolver(
-        resource_types=resource_types,
-        connected_resources_types=connected_resource_types,
-    )
+class _ValueBasedFallbackTests:
+    """Unit tests for _value_based_fallback, run against both graph libraries."""
 
+    build_graph = staticmethod(_build_networkx_graph)
 
-# ---------------------------------------------------------------------------
-# Value-based fallback tests — networkx
-# ---------------------------------------------------------------------------
+    def _run(self, origins: list[dict], connected: list[dict], failed: list[dict], passed: list[dict] | None = None):
+        solver = ConnectionExistsSolver(
+            resource_types=["resource_type_A"],
+            connected_resources_types=["resource_type_B"],
+        )
+        solver.vertices_under_resource_types = origins
+        solver.vertices_under_connected_resources_types = connected
+        passed = [] if passed is None else passed
+        solver._value_based_fallback(passed, failed, self.build_graph(origins + connected))
+        return passed, failed
 
-class TestValueBasedFallbackNetworkx(TestCase):
-    """Unit tests for _value_based_fallback using networkx graphs."""
+    @staticmethod
+    def _sibling_modules(root: str = "/project", origin_name: str = "my-resource", ref: str = "my-resource"):
+        """Origin and connected resources in two sibling modules called from the same root."""
+        origin = _make_vertex(
+            "resource_type_A", origin_name, file_path=f"{root}/modules/origin/main.tf",
+            module_call=_module_call(root, "origin.tf", "origin"),
+        )
+        connected = _make_vertex(
+            "resource_type_B", "connector", file_path=f"{root}/modules/connected/main.tf",
+            module_call=_module_call(root, "connected.tf", "connected"), ref=ref,
+        )
+        return origin, connected
 
-    def test_value_based_fallback_matches_by_rendered_name(self):
-        """A resource whose name appears in a connected resource's attribute values should pass."""
-        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
-        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_networkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
+    def test_matches_across_sibling_modules(self):
+        origin, connected = self._sibling_modules()
+        passed, failed = self._run([origin], [connected], [origin])
         self.assertIn(origin, passed)
         self.assertNotIn(origin, failed)
 
-    def test_value_based_fallback_no_match_stays_failed(self):
-        """A resource whose name does NOT appear in any connected resource should stay failed."""
-        origin = _make_vertex("resource_type_A", "orphan-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="other-resource")
+    def test_matches_module_resource_with_root_level_connected_resource(self):
+        origin = _make_vertex(
+            "resource_type_A", "my-resource", file_path="/project/modules/origin/main.tf",
+            module_call=_module_call("/project", "main.tf", "origin"),
+        )
+        connected = _make_vertex("resource_type_B", "connector", file_path="/project/main.tf", ref="my-resource")
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertIn(origin, passed)
 
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
+    def test_matches_nested_module_within_same_root(self):
+        parent = _module_call("/project", "main.tf", "platform")
+        origin = _make_vertex(
+            "resource_type_A", "my-resource", file_path="/project/modules/network/main.tf",
+            module_call=_module_call("/project/modules/platform", "main.tf", "network", parent=parent),
+        )
+        connected = _make_vertex(
+            "resource_type_B", "connector", file_path="/project/modules/rules/main.tf",
+            module_call=_module_call("/project", "rules.tf", "rules"), ref="my-resource",
+        )
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertIn(origin, passed)
 
-        graph = _build_networkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
+    def test_no_match_stays_failed(self):
+        origin, connected = self._sibling_modules(ref="other-resource")
+        passed, failed = self._run([origin], [connected], [origin])
         self.assertNotIn(origin, passed)
         self.assertIn(origin, failed)
 
-    def test_value_based_fallback_skips_unresolved_references(self):
-        """Resources with unresolved var/module/local references should not match."""
-        origin = _make_vertex("resource_type_A", "var.resource_name")
-        connected = _make_vertex("resource_type_B", "connector", ref="var.resource_name")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_networkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
+    def test_no_match_for_root_level_resources_in_different_files(self):
+        origin = _make_vertex("resource_type_A", "example", file_path="/tests/folder_a/main.tf")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/tests/folder_b/main.tf", ref="example")
+        passed, failed = self._run([origin], [connected], [origin])
         self.assertNotIn(origin, passed)
         self.assertIn(origin, failed)
 
-    def test_value_based_fallback_skips_empty_name(self):
-        """Resources with empty name should not match."""
-        origin = _make_vertex("resource_type_A", "")
-        connected = _make_vertex("resource_type_B", "connector", ref="")
+    def test_no_match_for_root_level_resources_in_same_directory(self):
+        origin = _make_vertex("resource_type_A", "example", file_path="/project/a.tf")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/project/b.tf", ref="example")
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertNotIn(origin, passed)
 
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_networkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
+    def test_no_match_for_modules_under_different_root_directories(self):
+        origin, _ = self._sibling_modules(root="/project_a")
+        _, connected = self._sibling_modules(root="/project_b")
+        passed, failed = self._run([origin], [connected], [origin])
         self.assertNotIn(origin, passed)
         self.assertIn(origin, failed)
 
-    def test_value_based_fallback_does_not_duplicate_already_passed(self):
-        """If a resource is already in passed, it should not be added again."""
-        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
-        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
+    def test_no_match_for_module_resource_and_root_resource_of_other_project(self):
+        origin, _ = self._sibling_modules(root="/project_a")
+        connected = _make_vertex("resource_type_B", "connector", file_path="/project_b/main.tf", ref="my-resource")
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertNotIn(origin, passed)
 
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
+    def test_no_match_when_name_is_ambiguous_within_project(self):
+        origin, connected = self._sibling_modules()
+        duplicate = _make_vertex(
+            "resource_type_A", "my-resource", file_path="/project/modules/other/main.tf",
+            module_call=_module_call("/project", "other.tf", "other"),
+        )
+        passed, failed = self._run([origin, duplicate], [connected], [origin, duplicate])
+        self.assertEqual(passed, [])
+        self.assertEqual(failed, [origin, duplicate])
 
-        graph = _build_networkx_graph([origin, connected])
+    def test_same_name_in_other_project_is_not_ambiguous(self):
+        origin, connected = self._sibling_modules(root="/project_a")
+        other_origin, _ = self._sibling_modules(root="/project_b")
+        passed, failed = self._run([origin, other_origin], [connected], [origin, other_origin])
+        self.assertEqual(passed, [origin])
+        self.assertEqual(failed, [other_origin])
 
-        passed: list[dict] = [origin]
-        failed: list[dict] = [origin]
+    def test_no_match_in_same_file(self):
+        module_call = _module_call("/project", "main.tf", "combined")
+        origin = _make_vertex("resource_type_A", "my-resource", file_path="/project/modules/c/main.tf", module_call=module_call)
+        connected = _make_vertex(
+            "resource_type_B", "connector", file_path="/project/modules/c/main.tf", module_call=module_call, ref="my-resource",
+        )
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertNotIn(origin, passed)
 
-        solver._value_based_fallback(passed, failed, graph)
+    def test_skips_unresolved_references(self):
+        for unresolved in ("module.vpc.name", "var.vpc_name", "local.vpc_name"):
+            origin, connected = self._sibling_modules(origin_name=unresolved, ref=unresolved)
+            passed, failed = self._run([origin], [connected], [origin])
+            self.assertNotIn(origin, passed, unresolved)
+            self.assertIn(origin, failed, unresolved)
 
+    def test_skips_empty_name(self):
+        origin, connected = self._sibling_modules(origin_name="", ref="")
+        passed, failed = self._run([origin], [connected], [origin])
+        self.assertNotIn(origin, passed)
+        self.assertIn(origin, failed)
+
+    def test_does_not_duplicate_already_passed(self):
+        origin, connected = self._sibling_modules()
+        passed, failed = self._run([origin], [connected], [origin], passed=[origin])
         self.assertEqual(passed.count(origin), 1)
         self.assertNotIn(origin, failed)
 
-    def test_value_based_fallback_ignores_connected_type_in_failed(self):
-        """Only origin resource_types should be moved, not connected_resources_types."""
-        origin = _make_vertex("resource_type_A", "my-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="my-resource")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_networkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [connected]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        # connected is a connected type, not an origin type — should stay failed
+    def test_ignores_connected_type_in_failed(self):
+        origin, connected = self._sibling_modules()
+        connected["name"] = "my-resource"
+        passed, failed = self._run([origin], [connected], [connected])
         self.assertNotIn(connected, passed)
         self.assertIn(connected, failed)
 
-    def test_value_based_fallback_handles_multiple_resources(self):
-        """Multiple origin resources: matched ones pass, unmatched ones stay failed."""
-        origin_a = _make_vertex("resource_type_A", "resource-a", file_path="/modules/origin/main.tf")
-        origin_b = _make_vertex("resource_type_A", "resource-b", file_path="/modules/origin/main.tf")
-        connected_a = _make_vertex("resource_type_B", "conn-a", file_path="/modules/connected/main.tf", ref="resource-a")
+    def test_handles_multiple_resources(self):
+        origin_a, connected_a = self._sibling_modules(origin_name="resource-a", ref="resource-a")
+        origin_b, _ = self._sibling_modules(origin_name="resource-b", ref="resource-b")
+        passed, failed = self._run([origin_a, origin_b], [connected_a], [origin_a, origin_b])
+        self.assertEqual(passed, [origin_a])
+        self.assertEqual(failed, [origin_b])
 
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin_a, origin_b]
-        solver.vertices_under_connected_resources_types = [connected_a]
-
-        graph = _build_networkx_graph([origin_a, origin_b, connected_a])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin_a, origin_b]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertIn(origin_a, passed)
-        self.assertNotIn(origin_a, failed)
-        self.assertNotIn(origin_b, passed)
-        self.assertIn(origin_b, failed)
-
-    def test_value_based_fallback_no_op_when_no_vertices(self):
-        """Fallback should be a no-op when vertices lists are empty."""
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = []
-        solver.vertices_under_connected_resources_types = []
-
-        graph = _build_networkx_graph([])
-
-        passed: list[dict] = []
-        failed: list[dict] = []
-
-        solver._value_based_fallback(passed, failed, graph)
-
+    def test_no_op_when_no_vertices(self):
+        passed, failed = self._run([], [], [])
         self.assertEqual(passed, [])
         self.assertEqual(failed, [])
 
 
-# ---------------------------------------------------------------------------
-# Value-based fallback tests — rustworkx
-# ---------------------------------------------------------------------------
+class TestValueBasedFallbackNetworkx(_ValueBasedFallbackTests, TestCase):
+    build_graph = staticmethod(_build_networkx_graph)
 
-class TestValueBasedFallbackRustworkx(TestCase):
-    """Unit tests for _value_based_fallback using rustworkx graphs."""
 
-    def test_value_based_fallback_matches_by_rendered_name(self):
-        """A resource whose name appears in a connected resource's attribute values should pass."""
-        origin = _make_vertex("resource_type_A", "my-resource", file_path="/modules/origin/main.tf")
-        connected = _make_vertex("resource_type_B", "connector", file_path="/modules/connected/main.tf", ref="my-resource")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_rustworkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertIn(origin, passed)
-        self.assertNotIn(origin, failed)
-
-    def test_value_based_fallback_no_match_stays_failed(self):
-        """A resource whose name does NOT appear in any connected resource should stay failed."""
-        origin = _make_vertex("resource_type_A", "orphan-resource")
-        connected = _make_vertex("resource_type_B", "connector", ref="other-resource")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_rustworkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertNotIn(origin, passed)
-        self.assertIn(origin, failed)
-
-    def test_value_based_fallback_skips_unresolved_references(self):
-        """Resources with unresolved var/module/local references should not match."""
-        origin = _make_vertex("resource_type_A", "module.vpc.name")
-        connected = _make_vertex("resource_type_B", "connector", ref="module.vpc.name")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin]
-        solver.vertices_under_connected_resources_types = [connected]
-
-        graph = _build_rustworkx_graph([origin, connected])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertNotIn(origin, passed)
-        self.assertIn(origin, failed)
-
-    def test_value_based_fallback_handles_multiple_resources(self):
-        """Multiple origin resources: matched ones pass, unmatched ones stay failed."""
-        origin_a = _make_vertex("resource_type_A", "resource-a", file_path="/modules/origin/main.tf")
-        origin_b = _make_vertex("resource_type_A", "resource-b", file_path="/modules/origin/main.tf")
-        connected_a = _make_vertex("resource_type_B", "conn-a", file_path="/modules/connected/main.tf", ref="resource-a")
-
-        solver = _make_solver(["resource_type_A"], ["resource_type_B"])
-        solver.vertices_under_resource_types = [origin_a, origin_b]
-        solver.vertices_under_connected_resources_types = [connected_a]
-
-        graph = _build_rustworkx_graph([origin_a, origin_b, connected_a])
-
-        passed: list[dict] = []
-        failed: list[dict] = [origin_a, origin_b]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertIn(origin_a, passed)
-        self.assertNotIn(origin_a, failed)
-        self.assertNotIn(origin_b, passed)
-        self.assertIn(origin_b, failed)
-
-    def test_value_based_fallback_works_with_any_resource_types(self):
-        """Fallback should work for any resource type pair, not just specific providers."""
-        vpc = _make_vertex("aws_vpc", "my-vpc-id", file_path="/modules/vpc/main.tf")
-        subnet = _make_vertex("aws_subnet", "my-subnet", file_path="/modules/subnet/main.tf", vpc_id="my-vpc-id")
-
-        solver = _make_solver(["aws_vpc"], ["aws_subnet"])
-        solver.vertices_under_resource_types = [vpc]
-        solver.vertices_under_connected_resources_types = [subnet]
-
-        graph = _build_rustworkx_graph([vpc, subnet])
-
-        passed: list[dict] = []
-        failed: list[dict] = [vpc]
-
-        solver._value_based_fallback(passed, failed, graph)
-
-        self.assertIn(vpc, passed)
-        self.assertNotIn(vpc, failed)
+class TestValueBasedFallbackRustworkx(_ValueBasedFallbackTests, TestCase):
+    build_graph = staticmethod(_build_rustworkx_graph)

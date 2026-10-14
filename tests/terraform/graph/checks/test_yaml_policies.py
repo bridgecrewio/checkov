@@ -394,6 +394,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPNetworkDoesNotUseDefaultFirewallCrossModule(self):
         self.go("GCPNetworkDoesNotUseDefaultFirewallCrossModule", "GCPNetworkDoesNotUseDefaultFirewall")
 
+    def test_GCPNetworkDoesNotUseDefaultFirewallIndependentProjects(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewallIndependentProjects", "GCPNetworkDoesNotUseDefaultFirewall")
+
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
