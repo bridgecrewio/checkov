@@ -1,0 +1,353 @@
+"""Resource-level incremental Terraform graph (opt-in: CHECKOV_DETERMINISTIC_GRAPH=true + CHECKOV_INCREMENTAL_GRAPH=true).
+
+Nothing in this module runs unless a caller invokes it explicitly; the regular build_graph() path is unchanged.
+
+Baseline:  export_graph(graph, root)            -> JSON-safe artifact of the RENDERED graph (stable vertex keys)
+PR scan:   update_graph(artifact, root, ...)    -> a TerraformLocalGraph equal to a full build of the PR tree, where
+           only the affected vertices are re-rendered and every other vertex is loaded from the artifact
+
+How the PR graph is produced
+  1. pre  = the PR tree's pre-render graph (parse + vertices + edges + count/for_each expansion; no rendering)
+  2. affected = blocks whose pre-render state differs from the baseline's, closed over:
+       * referrers: every vertex that transitively references an affected vertex (pre-render edges)
+       * expansion: every instance of a counted / for_each block (and its main vertex) when any is affected
+       * providers: every resource of the same directory when a provider block changed
+       * vertices that are new, or whose baseline render did not converge
+     anything else is `frozen`: its exported rendered state is copied onto the pre-render vertex
+  3. the renderer runs on the full PR graph with frozen_vertices set: frozen vertices are never written, the edge loop
+     keeps its global schedule, the post-loop passes skip frozen vertices
+  4. post-render passes (breadcrumbs, module addresses, provider attributes) and post-render edges run on the whole
+     graph: they derive state from already-final vertex data and are idempotent on frozen vertices
+
+Rendered state is restored with the vertices' pre-render identity, so vertex indices in breadcrumbs are remapped from
+stable keys to the PR graph's indices.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+import os
+from dataclasses import dataclass, field
+from typing import Any, Optional
+
+from checkov.common.graph.graph_builder.deterministic import incremental_graph_enabled, module_chain_key
+from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+from checkov.terraform.modules.module_objects import TFModule
+
+ARTIFACT_VERSION = 1
+ROOT = "<root>"
+
+
+class IncrementalGraphUnsupported(Exception):
+    """The change cannot be applied incrementally with a correctness guarantee: the caller must rebuild."""
+
+
+@dataclass
+class UpdateReport:
+    vertices: int = 0
+    affected: int = 0
+    frozen: int = 0
+    changed_blocks: list[str] = field(default_factory=list)
+    removed_blocks: list[str] = field(default_factory=list)
+    reasons: dict[str, int] = field(default_factory=dict)
+    render_waves: int = 0
+    edges_evaluated: int = 0
+    """edge evaluations actually performed by the renderer (frozen-origin edges are skipped)"""
+    vertices_written: int = 0
+    """distinct vertices the renderer wrote an attribute to (must be a subset of the affected set)"""
+    frozen_written: int = 0
+    """frozen vertices the renderer wrote to: must be 0 (verifies that unchanged vertices are not re-rendered)"""
+    edge_schedule: dict[str, Any] = field(default_factory=dict)
+    """whether the affected-only edge schedule replaced the global edge loop (renderer.schedule_stats)"""
+
+
+def _require_flag() -> None:
+    if not incremental_graph_enabled():
+        raise RuntimeError("incremental graph requires CHECKOV_DETERMINISTIC_GRAPH=true and CHECKOV_INCREMENTAL_GRAPH=true")
+
+
+def _anonymise(value: Any, root: str) -> Any:
+    """Insertion order is kept: consumers read vertex configs positionally (e.g. the module context parser takes the
+    first key of a module call's config as its name; a counted call also holds `virtual_resources`)."""
+    text = json.dumps(value, cls=CustomJSONEncoder, sort_keys=False, default=str)
+    return json.loads(text.replace(root, ROOT))
+
+
+def _restore(value: Any, root: str) -> Any:
+    return json.loads(json.dumps(value).replace(ROOT, root))
+
+
+def vertex_key(vertex: TerraformBlock, root: str) -> str:
+    identity = [vertex.path, [list(m) for m in module_chain_key(vertex.source_module_object)], vertex.block_type,
+                vertex.name, vertex.for_each_index]
+    if vertex.block_type == BlockType.TF_VARIABLE:
+        identity.append(vertex.attributes.get("load_dir"))
+    return json.dumps(_anonymise(identity, root), sort_keys=True)
+
+
+def block_key(key: str) -> str:
+    """Key of the source block an (expanded) vertex comes from: instance indices removed."""
+    identity = json.loads(key)
+    chain = [[path, name, None] for path, name, _ in identity[1]]
+    return json.dumps([identity[0], chain, identity[2], identity[3].split("[")[0]], sort_keys=True)
+
+
+def vertex_keys(graph: Any, root: str) -> list[str]:
+    keys = [vertex_key(v, root) for v in graph.vertices]
+    seen: dict[str, int] = {}
+    for k in keys:
+        seen[k] = seen.get(k, 0) + 1
+    duplicates = sorted(k for k, n in seen.items() if n > 1)
+    if duplicates:
+        raise IncrementalGraphUnsupported(f"vertex identity not unique (duplicate block address): {duplicates[:3]}")
+    return keys
+
+
+def pre_render_digest(vertex: TerraformBlock, root: str, keys: Optional[list[str]] = None) -> str:
+    """Identity of a vertex's pre-render state: everything rendering starts from.
+    `source_module` holds vertex INDICES, which shift whenever any block is added or removed anywhere; with `keys`
+    they are replaced by stable keys so an unrelated edit does not invalidate every module vertex."""
+    source_module = sorted(keys[i] for i in vertex.source_module) if keys is not None else sorted(vertex.source_module)
+    payload = {"attributes": vertex.attributes, "config": vertex.config, "source_module": source_module,
+               "foreach_attrs": getattr(vertex, "foreach_attrs", None)}
+    text = json.dumps(_anonymise(payload, root), sort_keys=True)
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+NON_DETERMINISTIC_FUNCTIONS = ("timestamp(",)
+"""Functions Checkov evaluates to a different value on every scan (timestamp() renders the wall clock). A vertex
+whose source calls one is never frozen; its referrers follow through the closure. Functions Checkov does not
+implement (uuid(), plantimestamp(), bcrypt()) stay unrendered text and are deterministic."""
+
+
+def uses_non_deterministic_function(vertex: TerraformBlock) -> bool:
+    text = json.dumps(vertex.attributes, cls=CustomJSONEncoder, default=str)
+    return any(f in text for f in NON_DETERMINISTIC_FUNCTIONS)
+
+
+# --------------------------------------------------------------------------------------------------- export
+
+
+def capture_pre_render(graph: Any, root: str) -> dict[str, Any]:
+    """Pre-render digests and edges of a graph that has been built up to (not including) rendering."""
+    keys = vertex_keys(graph, root)
+    return {
+        "keys": keys,
+        "digests": {k: pre_render_digest(v, root, keys) for k, v in zip(keys, graph.vertices)},
+        "edges": sorted({json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges}),
+    }
+
+
+def capture_loop_end(graph: Any, root: str) -> dict[str, Any]:
+    """Every vertex's attributes and config as they are when the edge loop ends, BEFORE the post-loop passes
+    (update_vertices_configs, evaluate_non_rendered_values, dynamic blocks) rewrite them. This is the state referrers
+    read during the loop, so it is what a frozen vertex must hold while affected vertices are rendered."""
+    keys = vertex_keys(graph, root)
+    return {key: _anonymise({"attributes": vertex.attributes, "config": vertex.config}, root)
+            for key, vertex in zip(keys, graph.vertices)}
+
+
+def export_graph(graph: Any, root: str, pre_render: dict[str, Any], unconverged: set[str],
+                 loop_end: dict[str, Any]) -> dict[str, Any]:
+    """The rendered graph as a JSON-safe artifact. `pre_render` from capture_pre_render() on the same build,
+    `unconverged`: keys of vertices that still had pending edges when the render loop hit its cap,
+    `loop_end`: capture_loop_end() taken at the end of the edge loop of the same build."""
+    _require_flag()
+    root = os.path.realpath(root)
+    keys = vertex_keys(graph, root)
+    vertices = {}
+    for key, vertex in zip(keys, graph.vertices):
+        vertices[key] = _anonymise({
+            "loop_end": loop_end[key],
+            "attributes": vertex.attributes,
+            "config": vertex.config,
+            "changed_attributes": {attr: [[keys[b.vertex_id], b.attribute_key] for b in crumbs]
+                                   for attr, crumbs in vertex.changed_attributes.items()},
+            "module_connections": {attr: [keys[i] for i in ids] for attr, ids in vertex.module_connections.items()},
+            "foreach_attrs": getattr(vertex, "foreach_attrs", None),
+            "dynamic_attributes": getattr(vertex, "dynamic_attributes", None),
+            "has_dynamic_block": getattr(vertex, "has_dynamic_block", False),
+        }, root)
+    return {
+        "version": ARTIFACT_VERSION,
+        "vertices": vertices,
+        "edges": sorted(json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges),
+        "pre_render": _anonymise(pre_render, root),
+        "unconverged": sorted(unconverged),
+    }
+
+
+# --------------------------------------------------------------------------------------------------- affected set
+
+
+def _referrers(keys: list[str], graph: Any) -> dict[int, set[int]]:
+    referrers: dict[int, set[int]] = {}
+    for edge in graph.edges:
+        referrers.setdefault(edge.dest, set()).add(edge.origin)
+    return referrers
+
+
+def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], root: str,
+                      report: UpdateReport) -> set[int]:
+    old_digests: dict[str, str] = artifact["pre_render"]["digests"]
+    old_edges = set(artifact["pre_render"]["edges"])
+    new_edges = {json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges}
+    unconverged = set(artifact["unconverged"])
+    seeds: dict[int, str] = {}
+    for index, (key, vertex) in enumerate(zip(keys, graph.vertices)):
+        if key not in artifact["vertices"]:
+            seeds[index] = "new vertex"
+        elif old_digests.get(key) != pre_render_digest(vertex, root, keys):
+            seeds[index] = "pre-render state changed"
+        elif key in unconverged:
+            seeds[index] = "baseline render did not converge"
+        elif uses_non_deterministic_function(vertex):
+            seeds[index] = "non-deterministic function"
+    by_key = {k: i for i, k in enumerate(keys)}
+    for edge in sorted(old_edges ^ new_edges):
+        origin, _, _ = json.loads(edge)
+        if origin in by_key:
+            seeds.setdefault(by_key[origin], "outgoing edge set changed")
+    removed = sorted(set(artifact["vertices"]) - set(keys))
+    report.removed_blocks = removed
+    report.changed_blocks = sorted(keys[i] for i in seeds)
+    removed_provider_dirs = {os.path.dirname(json.loads(k)[0].replace(ROOT, root)) for k in removed
+                             if json.loads(k)[2] == BlockType.PROVIDER}
+    affected = _close(graph, keys, seeds, report, removed_provider_dirs)
+    for reason in seeds.values():
+        report.reasons[reason] = report.reasons.get(reason, 0) + 1
+    return affected
+
+
+def _close(graph: Any, keys: list[str], seeds: dict[int, str], report: UpdateReport,
+           removed_provider_dirs: Optional[set[str]] = None) -> set[int]:
+    """Provider resolution is a lookup over the provider blocks of a resource's directory, not an edge: a provider
+    that changed, appeared OR DISAPPEARED (CE-1: a removed vertex is not a seed) affects every resource there."""
+    referrers = _referrers(keys, graph)
+    by_block: dict[str, set[int]] = {}
+    for index, key in enumerate(keys):
+        by_block.setdefault(block_key(key), set()).add(index)
+    provider_dirs = {os.path.dirname(graph.vertices[i].path) for i in seeds
+                     if graph.vertices[i].block_type == BlockType.PROVIDER} | (removed_provider_dirs or set())
+    affected = set(seeds)
+    affected |= {i for i, v in enumerate(graph.vertices)
+                 if v.block_type == BlockType.RESOURCE and os.path.dirname(v.path) in provider_dirs}
+    stack = list(affected)
+    while stack:
+        index = stack.pop()
+        for nxt in referrers.get(index, set()) | by_block.get(block_key(keys[index]), set()):
+            if nxt not in affected:
+                affected.add(nxt)
+                stack.append(nxt)
+    return affected
+
+
+# --------------------------------------------------------------------------------------------------- restore
+
+
+def restore_vertex(vertex: TerraformBlock, data: dict[str, Any], by_key: dict[str, int], root: str) -> None:
+    """Copy an exported rendered state onto the PR's pre-render vertex of the same key.
+    `by_key` holds anonymised keys (as in the artifact); only the vertex data gets the real root back."""
+    data = {**data, "attributes": _restore(data["attributes"], root), "config": _restore(data["config"], root),
+            "foreach_attrs": _restore(data["foreach_attrs"], root),
+            "dynamic_attributes": _restore(data["dynamic_attributes"], root)}
+    vertex.attributes = data["attributes"]
+    vertex.config = data["config"]
+    vertex.changed_attributes = {}
+    for attr, crumbs in data["changed_attributes"].items():
+        restored = []
+        for key, attribute_key in crumbs:
+            if key not in by_key:
+                raise IncrementalGraphUnsupported(f"breadcrumb of frozen vertex points to a vertex gone in the PR: {key}")
+            restored.append(BreadcrumbMetadata(by_key[key], attribute_key))
+        vertex.changed_attributes[attr] = restored
+    vertex.module_connections = {}
+    for attr, ids in data["module_connections"].items():
+        if any(k not in by_key for k in ids):
+            raise IncrementalGraphUnsupported("module connection of frozen vertex points to a vertex gone in the PR")
+        vertex.module_connections[attr] = [by_key[k] for k in ids]
+    vertex.foreach_attrs = data["foreach_attrs"]
+    vertex.dynamic_attributes = data["dynamic_attributes"]
+    vertex.has_dynamic_block = data["has_dynamic_block"]
+    vertex.breadcrumbs = {}
+
+
+def update_graph(artifact: dict[str, Any], graph: Any, root: str) -> UpdateReport:
+    """`graph`: the PR tree's TerraformLocalGraph after build_pre_render_graph(). Renders it incrementally in place."""
+    _require_flag()
+    from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+
+    if artifact.get("version") != ARTIFACT_VERSION:
+        raise IncrementalGraphUnsupported(f"artifact version {artifact.get('version')} != {ARTIFACT_VERSION}")
+    root = os.path.realpath(root)
+    keys = vertex_keys(graph, root)
+    report = UpdateReport(vertices=len(keys))
+    affected = affected_vertices(graph, keys, artifact, root, report)
+    by_key = {k: i for i, k in enumerate(keys)}
+    frozen = set()
+    for index, key in enumerate(keys):
+        if index in affected:
+            continue
+        restore_vertex(graph.vertices[index], artifact["vertices"][key], by_key, root)
+        frozen.add(index)
+    report.affected, report.frozen = len(affected), len(frozen)
+    # During the edge loop a frozen vertex must look exactly as it did at the end of the baseline's edge loop: that is
+    # what referrers read in a full render. Its final (post-pass) state replaces it once the loop is done.
+    for index in frozen:
+        loop_state = _restore(artifact["vertices"][keys[index]]["loop_end"], root)
+        graph.vertices[index].attributes = loop_state["attributes"]
+        graph.vertices[index].config = loop_state["config"]
+
+    def restore_final_state() -> None:
+        for index in frozen:
+            final = artifact["vertices"][keys[index]]
+            graph.vertices[index].attributes = _restore(final["attributes"], root)
+            graph.vertices[index].config = _restore(final["config"], root)
+
+    renderer = TerraformVariableRenderer(graph)
+    renderer.frozen_vertices = frozen
+    renderer.on_edge_loop_end = restore_final_state
+    written: set[int] = set()
+    original_update = graph.update_vertex_attribute
+
+    def tracking_update(vertex_index: int, *args: Any, **kwargs: Any) -> Any:
+        written.add(vertex_index)
+        return original_update(vertex_index, *args, **kwargs)
+
+    original_evaluate = renderer.evaluate_vertex_attribute_from_edge
+
+    def counting_evaluate(edge_list: Any) -> Any:
+        report.edges_evaluated += len(edge_list)
+        return original_evaluate(edge_list)
+
+    graph.update_vertex_attribute = tracking_update
+    renderer.evaluate_vertex_attribute_from_edge = counting_evaluate
+    try:
+        renderer.render_variables_from_local_graph()
+    finally:
+        del graph.update_vertex_attribute
+    report.vertices_written = len(written)
+    report.frozen_written = len(written & frozen)
+    report.edge_schedule = renderer.schedule_stats
+    graph.update_vertices_fields()
+    graph.build_post_render_edges()
+    logging.info(f"[incremental graph] {report.affected} affected / {report.frozen} frozen of {report.vertices}")
+    return report
+
+
+# --------------------------------------------------------------------------------------------------- convergence
+
+
+def unconverged_vertices(renderer: Any, graph: Any, root: str) -> set[str]:
+    """Vertices with outgoing edges the render loop never completed (it stopped at its cap)."""
+    keys = vertex_keys(graph, root)
+    pending = set()
+    for origin, edges in graph.out_edges.items():
+        done = set(renderer.done_edges_by_origin_vertex.get(origin, []))
+        if edges and not set(edges).issubset(done):
+            pending.add(keys[origin])
+    return pending

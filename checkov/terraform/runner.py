@@ -28,12 +28,14 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
+from checkov.terraform.graph_builder.graph_to_tf_definitions import breadcrumbs_key, \
+    convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.tf_parser import TFParser
 from checkov.common.util.env_vars_config import env_vars_config
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, module_chain_key
 
 if TYPE_CHECKING:
     from checkov.common.typing import _SkippedCheck, LibraryGraph, LibraryGraphConnector
@@ -440,8 +442,11 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         details=check.details,
                         definition_context_file_path=full_file_path.file_path,
                     )
+                    entity_key = entity_id
+                    if deterministic_graph_enabled():
+                        record.module_chain = module_chain_key(full_file_path.tf_source_modules)
+                        entity_key = breadcrumbs_key(entity_id, full_file_path.tf_source_modules)
                     if self.breadcrumbs:
-                        entity_key = entity_id
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)

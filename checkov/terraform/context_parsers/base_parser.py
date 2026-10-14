@@ -16,6 +16,7 @@ from checkov.common.models.enums import ContextCategories
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.terraform import TFDefinitionKey, get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.diff_files_only import diff_files_only_enabled, repository_files
 
 OPEN_CURLY = "{"
 CLOSE_CURLY = "}"
@@ -78,6 +79,8 @@ class BaseContextParser(ABC):
         return self.filtered_lines
 
     def _read_file_lines(self) -> List[Tuple[int, str]]:
+        if diff_files_only_enabled():
+            return [(ind + 1, line) for ind, line in enumerate(repository_files.read_lines(self.tf_file))]
         with open(self.tf_file, "r") as file:
             file.seek(0)
             file_lines = [(ind + 1, line) for ind, line in enumerate(file.readlines())]
