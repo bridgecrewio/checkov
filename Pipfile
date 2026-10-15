@@ -41,6 +41,7 @@ types-colorama = "<0.5.0,>=0.4.3"
 tomli = "*"
 setuptools = "==78.1.1"
 iniconfig = "*"
+filelock = "*"
 
 [packages]
 bc-jsonpath-ng = "==1.6.1"
