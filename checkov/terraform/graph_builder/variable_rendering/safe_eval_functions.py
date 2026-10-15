@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import logging
 import os
+import threading
 import re
 from datetime import datetime, timedelta
 from functools import reduce
@@ -10,6 +11,7 @@ from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
 from asteval import Interpreter
 
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
@@ -25,6 +27,21 @@ https://www.terraform.io/docs/configuration/functions.html
 
 Not all of the functions are implemented yet. If a function doesn't exist, the original value is returned.
 """
+
+
+class _OrderedSet(set):  # type: ignore[type-arg]
+    """A set whose repr lists elements in sorted order (Terraform sets are ordered lexically)."""
+
+    def __repr__(self) -> str:
+        return "{" + ", ".join(repr(e) for e in sorted(self, key=repr)) + "}" if self else "set()"
+
+
+def toset(origin: Any) -> set[Any]:
+    if deterministic_graph_enabled():
+        # a plain set's str() follows the per-process string hash seed, so rendered values and every vertex attribute
+        # built from them would differ between two scans of the same tree
+        return _OrderedSet(origin)
+    return set(origin)
 
 
 def _find_regex_groups(pattern: str, input_str: str) -> Optional[Union[Dict[str, str], List[str]]]:
@@ -344,7 +361,7 @@ SAFE_EVAL_DICT["tobool"] = lambda arg: wrap_func(tobool, arg)
 SAFE_EVAL_DICT["tolist"] = lambda *args: list(*args)
 # SAFE_EVAL_DICT["tomap"] = lambda arg: wrap_func(tomap, str(arg))
 SAFE_EVAL_DICT["tonumber"] = lambda arg: arg if type(arg) in [int, float] else wrap_func(tonumber, arg)
-SAFE_EVAL_DICT["toset"] = lambda origin: set(origin)
+SAFE_EVAL_DICT["toset"] = lambda origin: toset(origin)
 SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_func(tostring, str(arg))
 
 # encoding
@@ -354,6 +371,45 @@ SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
+
+
+class _ReusableInterpreter:
+    """One asteval Interpreter per thread over the shared SAFE_EVAL_DICT, as upstream (opt-in: CHECKOV_REUSE_ASTEVAL).
+    Upstream builds a new Interpreter on every evaluation, which costs more than most evaluations (node-handler
+    table, symbol-table scan), but every one of them shares the module-level SAFE_EVAL_DICT, so names an expression
+    assigns stay visible to later evaluations. Reusing one Interpreter keeps that exact behaviour: only its per-call
+    state (error list, interrupt, return value, call depth, code text) is reset, and `no_deepcopy` is recomputed
+    when the shared table gained or lost names, as a fresh Interpreter would."""
+
+    _local = threading.local()
+
+    @classmethod
+    def get(cls) -> Interpreter:
+        interpreter = getattr(cls._local, "interpreter", None)
+        if interpreter is None:
+            interpreter = Interpreter(symtable=SAFE_EVAL_DICT, use_numpy=False, minimal=True)
+            cls._local.interpreter = interpreter
+            cls._local.keys = set(SAFE_EVAL_DICT)
+        interpreter.error = []
+        interpreter.error_msg = None
+        interpreter.expr = None
+        interpreter.retval = None
+        interpreter._interrupt = None
+        interpreter._calldepth = 0
+        interpreter.lineno = 0
+        interpreter.code_text = []
+        interpreter.symtable["print"] = interpreter._printer
+        if SAFE_EVAL_DICT.keys() != cls._local.keys:
+            interpreter.no_deepcopy = [key for key, val in SAFE_EVAL_DICT.items() if callable(val)]
+            cls._local.keys = set(SAFE_EVAL_DICT)
+        return interpreter
+
+
+REUSE_ASTEVAL_ENV = "CHECKOV_REUSE_ASTEVAL"
+
+
+def reuse_asteval_enabled() -> bool:
+    return os.getenv(REUSE_ASTEVAL_ENV, "false").lower() == "true"
 
 
 def get_asteval() -> Interpreter:
@@ -381,7 +437,7 @@ def evaluate(input_str: str) -> Any:
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     if input_str == "continue":
         return input_str
-    asteval = get_asteval()
+    asteval = _ReusableInterpreter.get() if reuse_asteval_enabled() else get_asteval()
     log_level = os.getenv("LOG_LEVEL")
     should_log_asteval_errors = log_level == "DEBUG"
     if RANGE_PATTERN.match(input_str):

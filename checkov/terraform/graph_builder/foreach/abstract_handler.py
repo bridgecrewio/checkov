@@ -7,10 +7,14 @@ import typing
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
+from checkov.terraform.graph_builder.foreach.subgraph_scope import assert_same_closure, copy_for_reference, \
+    placeholder_vertices, read_closure, subgraph_scope_enabled, subgraph_scope_verification_enabled, \
+    unread_vertices
 from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -57,9 +61,26 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+        if subgraph_scope_enabled():
+            ForeachAbstractHandler._render_scoped_sub_graph(sub_graph, blocks_to_render)
+            return
         renderer = TerraformVariableRenderer(sub_graph)
         renderer.vertices_index_to_render = blocks_to_render
         renderer.render_variables_from_local_graph()
+
+    @staticmethod
+    def _render_scoped_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+        """Skips evaluations that cannot reach what the handlers read afterwards (see subgraph_scope.py)."""
+        reference = copy_for_reference(sub_graph) if subgraph_scope_verification_enabled() else None
+        renderer = TerraformVariableRenderer(sub_graph)
+        renderer.vertices_index_to_render = blocks_to_render
+        renderer.frozen_vertices = unread_vertices(sub_graph, blocks_to_render) | placeholder_vertices(sub_graph)
+        renderer.render_variables_from_local_graph()
+        if reference is not None:
+            reference_renderer = TerraformVariableRenderer(reference)
+            reference_renderer.vertices_index_to_render = blocks_to_render
+            reference_renderer.render_variables_from_local_graph()
+            assert_same_closure(sub_graph, reference, read_closure(sub_graph, blocks_to_render))
 
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -209,7 +230,11 @@ class ForeachAbstractHandler:
             except ValueError:
                 pass
         if isinstance(evaluated_statement, set):
-            evaluated_statement = list(evaluated_statement)
+            if deterministic_graph_enabled():
+                # set iteration order follows the per-process string hash seed; instances are created in this order
+                evaluated_statement = sorted(evaluated_statement, key=repr)
+            else:
+                evaluated_statement = list(evaluated_statement)
         if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
             return evaluated_statement
         return None
