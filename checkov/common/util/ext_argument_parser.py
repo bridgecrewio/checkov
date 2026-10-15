@@ -7,7 +7,7 @@ import configargparse
 
 from checkov.common.bridgecrew.check_type import checkov_runners
 from checkov.common.runners.runner_registry import OUTPUT_CHOICES, SUMMARY_POSITIONS
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, KUSTOMIZE_COMMAND_AUTO, KUSTOMIZE_COMMAND_CHOICES
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.version import version
 
@@ -258,6 +258,15 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default=None,
             action='append',
             nargs='+'
+        )
+        self.add(
+            "--kustomize-command",
+            choices=KUSTOMIZE_COMMAND_CHOICES,
+            default=KUSTOMIZE_COMMAND_AUTO,
+            env_var="CKV_KUSTOMIZE_COMMAND",
+            help="Select the Kustomize implementation. 'auto' preserves the default behavior of preferring "
+                 "'kubectl kustomize' and using standalone 'kustomize' only when kubectl is absent. Explicit "
+                 "'kubectl' or 'kustomize' selection never falls back to the other implementation.",
         )
         self.add(
             "-c",
