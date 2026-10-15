@@ -361,3 +361,48 @@ resource "aws_security_group" "pass_self2" {
     }
   ]
 }
+
+resource "aws_security_group" "fail_self_then_open" {
+  name   = "sg-bar"
+  vpc_id = aws_vpc.main.id
+  ingress {
+    description = "Self"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+  ingress {
+    description = "SSH from anywhere"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "fail_all_traffic" {
+  security_group_id = aws_security_group.example.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "pass_all_traffic_private" {
+  security_group_id = aws_security_group.example.id
+  cidr_ipv4         = "10.0.0.0/8"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "pass_all_traffic_sg" {
+  security_group_id            = aws_security_group.example.id
+  referenced_security_group_id = aws_security_group.other.id
+  ip_protocol                  = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "fail_ipv6_string" {
+  security_group_id = aws_security_group.example.id
+  cidr_ipv6         = "::/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
