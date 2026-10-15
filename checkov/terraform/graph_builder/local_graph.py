@@ -178,36 +178,47 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             6. If still no provider is found, iterates through nested modules to find a provider.
             7. Assigns the provider fields to the vertex once a provider is determined.
         """
+        isolate_failures = deterministic_graph_enabled() and os.getenv("DFO_NEGATIVE", "") != "provider_pass_aborts"
         for vertex in self.vertices:
-            if vertex.block_type == BlockType.RESOURCE:
-                path_for_tf_definition = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
-                if BlockType.PROVIDER in vertex.attributes:
-                    provider = self._get_the_default_provider(vertex.attributes[BlockType.PROVIDER], path_for_tf_definition)
-                    self._assign_provider_fields(vertex, provider)
-                elif BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, {}):
-                    provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []), path_for_tf_definition, is_same_file=True)
-                    v_name = vertex.name.split('.')
-                    provider_name = vertex.config[v_name[0]][v_name[1]][CustomAttributes.TF_RESOURCE_ADDRESS].replace(vertex.name, provider_name)
-                    self._assign_provider_fields(vertex, provider_name)
-                else:
-                    while path_for_tf_definition.tf_source_modules:
-                        if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
-                            module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+            if not isolate_failures:
+                self._add_provider_attr_to_resource(vertex)
+                continue
+            try:
+                self._add_provider_attr_to_resource(vertex)
+            except Exception as e:
+                # One failing vertex must not decide, through vertex order, which other vertices get the attribute.
+                logging.info(f'Failed to add provider attributes to {vertex.name}, error: {str(e)}')
+
+    def _add_provider_attr_to_resource(self, vertex: TerraformBlock) -> None:
+        if vertex.block_type == BlockType.RESOURCE:
+            path_for_tf_definition = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
+            if BlockType.PROVIDER in vertex.attributes:
+                provider = self._get_the_default_provider(vertex.attributes[BlockType.PROVIDER], path_for_tf_definition)
+                self._assign_provider_fields(vertex, provider)
+            elif BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, {}):
+                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []), path_for_tf_definition, is_same_file=True)
+                v_name = vertex.name.split('.')
+                provider_name = vertex.config[v_name[0]][v_name[1]][CustomAttributes.TF_RESOURCE_ADDRESS].replace(vertex.name, provider_name)
+                self._assign_provider_fields(vertex, provider_name)
+            else:
+                while path_for_tf_definition.tf_source_modules:
+                    if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
+                        module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+                        provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
+                        self._assign_provider_fields(vertex, provider_name)
+                        break
+                    elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
+                        if vertex.source_module_object and vertex.source_module_object.nested_tf_module:
+                            module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]  # type:ignore
                             provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                             self._assign_provider_fields(vertex, provider_name)
-                            break
-                        elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
-                            if vertex.source_module_object and vertex.source_module_object.nested_tf_module:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]  # type:ignore
-                                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
-                                self._assign_provider_fields(vertex, provider_name)
-                            else:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
-                                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
-                                self._assign_provider_fields(vertex, provider_name)
-                            break
                         else:
-                            path_for_tf_definition = TFDefinitionKey(tf_source_modules=path_for_tf_definition.tf_source_modules.nested_tf_module, file_path=path_for_tf_definition.tf_source_modules.path)
+                            module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+                            provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
+                            self._assign_provider_fields(vertex, provider_name)
+                        break
+                    else:
+                        path_for_tf_definition = TFDefinitionKey(tf_source_modules=path_for_tf_definition.tf_source_modules.nested_tf_module, file_path=path_for_tf_definition.tf_source_modules.path)
 
     @staticmethod
     def _assign_provider_fields(vertex: TerraformBlock, provider_name: str) -> None:

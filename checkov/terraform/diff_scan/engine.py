@@ -52,6 +52,7 @@ from checkov.terraform.diff_scan.units import build_unit, has_count_or_foreach, 
 
 FOREACH_BLOCK_TYPES = (BlockType.MODULE, BlockType.RESOURCE, BlockType.DATA)
 NEGATIVE_CONTROL = os.getenv("DFO_NEGATIVE", "")
+RESOURCE_LEVEL_UNITS_ENV = "CHECKOV_DIFF_RESOURCE_LEVEL_UNITS"
 """Test-only weakening of the engine, to prove the harness detects the errors it would cause:
   no_bucket_invalidation   unchanged owners never rebuild their edges (stale cross-file references)
   stale_module_fanout      a changed module file updates only its first instance (stale instances)
@@ -192,6 +193,9 @@ class DiffEngine:
         self.pickled_definitions = {loads(d["key"]): d["definition"] for d in artifact["definitions"]}
         self.definition_entries = {loads(d["key"]): d for d in artifact["definitions"]}
         self._reused_vertex_cache: dict[int, Any] = {}
+        if len(artifact.get("creation_digests", [])) < len(artifact.get("vertices", [])):
+            for i in range(len(artifact["creation_digests"]), len(artifact["vertices"])):
+                artifact["creation_digests"].append(creation_digest(self._reused_vertex(i), self.root))
 
     # ------------------------------------------------------------------------------------------- 0. preconditions
 
@@ -763,15 +767,74 @@ class DiffEngine:
 
     def _scoped_units(self, parsed: dict[TFDefinitionKey, Any], changed: set[TFDefinitionKey],
                       removed: set[TFDefinitionKey]) -> set[str]:
-        """Units that must be rebuilt with Checkov's own pipeline: changed, and with count/for_each before or after."""
-        units: set[str] = set()
+        """Units that must be rebuilt with Checkov's own pipeline (ForeachBuilder).
+
+        When resource-level units are enabled (default: CHECKOV_DIFF_RESOURCE_LEVEL_UNITS=true):
+          A unit needs a whole-unit scoped rebuild ONLY IF:
+          1. A file containing count or for_each blocks was added, modified, or removed in that unit, OR
+          2. A variable, local, or resource that transitively feeds a `count` or `for_each` attribute was modified.
+          Units whose count/for_each constructs are unaffected are updated at resource level (per-owner),
+          reusing their baseline-expanded instances and skipping sub-graph rendering entirely.
+
+        When off or under negative control `no_resource_level_units`:
+          Any changed unit that contained count/for_each at baseline gets a whole-unit scoped rebuild."""
+        if os.getenv("CHECKOV_DIFF_RESOURCE_LEVEL_UNITS", "true").lower() != "true" or NEGATIVE_CONTROL == "no_resource_level_units":
+            units: set[str] = set()
+            for key in changed | removed:
+                unit = unit_of_key(key)
+                before = self.a["units"].get(unit, {}).get("has_foreach", False)
+                after = key in parsed and has_count_or_foreach(parsed[key])
+                if before or after:
+                    units.add(unit)
+            return units
+
+        scoped: set[str] = set()
         for key in changed | removed:
             unit = unit_of_key(key)
-            before = self.a["units"].get(unit, {}).get("has_foreach", False)
+            before = key in self.pickled_definitions and has_count_or_foreach(loads(self.pickled_definitions[key]))
             after = key in parsed and has_count_or_foreach(parsed[key])
             if before or after:
-                units.add(unit)
-        return units
+                scoped.add(unit)
+
+        module_fields = loads(self.a["module"])
+        truly_changed_vertices: set[int] = set()
+        for key in changed:
+            blocks = self._create_blocks(key, parsed[key], module_fields["source"],
+                                         module_fields["external_modules_source_map"], module_fields["source_dir"])
+            for block in blocks:
+                vk = lookups_vertex_key(block, self.root)
+                old_idx = self.old_index.get(vk)
+                if old_idx is None or self.a["creation_digests"][old_idx] != creation_digest(block, self.root):
+                    if old_idx is not None:
+                        truly_changed_vertices.add(old_idx)
+                    if block.block_type in FOREACH_BLOCK_TYPES and (
+                            FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
+                        scoped.add(unit_of_key(key))
+        for key in removed:
+            entry = self.definition_entries.get(key)
+            if entry:
+                truly_changed_vertices.update(entry["vertices"])
+
+        if getattr(self, "new_tfvar_blocks", None) is not None:
+            truly_changed_vertices.update(self.a.get("tfvar_vertices", []))
+
+        referrers: dict[int, list[tuple[int, str]]] = defaultdict(list)
+        if NEGATIVE_CONTROL != "ignore_count_dependencies":
+            for origin, dest, label, _, _ in self.a["edges"]:
+                referrers[dest].append((origin, label))
+
+        stack = list(truly_changed_vertices)
+        visited = set(truly_changed_vertices)
+        while stack:
+            curr = stack.pop()
+            for origin, label in referrers.get(curr, []):
+                if label in ("count", "for_each"):
+                    scoped.add(self.a["unit_by_vertex"][origin])
+                if origin not in visited:
+                    visited.add(origin)
+                    stack.append(origin)
+
+        return scoped
 
     def _unit_artifact(self, unit: str) -> dict[str, Any]:
         """The artifact restricted to one unit (no count/for_each in it): vertex lists, edges, probes re-indexed."""

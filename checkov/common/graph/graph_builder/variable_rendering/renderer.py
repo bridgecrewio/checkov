@@ -15,6 +15,7 @@ from checkov.common.graph.graph_builder.variable_rendering.affected_schedule imp
     affected_schedule_enabled,
     build_affected_schedule,
     schedule_verification_enabled,
+    subgraph_schedule_enabled,
 )
 from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
@@ -79,10 +80,12 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         the whole graph (see affected_schedule.py). False when not applicable: the caller runs the global loop."""
         if not (self.frozen_vertices and deterministic_graph_enabled() and affected_schedule_enabled()):
             return False
-        if self.run_async or self.vertices_index_to_render:
+        if self.run_async or (self.vertices_index_to_render and not subgraph_schedule_enabled()):
             return False
         initial_end = self._get_initial_end_vertices()
         try:
+            if self.vertices_index_to_render:
+                self._require_no_dropped_round0_edges(initial_end)
             schedule = build_affected_schedule(self.local_graph, self.frozen_vertices, initial_end,
                                                self.MAX_NUMBER_OF_LOOPS)
         except ScheduleUnsupported as error:
@@ -100,6 +103,14 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             for group in groups:
                 self._edge_evaluation_task([group])
         return True
+
+    def _require_no_dropped_round0_edges(self, initial_end: set[int]) -> None:
+        """A sub-graph render (count/for_each handlers) removes some edges from round 0 only
+        (`_remove_unrelated_edges`); the closed-form schedule does not model that."""
+        for vertex in initial_end:
+            if self._remove_unrelated_edges(self.local_graph.in_edges.get(vertex, [])) \
+                    != list(self.local_graph.in_edges.get(vertex, [])):
+                raise ScheduleUnsupported("sub-graph render removes round-0 edges")
 
     def _run_edge_loop_and_compare(self, schedule: EdgeSchedule) -> None:
         """Test mode: render with the global loop (real evaluations), and require that it evaluated exactly the

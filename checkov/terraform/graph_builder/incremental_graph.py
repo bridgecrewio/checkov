@@ -61,6 +61,8 @@ class UpdateReport:
     """distinct vertices the renderer wrote an attribute to (must be a subset of the affected set)"""
     frozen_written: int = 0
     """frozen vertices the renderer wrote to: must be 0 (verifies that unchanged vertices are not re-rendered)"""
+    edge_loop_rounds: list[int] = field(default_factory=list)
+    """[baseline, PR] rounds of the global edge loop (precise unconverged rule)"""
     edge_schedule: dict[str, Any] = field(default_factory=dict)
     """whether the affected-only edge schedule replaced the global edge loop (renderer.schedule_stats)"""
 
@@ -178,10 +180,49 @@ def export_graph(graph: Any, root: str, pre_render: dict[str, Any], unconverged:
         "edges": sorted(json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges),
         "pre_render": _anonymise(pre_render, root),
         "unconverged": sorted(unconverged),
+        "edge_loop_rounds": _edge_loop_rounds(graph),
     }
 
 
 # --------------------------------------------------------------------------------------------------- affected set
+
+UNCONVERGED_RULE_ENV = "CHECKOV_INCREMENTAL_PRECISE_UNCONVERGED"
+"""Opt-in (set by the diff scan): baseline-unconverged vertices are re-rendered only if the edge loop's length changed."""
+
+
+def _edge_loop_rounds(graph: Any) -> int:
+    from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import edge_loop_rounds
+    from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+
+    return edge_loop_rounds(graph, VariableRenderer.MAX_NUMBER_OF_LOOPS)
+
+
+def _edge_loop_rounds_rule(graph: Any, artifact: dict[str, Any], report: UpdateReport) -> str:
+    """'off' (legacy rule: every baseline-unconverged vertex is re-rendered), 'same' or 'changed'.
+
+    A frozen vertex holds the value the baseline's edge loop left in it, which is truncated when that loop stopped at
+    its cap. In deterministic mode an edge runs in rounds settle(dest)+1, +3, ... below the loop length, and settle(v)
+    depends only on v's downstream edges; a frozen vertex's downstream is unchanged (any change there makes it
+    affected through the referrer closure). So with the same loop length a frozen vertex sees exactly the
+    evaluations it saw at baseline, converged or not. With a different length, every vertex whose edges can repeat
+    is re-rendered. (Settle rounds of all edges form a contiguous range, so the length is 0, 1, 2 or the cap: in
+    practice it only changes on graphs whose longest reference chain is 2 or shorter.)"""
+    if os.getenv(UNCONVERGED_RULE_ENV, "false").lower() != "true" or "edge_loop_rounds" not in artifact:
+        return "off"
+    rounds = _edge_loop_rounds(graph)
+    report.edge_loop_rounds = [artifact["edge_loop_rounds"], rounds]
+    if os.getenv("DFO_NEGATIVE", "") == "unconverged_ignore_loop_length":
+        return "same"
+    return "same" if rounds == artifact["edge_loop_rounds"] else "changed"
+
+
+def _vertices_with_repeated_edges(graph: Any) -> dict[int, str]:
+    """Origins of edges into vertices that are not initial end vertices (only those edges run in more than one round)."""
+    from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import initial_end_vertices
+
+    initial_end = initial_end_vertices(graph)
+    return {edge.origin: "edge loop length changed" for edge in graph.edges if edge.dest not in initial_end}
+
 
 
 def _referrers(keys: list[str], graph: Any) -> dict[int, set[int]]:
@@ -197,7 +238,12 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
     old_edges = set(artifact["pre_render"]["edges"])
     new_edges = {json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges}
     unconverged = set(artifact["unconverged"])
+    loop_rounds_rule = _edge_loop_rounds_rule(graph, artifact, report)
+    if loop_rounds_rule == "same":
+        unconverged = set()
     seeds: dict[int, str] = {}
+    if loop_rounds_rule == "changed":
+        seeds.update(_vertices_with_repeated_edges(graph))
     for index, (key, vertex) in enumerate(zip(keys, graph.vertices)):
         if key not in artifact["vertices"]:
             seeds[index] = "new vertex"

@@ -16,9 +16,12 @@ from dataclasses import dataclass
 from typing import Any, Iterator, Optional
 
 from checkov.common.graph.graph_builder.deterministic import REALPATH_MEMO_ENV, STABLE_KEY_CACHE_ENV
-from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import AFFECTED_SCHEDULE_ENV
+from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import AFFECTED_SCHEDULE_ENV, \
+    SUBGRAPH_SCHEDULE_ENV
 from checkov.common.output.report import Report
 from checkov.terraform.graph_builder.foreach.subgraph_scope import SCOPE_ENV as SUBGRAPH_SCOPE_ENV
+from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import REUSE_ASTEVAL_ENV
+from checkov.common.graph.graph_builder.graph_components.blocks import REUSE_JSONPATH_PARSER_ENV
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.diff_files_only import DIFF_FILES_ONLY_ENV, repository_files
@@ -34,7 +37,8 @@ from checkov.terraform.diff_scan import tfvars
 from checkov.terraform.diff_scan.tfvars import is_terraform_file
 from checkov.terraform.diff_scan.artifact import dumps
 from checkov.terraform.diff_scan.baseline import capture_pre_render, creation_digest
-from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport
+from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport, \
+    RESOURCE_LEVEL_UNITS_ENV
 from checkov.terraform.diff_scan.relocate import relocate_artifact
 from checkov.terraform.diff_scan.graph_ops import edge_tuples, permute, set_edges
 from checkov.terraform.diff_scan.recorder import EdgeRecorder
@@ -91,7 +95,6 @@ class _BaselineBuilder:
         self.artifact: Optional[dict[str, Any]] = None
 
     def build(self, graph: TerraformLocalGraph) -> None:
-        digests = [creation_digest(block, self.root) for block in graph.module.blocks]
         tfvar_blocks = [b for b in graph.module.blocks if b.block_type == BlockType.TF_VARIABLE]
         tfvar_blocks = pickle_deepcopy(tfvar_blocks)
         recorder = EdgeRecorder(graph, self.root)
@@ -100,6 +103,7 @@ class _BaselineBuilder:
             graph.build_pre_render_graph()
         finally:
             recorder.uninstall()
+        digests = [creation_digest(block, self.root) for block in graph.vertices]
         pre_render = capture_pre_render(graph, recorder, digests, self.root)
         pre_render["tfvar_blocks"] = [dumps(b) for b in tfvar_blocks]
         self.artifact = {**pre_render, "rendered": _render_and_export(graph, self.root)}
@@ -237,6 +241,11 @@ def diff_scan(root: str, artifact: dict[str, Any], changes: ChangeSet) -> ScanRe
     os.environ.setdefault(REALPATH_MEMO_ENV, "true")
     os.environ.setdefault(STABLE_KEY_CACHE_ENV, "true")
     os.environ.setdefault(SUBGRAPH_SCOPE_ENV, "true")
+    os.environ.setdefault(incremental_graph.UNCONVERGED_RULE_ENV, "true")
+    os.environ.setdefault(SUBGRAPH_SCHEDULE_ENV, "true")
+    os.environ.setdefault(REUSE_ASTEVAL_ENV, "true")
+    os.environ.setdefault(REUSE_JSONPATH_PARSER_ENV, "true")
+    os.environ.setdefault(RESOURCE_LEVEL_UNITS_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     modules = external_modules(root)

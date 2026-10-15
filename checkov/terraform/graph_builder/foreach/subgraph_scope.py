@@ -60,6 +60,12 @@ def unread_vertices(sub_graph: TerraformLocalGraph, blocks_to_render: list[int])
     return set(range(len(sub_graph.vertices))) - read_closure(sub_graph, blocks_to_render)
 
 
+def placeholder_vertices(sub_graph: TerraformLocalGraph) -> set[int]:
+    """Resources the sub-graph leaves out are `{}` placeholders; every evaluation touching one returns immediately
+    (TerraformVariableRenderer.evaluate_vertex_attribute_from_edge), so skipping their groups changes nothing."""
+    return {i for i, vertex in enumerate(sub_graph.vertices) if not vertex}
+
+
 def copy_for_reference(sub_graph: TerraformLocalGraph) -> TerraformLocalGraph:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 

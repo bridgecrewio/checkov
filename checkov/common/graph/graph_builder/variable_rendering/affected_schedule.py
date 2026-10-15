@@ -40,6 +40,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 AFFECTED_SCHEDULE_ENV = "CHECKOV_AFFECTED_RENDER_SCHEDULE"
+SUBGRAPH_SCHEDULE_ENV = "CHECKOV_AFFECTED_SCHEDULE_IN_SUBGRAPHS"
+"""Opt-in: also use the schedule for count/for_each sub-graph renders (frozen = vertices they never read)."""
 VERIFY_ENV = "CHECKOV_AFFECTED_RENDER_SCHEDULE_VERIFY"
 """Test mode: also run the global loop without evaluating anything, and fail if its trace differs."""
 
@@ -48,6 +50,10 @@ EdgeTuple = tuple[int, int, str]
 
 def affected_schedule_enabled() -> bool:
     return os.getenv(AFFECTED_SCHEDULE_ENV, "false").lower() == "true"
+
+
+def subgraph_schedule_enabled() -> bool:
+    return affected_schedule_enabled() and os.getenv(SUBGRAPH_SCHEDULE_ENV, "false").lower() == "true"
 
 
 def schedule_verification_enabled() -> bool:
@@ -180,6 +186,17 @@ def _loop_length(graph: LocalGraph[Any], initial_end: set[int], settled: list[Op
         if not any(first_rounds[s] for s in range(round_index % 2 or 2, round_index + 1, 2)):
             return round_index
     return max_loops
+
+
+def initial_end_vertices(graph: LocalGraph[Any]) -> set[int]:
+    """VariableRenderer._get_initial_end_vertices: out-degree 0 and in-degree > 0."""
+    return {v for v, edges in graph.out_edges.items() if not edges and graph.in_edges.get(v)}
+
+
+def edge_loop_rounds(graph: LocalGraph[Any], max_loops: int) -> int:
+    """Rounds the global edge loop executes on this graph (deterministic mode). A pure function of the topology."""
+    initial_end = initial_end_vertices(graph)
+    return _loop_length(graph, initial_end, settle_rounds(graph, initial_end), max_loops)
 
 
 def _round_edges(graph: LocalGraph[Any], evaluated_origins: list[int], initial_end: set[int],

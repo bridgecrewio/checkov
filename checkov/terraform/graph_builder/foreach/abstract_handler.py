@@ -13,7 +13,8 @@ from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
 from checkov.terraform.graph_builder.foreach.subgraph_scope import assert_same_closure, copy_for_reference, \
-    read_closure, subgraph_scope_enabled, subgraph_scope_verification_enabled, unread_vertices
+    placeholder_vertices, read_closure, subgraph_scope_enabled, subgraph_scope_verification_enabled, \
+    unread_vertices
 from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -73,7 +74,7 @@ class ForeachAbstractHandler:
         reference = copy_for_reference(sub_graph) if subgraph_scope_verification_enabled() else None
         renderer = TerraformVariableRenderer(sub_graph)
         renderer.vertices_index_to_render = blocks_to_render
-        renderer.frozen_vertices = unread_vertices(sub_graph, blocks_to_render)
+        renderer.frozen_vertices = unread_vertices(sub_graph, blocks_to_render) | placeholder_vertices(sub_graph)
         renderer.render_variables_from_local_graph()
         if reference is not None:
             reference_renderer = TerraformVariableRenderer(reference)

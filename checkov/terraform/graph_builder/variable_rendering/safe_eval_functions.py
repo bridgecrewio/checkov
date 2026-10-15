@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import logging
 import os
+import threading
 import re
 from datetime import datetime, timedelta
 from functools import reduce
@@ -372,6 +373,45 @@ SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
+class _ReusableInterpreter:
+    """One asteval Interpreter per thread over the shared SAFE_EVAL_DICT, as upstream (opt-in: CHECKOV_REUSE_ASTEVAL).
+    Upstream builds a new Interpreter on every evaluation, which costs more than most evaluations (node-handler
+    table, symbol-table scan), but every one of them shares the module-level SAFE_EVAL_DICT, so names an expression
+    assigns stay visible to later evaluations. Reusing one Interpreter keeps that exact behaviour: only its per-call
+    state (error list, interrupt, return value, call depth, code text) is reset, and `no_deepcopy` is recomputed
+    when the shared table gained or lost names, as a fresh Interpreter would."""
+
+    _local = threading.local()
+
+    @classmethod
+    def get(cls) -> Interpreter:
+        interpreter = getattr(cls._local, "interpreter", None)
+        if interpreter is None:
+            interpreter = Interpreter(symtable=SAFE_EVAL_DICT, use_numpy=False, minimal=True)
+            cls._local.interpreter = interpreter
+            cls._local.keys = set(SAFE_EVAL_DICT)
+        interpreter.error = []
+        interpreter.error_msg = None
+        interpreter.expr = None
+        interpreter.retval = None
+        interpreter._interrupt = None
+        interpreter._calldepth = 0
+        interpreter.lineno = 0
+        interpreter.code_text = []
+        interpreter.symtable["print"] = interpreter._printer
+        if SAFE_EVAL_DICT.keys() != cls._local.keys:
+            interpreter.no_deepcopy = [key for key, val in SAFE_EVAL_DICT.items() if callable(val)]
+            cls._local.keys = set(SAFE_EVAL_DICT)
+        return interpreter
+
+
+REUSE_ASTEVAL_ENV = "CHECKOV_REUSE_ASTEVAL"
+
+
+def reuse_asteval_enabled() -> bool:
+    return os.getenv(REUSE_ASTEVAL_ENV, "false").lower() == "true"
+
+
 def get_asteval() -> Interpreter:
     # asteval provides a safer environment for evaluating expressions by restricting the operations to a secure subset, significantly reducing the risk of executing malicious code.
     return Interpreter(
@@ -397,7 +437,7 @@ def evaluate(input_str: str) -> Any:
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     if input_str == "continue":
         return input_str
-    asteval = get_asteval()
+    asteval = _ReusableInterpreter.get() if reuse_asteval_enabled() else get_asteval()
     log_level = os.getenv("LOG_LEVEL")
     should_log_asteval_errors = log_level == "DEBUG"
     if RANGE_PATTERN.match(input_str):
