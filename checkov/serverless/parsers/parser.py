@@ -35,7 +35,9 @@ QUOTED_WORD_SYNTAX = re.compile(r"(?:('|\").*?\1)")
 FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 
 
-def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
+def parse(
+    filename: str, out_parsing_errors: dict[str, str] | None = None
+) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
     template = None
     template_lines = None
 
@@ -57,6 +59,8 @@ def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
         return None
     except CfnParseError as e:
         logger.warning(f"Failed to parse file {e.filename} because it isn't valid yaml")
+        if out_parsing_errors is not None:
+            out_parsing_errors[filename] = str(e)
         return None
 
     if template is None or template_lines is None:
