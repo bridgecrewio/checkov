@@ -25,7 +25,7 @@ class EKSPlatformVersion(BaseResourceValueCheck):
 
     def get_expected_values(self) -> list[Any]:
         # https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html
-        return ["1.29", "1.30", "1.31", "1.32", "1.33", "1.34", "1.35"]
+        return ["1.31", "1.32", "1.33", "1.34", "1.35", "1.36"]
 
 
 check = EKSPlatformVersion()
