@@ -33,12 +33,15 @@ from checkov.terraform.runner import Runner
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
-from checkov.terraform.diff_scan import tfvars
+from checkov.terraform.diff_scan import inputs, tfvars
 from checkov.terraform.diff_scan.tfvars import is_terraform_file
 from checkov.terraform.diff_scan.artifact import dumps
+from checkov.terraform.diff_scan.artifact_store import RECORD_ENCODING, decode_record, encode_record
 from checkov.terraform.diff_scan.baseline import capture_pre_render, creation_digest
+from checkov.terraform.diff_scan.expansions import PRECISE_CLOSURE_ENV, ExpansionRecorder
+from checkov.terraform.diff_scan.instance_update import INSTANCE_UPDATE_ENV
 from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport, \
-    RESOURCE_LEVEL_UNITS_ENV
+    RESOURCE_LEVEL_UNITS_ENV, REUSE_EXPANSIONS_ENV
 from checkov.terraform.diff_scan.relocate import relocate_artifact
 from checkov.terraform.diff_scan.graph_ops import edge_tuples, permute, set_edges
 from checkov.terraform.diff_scan.recorder import EdgeRecorder
@@ -87,30 +90,121 @@ class ScanResult:
     artifact: Optional[dict[str, Any]] = None
     pre_render: Optional[PreRenderReport] = None
     render: Optional[incremental_graph.UpdateReport] = None
+    validation: Optional[inputs.ValidationReport] = None
+
+
+SMALL_SECTIONS = ("version", "root", "foreach_ran", "order_matches_definitions", "units_isolated", "cross_unit_links",
+                  "tf_var_environment", "tfvar_vertices", "aliases", "alias_keys", "module", "tfvar_blocks")
+"""Sections kept in memory until the end of the baseline (`artifact` stays a dict of them, for the CLI's summary);
+every other section of a section-store baseline is written to disk as soon as it is produced."""
 
 
 class _BaselineBuilder:
-    def __init__(self, root: str) -> None:
+    def __init__(self, root: str, writer: Optional[Any] = None) -> None:
         self.root = root
         self.artifact: Optional[dict[str, Any]] = None
+        self.writer = writer
+        """section-store baseline (artifact_store.SectionWriter): big sections go to disk when produced, rendered
+        vertex records are msgpack-encoded as they are exported"""
 
     def build(self, graph: TerraformLocalGraph) -> None:
         tfvar_blocks = [b for b in graph.module.blocks if b.block_type == BlockType.TF_VARIABLE]
         tfvar_blocks = pickle_deepcopy(tfvar_blocks)
         recorder = EdgeRecorder(graph, self.root)
         recorder.install()
+        expansion_recorder = ExpansionRecorder(self.root)
+        graph.foreach_statement_oracle = expansion_recorder
         try:
             graph.build_pre_render_graph()
         finally:
             recorder.uninstall()
+            del graph.foreach_statement_oracle
         digests = [creation_digest(block, self.root) for block in graph.vertices]
-        pre_render = capture_pre_render(graph, recorder, digests, self.root)
+        pre_render = capture_pre_render(graph, recorder, digests, self.root,
+                                        sink=self._write_big_section if self.writer is not None else None)
+        recorder.probes.clear()
+        recorder.edge_owners.clear()
         pre_render["tfvar_blocks"] = [dumps(b) for b in tfvar_blocks]
-        self.artifact = {**pre_render, "rendered": _render_and_export(graph, self.root)}
+        pre_render["expansions"] = expansion_recorder.records
+        self.artifact = self.spill(pre_render)
+        rendered = _render_and_export(graph, self.root, encode_vertices=self.writer is not None, writer=self.writer)
+        if self.writer is not None:
+            for name in ("vertices", "edges"):
+                self.writer.write(f"rendered.{name}", rendered.pop(name))
+        self.artifact["rendered"] = rendered
+
+    def _write_big_section(self, name: str, value: Any) -> bool:
+        """capture_pre_render sink: write a big section now (True), keep a small one in memory (False)."""
+        if name in SMALL_SECTIONS:
+            return False
+        self.writer.write(name, value)
+        return True
+
+    def spill(self, sections: dict[str, Any]) -> dict[str, Any]:
+        """Write every big section now and keep only the small ones (section-store baselines)."""
+        if self.writer is None:
+            return sections
+        for name in [n for n in sections if n not in SMALL_SECTIONS]:
+            self.writer.write(name, sections.pop(name))
+        return sections
 
 
-def _render_and_export(graph: TerraformLocalGraph, root: str) -> dict[str, Any]:
+RENDERED_SUBSECTIONS = ("vertices", "edges", "pre_render")
+"""The v3 store keeps the big parts of the rendered export as their own sections ("rendered.vertices", ...), so each
+is decoded only when update_graph reads it and released right after."""
+
+
+class RenderedView:
+    """update_graph's view of the rendered export of a v3 store: the small `rendered` section plus the split-out big
+    parts, decoded on first access."""
+
+    def __init__(self, artifact: Any) -> None:
+        self._artifact = artifact
+        self._small = artifact["rendered"]
+        self._decoder = decode_record if self._small.get("vertices_encoding") == RECORD_ENCODING else None
+
+    def __getitem__(self, name: str) -> Any:
+        if name in RENDERED_SUBSECTIONS:
+            return self._artifact[f"rendered.{name}"]
+        if name == "vertex_decoder":
+            return self._decoder
+        return self._small[name]
+
+    def get(self, name: str, default: Any = None) -> Any:
+        if name in RENDERED_SUBSECTIONS:
+            return self._artifact.get(f"rendered.{name}", default)
+        if name == "vertex_decoder":
+            return self._decoder
+        return self._small.get(name, default)
+
+    def __contains__(self, name: object) -> bool:
+        return name in RENDERED_SUBSECTIONS or name in self._small
+
+    def release_part(self, name: str) -> None:
+        _release(self._artifact, f"rendered.{name}")
+
+    def release(self) -> None:
+        _release(self._artifact, "rendered", *(f"rendered.{name}" for name in RENDERED_SUBSECTIONS))
+
+
+def _render(artifact: Any, graph: TerraformLocalGraph, root: str) -> incremental_graph.UpdateReport:
+    """update_graph on the rendered export; its serialized form is released before the edge loop starts."""
+    if "rendered.vertices" in artifact:
+        view = RenderedView(artifact)
+        return incremental_graph.update_graph(view, graph, root, release=view.release)
+    return incremental_graph.update_graph(artifact["rendered"], graph, root,
+                                          release=lambda: _release(artifact, "rendered"))
+
+
+def _render_and_export(graph: TerraformLocalGraph, root: str, encode_vertices: bool,
+                       writer: Optional[Any] = None) -> dict[str, Any]:
+    """Render the baseline graph and export it. With a section `writer`, the resource-level pre-render capture is
+    written to disk before rendering starts (it is not needed again by the baseline) instead of being held through
+    the render."""
     resource_level_pre_render = incremental_graph.capture_pre_render(graph, root)
+    if writer is not None:
+        writer.write("rendered.pre_render", incremental_graph.anonymise(resource_level_pre_render, root))
+        resource_level_pre_render = {}
     renderer = TerraformVariableRenderer(graph)
     unconverged: set[str] = set()
     loop_end: dict[str, Any] = {}
@@ -123,7 +217,13 @@ def _render_and_export(graph: TerraformLocalGraph, root: str) -> dict[str, Any]:
     renderer.render_variables_from_local_graph()
     graph.update_vertices_fields()
     graph.build_post_render_edges()
-    return incremental_graph.export_graph(graph, root, resource_level_pre_render, unconverged, loop_end)
+    encode = encode_record if encode_vertices else None
+    exported = incremental_graph.export_graph(graph, root, resource_level_pre_render, unconverged, loop_end, encode)
+    if writer is not None:
+        del exported["pre_render"]
+    if encode_vertices:
+        exported["vertices_encoding"] = RECORD_ENCODING
+    return exported
 
 
 class _ShuffledBuilder:
@@ -185,13 +285,13 @@ def _parsed_scan(root: str, builder: Any) -> ScanResult:
             external_modules_content_cache=modules, vars_files=var_files_from_env(root))
     if recording:
         uninstall()
-        builder.artifact["variable_inputs"] = {
+        builder.artifact.update(builder.spill({"variable_inputs": {
             "calls": [dataclasses.asdict(c) for c in calls],
             "files": variable_files,
             "var_files": var_files_from_env(root) or [],
             "external_vars": dumps(runner.graph_manager.parser.external_vars),
             "external_modules": supplied,
-        }
+        }}))
     return ScanResult(graph=graph, report=_run_checks(runner, graph, root),
                       artifact=builder.artifact if builder else None)
 
@@ -210,9 +310,40 @@ def shuffled_full_scan(root: str, seed: int) -> ScanResult:
     return _parsed_scan(_prepare(root), _ShuffledBuilder(seed))
 
 
-def baseline_scan(root: str) -> ScanResult:
+def baseline_scan(root: str, commit: Optional[str] = None, fingerprint: Optional[str] = None,
+                  writer: Optional[Any] = None) -> ScanResult:
+    """`commit`: the commit `root` is a checkout of. With it, the artifact records the commit, every file's blob SHA
+    and the configuration fingerprint, and every PR scan against it must prove its diff starts there (inputs.py).
+    `writer`: an artifact_store.SectionWriter: the artifact is written as a v3 section store while the scan runs
+    (big sections leave memory as soon as they are produced); the caller commits it."""
     root = _prepare(root)
-    return _parsed_scan(root, _BaselineBuilder(root))
+    result = _parsed_scan(root, _BaselineBuilder(root, writer))
+    if commit and result.artifact is not None:
+        result.artifact["baseline_inputs"] = inputs.BaselineInputs(
+            commit=commit, manifest=inputs.tree_manifest(root), config_fingerprint=fingerprint or "").to_json()
+    return result
+
+
+def _repository_relative(path: str, root: str) -> str:
+    return os.path.relpath(path, root).replace(os.sep, "/")
+
+
+def validate_scan_inputs(artifact: dict[str, Any], changes: ChangeSet, root: str,
+                         target: Optional[inputs.ScanTarget], fingerprint: Optional[str]) \
+        -> Optional[inputs.ValidationReport]:
+    """The diff must be exactly the baseline -> scan-target-tree diff (inputs.validate). Artifacts without commit data
+    (PoC harness baselines) are accepted unvalidated only when no scan target is given either."""
+    baseline = inputs.BaselineInputs.from_json(artifact.get("baseline_inputs"))
+    if baseline is None and target is None:
+        return None
+    if NEGATIVE_CONTROL == "no_input_validation":
+        return None
+    changed: dict[str, bytes] = {}
+    for path in changes.changed:
+        with open(path, "rb") as f:
+            changed[_repository_relative(path, root)] = f.read()
+    deleted = [_repository_relative(p, root) for p in changes.deleted]
+    return inputs.validate(baseline, target, changed, deleted, fingerprint or "")
 
 
 def repository_index(artifact: dict[str, Any], changes: ChangeSet, root: str) -> dict[str, list[str]]:
@@ -234,8 +365,26 @@ def repository_index(artifact: dict[str, Any], changes: ChangeSet, root: str) ->
     return files
 
 
-def diff_scan(root: str, artifact: dict[str, Any], changes: ChangeSet) -> ScanResult:
+PRE_RENDER_ONLY_SECTIONS = ("vertices", "creation_digests", "fingerprints", "edges", "probes", "aliases", "alias_keys",
+                            "source_module", "module_connections", "tfvar_vertices", "tfvar_blocks", "unit_by_vertex",
+                            "units", "keys", "expansions")
+"""Artifact sections only the pre-render build reads: released once the PR's pre-render graph exists. `definitions`
+stays (post-render passes read baseline definitions lazily through module.temp_tf_definition), `files` is copied into
+the repository index and released, `rendered` is released by update_graph's caller once rendering is done."""
+
+
+def _release(artifact: Any, *names: str) -> None:
+    release = getattr(artifact, "release", None)
+    if release is not None:
+        release(*names)
+
+
+def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inputs.ScanTarget] = None,
+              fingerprint: Optional[str] = None) -> ScanResult:
+    """`artifact`: the decoded v2 dict, or an ArtifactSections view of a v3 section store (sections are decoded on
+    first use and released after their last use)."""
     root = _prepare(root)
+    validation = validate_scan_inputs(artifact, changes, root, target, fingerprint)
     os.environ[DIFF_FILES_ONLY_ENV] = "true"
     os.environ.setdefault(AFFECTED_SCHEDULE_ENV, "true")
     os.environ.setdefault(REALPATH_MEMO_ENV, "true")
@@ -246,6 +395,9 @@ def diff_scan(root: str, artifact: dict[str, Any], changes: ChangeSet) -> ScanRe
     os.environ.setdefault(REUSE_ASTEVAL_ENV, "true")
     os.environ.setdefault(REUSE_JSONPATH_PARSER_ENV, "true")
     os.environ.setdefault(RESOURCE_LEVEL_UNITS_ENV, "true")
+    os.environ.setdefault(REUSE_EXPANSIONS_ENV, "true")
+    os.environ.setdefault(INSTANCE_UPDATE_ENV, "true")
+    os.environ.setdefault(PRECISE_CLOSURE_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     modules = external_modules(root)
@@ -255,7 +407,9 @@ def diff_scan(root: str, artifact: dict[str, Any], changes: ChangeSet) -> ScanRe
     repository_files.set_files(repository_index(artifact, engine.changes, root))
     with _module_cache(modules):
         graph = engine.build()
-    render = incremental_graph.update_graph(artifact["rendered"], graph, root)
+    engine.release_pre_render_state()
+    _release(artifact, *PRE_RENDER_ONLY_SECTIONS, "files")
+    render = _render(artifact, graph, root)
     pre_render = engine.finish()
     report = _run_checks(Runner(), graph, root)
-    return ScanResult(graph=graph, report=report, pre_render=pre_render, render=render)
+    return ScanResult(graph=graph, report=report, pre_render=pre_render, render=render, validation=validation)

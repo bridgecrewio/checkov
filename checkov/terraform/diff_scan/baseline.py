@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 from collections import defaultdict
-from typing import Any
+from typing import Any, Callable, Optional
 
 from checkov.common.graph.graph_builder.deterministic import module_chain_key
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -103,7 +103,10 @@ def _unit_info(definitions: dict[TFDefinitionKey, Any], unit_by_vertex: list[str
 
 
 def capture_pre_render(graph: TerraformLocalGraph, recorder: EdgeRecorder, creation_digests: list[str],
-                       root: str) -> dict[str, Any]:
+                       root: str, sink: Optional[Callable[[str, Any], None]] = None) -> dict[str, Any]:
+    """The pre-render part of the artifact. With `sink(name, value)` (a section-store baseline), every section is
+    handed over as soon as it is computed, so at most one large section exists in memory at a time; the returned
+    dict then holds only the sections the sink declined (it returns them for the caller to keep)."""
     definitions = graph.module.temp_tf_definition
     definition_keys = sorted(definitions)
     tfvars, by_definition = _vertices_by_definition(graph)
@@ -114,31 +117,38 @@ def capture_pre_render(graph: TerraformLocalGraph, recorder: EdgeRecorder, creat
         if vertex.block_type == BlockType.TF_VARIABLE:
             unit_by_vertex[index] = _tfvar_unit(graph, index, unit_by_vertex)
     crossing = _cross_unit_links(graph, owners, unit_by_vertex)
-    return {
-        "version": ARTIFACT_VERSION,
-        "root": root,
-        "foreach_ran": any(graph.foreach_blocks.values()),
-        "order_matches_definitions": expected_order == list(range(len(graph.vertices))),
-        "unit_by_vertex": unit_by_vertex,
-        "units": _unit_info(definitions, unit_by_vertex),
-        "units_isolated": not crossing,
-        "cross_unit_links": crossing[:20],
-        "source_module": [sorted(v.source_module) for v in graph.vertices],
-        "module_connections": [{k: list(ids) for k, ids in v.module_connections.items()} for v in graph.vertices],
-        "tf_var_environment": tf_var_environment(),
-        "keys": vertex_keys(graph, root),
-        "vertices": [dumps(v) for v in graph.vertices],
-        "creation_digests": creation_digests,
-        "fingerprints": [lookups.edge_fingerprint(v) for v in graph.vertices],
-        "tfvar_vertices": tfvars,
-        "edges": [[e.origin, e.dest, e.label, owner, phase] for e, (owner, phase) in zip(graph.edges, owners)],
-        "probes": {str(i): sorted(p) for i, p in recorder.probes.items()},
-        "aliases": aliases_signature(graph),
-        "alias_keys": _alias_keys(graph),
-        "definitions": [{"key": dumps(key), "definition": dumps(definitions[key]),
-                         "resource_types": resource_types_of(definitions[key]),
-                         "vertices": by_definition.get(key, [])} for key in definition_keys],
-        "files": {path: _read_lines(path) for path in sorted({key.file_path for key in definition_keys})},
-        "module": dumps({"source": graph.module.source, "source_dir": graph.module.source_dir,
-                         "external_modules_source_map": graph.module.external_modules_source_map}),
-    }
+    sections: list[tuple[str, Callable[[], Any]]] = [
+        ("version", lambda: ARTIFACT_VERSION),
+        ("root", lambda: root),
+        ("foreach_ran", lambda: any(graph.foreach_blocks.values())),
+        ("order_matches_definitions", lambda: expected_order == list(range(len(graph.vertices)))),
+        ("units", lambda: _unit_info(definitions, unit_by_vertex)),
+        ("units_isolated", lambda: not crossing),
+        ("cross_unit_links", lambda: crossing[:20]),
+        ("source_module", lambda: [sorted(v.source_module) for v in graph.vertices]),
+        ("module_connections", lambda: [{k: list(ids) for k, ids in v.module_connections.items()}
+                                        for v in graph.vertices]),
+        ("tf_var_environment", tf_var_environment),
+        ("keys", lambda: vertex_keys(graph, root)),
+        ("vertices", lambda: [dumps(v) for v in graph.vertices]),
+        ("creation_digests", lambda: creation_digests),
+        ("fingerprints", lambda: [lookups.edge_fingerprint(v) for v in graph.vertices]),
+        ("tfvar_vertices", lambda: tfvars),
+        ("edges", lambda: [[e.origin, e.dest, e.label, owner, phase] for e, (owner, phase) in zip(graph.edges, owners)]),
+        ("probes", lambda: {str(i): sorted(p) for i, p in recorder.probes.items()}),
+        ("aliases", lambda: aliases_signature(graph)),
+        ("alias_keys", lambda: _alias_keys(graph)),
+        ("definitions", lambda: [{"key": dumps(key), "definition": dumps(definitions[key]),
+                                  "resource_types": resource_types_of(definitions[key]),
+                                  "vertices": by_definition.get(key, [])} for key in definition_keys]),
+        ("files", lambda: {path: _read_lines(path) for path in sorted({key.file_path for key in definition_keys})}),
+        ("module", lambda: dumps({"source": graph.module.source, "source_dir": graph.module.source_dir,
+                                  "external_modules_source_map": graph.module.external_modules_source_map})),
+        ("unit_by_vertex", lambda: unit_by_vertex),
+    ]
+    kept: dict[str, Any] = {}
+    for name, compute in sections:
+        value = compute()
+        if sink is None or not sink(name, value):
+            kept[name] = value
+    return kept

@@ -24,7 +24,7 @@ import json
 import os
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
@@ -42,6 +42,9 @@ from checkov.terraform.parser_utils import load_or_die_quietly
 from checkov.terraform.diff_scan import lookups
 from checkov.terraform.diff_scan.artifact import ARTIFACT_VERSION, loads
 from checkov.terraform.diff_scan.baseline import aliases_signature, creation_digest, resource_types_of, tf_var_environment
+from checkov.terraform.diff_scan.expansions import ExpansionOracle
+from checkov.terraform.diff_scan.instance_update import InstanceSplicer, instance_update_enabled, is_expanded
+from checkov.terraform.diff_scan.units import pre_expansion_unit_graph
 from checkov.terraform.diff_scan.graph_ops import set_edges
 from checkov.terraform.diff_scan.recorder import BUILD_PHASE, PROVIDER_PHASE
 from checkov.terraform.diff_scan.reparse import VirtualTree, parse_unit
@@ -53,6 +56,7 @@ from checkov.terraform.diff_scan.units import build_unit, has_count_or_foreach, 
 FOREACH_BLOCK_TYPES = (BlockType.MODULE, BlockType.RESOURCE, BlockType.DATA)
 NEGATIVE_CONTROL = os.getenv("DFO_NEGATIVE", "")
 RESOURCE_LEVEL_UNITS_ENV = "CHECKOV_DIFF_RESOURCE_LEVEL_UNITS"
+REUSE_EXPANSIONS_ENV = "CHECKOV_DIFF_REUSE_EXPANSIONS"
 """Test-only weakening of the engine, to prove the harness detects the errors it would cause:
   no_bucket_invalidation   unchanged owners never rebuild their edges (stale cross-file references)
   stale_module_fanout      a changed module file updates only its first instance (stale instances)
@@ -67,7 +71,13 @@ RESOURCE_LEVEL_UNITS_ENV = "CHECKOV_DIFF_RESOURCE_LEVEL_UNITS"
   no_module_input_check    a missing external-module input is not refused
   no_relocation            the artifact is not relocated to the PR root
   relocation_breaks_aliasing  the first relocator (copies containers, breaks aliasing)
-  no_reparse               units whose definition key set changed are not re-parsed (baseline module resolution)"""
+  no_reparse               units whose definition key set changed are not re-parsed (baseline module resolution)
+  no_input_validation      the baseline-commit / complete-diff / configuration validation is skipped (inputs.py)
+  stale_loop_end_state     frozen vertices keep their loop-end state instead of the final one (v3 encoded records)
+  missing_section_file     a section of a v3 store cannot be read (fail closed expected)
+  stale_expansion          Round 8: every recorded count/for_each statement is reused, even when its read closure changed
+  stale_counted_block      Round 8: a counted block is reused whenever its statement is unchanged, even if its source changed
+  unchanged_key_stale_instances  Round 8: an unchanged file's counted blocks are never re-expanded"""
 
 
 @dataclass
@@ -152,6 +162,20 @@ class LazyDefinitions(dict):  # type: ignore[type-arg]
         return iter(self.keys())
 
 
+def _has_module_expansion(definition: dict[str, Any]) -> bool:
+    for call in definition.get(BlockType.MODULE, []):
+        if isinstance(call, dict):
+            for data in call.values():
+                if isinstance(data, dict) and (COUNT_STRING in data or FOREACH_STRING in data):
+                    return True
+    return False
+
+
+def _short_block(key: str) -> str:
+    path, chain, block_type, name = json.loads(key)
+    return "".join(f"module.{entry[1]}." for entry in chain) + f"{block_type}.{name}"
+
+
 def _short(key: str) -> str:
     path, chain, block_type, name, *_ = json.loads(key)
     prefix = "".join(f"module.{entry[1]}." for entry in chain)
@@ -193,7 +217,8 @@ class DiffEngine:
         self.pickled_definitions = {loads(d["key"]): d["definition"] for d in artifact["definitions"]}
         self.definition_entries = {loads(d["key"]): d for d in artifact["definitions"]}
         self._reused_vertex_cache: dict[int, Any] = {}
-        if len(artifact.get("creation_digests", [])) < len(artifact.get("vertices", [])):
+        self.instance_level_fallbacks: dict[str, str] = {}
+        if "creation_digests" not in artifact or len(artifact["creation_digests"]) < len(artifact["vertices"]):
             for i in range(len(artifact["creation_digests"]), len(artifact["vertices"])):
                 artifact["creation_digests"].append(creation_digest(self._reused_vertex(i), self.root))
 
@@ -844,8 +869,7 @@ class DiffEngine:
         for entry in self.a["definitions"]:
             if unit_of_key(loads(entry["key"])) == unit:
                 definitions.append({**entry, "vertices": [position[i] for i in entry["vertices"]]})
-        return {
-            **self.a,
+        return _ArtifactOverlay(self.a, {
             "keys": [self.a["keys"][i] for i in members],
             "vertices": [self.a["vertices"][i] for i in members],
             "creation_digests": [self.a["creation_digests"][i] for i in members],
@@ -857,7 +881,7 @@ class DiffEngine:
             "definitions": definitions,
             "foreach_ran": False,
             "global_positions": members,
-        }
+        })
 
     def _per_owner_unit(self, unit: str, parsed: dict[TFDefinitionKey, Any], changed: set[TFDefinitionKey],
                         removed: set[TFDefinitionKey], module_fields: dict[str, Any]) -> "_UnitResult":
@@ -993,12 +1017,30 @@ class DiffEngine:
             if NEGATIVE_CONTROL == "stale_scoped_unit":
                 definitions = {k: loads(v) for k, v in self.pickled_definitions.items() if unit_of_key(k) == unit}
             global_types, global_aliases = self._pr_global_tokens(parsed, removed)
+            oracle = self._expansion_oracle()
+            if unit not in reparsed_units and oracle is not None and instance_update_enabled():
+                instance_result = self._instance_level_unit(unit, parsed, changed, removed, module_fields,
+                                                            definitions, tfvars, global_types, global_aliases)
+                if instance_result is not None:
+                    sub, report = instance_result
+                    offset = len(vertices)
+                    vertices.extend(sub.graph.vertices)
+                    for vertex in sub.graph.vertices:
+                        vertex.source_module = {i + offset for i in vertex.source_module}
+                        vertex.module_connections = {a: [i + offset for i in ids]
+                                                     for a, ids in vertex.module_connections.items()}
+                    edges.extend((e.origin + offset, e.dest + offset, e.label) for e in sub.graph.edges)
+                    reused_vertices += sub.report.vertices_reused
+                    reused_edges += sub.report.edges_reused
+                    unit_reports[unit] = report
+                    continue
             if NEGATIVE_CONTROL == "unit_local_lookups":
-                unit_graph, _ = build_unit(definitions, tfvars, module_fields, self.root)
+                unit_graph, _ = build_unit(definitions, tfvars, module_fields, self.root, statement_oracle=oracle)
             else:
                 unit_graph, _ = build_unit(definitions, tfvars, module_fields, self.root,
                                            global_resource_types=global_types,
-                                           global_aliases={n: {"block_type_": b} for n, b in global_aliases})
+                                           global_aliases={n: {"block_type_": b} for n, b in global_aliases},
+                                           statement_oracle=oracle)
             offset = len(vertices)
             vertices.extend(unit_graph.vertices)
             for vertex in unit_graph.vertices:
@@ -1014,12 +1056,77 @@ class DiffEngine:
                                   "definition_keys": len(definitions),
                                   "definition_keys_from_artifact": len(definitions) - len(
                                       [k for k in definitions if k in parsed]),
-                                  "foreach_expanded": any(unit_graph.foreach_blocks.values())}
+                                  "foreach_expanded": any(unit_graph.foreach_blocks.values()),
+                                  **self._expansion_report(oracle)}
         graph = self._assemble(vertices, edges, parsed, removed, changed, module_fields)
         self._last_parsed, self._last_removed = parsed, removed
         self._check_scoped_tokens(graph, scoped)
         self._fill_scoped_report(graph, reused_vertices, reused_edges, unit_reports, changed, len(parsed))
         return graph
+
+    def _instance_level_unit(self, unit: str, parsed: dict[TFDefinitionKey, Any], changed: set[TFDefinitionKey],
+                             removed: set[TFDefinitionKey], module_fields: dict[str, Any],
+                             definitions: dict[TFDefinitionKey, Any], tfvars: list[Any], global_types: set[str],
+                             global_aliases: set[tuple[str, str]]) -> Optional[tuple["_UnitResult", dict[str, Any]]]:
+        """Round 8: a unit with count / for_each updated per block instead of rebuilt. Statements are decided on the
+        unit's PRE-EXPANSION graph (vertices + edges as Checkov's first _build_edges pass leaves them): unchanged read
+        closure -> baseline statement, else Checkov's own static / dynamic evaluation for those blocks only. Blocks
+        whose creation state and statement are unchanged keep their baseline instances; the others are re-expanded
+        with Checkov's instance code; the unit then goes through the per-owner edge engine. None -> the caller falls
+        back to the whole-unit rebuild (module count / for_each, enabled data expansion, anything not reproducible)."""
+        if any(_has_module_expansion(d) for d in definitions.values()):
+            return None
+        oracle = self._expansion_oracle()
+        try:
+            self._decide_unit_statements(definitions, tfvars, module_fields, global_types, global_aliases, oracle)
+            sub = DiffEngine.__new__(DiffEngine)
+            sub.__init__(self._unit_artifact(unit), self.root, self.changes)
+            if getattr(self, "new_tfvar_blocks", None) is not None:
+                sub.unit_tfvar_blocks = self._unit_tfvar_blocks(unit)
+            unit_parsed = {k: v for k, v in parsed.items() if unit_of_key(k) == unit}
+            unit_changed = {k for k in changed if unit_of_key(k) == unit}
+            unit_removed = {k for k in removed if unit_of_key(k) == unit}
+            splicer = InstanceSplicer(sub, oracle)
+            vertices, fresh = splicer.vertices(unit_parsed, unit_changed, unit_removed, module_fields)
+            graph = sub._per_owner_graph(vertices, fresh, unit_parsed, unit_changed, unit_removed, module_fields)
+        except IncrementalGraphUnsupported as error:
+            self.instance_level_fallbacks[unit] = str(error)
+            return None
+        report = {"mode": "instance-level", "vertices": sub.report.vertices,
+                  "vertices_rebuilt": sub.report.vertices_rebuilt, "edges": sub.report.edges,
+                  "edges_rebuilt": sub.report.edges_rebuilt, "edge_owners_rebuilt": sub.report.edge_owners_rebuilt,
+                  **splicer.stats, **self._expansion_report(oracle)}
+        return _UnitResult(graph, sub.report), report
+
+    def _decide_unit_statements(self, definitions: dict[TFDefinitionKey, Any], tfvars: list[Any],
+                                module_fields: dict[str, Any], global_types: set[str],
+                                global_aliases: set[tuple[str, str]], oracle: ExpansionOracle) -> None:
+        """Checkov's pre-expansion graph of the unit (vertex creation + one edge pass, no expansion), then the oracle
+        decides every counted block's statement on it (reuse / recompute). Cheap: no expansion, no post-expansion
+        edge passes; the sub-graph render, when needed, covers only the read closures of recomputed blocks."""
+        graph = pre_expansion_unit_graph(definitions, tfvars, module_fields, global_types,
+                                         {n: {"block_type_": b} for n, b in global_aliases})
+        from checkov.terraform.graph_builder.foreach.foreach_entity_handler import ForeachEntityHandler
+
+        for block_type in (BlockType.RESOURCE, BlockType.DATA):
+            handler = ForeachEntityHandler(graph, block_type)
+            blocks = [i for i, v in enumerate(graph.vertices) if v.block_type == block_type and is_expanded(v)]
+            if blocks:
+                oracle.statements(handler, blocks)
+
+    def _expansion_oracle(self) -> Optional[ExpansionOracle]:
+        """One oracle per unit build: count / for_each statements whose read closure is unchanged are reused from the
+        baseline (CHECKOV_DIFF_REUSE_EXPANSIONS, default on in the diff scan; off = Round 6 behaviour)."""
+        if os.getenv(REUSE_EXPANSIONS_ENV, "false").lower() != "true" or "expansions" not in self.a:
+            return None
+        return ExpansionOracle(self.root, self.a["expansions"])
+
+    @staticmethod
+    def _expansion_report(oracle: Optional[ExpansionOracle]) -> dict[str, Any]:
+        if oracle is None:
+            return {}
+        return {"expansions_reused": len(oracle.reused), "expansions_recomputed": len(oracle.recomputed),
+                "expansions_changed": sorted(_short_block(k) for k in oracle.changed)}
 
     def _assemble(self, vertices: list[Any], edges: list[tuple[int, int, str]], parsed: dict[TFDefinitionKey, Any],
                   removed: set[TFDefinitionKey], changed: set[TFDefinitionKey],
@@ -1090,6 +1197,14 @@ class DiffEngine:
         r.edge_owners_rebuilt = sorted(o for v in unit_reports.values() for o in v.get("edge_owners_rebuilt", []))
         r.mode = "units"
 
+    def release_pre_render_state(self) -> None:
+        """Drop what only the pre-render build reads: the unpickled baseline vertices that were not reused (reused ones
+        live on in the PR graph), and the old-key index. The baseline definitions stay: module.temp_tf_definition
+        (LazyDefinitions) unpickles them on demand during the post-render passes."""
+        self._reused_vertex_cache = {}
+        self.old_index = {}
+        self.old_keys = []
+
     def finish(self) -> PreRenderReport:
         self.report.definitions_unpickled_for_post_render = self._definitions.unpickled
         return self.report
@@ -1115,6 +1230,24 @@ class DiffEngine:
         r.module_instances = len(instances)
         r.module_instances_updated = sorted(f"{m.name}@{os.path.relpath(m.path, self.root)}" for m in updated)
         r.module_instances_reused = len(instances - updated)
+
+
+class _ArtifactOverlay:
+    """A unit's view of the artifact: re-indexed sections from `overrides`, every other section read from `base` on
+    access (a section store decodes only what the unit engine actually reads)."""
+
+    def __init__(self, base: Any, overrides: dict[str, Any]) -> None:
+        self._base = base
+        self._overrides = overrides
+
+    def __getitem__(self, name: str) -> Any:
+        return self._overrides[name] if name in self._overrides else self._base[name]
+
+    def get(self, name: str, default: Any = None) -> Any:
+        return self[name] if name in self else default
+
+    def __contains__(self, name: object) -> bool:
+        return name in self._overrides or name in self._base
 
 
 @dataclass

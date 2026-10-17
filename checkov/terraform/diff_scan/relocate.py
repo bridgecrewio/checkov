@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+import pickle
 from typing import Any
 
 from checkov.terraform.diff_scan.artifact import dumps, loads
@@ -87,12 +88,15 @@ class Relocator:
             return value
         return value
 
-    def pickled(self, text: str) -> str:
-        """Each pickle is one object graph: aliasing inside it is preserved (fresh memo per pickle)."""
+    def pickled(self, text: str | bytes) -> str | bytes:
+        """Each pickle is one object graph: aliasing inside it is preserved (fresh memo per pickle). Keeps the input's
+        form: base64 text (v2 JSON artifact) or raw pickle bytes (v3 section store)."""
         self.memo = {}
         if os.getenv("DFO_NEGATIVE") == "relocation_breaks_aliasing":
-            return dumps(_copying_value(self, loads(text)))
-        return dumps(self.value(loads(text)))
+            moved = _copying_value(self, loads(text))
+        else:
+            moved = self.value(loads(text))
+        return pickle.dumps(moved) if isinstance(text, bytes) else dumps(moved)
 
 
 def _copying_value(r: Relocator, value: Any) -> Any:
@@ -116,29 +120,36 @@ def _copying_value(r: Relocator, value: Any) -> Any:
     return value
 
 
-def relocate_artifact(artifact: dict[str, Any], new_root: str) -> dict[str, Any]:
-    """A copy of `artifact` valid at `new_root`. No-op when the roots are equal."""
+def relocate_section(key: str, value: Any, r: Relocator) -> Any:
+    """One artifact section valid at the relocator's new root."""
+    if key in PICKLED_LIST_FIELDS:
+        return [r.pickled(v) for v in value]
+    if key in PICKLED_FIELDS:
+        return r.pickled(value)
+    if key == "definitions":
+        return [{**d, "key": r.pickled(d["key"]), "definition": r.pickled(d["definition"])} for d in value]
+    if key == "alias_keys":
+        return {name: [r.pickled(k) for k in keys] for name, keys in value.items()}
+    if key == "variable_inputs":
+        return {**r.value({k: v for k, v in value.items() if k != "external_vars"}),
+                "external_vars": r.pickled(value["external_vars"])}
+    if key in ("rendered", "baseline_inputs"):
+        return value
+    return r.value(value)
+
+
+def relocate_artifact(artifact: Any, new_root: str) -> Any:
+    """A copy of `artifact` valid at `new_root`. No-op when the roots are equal. A section store (ArtifactSections)
+    relocates each section when it is decoded instead (relocate_on_load), so nothing is decoded up front."""
     old_root = artifact["root"]
     if os.path.realpath(old_root) == os.path.realpath(new_root):
         return artifact
+    relocate_on_load = getattr(artifact, "relocate_on_load", None)
+    if relocate_on_load is not None:
+        relocate_on_load(lambda key, value: relocate_section(key, value, Relocator(old_root, new_root)), new_root)
+        return artifact
     r = Relocator(old_root, new_root)
-    moved: dict[str, Any] = {}
-    for key, value in artifact.items():
-        if key in PICKLED_LIST_FIELDS:
-            moved[key] = [r.pickled(v) for v in value]
-        elif key in PICKLED_FIELDS:
-            moved[key] = r.pickled(value)
-        elif key == "definitions":
-            moved[key] = [{**d, "key": r.pickled(d["key"]), "definition": r.pickled(d["definition"])} for d in value]
-        elif key == "alias_keys":
-            moved[key] = {name: [r.pickled(k) for k in keys] for name, keys in value.items()}
-        elif key == "variable_inputs":
-            moved[key] = {**r.value({k: v for k, v in value.items() if k != "external_vars"}),
-                          "external_vars": r.pickled(value["external_vars"])}
-        elif key == "rendered":
-            moved[key] = value
-        else:
-            moved[key] = r.value(value)
+    moved: dict[str, Any] = {key: relocate_section(key, value, r) for key, value in artifact.items()}
     moved["root"] = new_root
     moved["relocated_from"] = old_root
     return moved

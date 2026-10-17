@@ -584,6 +584,19 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  '{"changed": [...], "deleted": [...], "renamed": [{"from": .., "to": ..}]}',
         )
         self.add(
+            "--diff-baseline-commit",
+            default=None,
+            help="Terraform diff-files-only baseline: the commit -d is a checkout of (recorded in the artifact with "
+                 "every file's git blob SHA)",
+        )
+        self.add(
+            "--diff-scan-target",
+            default=None,
+            help="Terraform diff-files-only PR scan: JSON {\"base_commit\": B, \"target_tree_id\": T, \"manifest\": "
+                 "{path: git blob SHA} for EVERY file of the scan target tree}; the scan is refused unless "
+                 "--diff-changes is exactly the B -> T diff",
+        )
+        self.add(
             "--external-modules-dir",
             default=None,
             help="Terraform diff-files-only: all resolved external modules (<dir>/manifest.txt + <dir>/_sources/...)",

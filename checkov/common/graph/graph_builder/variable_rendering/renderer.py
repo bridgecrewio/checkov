@@ -99,7 +99,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             return True
         if schedule.reached_cap:
             logging.warning(f"Reached max ({self.MAX_NUMBER_OF_LOOPS}) graph edge evaluation loops, breaking.")
-        for groups in schedule.rounds:
+        for groups in schedule.iter_rounds():
             for group in groups:
                 self._edge_evaluation_task([group])
         return True

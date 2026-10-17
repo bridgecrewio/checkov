@@ -58,11 +58,14 @@ def has_count_or_foreach(definition: dict[str, Any]) -> bool:
 
 def build_unit(definitions: dict[TFDefinitionKey, Any], tfvar_blocks: list[Any], module_fields: dict[str, Any],
                root: str, global_resource_types: Optional[set[str]] = None,
-               global_aliases: Optional[dict[str, dict[str, str]]] = None) -> tuple[TerraformLocalGraph, EdgeRecorder]:
+               global_aliases: Optional[dict[str, dict[str, str]]] = None,
+               statement_oracle: Optional[Any] = None) -> tuple[TerraformLocalGraph, EdgeRecorder]:
     """Checkov's own pre-render pipeline (count/for_each expansion included) on one unit's definitions only.
     `tfvar_blocks`: the unit's tfvar blocks as Module.add_blocks creates them (pre-pipeline).
     `global_resource_types` / `global_aliases`: Checkov's lookup lists as they are for the WHOLE PR graph (a full build
-    resolves `aws_x.name` against every unit's resource types and aliases, not just this unit's)."""
+    resolves `aws_x.name` against every unit's resource types and aliases, not just this unit's).
+    `statement_oracle`: expansions.ExpansionOracle; count / for_each statements whose read closure is unchanged since
+    the baseline are reused instead of re-rendered."""
     module = Module(source_dir=module_fields["source_dir"],
                     external_modules_source_map=module_fields["external_modules_source_map"])
     module.source = module_fields["source"]
@@ -75,6 +78,8 @@ def build_unit(definitions: dict[TFDefinitionKey, Any], tfvar_blocks: list[Any],
     if global_resource_types is not None:
         module.resources_types = set(module.resources_types) | set(global_resource_types)
     graph = TerraformLocalGraph(module)
+    if statement_oracle is not None:
+        graph.foreach_statement_oracle = statement_oracle
     if global_aliases is not None:
         local_aliases = graph._get_aliases
         graph._get_aliases = lambda: {**global_aliases, **local_aliases()}  # type: ignore[method-assign]
@@ -85,3 +90,26 @@ def build_unit(definitions: dict[TFDefinitionKey, Any], tfvar_blocks: list[Any],
     finally:
         recorder.uninstall()
     return graph, recorder
+
+
+def pre_expansion_unit_graph(definitions: dict[TFDefinitionKey, Any], tfvar_blocks: list[Any],
+                             module_fields: dict[str, Any], global_resource_types: set[str],
+                             global_aliases: dict[str, dict[str, str]]) -> TerraformLocalGraph:
+    """The unit's graph exactly as Checkov's build_pre_render_graph() leaves it right BEFORE the count / for_each
+    handler runs: vertices created, one _build_edges pass. This is the graph the handler decides statements on."""
+    module = Module(source_dir=module_fields["source_dir"],
+                    external_modules_source_map=module_fields["external_modules_source_map"])
+    module.source = module_fields["source"]
+    module.blocks.extend(pickle_deepcopy(tfvar_blocks))
+    module.temp_tf_definition = definitions
+    copies = pickle_deepcopy(definitions)
+    for key in sorted(copies):
+        for block_type in copies[key]:
+            module.add_blocks(block_type, copies[key][block_type], key, module.source)
+    module.resources_types = set(module.resources_types) | set(global_resource_types)
+    graph = TerraformLocalGraph(module)
+    local_aliases = graph._get_aliases
+    graph._get_aliases = lambda: {**global_aliases, **local_aliases()}  # type: ignore[method-assign]
+    graph._create_vertices()
+    graph._build_edges()
+    return graph

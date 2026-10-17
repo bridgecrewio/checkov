@@ -67,21 +67,25 @@ class ScheduleUnsupported(Exception):
 @dataclass
 class EdgeSchedule:
     rounds: list[list[list[Edge]]] = field(default_factory=list)
-    """per executed round: the edge groups to evaluate, in evaluation order"""
+    """per executed round: the edge groups to evaluate, in evaluation order (built eagerly; see `iter_rounds`)"""
     loops: int = 0
     """rounds the global loop executes"""
     reached_cap: bool = False
+    round_builder: Optional[Callable[[int], list[list[Edge]]]] = None
+    """lazy schedules: round index -> that round's ordered groups, built when the renderer reaches it (only one
+    round's group lists exist at a time)"""
+    groups: int = 0
+    edges: int = 0
+
+    def iter_rounds(self) -> Any:
+        if self.round_builder is None:
+            yield from self.rounds
+            return
+        for round_index in range(self.loops):
+            yield self.round_builder(round_index)
 
     def trace(self) -> list[tuple[EdgeTuple, ...]]:
-        return [tuple(as_tuple(e) for e in group) for groups in self.rounds for group in groups]
-
-    @property
-    def groups(self) -> int:
-        return sum(len(groups) for groups in self.rounds)
-
-    @property
-    def edges(self) -> int:
-        return sum(len(group) for groups in self.rounds for group in groups)
+        return [tuple(as_tuple(e) for e in group) for groups in self.iter_rounds() for group in groups]
 
 
 def as_tuple(edge: Edge) -> EdgeTuple:
@@ -199,26 +203,6 @@ def edge_loop_rounds(graph: LocalGraph[Any], max_loops: int) -> int:
     return _loop_length(graph, initial_end, settle_rounds(graph, initial_end), max_loops)
 
 
-def _round_edges(graph: LocalGraph[Any], evaluated_origins: list[int], initial_end: set[int],
-                 settled: list[Optional[int]], loops: int) -> list[list[Edge]]:
-    rounds: list[list[Edge]] = [[] for _ in range(loops)]
-    if not loops:
-        return rounds
-    for origin in evaluated_origins:
-        for edge in graph.out_edges[origin]:
-            dest = edge.dest
-            if dest in initial_end:
-                rounds[0].append(edge)
-                continue
-            if settled[dest] is None:
-                continue
-            for round_index in range(settled[dest] + 1, loops, 2):  # type: ignore[operator]  # checked above
-                rounds[round_index].append(edge)
-    for round_index in range(1, loops):
-        rounds[round_index] = list({as_tuple(e): e for e in rounds[round_index]}.values())
-    return rounds
-
-
 def _ordered_groups(graph: LocalGraph[Any], edges: list[Edge], keys: _StableKeys) -> list[list[Edge]]:
     def edge_order(edge: Edge) -> tuple[Any, ...]:
         return len(graph.out_edges[edge.dest]), keys.edge(edge)
@@ -243,7 +227,9 @@ def _reject_ties(edges: list[Edge], key: Callable[[Edge], Any], what: str) -> No
 def build_affected_schedule(graph: LocalGraph[Any], frozen: set[int], initial_end: set[int],
                             max_loops: int) -> EdgeSchedule:
     """The evaluations the global edge loop performs when every edge group with a frozen origin is skipped.
-    Raises ScheduleUnsupported when exact equivalence cannot be guaranteed."""
+    Raises ScheduleUnsupported when exact equivalence cannot be guaranteed. Every round is ordered here once (its tie
+    check must pass before anything is evaluated), but only its group count is kept; the renderer gets each round's
+    groups rebuilt lazily (`round_builder`), so the whole schedule never exists in memory at once."""
     _check_edge_maps(graph)
     control = os.getenv(NEGATIVE_CONTROL_ENV, "")
     if control == "schedule_no_cap":
@@ -252,11 +238,46 @@ def build_affected_schedule(graph: LocalGraph[Any], frozen: set[int], initial_en
     loops = _loop_length(graph, initial_end, settled, max_loops)
     evaluated_origins = [v for v in range(len(graph.vertices)) if v not in frozen and graph.out_edges[v]]
     keys = _StableKeys(graph)
-    round_edges = _round_edges(graph, evaluated_origins, initial_end, settled, loops)
-    if control == "schedule_skip_frozen_dest":
-        round_edges = [[e for e in edges if e.dest not in frozen] for edges in round_edges]
-    rounds = [_ordered_groups(graph, edges, keys) for edges in round_edges]
-    return _weakened(EdgeSchedule(rounds=rounds, loops=loops, reached_cap=loops >= max_loops), control)
+    origin_edges = {origin: list(graph.out_edges[origin]) for origin in evaluated_origins}
+
+    def round_groups(round_index: int) -> list[list[Edge]]:
+        edges = _edges_of_round(origin_edges, round_index, initial_end, settled, loops)
+        if control == "schedule_skip_frozen_dest":
+            edges = [e for e in edges if e.dest not in frozen]
+        return _ordered_groups(graph, edges, keys)
+
+    schedule = EdgeSchedule(loops=loops, reached_cap=loops >= max_loops)
+    for round_index in range(loops):
+        groups = round_groups(round_index)
+        schedule.groups += len(groups)
+        schedule.edges += sum(len(group) for group in groups)
+    if control in ("schedule_single_pass", "schedule_reversed_rounds"):
+        schedule.rounds = [round_groups(i) for i in range(loops)]
+        return _weakened(schedule, control)
+    schedule.round_builder = round_groups
+    return schedule
+
+
+def _edges_of_round(origin_edges: dict[int, list[Edge]], round_index: int, initial_end: set[int],
+                    settled: list[Optional[int]], loops: int) -> list[Edge]:
+    """The same edges, in the same order, as round `round_index` of _round_edges (deduplicated after round 0)."""
+    edges: list[Edge] = []
+    for origin_list in origin_edges.values():
+        for edge in origin_list:
+            dest = edge.dest
+            if dest in initial_end:
+                if round_index == 0:
+                    edges.append(edge)
+                continue
+            first = settled[dest]
+            if first is None:
+                continue
+            first += 1
+            if round_index >= first and (round_index - first) % 2 == 0 and round_index < loops:
+                edges.append(edge)
+    if round_index == 0:
+        return edges
+    return list({as_tuple(e): e for e in edges}.values())
 
 
 NEGATIVE_CONTROL_ENV = "DFO_NEGATIVE"

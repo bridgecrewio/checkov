@@ -79,6 +79,15 @@ def _anonymise(value: Any, root: str) -> Any:
     return json.loads(text.replace(root, ROOT))
 
 
+def anonymise(value: Any, root: str) -> Any:
+    """Public form of _anonymise (root replaced by the placeholder, JSON-safe)."""
+    return _anonymise(value, root)
+
+
+def _anonymised_text(value: Any, root: str) -> str:
+    return json.dumps(value, cls=CustomJSONEncoder, sort_keys=False, default=str).replace(root, ROOT)
+
+
 def _restore(value: Any, root: str) -> Any:
     return json.loads(json.dumps(value).replace(ROOT, root))
 
@@ -147,24 +156,29 @@ def capture_pre_render(graph: Any, root: str) -> dict[str, Any]:
 def capture_loop_end(graph: Any, root: str) -> dict[str, Any]:
     """Every vertex's attributes and config as they are when the edge loop ends, BEFORE the post-loop passes
     (update_vertices_configs, evaluate_non_rendered_values, dynamic blocks) rewrite them. This is the state referrers
-    read during the loop, so it is what a frozen vertex must hold while affected vertices are rendered."""
+    read during the loop, so it is what a frozen vertex must hold while affected vertices are rendered.
+    Held as anonymised JSON text (the exact text _anonymise round-trips), which costs a fraction of the decoded
+    structure while the baseline finishes rendering; export_graph decodes each vertex's entry once."""
     keys = vertex_keys(graph, root)
-    return {key: _anonymise({"attributes": vertex.attributes, "config": vertex.config}, root)
+    return {key: _anonymised_text({"attributes": vertex.attributes, "config": vertex.config}, root)
             for key, vertex in zip(keys, graph.vertices)}
 
 
 def export_graph(graph: Any, root: str, pre_render: dict[str, Any], unconverged: set[str],
-                 loop_end: dict[str, Any]) -> dict[str, Any]:
+                 loop_end: dict[str, Any], encode: Optional[Any] = None) -> dict[str, Any]:
     """The rendered graph as a JSON-safe artifact. `pre_render` from capture_pre_render() on the same build,
     `unconverged`: keys of vertices that still had pending edges when the render loop hit its cap,
-    `loop_end`: capture_loop_end() taken at the end of the edge loop of the same build."""
+    `loop_end`: capture_loop_end() taken at the end of the edge loop of the same build (consumed: emptied here).
+    `encode`: optional per-vertex encoder (value -> bytes) applied as each record is built, so the export never holds
+    every decoded record at once; consumers decode with the matching decoder."""
     _require_flag()
     root = os.path.realpath(root)
     keys = vertex_keys(graph, root)
     vertices = {}
     for key, vertex in zip(keys, graph.vertices):
-        vertices[key] = _anonymise({
-            "loop_end": loop_end[key],
+        captured = loop_end.pop(key)
+        record = _anonymise({
+            "loop_end": json.loads(captured) if isinstance(captured, str) else captured,
             "attributes": vertex.attributes,
             "config": vertex.config,
             "changed_attributes": {attr: [[keys[b.vertex_id], b.attribute_key] for b in crumbs]
@@ -174,6 +188,7 @@ def export_graph(graph: Any, root: str, pre_render: dict[str, Any], unconverged:
             "dynamic_attributes": getattr(vertex, "dynamic_attributes", None),
             "has_dynamic_block": getattr(vertex, "has_dynamic_block", False),
         }, root)
+        vertices[key] = encode(record) if encode is not None else record
     return {
         "version": ARTIFACT_VERSION,
         "vertices": vertices,
@@ -234,8 +249,10 @@ def _referrers(keys: list[str], graph: Any) -> dict[int, set[int]]:
 
 def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], root: str,
                       report: UpdateReport) -> set[int]:
-    old_digests: dict[str, str] = artifact["pre_render"]["digests"]
-    old_edges = set(artifact["pre_render"]["edges"])
+    pre_render = artifact["pre_render"]
+    old_digests: dict[str, str] = pre_render["digests"]
+    old_edges = set(pre_render["edges"])
+    del pre_render
     new_edges = {json.dumps([keys[e.origin], keys[e.dest], e.label]) for e in graph.edges}
     unconverged = set(artifact["unconverged"])
     loop_rounds_rule = _edge_loop_rounds_rule(graph, artifact, report)
@@ -244,8 +261,9 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
     seeds: dict[int, str] = {}
     if loop_rounds_rule == "changed":
         seeds.update(_vertices_with_repeated_edges(graph))
+    exported = artifact["vertices"]
     for index, (key, vertex) in enumerate(zip(keys, graph.vertices)):
-        if key not in artifact["vertices"]:
+        if key not in exported:
             seeds[index] = "new vertex"
         elif old_digests.get(key) != pre_render_digest(vertex, root, keys):
             seeds[index] = "pre-render state changed"
@@ -258,7 +276,7 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
         origin, _, _ = json.loads(edge)
         if origin in by_key:
             seeds.setdefault(by_key[origin], "outgoing edge set changed")
-    removed = sorted(set(artifact["vertices"]) - set(keys))
+    removed = sorted(set(exported) - set(keys))
     report.removed_blocks = removed
     report.changed_blocks = sorted(keys[i] for i in seeds)
     removed_provider_dirs = {os.path.dirname(json.loads(k)[0].replace(ROOT, root)) for k in removed
@@ -296,13 +314,12 @@ def _close(graph: Any, keys: list[str], seeds: dict[int, str], report: UpdateRep
 
 
 def restore_vertex(vertex: TerraformBlock, data: dict[str, Any], by_key: dict[str, int], root: str) -> None:
-    """Copy an exported rendered state onto the PR's pre-render vertex of the same key.
-    `by_key` holds anonymised keys (as in the artifact); only the vertex data gets the real root back."""
-    data = {**data, "attributes": _restore(data["attributes"], root), "config": _restore(data["config"], root),
-            "foreach_attrs": _restore(data["foreach_attrs"], root),
-            "dynamic_attributes": _restore(data["dynamic_attributes"], root)}
-    vertex.attributes = data["attributes"]
-    vertex.config = data["config"]
+    """Copy an exported rendered state onto the PR's pre-render vertex of the same key, as it is at the END of the
+    edge loop (`loop_end`: what referrers read during the loop). The final attributes / config are applied by
+    restore_final_state after the loop. `by_key` holds anonymised keys (as in the artifact)."""
+    loop_state = _restore(data["loop_end"], root)
+    vertex.attributes = loop_state["attributes"]
+    vertex.config = loop_state["config"]
     vertex.changed_attributes = {}
     for attr, crumbs in data["changed_attributes"].items():
         restored = []
@@ -316,14 +333,16 @@ def restore_vertex(vertex: TerraformBlock, data: dict[str, Any], by_key: dict[st
         if any(k not in by_key for k in ids):
             raise IncrementalGraphUnsupported("module connection of frozen vertex points to a vertex gone in the PR")
         vertex.module_connections[attr] = [by_key[k] for k in ids]
-    vertex.foreach_attrs = data["foreach_attrs"]
-    vertex.dynamic_attributes = data["dynamic_attributes"]
+    vertex.foreach_attrs = _restore(data["foreach_attrs"], root)
+    vertex.dynamic_attributes = _restore(data["dynamic_attributes"], root)
     vertex.has_dynamic_block = data["has_dynamic_block"]
     vertex.breadcrumbs = {}
 
 
-def update_graph(artifact: dict[str, Any], graph: Any, root: str) -> UpdateReport:
-    """`graph`: the PR tree's TerraformLocalGraph after build_pre_render_graph(). Renders it incrementally in place."""
+def update_graph(artifact: dict[str, Any], graph: Any, root: str, release: Optional[Any] = None) -> UpdateReport:
+    """`graph`: the PR tree's TerraformLocalGraph after build_pre_render_graph(). Renders it incrementally in place.
+    `release`: called once everything has been read from `artifact` (before the edge loop), so the caller can drop
+    the serialized export while rendering runs."""
     _require_flag()
     from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
@@ -333,26 +352,37 @@ def update_graph(artifact: dict[str, Any], graph: Any, root: str) -> UpdateRepor
     keys = vertex_keys(graph, root)
     report = UpdateReport(vertices=len(keys))
     affected = affected_vertices(graph, keys, artifact, root, report)
+    release_part = getattr(artifact, "release_part", None)
+    if release_part is not None:
+        release_part("pre_render")
     by_key = {k: i for i, k in enumerate(keys)}
     frozen = set()
+    decode = artifact.get("vertex_decoder")
+    final_states: dict[int, Any] = {}
+    """per frozen vertex: its exported record, kept ENCODED when the store encodes records (decoded again at the end
+    of the edge loop, one vertex at a time), else the decoded record"""
     for index, key in enumerate(keys):
         if index in affected:
             continue
-        restore_vertex(graph.vertices[index], artifact["vertices"][key], by_key, root)
+        stored = artifact["vertices"][key]
+        record = decode(stored) if decode is not None else stored
+        restore_vertex(graph.vertices[index], record, by_key, root)
+        final_states[index] = stored
         frozen.add(index)
     report.affected, report.frozen = len(affected), len(frozen)
-    # During the edge loop a frozen vertex must look exactly as it did at the end of the baseline's edge loop: that is
-    # what referrers read in a full render. Its final (post-pass) state replaces it once the loop is done.
-    for index in frozen:
-        loop_state = _restore(artifact["vertices"][keys[index]]["loop_end"], root)
-        graph.vertices[index].attributes = loop_state["attributes"]
-        graph.vertices[index].config = loop_state["config"]
+    artifact = {}
+    if release is not None:
+        release()
+
+    if os.getenv("DFO_NEGATIVE", "") == "stale_loop_end_state":
+        final_states.clear()
 
     def restore_final_state() -> None:
-        for index in frozen:
-            final = artifact["vertices"][keys[index]]
-            graph.vertices[index].attributes = _restore(final["attributes"], root)
-            graph.vertices[index].config = _restore(final["config"], root)
+        for index in sorted(final_states):
+            stored = final_states.pop(index)
+            record = decode(stored) if decode is not None else stored
+            graph.vertices[index].attributes = _restore(record["attributes"], root)
+            graph.vertices[index].config = _restore(record["config"], root)
 
     renderer = TerraformVariableRenderer(graph)
     renderer.frozen_vertices = frozen

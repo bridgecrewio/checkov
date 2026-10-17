@@ -1,9 +1,9 @@
 """Diff-files-only Terraform scanning from the Checkov CLI (opt-in; nothing here runs without these flags).
 
-Baseline (full scan of a checkout, writes the artifact):
+Baseline (full scan of a checkout of commit B, writes the artifact):
 
-    checkov -d <repo> --framework terraform --diff-baseline-out artifact.json [--external-modules-dir <dir>]
-            [--var-file <f> ...] -o json
+    checkov -d <repo> --framework terraform --diff-baseline-out artifact.json --diff-baseline-commit <B>
+            [--external-modules-dir <dir>] [--var-file <f> ...] -o json
 
 Reference full scan with exactly the same flags (the oracle a PR scan must equal):
 
@@ -12,7 +12,16 @@ Reference full scan with exactly the same flags (the oracle a PR scan must equal
 PR scan (NO repository checkout needed: only the changed files are present in <payload_dir>):
 
     checkov -d <payload_dir> --framework terraform --diff-baseline artifact.json --diff-changes changes.json
-            [--external-modules-dir <dir>] [--var-file <f> ...] [--diff-report report.json] -o json
+            --diff-scan-target target.json [--external-modules-dir <dir>] [--var-file <f> ...]
+            [--diff-report report.json] -o json
+
+target.json (the scan target tree T: PR HEAD or a merge result, chosen by the caller):
+    {"base_commit": "<B: the commit the diff starts at>", "target_tree_id": "<T>",
+     "manifest": {"<repository-relative path>": "<git blob SHA>", ...}}   # EVERY file of T (git ls-tree -r T)
+  The scan is refused (exit 3, reason code on stderr) unless B is the baseline's commit, changes.json lists every
+  relevant file that differs between B and T with T's content, and the scan settings equal the baseline's
+  (inputs.py). Without --diff-scan-target the scan runs unvalidated only when the artifact has no commit data
+  (PoC harness artifacts); an artifact with commit data always requires it.
 
 changes.json (file-operation metadata, repository-relative paths):
     {"changed": ["app/main.tf", ...],          # added or modified: content MUST be present under <payload_dir>
@@ -34,7 +43,7 @@ import dataclasses
 import json
 import os
 import sys
-from typing import Any
+from typing import Any, Optional
 
 UNSUPPORTED_EXIT_CODE = 3
 
@@ -94,6 +103,61 @@ def _print_report(config: Any, report: Any) -> None:
         report.print_console(is_quiet=config.quiet, is_compact=config.compact)
 
 
+def _scan_target(path: Optional[str]) -> Any:
+    from checkov.terraform.diff_scan.inputs import ScanTarget
+
+    if not path:
+        return None
+    with open(path) as f:
+        raw = json.load(f)
+    unknown = set(raw) - {"base_commit", "target_tree_id", "manifest"}
+    if unknown:
+        raise ValueError(f"unknown keys in {path}: {sorted(unknown)}")
+    return ScanTarget(base_commit=str(raw["base_commit"]), target_tree_id=str(raw.get("target_tree_id", "")),
+                      manifest=dict(raw["manifest"]))
+
+
+def _fingerprint(config: Any) -> str:
+    from checkov.terraform.diff_scan.inputs import config_fingerprint, result_settings
+
+    return config_fingerprint(result_settings(config))
+
+
+SECTION_STORE_SUFFIX = ".d"
+"""--diff-baseline-out <path>.d writes the v3 section store (a directory, artifact_store.py); any other path the v2
+single JSON file. --diff-baseline reads either."""
+
+
+def _section_writer(path: str) -> Any:
+    from checkov.terraform.diff_scan.artifact import ARTIFACT_VERSION
+    from checkov.terraform.diff_scan.artifact_store import SectionWriter
+
+    return SectionWriter(path, ARTIFACT_VERSION) if path.endswith(SECTION_STORE_SUFFIX) else None
+
+
+def _write_artifact(path: str, result: Any, writer: Any) -> None:
+    """v2: the whole artifact as one JSON file. v3: the sections the baseline kept in memory (the big ones were
+    already written while it ran), then the manifest."""
+    if writer is None:
+        with open(path, "w") as f:
+            json.dump(result.artifact, f)
+        return
+    artifact = result.artifact
+    result.artifact = None
+    for name in list(artifact):
+        writer.write(name, artifact.pop(name))
+    writer.commit()
+
+
+def _read_artifact(path: str) -> Any:
+    from checkov.terraform.diff_scan.artifact_store import ArtifactSections, is_section_store
+
+    if is_section_store(path):
+        return ArtifactSections(path)
+    with open(path) as f:
+        return json.load(f)
+
+
 def run_diff_scan(config: Any) -> int:
     from checkov.terraform.diff_scan import scan
     from checkov.terraform.graph_builder.incremental_graph import IncrementalGraphUnsupported
@@ -105,22 +169,24 @@ def run_diff_scan(config: Any) -> int:
     if config.diff_full_scan:
         result = scan.full_scan(root)
     elif config.diff_baseline_out:
-        result = scan.baseline_scan(root)
-        with open(config.diff_baseline_out, "w") as f:
-            json.dump(result.artifact, f)
-        print(f"[diff-scan] baseline artifact written: {config.diff_baseline_out} "
-              f"({len(result.artifact['keys'])} pre-render vertices)", file=sys.stderr)
+        writer = _section_writer(config.diff_baseline_out)
+        result = scan.baseline_scan(root, commit=config.diff_baseline_commit, fingerprint=_fingerprint(config),
+                                    writer=writer)
+        _write_artifact(config.diff_baseline_out, result, writer)
+        print(f"[diff-scan] baseline artifact written: {config.diff_baseline_out}", file=sys.stderr)
     else:
         if not config.diff_changes:
             raise SystemExit("--diff-baseline requires --diff-changes (file-operation metadata)")
-        with open(config.diff_baseline) as f:
-            artifact = json.load(f)
+        artifact = _read_artifact(config.diff_baseline)
         try:
-            result = scan.diff_scan(root, artifact, _changes(root, config.diff_changes))
+            result = scan.diff_scan(root, artifact, _changes(root, config.diff_changes),
+                                    target=_scan_target(config.diff_scan_target), fingerprint=_fingerprint(config))
         except (IncrementalGraphUnsupported, ValueError) as error:
-            print(f"[diff-scan] UNSUPPORTED (no partial scan was run): {error}", file=sys.stderr)
+            reason = getattr(error, "reason", "unsupported")
+            print(f"[diff-scan] UNSUPPORTED reason={reason} (no partial scan was run): {error}", file=sys.stderr)
             return UNSUPPORTED_EXIT_CODE
-        summary = {"pre_render": dataclasses.asdict(result.pre_render), "render": dataclasses.asdict(result.render)}
+        summary = {"pre_render": dataclasses.asdict(result.pre_render), "render": dataclasses.asdict(result.render),
+                   "validation": dataclasses.asdict(result.validation) if result.validation else None}
         if config.diff_report:
             with open(config.diff_report, "w") as f:
                 json.dump(summary, f, indent=1, default=str)

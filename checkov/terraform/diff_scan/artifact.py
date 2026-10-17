@@ -30,5 +30,7 @@ def dumps(value: Any) -> str:
     return base64.b64encode(pickle.dumps(value)).decode()
 
 
-def loads(text: str) -> Any:
-    return pickle.loads(base64.b64decode(text))  # noqa: S301  # written by our own baseline scan
+def loads(text: str | bytes) -> Any:
+    """A base64 pickle (v2 JSON artifact) or raw pickle bytes (v3 section store, artifact_store.PickledItem)."""
+    data = text if isinstance(text, bytes) else base64.b64decode(text)
+    return pickle.loads(data)  # noqa: S301  # written by our own baseline scan
