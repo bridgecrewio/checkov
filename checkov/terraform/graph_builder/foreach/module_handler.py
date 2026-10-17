@@ -53,25 +53,54 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Second level -> inner_s3_module and inner_s3_module2 (Copying the module and all his dependencies)
         This will generate a graph with 20 modules and 16 resources.
         """
+        oracle = getattr(self.local_graph, "foreach_statement_oracle", None)
+        if oracle is not None and hasattr(oracle, "module_level_decisions"):
+            # opt-in (diff-files-only scan): module expansion decisions provably unchanged since the baseline are
+            # reused without the level's sub-graph render
+            decisions = oracle.module_level_decisions(self, modules_blocks, modules_to_render)
+        else:
+            decisions = self.module_level_decisions(modules_blocks, modules_to_render)
+        self.apply_module_decisions(modules_to_render, decisions)
+        return self._get_modules_to_render(current_level)
+
+    def counted_modules(self, modules_to_render: list[int]) -> list[int]:
+        """Modules of this level carrying count / for_each (the only ones a level decides on)."""
+        return [m for m in modules_to_render if self.local_graph.vertices[m].attributes.get(FOREACH_STRING)
+                or self.local_graph.vertices[m].attributes.get(COUNT_STRING)]
+
+    def module_level_decisions(self, modules_blocks: list[int], modules_to_render: list[int]) \
+            -> dict[int, tuple[str, Any]]:
+        """Checkov's decision per counted module of the level: ("for_each", value) / ("count", n) / ("skip", None).
+        Same sub-graph render and static checks as before the split into decide / apply."""
         sub_graph = self._build_sub_graph(modules_blocks)
         self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+        decisions: dict[int, tuple[str, Any]] = {}
         for module_idx in modules_to_render:
             module_block = self.local_graph.vertices[module_idx]
             for_each = module_block.attributes.get(FOREACH_STRING)
             count = module_block.attributes.get(COUNT_STRING)
             if for_each:
                 for_each = self._handle_static_statement(module_idx, sub_graph)
-                if not for_each or not self._is_static_statement(module_idx, sub_graph):
-                    continue
-                if isinstance(for_each, (list, dict)):
-                    self._duplicate_module_with_for_each(module_idx, for_each)
+                if not for_each or not self._is_static_statement(module_idx, sub_graph) \
+                        or not isinstance(for_each, (list, dict)):
+                    decisions[module_idx] = ("skip", None)
+                else:
+                    decisions[module_idx] = ("for_each", for_each)
             elif count:
                 count = self._handle_static_statement(module_idx, sub_graph)
-                if not count or not self._is_static_statement(module_idx, sub_graph):
-                    continue
-                if isinstance(count, int):
-                    self._duplicate_module_with_count(module_idx, count)
-        return self._get_modules_to_render(current_level)
+                if not count or not self._is_static_statement(module_idx, sub_graph) or not isinstance(count, int):
+                    decisions[module_idx] = ("skip", None)
+                else:
+                    decisions[module_idx] = ("count", count)
+        return decisions
+
+    def apply_module_decisions(self, modules_to_render: list[int], decisions: dict[int, tuple[str, Any]]) -> None:
+        for module_idx in modules_to_render:
+            kind, value = decisions.get(module_idx, ("skip", None))
+            if kind == "for_each":
+                self._duplicate_module_with_for_each(module_idx, value)
+            elif kind == "count":
+                self._duplicate_module_with_count(module_idx, value)
 
     def _duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
         self._create_new_resources_foreach(for_each, module_idx)

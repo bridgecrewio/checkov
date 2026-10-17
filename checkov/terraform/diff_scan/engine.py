@@ -177,6 +177,7 @@ def _has_module_expansion(definition: dict[str, Any]) -> bool:
 
 
 def _short_block(key: str) -> str:
+    key = key.split(":", 1)[1] if key.startswith("module-level:") else key
     path, chain, block_type, name = json.loads(key)
     return "".join(f"module.{entry[1]}." for entry in chain) + f"{block_type}.{name}"
 
@@ -1169,7 +1170,9 @@ class DiffEngine:
         if oracle is None:
             return {}
         return {"expansions_reused": len(oracle.reused), "expansions_recomputed": len(oracle.recomputed),
-                "expansions_changed": sorted(_short_block(k) for k in oracle.changed)}
+                "expansions_changed": sorted(_short_block(k) for k in oracle.changed),
+                "module_levels_reused": oracle.module_levels_reused,
+                "module_levels_recomputed": oracle.module_levels_recomputed}
 
     def _assemble(self, vertices: list[Any], edges: list[tuple[int, int, str]], parsed: dict[TFDefinitionKey, Any],
                   removed: set[TFDefinitionKey], changed: set[TFDefinitionKey],

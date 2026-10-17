@@ -288,6 +288,11 @@ class ExpansionRecorder:
                 self.records[key]["weakened_signature"] = weakened
         return result
 
+    def module_level_decisions(self, handler: Any, modules_blocks: list[int], modules_to_render: list[int]) \
+            -> dict[int, tuple[str, Any]]:
+        """Baseline: Checkov's module decisions of one level, recorded with each counted module's read closure."""
+        return _record_module_level(self.records, handler, modules_blocks, modules_to_render, self.root)
+
 
 @dataclass
 class ExpansionOracle:
@@ -310,6 +315,43 @@ class ExpansionOracle:
         weak = _weakened_signatures(graph, self.root)
         record = self.records.get(key) or {}
         return record.get("weakened_signature") == weak.signature(index)
+
+    module_levels_reused: int = 0
+    module_levels_recomputed: int = 0
+
+    def module_level_decisions(self, handler: Any, modules_blocks: list[int], modules_to_render: list[int]) \
+            -> dict[int, tuple[str, Any]]:
+        """PR scan: when EVERY counted module of the level has an unchanged read closure, the level's decisions are
+        the baseline's and the sub-graph render is skipped (it renders a copy and has no other effect). Otherwise the
+        level runs Checkov's own code unchanged (all-or-nothing keeps it identical to a full build)."""
+        counted = handler.counted_modules(modules_to_render)
+        if not counted:
+            return handler.module_level_decisions(modules_blocks, modules_to_render)
+        signatures = _ClosureSignatures(handler.local_graph, self.root)
+        field_name = SIGNATURE_FIELD[signatures.precise]
+        reused: dict[int, tuple[str, Any]] = {}
+        for index in counted:
+            key = MODULE_RECORD_PREFIX + block_key(handler.local_graph.vertices[index], self.root)
+            record = self.records.get(key)
+            stale_ok = NEGATIVE_CONTROL == "stale_module_expansion" and record is not None
+            if record is None or not (stale_ok or record.get(field_name) == signatures.signature(index)):
+                break
+            kind, value = record["decision"]
+            reused[index] = (kind, value)
+        else:
+            self.module_levels_reused += 1
+            self.reused.extend(MODULE_RECORD_PREFIX + block_key(handler.local_graph.vertices[i], self.root)
+                               for i in counted)
+            return reused
+        self.module_levels_recomputed += 1
+        decisions = handler.module_level_decisions(modules_blocks, modules_to_render)
+        for index in counted:
+            key = MODULE_RECORD_PREFIX + block_key(handler.local_graph.vertices[index], self.root)
+            self.recomputed.append(key)
+            record = self.records.get(key)
+            if record is None or record["decision"] != _json_decision(decisions.get(index, ("skip", None))):
+                self.changed.append(key)
+        return decisions
 
     def statement_for(self, key: str) -> Any:
         """The statement the last statements() call decided for this block (reused or recomputed)."""
@@ -352,6 +394,34 @@ class ExpansionOracle:
 
 def _restore_statement(statement: Any) -> Any:
     return statement
+
+
+MODULE_RECORD_PREFIX = "module-level:"
+"""Records of module count / for_each decisions share the expansions section with resource statements; their keys
+are prefixed so the two never collide (a module block key and a resource block key differ anyway by block type)."""
+
+
+def _module_signatures(handler: Any, modules: list[int], root: str) -> dict[int, tuple[str, str]]:
+    graph = handler.local_graph
+    full = _ClosureSignatures(graph, root, precise=False)
+    precise = _ClosureSignatures(graph, root, precise=True)
+    return {index: (full.signature(index), precise.signature(index)) for index in modules}
+
+
+def _json_decision(decision: tuple[str, Any]) -> list[Any]:
+    return [decision[0], _json_statement(decision[1])]
+
+
+def _record_module_level(records: dict[str, dict[str, Any]], handler: Any, modules_blocks: list[int],
+                         modules_to_render: list[int], root: str) -> dict[int, tuple[str, Any]]:
+    counted = handler.counted_modules(modules_to_render)
+    signatures = _module_signatures(handler, counted, root)
+    decisions = handler.module_level_decisions(modules_blocks, modules_to_render)
+    for index in counted:
+        key = MODULE_RECORD_PREFIX + block_key(handler.local_graph.vertices[index], root)
+        records[key] = {"signature": signatures[index][0], "precise_signature": signatures[index][1],
+                        "decision": _json_decision(decisions.get(index, ("skip", None)))}
+    return decisions
 
 
 def _checkov_statements_for(handler: Any, blocks: list[int]) -> dict[int, Any]:
