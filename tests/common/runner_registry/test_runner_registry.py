@@ -740,6 +740,79 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
     assert xml_file_path.exists()
     assert "<testcase " in xml_file_path.read_text()
 
+def test_output_file_path_with_single_output_file(tmp_path: Path):
+    # given
+    test_files_dir = Path(__file__).parent / "example_s3_tf"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+    )
+    reports = runner_registry.run(root_folder=str(test_files_dir))
+
+    json_file_path = tmp_path / "result.json"
+    config = argparse.Namespace(
+        file=['./example_s3_tf/main.tf'],
+        compact=False,
+        output=["json"],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=f"{json_file_path}",
+        use_enforcement_rules=None,
+        output_bc_ids=False,
+        summary_position="top",
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    assert json_file_path.exists()
+    assert json_file_path.is_file()
+    assert '"check_type": "terraform"' in json_file_path.read_text()
+
+    # The supplied output_file_path must be treated as a path to the output file
+    # and not as the directory that contains the output file.
+    assert not (json_file_path / "results_json.json").exists()
+
+def test_output_file_path_with_multiple_output_formats_single_output_file(tmp_path: Path, capsys: CaptureFixture[str]):
+    # given
+    test_files_dir = Path(__file__).parent / "example_s3_tf"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+    )
+    reports = runner_registry.run(root_folder=str(test_files_dir))
+
+    json_file_path = tmp_path / "result.json"
+    config = argparse.Namespace(
+        file=['./example_s3_tf/main.tf'],
+        compact=False,
+        output=["json", "junitxml"],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=f"{json_file_path}",
+        use_enforcement_rules=None,
+        output_bc_ids=False,
+        summary_position="top",
+    )
+
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    assert json_file_path.exists()
+    assert json_file_path.is_file()
+
+    captured = capsys.readouterr()
+    assert '"check_type": "terraform"' in json_file_path.read_text()
+
+    # The supplied output_file_path must be treated as a path to the output file
+    # and the junitxml output should not be present inside json_file_path.
+    assert not (json_file_path / "results_json.json").exists()
+    assert not (json_file_path / "results_junitxml.xml").exists()
+    # i.e it should only be printed to the console.
+    assert "<testsuites" in captured.out
 
 def test_strip_code_blocks_from_json():
     # given
