@@ -18,6 +18,16 @@ if typing.TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 
+SKIP_EMPTY_LEVEL_RENDER_ENV = "CHECKOV_FOREACH_SKIP_EMPTY_MODULE_LEVEL_RENDER"
+"""Opt-in: skip the sub-graph render of a module level that has no module with count / for_each."""
+
+
+def skip_empty_level_render_enabled() -> bool:
+    import os
+
+    return os.getenv(SKIP_EMPTY_LEVEL_RENDER_ENV, "false").lower() == "true"
+
+
 class ForeachModuleHandler(ForeachAbstractHandler):
     def __init__(self, local_graph: TerraformLocalGraph):
         super().__init__(local_graph)
@@ -72,6 +82,10 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             -> dict[int, tuple[str, Any]]:
         """Checkov's decision per counted module of the level: ("for_each", value) / ("count", n) / ("skip", None).
         Same sub-graph render and static checks as before the split into decide / apply."""
+        if skip_empty_level_render_enabled() and not self.counted_modules(modules_to_render):
+            # Nothing on this level carries count / for_each: the loop below decides nothing, and the sub-graph is a
+            # throw-away copy (its render writes only the copy), so building and rendering it has no effect.
+            return {}
         sub_graph = self._build_sub_graph(modules_blocks)
         self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
         decisions: dict[int, tuple[str, Any]] = {}

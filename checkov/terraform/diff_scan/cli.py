@@ -98,7 +98,11 @@ def _print_report(config: Any, report: Any) -> None:
     from checkov.common.util.json_utils import CustomJSONEncoder
 
     if "json" in (config.output or []):
-        print(json.dumps(report.get_dict(is_quiet=config.quiet), indent=4, cls=CustomJSONEncoder))
+        # streamed: the same text as print(json.dumps(...)) without holding the whole document as one string (gcp:
+        # a 300 MB report peaked +780 MB as one str plus its encoding buffers)
+        json.dump(report.get_dict(is_quiet=config.quiet), sys.stdout, indent=4, cls=CustomJSONEncoder)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
     else:
         report.print_console(is_quiet=config.quiet, is_compact=config.compact)
 

@@ -18,7 +18,8 @@ from checkov.terraform.graph_builder.foreach.subgraph_scope import assert_same_c
 from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
+    whole_reference_value
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
 if typing.TYPE_CHECKING:
@@ -285,6 +286,10 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def extract_from_list(val: Any) -> Any:
+        if len(val) == 1 and isinstance(val[0], dict) and whole_reference_value(val) is not None:
+            # `for_each = local.y` where local.y kept its map type (evaluate_terraform.WholeReferenceValue): the
+            # statement is the map itself, as a literal `for_each = { ... }` arrives
+            return val[0]
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     @staticmethod

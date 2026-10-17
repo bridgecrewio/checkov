@@ -270,6 +270,13 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
         """
+        if evaluator.whole_reference_value(changed_attribute_value) is not None:
+            # `x = local.y` resolved to a map / list (evaluate_terraform.replace_string_value): already a value, not
+            # an expression; stringifying and re-parsing it breaks maps whose strings hold quotes / commas.
+            self.local_graph.update_vertex_attribute(
+                vertex, changed_attribute_key, changed_attribute_value, change_origin_id, attribute_at_dest
+            )
+            return
         str_to_evaluate = (
             str(changed_attribute_value)
             if self.attributes_no_eval(changed_attribute_key, vertex)
