@@ -44,6 +44,7 @@ from checkov.terraform.diff_scan.artifact import ARTIFACT_VERSION, loads
 from checkov.terraform.diff_scan.baseline import aliases_signature, creation_digest, resource_types_of, tf_var_environment
 from checkov.terraform.diff_scan.expansions import ExpansionOracle
 from checkov.terraform.diff_scan.instance_update import InstanceSplicer, instance_update_enabled, is_expanded
+from checkov.terraform.diff_scan.module_files import ModuleFileSetPlan
 from checkov.terraform.diff_scan.units import pre_expansion_unit_graph
 from checkov.terraform.diff_scan.graph_ops import set_edges
 from checkov.terraform.diff_scan.recorder import BUILD_PHASE, PROVIDER_PHASE
@@ -113,6 +114,8 @@ class PreRenderReport:
     units_reused: int = 0
     scoped_units: dict[str, Any] = field(default_factory=dict)
     renamed_files: list[dict[str, str]] = field(default_factory=list)
+    module_file_set: dict[str, Any] = field(default_factory=dict)
+    """module directories whose file add / delete was handled per instance (no caller re-parse), and refusals"""
     """pure order-preserving renames applied to the artifact instead of re-parsing (rename.py)"""
 
 
@@ -550,6 +553,8 @@ class DiffEngine:
         module_fields = loads(self.a["module"])
         parsed, changed, removed = self._new_definitions()
         reparse = self._reparse_reasons(parsed, removed, module_fields)
+        self.report.module_file_set = getattr(self, "module_file_set_report", {})
+        changed = set(parsed)
         if reparse:
             self.extra_source_map: dict[Any, str] = {}
             graph = self._build_with_reparsed_units(parsed, changed, removed, module_fields, reparse)
@@ -638,8 +643,44 @@ class DiffEngine:
                         if k.tf_source_modules and k.file_path not in old_files}
         directories |= {os.path.dirname(p) for p in self.new_directory_files}
         directories &= loaded_as_module
+        directories -= self._module_file_set_handled(parsed, removed, directories, old_files)
         return {unit_of_key(k) for k in self.pickled_definitions
                 if k.tf_source_modules and os.path.dirname(k.file_path) in directories}
+
+    def _module_file_set_handled(self, parsed: dict[TFDefinitionKey, Any], removed: set[TFDefinitionKey],
+                                 directories: set[str], old_files: set[str]) -> set[str]:
+        """Round 9 step 1b (module_files.py): directories whose single added / deleted LAST file is handled per
+        module instance; their callers' `__resolved__` lists are patched into `parsed` (callers become changed keys,
+        recreated by the per-owner path) instead of re-parsing every calling unit."""
+        added = {k.file_path: d for k, d in parsed.items() if k.tf_source_modules and k.file_path not in old_files}
+        deleted = {k.file_path for k in removed if k.tf_source_modules}
+        plan = ModuleFileSetPlan(self.pickled_definitions, self.a["files"], loads)
+        handled = plan.decide(directories, added, deleted)
+        self.module_file_set_report = {"handled": sorted(os.path.relpath(d, self.root) for d in handled),
+                                       "refused": {os.path.relpath(d, self.root): r for d, r in plan.refused.items()}}
+        if not handled:
+            return set()
+        handled_added = {p for p in added if os.path.dirname(p) in handled}
+        handled_deleted = {p for p in deleted if os.path.dirname(p) in handled}
+        patches = plan.caller_patches(handled_added, handled_deleted)
+        self.resolved_patches = {
+            (key.file_path, key.tf_source_modules, name): data.get(RESOLVED_MODULE_ENTRY_NAME)
+            for key in patches for name, data in _module_calls(loads(self.pickled_definitions[key])).items()}
+        for key, definition in patches.items():
+            parsed[key] = parsed[key] if key in parsed else definition
+            if key in parsed and parsed[key] is not definition:
+                parsed[key] = self._merge_resolved(parsed[key], definition)
+        return handled
+
+    @staticmethod
+    def _merge_resolved(edited: dict[str, Any], patched: dict[str, Any]) -> dict[str, Any]:
+        """A caller file edited by the PR AND calling a handled directory: keep the PR's content, take the patched
+        `__resolved__` of calls whose target did not change."""
+        patched_calls = _module_calls(patched)
+        for name, data in _module_calls(edited).items():
+            if name in patched_calls and _call_signature(data) == _call_signature(patched_calls[name]):
+                data[RESOLVED_MODULE_ENTRY_NAME] = patched_calls[name].get(RESOLVED_MODULE_ENTRY_NAME)
+        return edited
 
     def _reparse_reasons(self, parsed: dict[TFDefinitionKey, Any], removed: set[TFDefinitionKey],
                          module_fields: dict[str, Any]) -> dict[str, str]:
@@ -1206,6 +1247,27 @@ class DiffEngine:
         self._reused_vertex_cache = {}
         self.old_index = {}
         self.old_keys = []
+
+    def install_resolved_swaps(self, graph: TerraformLocalGraph) -> int:
+        """Callers whose `__resolved__` was patched (module_files.py): register (baseline, PR) values so rendering
+        treats a caller with no other change as unchanged (incremental_graph.RESOLVED_SWAPS)."""
+        from checkov.terraform.graph_builder import incremental_graph
+
+        incremental_graph.RESOLVED_SWAPS.clear()
+        patches = getattr(self, "resolved_patches", {})
+        if not patches:
+            return 0
+        for vertex in graph.vertices:
+            if vertex.block_type != BlockType.MODULE:
+                continue
+            old = patches.get((vertex.path, vertex.source_module_object, vertex.name))
+            call = vertex.config.get(vertex.name) if isinstance(vertex.config, dict) else None
+            if old is None or not isinstance(call, dict):
+                continue
+            current = call.get(RESOLVED_MODULE_ENTRY_NAME)
+            restored = incremental_graph._restore(incremental_graph._anonymise(current, self.root), self.root)
+            incremental_graph.RESOLVED_SWAPS[incremental_graph.vertex_key(vertex, self.root)] = (old, restored)
+        return len(incremental_graph.RESOLVED_SWAPS)
 
     def finish(self) -> PreRenderReport:
         self.report.definitions_unpickled_for_post_render = self._definitions.unpickled

@@ -124,6 +124,24 @@ computed with the OLD path, so the PR side's digest text maps every NEW path bac
 Empty outside a diff scan with renames."""
 
 
+RESOLVED_SWAPS: dict[str, tuple[Any, Any]] = {}
+"""Module-call vertex key -> (baseline `__resolved__`, PR `__resolved__`) for callers whose only pre-render change is
+the module file list (diff_scan.module_files). Rendering never reads `__resolved__` (only the runner and id helpers
+read it from the final config), so such a caller is compared with its baseline value and, when frozen, restored with
+the PR's value. Empty outside a diff scan with handled module file-set changes."""
+
+
+def _swap_resolved(vertex: TerraformBlock, value: Any) -> Any:
+    from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+
+    call = vertex.config.get(vertex.name) if isinstance(vertex.config, dict) else None
+    if not isinstance(call, dict) or RESOLVED_MODULE_ENTRY_NAME not in call:
+        return None
+    previous = call[RESOLVED_MODULE_ENTRY_NAME]
+    call[RESOLVED_MODULE_ENTRY_NAME] = value
+    return previous
+
+
 def pre_render_digest(vertex: TerraformBlock, root: str, keys: Optional[list[str]] = None) -> str:
     """Identity of a vertex's pre-render state: everything rendering starts from.
     `source_module` holds vertex INDICES, which shift whenever any block is added or removed anywhere; with `keys`
@@ -248,6 +266,17 @@ def _vertices_with_repeated_edges(graph: Any) -> dict[int, str]:
 
 
 
+def _digest_with_baseline_resolved(vertex: TerraformBlock, key: str, root: str, keys: list[str]) -> str:
+    swap = RESOLVED_SWAPS.get(key)
+    if swap is None or os.getenv("DFO_NEGATIVE", "") == "module_file_no_resolved_swap":
+        return pre_render_digest(vertex, root, keys)
+    current = _swap_resolved(vertex, swap[0])
+    try:
+        return pre_render_digest(vertex, root, keys)
+    finally:
+        _swap_resolved(vertex, current)
+
+
 def _referrers(keys: list[str], graph: Any) -> dict[int, set[int]]:
     referrers: dict[int, set[int]] = {}
     for edge in graph.edges:
@@ -273,7 +302,7 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
     for index, (key, vertex) in enumerate(zip(keys, graph.vertices)):
         if key not in exported:
             seeds[index] = "new vertex"
-        elif old_digests.get(key) != pre_render_digest(vertex, root, keys):
+        elif old_digests.get(key) != _digest_with_baseline_resolved(vertex, key, root, keys):
             seeds[index] = "pre-render state changed"
         elif key in unconverged:
             seeds[index] = "baseline render did not converge"
@@ -375,6 +404,8 @@ def update_graph(artifact: dict[str, Any], graph: Any, root: str, release: Optio
         stored = artifact["vertices"][key]
         record = decode(stored) if decode is not None else stored
         restore_vertex(graph.vertices[index], record, by_key, root)
+        if key in RESOLVED_SWAPS:
+            _swap_resolved(graph.vertices[index], RESOLVED_SWAPS[key][1])
         final_states[index] = stored
         frozen.add(index)
     report.affected, report.frozen = len(affected), len(frozen)
@@ -391,6 +422,8 @@ def update_graph(artifact: dict[str, Any], graph: Any, root: str, release: Optio
             record = decode(stored) if decode is not None else stored
             graph.vertices[index].attributes = _restore(record["attributes"], root)
             graph.vertices[index].config = _restore(record["config"], root)
+            if keys[index] in RESOLVED_SWAPS:
+                _swap_resolved(graph.vertices[index], RESOLVED_SWAPS[keys[index]][1])
 
     renderer = TerraformVariableRenderer(graph)
     renderer.frozen_vertices = frozen
