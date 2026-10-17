@@ -325,7 +325,7 @@ class ExpansionOracle:
         the baseline's and the sub-graph render is skipped (it renders a copy and has no other effect). Otherwise the
         level runs Checkov's own code unchanged (all-or-nothing keeps it identical to a full build)."""
         counted = handler.counted_modules(modules_to_render)
-        if not counted:
+        if not counted or not module_level_reuse_enabled():
             return handler.module_level_decisions(modules_blocks, modules_to_render)
         signatures = _ClosureSignatures(handler.local_graph, self.root)
         field_name = SIGNATURE_FIELD[signatures.precise]
@@ -394,6 +394,14 @@ class ExpansionOracle:
 
 def _restore_statement(statement: Any) -> Any:
     return statement
+
+
+MODULE_LEVEL_REUSE_ENV = "CHECKOV_DIFF_MODULE_LEVEL_REUSE"
+"""Opt-in (set by the diff scan): reuse module count / for_each level decisions (ExpansionOracle.module_level_decisions)."""
+
+
+def module_level_reuse_enabled() -> bool:
+    return os.getenv(MODULE_LEVEL_REUSE_ENV, "false").lower() == "true"
 
 
 MODULE_RECORD_PREFIX = "module-level:"

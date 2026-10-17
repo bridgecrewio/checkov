@@ -38,7 +38,7 @@ from checkov.terraform.diff_scan.tfvars import is_terraform_file
 from checkov.terraform.diff_scan.artifact import dumps
 from checkov.terraform.diff_scan.artifact_store import RECORD_ENCODING, decode_record, encode_record
 from checkov.terraform.diff_scan.baseline import capture_pre_render, creation_digest
-from checkov.terraform.diff_scan.expansions import PRECISE_CLOSURE_ENV, ExpansionRecorder
+from checkov.terraform.diff_scan.expansions import MODULE_LEVEL_REUSE_ENV, PRECISE_CLOSURE_ENV, ExpansionRecorder
 from checkov.terraform.diff_scan.instance_update import INSTANCE_UPDATE_ENV
 from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport, \
     RESOURCE_LEVEL_UNITS_ENV, REUSE_EXPANSIONS_ENV
@@ -412,6 +412,7 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault(PRECISE_CLOSURE_ENV, "true")
     os.environ.setdefault(RENAME_REMAP_ENV, "true")
     os.environ.setdefault(MODULE_FILE_SET_ENV, "true")
+    os.environ.setdefault(MODULE_LEVEL_REUSE_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     renames = _apply_renames(artifact, root, changes)
