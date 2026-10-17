@@ -43,6 +43,7 @@ from checkov.terraform.diff_scan.instance_update import INSTANCE_UPDATE_ENV
 from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport, \
     RESOURCE_LEVEL_UNITS_ENV, REUSE_EXPANSIONS_ENV
 from checkov.terraform.diff_scan.relocate import relocate_artifact
+from checkov.terraform.diff_scan.rename import RENAME_REMAP_ENV, apply_renames, pairs_report
 from checkov.terraform.diff_scan.graph_ops import edge_tuples, permute, set_edges
 from checkov.terraform.diff_scan.recorder import EdgeRecorder
 from checkov.terraform.diff_scan.scanner_inputs import MATERIALIZED_DIR, external_modules, is_external_module_path, \
@@ -379,6 +380,16 @@ def _release(artifact: Any, *names: str) -> None:
         release(*names)
 
 
+def _apply_renames(artifact: Any, root: str, changes: ChangeSet) -> list[tuple[str, str]]:
+    """Order-preserving pure renames are applied to the artifact (rename.py); `changes` loses those pairs. Runs after
+    input validation, which checks the original change set against the scan target."""
+    encoded = "rendered.vertices" in artifact and artifact["rendered"].get("vertices_encoding") == RECORD_ENCODING
+    changed, deleted, pairs = apply_renames(artifact, root, changes.changed, changes.deleted, encoded)
+    changes.changed[:] = changed
+    changes.deleted[:] = deleted
+    return pairs
+
+
 def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inputs.ScanTarget] = None,
               fingerprint: Optional[str] = None) -> ScanResult:
     """`artifact`: the decoded v2 dict, or an ArtifactSections view of a v3 section store (sections are decoded on
@@ -398,10 +409,13 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault(REUSE_EXPANSIONS_ENV, "true")
     os.environ.setdefault(INSTANCE_UPDATE_ENV, "true")
     os.environ.setdefault(PRECISE_CLOSURE_ENV, "true")
+    os.environ.setdefault(RENAME_REMAP_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
+    renames = _apply_renames(artifact, root, changes)
     modules = external_modules(root)
     engine = DiffEngine(artifact, root, changes)
+    engine.report.renamed_files = pairs_report(renames, root)
     engine.supplied_modules = sorted(modules)
     engine.validate_inputs()
     repository_files.set_files(repository_index(artifact, engine.changes, root))

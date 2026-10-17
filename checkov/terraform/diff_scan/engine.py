@@ -112,6 +112,8 @@ class PreRenderReport:
     units_total: int = 0
     units_reused: int = 0
     scoped_units: dict[str, Any] = field(default_factory=dict)
+    renamed_files: list[dict[str, str]] = field(default_factory=list)
+    """pure order-preserving renames applied to the artifact instead of re-parsing (rename.py)"""
 
 
 @dataclass

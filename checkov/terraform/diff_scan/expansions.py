@@ -35,8 +35,21 @@ against (the baseline worker never sees DFO_NEGATIVE; recording changes no scan 
 PRECISE_CLOSURE_ENV = "CHECKOV_DIFF_PRECISE_CLOSURE"
 
 
-def _anonymised(value: Any, root: str) -> str:
+def _anonymised_identity(value: Any, root: str) -> str:
+    """Identity strings (statement-record keys) keep the CURRENT path: the expansions section is renamed with the
+    artifact (rename.section_remapper), so keys of renamed blocks already carry the new path."""
     return json.dumps(value, cls=CustomJSONEncoder, sort_keys=True, default=str).replace(root, "<root>")
+
+
+def _anonymised(value: Any, root: str) -> str:
+    """Closure signatures and statement keys of the baseline were computed with OLD paths of renamed files
+    (incremental_graph.PATH_RENAMES): the PR side maps new paths back so they compare equal."""
+    from checkov.terraform.graph_builder.incremental_graph import PATH_RENAMES
+
+    text = json.dumps(value, cls=CustomJSONEncoder, sort_keys=True, default=str).replace(root, "<root>")
+    for old, new in PATH_RENAMES:
+        text = text.replace(new, old)
+    return text
 
 
 def block_key(vertex: Any, root: str) -> str:
@@ -44,7 +57,7 @@ def block_key(vertex: Any, root: str) -> str:
     from checkov.common.graph.graph_builder.deterministic import module_chain_key
 
     chain = [list(m) for m in module_chain_key(vertex.source_module_object)]
-    return _anonymised([vertex.path, chain, vertex.block_type, vertex.name], root)
+    return _anonymised_identity([vertex.path, chain, vertex.block_type, vertex.name], root)
 
 
 def content_digest(vertex: Any, root: str) -> str:

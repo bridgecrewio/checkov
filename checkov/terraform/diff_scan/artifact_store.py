@@ -153,6 +153,17 @@ class ArtifactSections:
         self._overrides = {"root": new_root}
         self._loaded.clear()
 
+    def remap_on_load(self, remap: Callable[[str, Any], Any]) -> None:
+        """Every section decoded from now on is also passed through `remap(name, value)` (rename.section_remapper),
+        after any relocation. Sections already decoded are remapped now."""
+        previous = self._relocate
+
+        def chained(name: str, value: Any) -> Any:
+            return remap(name, previous(name, value) if previous is not None else value)
+
+        self._relocate = chained
+        self._loaded = {name: remap(name, value) for name, value in self._loaded.items()}
+
     def __getitem__(self, name: str) -> Any:
         if name in self._overrides:
             return self._overrides[name]

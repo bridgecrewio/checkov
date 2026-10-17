@@ -118,6 +118,12 @@ def vertex_keys(graph: Any, root: str) -> list[str]:
     return keys
 
 
+PATH_RENAMES: list[tuple[str, str]] = []
+"""Anonymised file-path renames applied to the baseline artifact (diff_scan.rename): baseline pre-render digests were
+computed with the OLD path, so the PR side's digest text maps every NEW path back to its old one before hashing.
+Empty outside a diff scan with renames."""
+
+
 def pre_render_digest(vertex: TerraformBlock, root: str, keys: Optional[list[str]] = None) -> str:
     """Identity of a vertex's pre-render state: everything rendering starts from.
     `source_module` holds vertex INDICES, which shift whenever any block is added or removed anywhere; with `keys`
@@ -126,6 +132,8 @@ def pre_render_digest(vertex: TerraformBlock, root: str, keys: Optional[list[str
     payload = {"attributes": vertex.attributes, "config": vertex.config, "source_module": source_module,
                "foreach_attrs": getattr(vertex, "foreach_attrs", None)}
     text = json.dumps(_anonymise(payload, root), sort_keys=True)
+    for old, new in PATH_RENAMES:
+        text = text.replace(new, old)
     return hashlib.sha256(text.encode()).hexdigest()
 
 

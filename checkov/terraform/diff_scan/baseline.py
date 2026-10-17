@@ -28,6 +28,9 @@ def resource_types_of(definition: dict[str, Any]) -> list[str]:
     return sorted({resource_type for block in definition.get(BlockType.RESOURCE, []) for resource_type in block})
 
 
+from checkov.terraform.graph_builder.incremental_graph import PATH_RENAMES  # noqa: E402
+
+
 def creation_digest(block: Any, root: str) -> str:
     """Identity of a block as Module.add_blocks creates it, before any graph pass touches it. Root-relative (the
     root is anonymised), so it is stable when the artifact is relocated."""
@@ -36,6 +39,8 @@ def creation_digest(block: Any, root: str) -> str:
                getattr(block, "dynamic_attributes", None), getattr(block, "foreach_attrs", None),
                block.for_each_index]
     text = json.dumps(payload, cls=CustomJSONEncoder, sort_keys=True, default=str).replace(root, "<root>")
+    for old, new in PATH_RENAMES:
+        text = text.replace(new, old)
     return hashlib.sha256(text.encode()).hexdigest()
 
 
