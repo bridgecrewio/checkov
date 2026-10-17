@@ -72,11 +72,48 @@ def _require_flag() -> None:
         raise RuntimeError("incremental graph requires CHECKOV_DETERMINISTIC_GRAPH=true and CHECKOV_INCREMENTAL_GRAPH=true")
 
 
+TUPLE_MARKER = "__dfo_tuple__"
+"""Checkov's renderer leaves some evaluated values as Python TUPLES (e.g. a `"${join(",", ...)}"` string the evaluator
+split into a tuple). Checkov's final passes treat tuples and lists differently (get_origin_attributes flattens only
+lists into `key.0` / `key.1` attributes), so a frozen vertex restored with a list where the full scan holds a tuple
+gains attributes the full scan does not have. JSON has no tuples: they are wrapped as {TUPLE_MARKER: [...]} in the
+export and unwrapped on restore."""
+
+
+def _mark_tuples(value: Any) -> Any:
+    if isinstance(value, tuple):
+        return {TUPLE_MARKER: [_mark_tuples(v) for v in value]}
+    if isinstance(value, list):
+        return [_mark_tuples(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _mark_tuples(v) for k, v in value.items()}
+    return value
+
+
+def _unmark_tuples(value: Any) -> Any:
+    if isinstance(value, dict):
+        if len(value) == 1 and TUPLE_MARKER in value:
+            return tuple(_unmark_tuples(v) for v in value[TUPLE_MARKER])
+        return {k: _unmark_tuples(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_unmark_tuples(v) for v in value]
+    return value
+
+
+def _preserve_tuples() -> bool:
+    return os.getenv("DFO_NEGATIVE", "") != "export_drops_tuples"
+
+
 def _anonymise(value: Any, root: str) -> Any:
     """Insertion order is kept: consumers read vertex configs positionally (e.g. the module context parser takes the
     first key of a module call's config as its name; a counted call also holds `virtual_resources`)."""
     text = json.dumps(value, cls=CustomJSONEncoder, sort_keys=False, default=str)
     return json.loads(text.replace(root, ROOT))
+
+
+def _anonymise_state(value: Any, root: str) -> Any:
+    """Rendered vertex state (attributes / config) for the export: tuples preserved (TUPLE_MARKER)."""
+    return _anonymise(_mark_tuples(value) if _preserve_tuples() else value, root)
 
 
 def anonymise(value: Any, root: str) -> Any:
@@ -85,11 +122,25 @@ def anonymise(value: Any, root: str) -> Any:
 
 
 def _anonymised_text(value: Any, root: str) -> str:
+    value = _mark_tuples(value) if _preserve_tuples() else value
     return json.dumps(value, cls=CustomJSONEncoder, sort_keys=False, default=str).replace(root, ROOT)
 
 
 def _restore(value: Any, root: str) -> Any:
-    return json.loads(json.dumps(value).replace(ROOT, root))
+    restored = json.loads(json.dumps(value).replace(ROOT, root))
+    return _unmark_tuples(restored) if _preserve_tuples() else _tuples_as_lists(_unmark_tuples(restored))
+
+
+def _tuples_as_lists(value: Any) -> Any:
+    """Negative control `export_drops_tuples`: the restore side behaves like the pre-fix export (tuples became
+    lists). Applied on the PR side because the harness's baseline worker never sees DFO_NEGATIVE."""
+    if isinstance(value, tuple):
+        return [_tuples_as_lists(v) for v in value]
+    if isinstance(value, list):
+        return [_tuples_as_lists(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _tuples_as_lists(v) for k, v in value.items()}
+    return value
 
 
 def vertex_key(vertex: TerraformBlock, root: str) -> str:
@@ -205,8 +256,8 @@ def export_graph(graph: Any, root: str, pre_render: dict[str, Any], unconverged:
         captured = loop_end.pop(key)
         record = _anonymise({
             "loop_end": json.loads(captured) if isinstance(captured, str) else captured,
-            "attributes": vertex.attributes,
-            "config": vertex.config,
+            "attributes": _mark_tuples(vertex.attributes) if _preserve_tuples() else vertex.attributes,
+            "config": _mark_tuples(vertex.config) if _preserve_tuples() else vertex.config,
             "changed_attributes": {attr: [[keys[b.vertex_id], b.attribute_key] for b in crumbs]
                                    for attr, crumbs in vertex.changed_attributes.items()},
             "module_connections": {attr: [keys[i] for i in ids] for attr, ids in vertex.module_connections.items()},
