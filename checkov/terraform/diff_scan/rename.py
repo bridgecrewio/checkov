@@ -89,6 +89,13 @@ class _FileRenamer(Relocator):
     def text(self, value: str) -> str:
         return value.replace(self.old, self.new) if self.old in value else value
 
+    def pickled(self, text: str | bytes) -> str | bytes:
+        """Raw pickles (v3 store) that do not contain the old path are returned untouched, without unpickling:
+        pickle stores str as UTF-8, so absence of the bytes proves absence of the path."""
+        if isinstance(text, bytes) and self.old.encode() not in text:
+            return text
+        return super().pickled(text)
+
 
 def _anonymised_path(path: str, root: str) -> str:
     return ROOT + path[len(root):]
@@ -104,14 +111,20 @@ def _renamed_json_text(value: Any, old: str, new: str) -> Any:
 
 
 def _remap_rendered_vertices(value: dict[str, Any], old: str, new: str, encoded: bool) -> dict[str, Any]:
-    remapped: dict[str, Any] = {}
-    for key, record in value.items():
-        decoded = decode_record(record) if encoded else record
-        if old in key or old in json.dumps(decoded):
-            decoded = _renamed_json_text(decoded, old, new)
+    """Encoded records (msgpack, UTF-8 strings) are decoded only when their bytes contain the old path."""
+    needle = old.encode()
+    for key in list(value):
+        record = value[key]
+        mentions = needle in record if encoded else old in json.dumps(record)
+        if mentions:
+            decoded = _renamed_json_text(decode_record(record) if encoded else record, old, new)
             record = encode_record(decoded) if encoded else decoded
-        remapped[key.replace(old, new)] = record
-    return remapped
+        if old in key:
+            del value[key]
+            value[key.replace(old, new)] = record
+        elif mentions:
+            value[key] = record
+    return value
 
 
 def _remap_pre_render(value: dict[str, Any], anonymised: list[tuple[str, str]]) -> dict[str, Any]:
@@ -120,7 +133,20 @@ def _remap_pre_render(value: dict[str, Any], anonymised: list[tuple[str, str]]) 
     (incremental_graph.PATH_RENAMES), so an unchanged vertex still matches. The same holds for creation digests and
     count / for_each closure signatures."""
     for old, new in anonymised:
-        value = _renamed_json_text(value, old, new)
+        value = _renamed_entries(value, old, new)
+    return value
+
+
+def _renamed_entries(value: Any, old: str, new: str) -> Any:
+    """Per-entry substitution for large containers of strings (pre-render keys / edges / digest map, rendered edges):
+    no whole-section JSON text, so no transient copy of the section (vpc: -67 MB / -48 MB peak)."""
+    if isinstance(value, str):
+        return value.replace(old, new) if old in value else value
+    if isinstance(value, list):
+        return [_renamed_entries(v, old, new) for v in value]
+    if isinstance(value, dict):
+        return {(k.replace(old, new) if isinstance(k, str) and old in k else k): _renamed_entries(v, old, new)
+                for k, v in value.items()}
     return value
 
 
@@ -144,7 +170,7 @@ def section_remapper(pairs: list[tuple[str, str]], root: str, encoded_vertices: 
             return value
         if name in ("rendered", "rendered.edges", "keys", "units", "unit_by_vertex"):
             for old, new in anonymised + list(pairs):
-                value = _renamed_json_text(value, old, new)
+                value = _renamed_entries(value, old, new)
             return value
         if name == "files":
             for old, new in pairs:
