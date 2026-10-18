@@ -368,7 +368,16 @@ SAFE_EVAL_DICT["tostring"] = lambda arg: arg if isinstance(arg, str) else wrap_f
 SAFE_EVAL_DICT["jsonencode"] = lambda arg: arg
 
 # date functions
-SAFE_EVAL_DICT["timestamp"] = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+FIXED_CLOCK_ENV = "CHECKOV_TEST_FIXED_TIMESTAMP"
+"""Test hook: timestamp() returns this value instead of the wall clock, so two scans of the same repository render
+the same text (the PoC's exact comparisons otherwise differ on every timestamp() value)."""
+
+
+def _timestamp() -> str:
+    return os.getenv(FIXED_CLOCK_ENV) or datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+SAFE_EVAL_DICT["timestamp"] = _timestamp
 SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 

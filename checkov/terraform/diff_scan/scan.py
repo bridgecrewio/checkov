@@ -421,6 +421,8 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault(MODULE_FILE_SET_ENV, "true")
     os.environ.setdefault(MODULE_LEVEL_REUSE_ENV, "true")
     os.environ.setdefault(SKIP_EMPTY_LEVEL_RENDER_ENV, "true")
+    os.environ.setdefault(incremental_graph.CLOCK_EVALUATED_RULE_ENV, "true")
+    os.environ.setdefault(incremental_graph.REREAD_FINAL_STATES_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     renames = _apply_renames(artifact, root, changes)

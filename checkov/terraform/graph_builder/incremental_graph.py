@@ -217,6 +217,56 @@ def uses_non_deterministic_function(vertex: TerraformBlock) -> bool:
     return any(f in text for f in NON_DETERMINISTIC_FUNCTIONS)
 
 
+CLOCK_EVALUATED_RULE_ENV = "CHECKOV_INCREMENTAL_CLOCK_EVALUATED_ONLY"
+"""Opt-in (set by the diff scan): a vertex calling timestamp() is re-rendered only if the baseline's render evaluated
+the call. Checkov evaluates it only where the surrounding expression is fully resolvable (`b-${timestamp()}`); inside
+an expression it cannot evaluate (`x != "" ? x : formatdate("YYYY-MM-DD", timestamp())`) the call stays text in the
+final value. Whether the call is evaluated depends only on the vertex's own pre-render state and the values it reads;
+any change to those makes the vertex affected through the digest / referrer rules, so an unchanged vertex whose
+baseline left every call unevaluated renders to the same text again."""
+
+
+REREAD_FINAL_STATES_ENV = "CHECKOV_INCREMENTAL_REREAD_FINAL_STATES"
+"""Opt-in (set by the diff scan): with an indexed record file (artifact_store.IndexedRecords) the frozen vertices'
+final states are read from disk again at the end of the edge loop instead of keeping every record's bytes in memory
+through the loop (gcp: ~270 MB of record bytes)."""
+
+
+def reread_final_states_enabled() -> bool:
+    return os.getenv(REREAD_FINAL_STATES_ENV, "false").lower() == "true"
+
+
+def _is_indexed_records(records: Any) -> bool:
+    """Records read from the artifact's record file on access (re-reading costs a seek, not a second copy)."""
+    from checkov.terraform.diff_scan.artifact_store import IndexedRecords
+    from checkov.terraform.diff_scan.rename import RenamedRecords
+
+    return isinstance(records, (IndexedRecords, RenamedRecords))
+
+
+def clock_evaluated_only_enabled() -> bool:
+    return os.getenv(CLOCK_EVALUATED_RULE_ENV, "false").lower() == "true"
+
+
+def _baseline_left_clock_unevaluated(record: dict[str, Any]) -> bool:
+    """The baseline's final attributes still hold every timestamp() call as text: none was turned into a time."""
+    calls_in_source = json.dumps(record["loop_end"]["attributes"]).count(NON_DETERMINISTIC_FUNCTIONS[0])
+    calls_in_final = json.dumps(record["attributes"]).count(NON_DETERMINISTIC_FUNCTIONS[0])
+    if os.getenv("DFO_NEGATIVE", "") == "clock_rule_ignores_evaluation":
+        return True
+    return calls_in_final >= calls_in_source > 0
+
+
+def _needs_clock_rerender(vertex: TerraformBlock, key: str, exported: Any, decode: Any) -> bool:
+    if not uses_non_deterministic_function(vertex):
+        return False
+    if not clock_evaluated_only_enabled():
+        return True
+    stored = exported[key]
+    record = decode(stored) if decode is not None else stored
+    return not _baseline_left_clock_unevaluated(record)
+
+
 # --------------------------------------------------------------------------------------------------- export
 
 
@@ -350,6 +400,7 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
     if loop_rounds_rule == "changed":
         seeds.update(_vertices_with_repeated_edges(graph))
     exported = artifact["vertices"]
+    decode = artifact.get("vertex_decoder")
     for index, (key, vertex) in enumerate(zip(keys, graph.vertices)):
         if key not in exported:
             seeds[index] = "new vertex"
@@ -357,7 +408,7 @@ def affected_vertices(graph: Any, keys: list[str], artifact: dict[str, Any], roo
             seeds[index] = "pre-render state changed"
         elif key in unconverged:
             seeds[index] = "baseline render did not converge"
-        elif uses_non_deterministic_function(vertex):
+        elif _needs_clock_rerender(vertex, key, exported, decode):
             seeds[index] = "non-deterministic function"
     by_key = {k: i for i, k in enumerate(keys)}
     for edge in sorted(old_edges ^ new_edges):
@@ -446,35 +497,43 @@ def update_graph(artifact: dict[str, Any], graph: Any, root: str, release: Optio
     by_key = {k: i for i, k in enumerate(keys)}
     frozen = set()
     decode = artifact.get("vertex_decoder")
+    records = artifact["vertices"]
+    reread_records = _is_indexed_records(records) and reread_final_states_enabled()
     final_states: dict[int, Any] = {}
     """per frozen vertex: its exported record, kept ENCODED when the store encodes records (decoded again at the end
-    of the edge loop, one vertex at a time), else the decoded record"""
+    of the edge loop, one vertex at a time), else the decoded record; with an indexed record file only the key is
+    kept and the record is read from disk again at the end of the loop"""
     for index, key in enumerate(keys):
         if index in affected:
             continue
-        stored = artifact["vertices"][key]
+        stored = records[key]
         record = decode(stored) if decode is not None else stored
         restore_vertex(graph.vertices[index], record, by_key, root)
         if key in RESOLVED_SWAPS:
             _swap_resolved(graph.vertices[index], RESOLVED_SWAPS[key][1])
-        final_states[index] = stored
+        final_states[index] = key if reread_records else stored
         frozen.add(index)
     report.affected, report.frozen = len(affected), len(frozen)
     artifact = {}
-    if release is not None:
+    if release is not None and not reread_records:
         release()
+        records = None
 
     if os.getenv("DFO_NEGATIVE", "") == "stale_loop_end_state":
         final_states.clear()
 
     def restore_final_state() -> None:
         for index in sorted(final_states):
-            stored = final_states.pop(index)
+            stored = records[final_states.pop(index)] if reread_records else final_states.pop(index)
             record = decode(stored) if decode is not None else stored
+            if reread_records and os.getenv("DFO_NEGATIVE", "") == "reread_final_state_as_loop_end":
+                record = {**record, "attributes": record["loop_end"]["attributes"], "config": record["loop_end"]["config"]}
             graph.vertices[index].attributes = _restore(record["attributes"], root)
             graph.vertices[index].config = _restore(record["config"], root)
             if keys[index] in RESOLVED_SWAPS:
                 _swap_resolved(graph.vertices[index], RESOLVED_SWAPS[keys[index]][1])
+        if reread_records and release is not None:
+            release()
 
     renderer = TerraformVariableRenderer(graph)
     renderer.frozen_vertices = frozen
