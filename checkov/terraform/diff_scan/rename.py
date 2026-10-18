@@ -153,7 +153,8 @@ def _remap_rendered_vertices(value: dict[str, Any], old: str, new: str, encoded:
     indexed record section (artifact_store.IndexedRecords) becomes a RenamedRecords overlay instead of a copy."""
     from checkov.terraform.diff_scan.artifact_store import IndexedRecords
 
-    if isinstance(value, IndexedRecords):
+    if isinstance(value, (IndexedRecords, RenamedRecords)):
+        # read-only record view: rename by stacking an overlay (several renames in one PR stack several overlays)
         return RenamedRecords(value, old, new)  # type: ignore[return-value]
     needle = old.encode()
     for key in list(value):
