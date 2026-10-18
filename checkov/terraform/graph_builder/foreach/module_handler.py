@@ -82,7 +82,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             -> dict[int, tuple[str, Any]]:
         """Checkov's decision per counted module of the level: ("for_each", value) / ("count", n) / ("skip", None).
         Same sub-graph render and static checks as before the split into decide / apply."""
-        if skip_empty_level_render_enabled() and not self.counted_modules(modules_to_render):
+        import os
+
+        counted = self.counted_modules(modules_to_render)
+        if os.getenv("DFO_NEGATIVE", "") == "skip_every_module_level_render" and skip_empty_level_render_enabled():
+            counted = []
+        if skip_empty_level_render_enabled() and not counted:
             # Nothing on this level carries count / for_each: the loop below decides nothing, and the sub-graph is a
             # throw-away copy (its render writes only the copy), so building and rendering it has no effect.
             return {}
