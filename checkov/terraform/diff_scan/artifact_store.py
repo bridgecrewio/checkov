@@ -55,9 +55,93 @@ ITEM_STREAM_MARKER = b"\xc1"
 """msgpack's never-used type byte: first byte of a section written as a stream of items (see _write_section)."""
 
 
+INDEXED_RECORD_SECTIONS = ("rendered.vertices",)
+"""Sections that are {key: encoded record} maps read record by record: written as an indexed record file instead of
+one msgpack map, so a read keeps only the index (key -> offset, length) and pulls a record's bytes on demand. gcp:
+the rendered vertex records are 280 MB once decompressed; loading them as one map cost +350 MB at the render step."""
+RECORDS_SUFFIX = ".records"
+
+
+def indexed_records_enabled() -> bool:
+    return os.getenv("CHECKOV_DIFF_INDEXED_RECORDS", "false").lower() == "true"
+
+
+def _write_indexed_records(path: str, value: dict[str, bytes]) -> int:
+    """`<path>`: zstd-compressed msgpack index {key: [offset, length]}; `<path>.records`: the raw record bytes
+    concatenated (each record is already a msgpack document; not compressed, so a record is read with one seek)."""
+    index: dict[str, list[int]] = {}
+    offset = 0
+    with open(path + RECORDS_SUFFIX, "wb") as records:
+        for key, record in value.items():
+            records.write(record)
+            index[key] = [offset, len(record)]
+            offset += len(record)
+    compressor = zstandard.ZstdCompressor(level=ZSTD_LEVEL)
+    with open(path, "wb") as f, compressor.stream_writer(f, closefd=False) as stream:
+        stream.write(INDEXED_RECORDS_MARKER)
+        stream.write(msgpack.packb(index, use_bin_type=True))
+    return os.path.getsize(path) + os.path.getsize(path + RECORDS_SUFFIX)
+
+
+INDEXED_RECORDS_MARKER = b"\xc7"
+"""First byte of an indexed record section (msgpack ext8 header byte: never the first byte of a map or array)."""
+
+
+class IndexedRecords:
+    """Read-only mapping key -> record bytes of an indexed record section: the index is in memory, each record is
+    read from disk on access (and not kept)."""
+
+    def __init__(self, records_path: str, index: dict[str, list[int]]) -> None:
+        self._path = records_path
+        self._index = index
+        self._file = open(records_path, "rb")  # noqa: SIM115  # closed by close() / garbage collection
+
+    def __getitem__(self, key: str) -> bytes:
+        offset, length = self._index[key]
+        if os.getenv("DFO_NEGATIVE", "") == "indexed_records_off_by_one":
+            offset += 1
+        self._file.seek(offset)
+        data = self._file.read(length)
+        if len(data) != length:
+            raise ValueError(f"truncated record in {self._path}: {key}")
+        return data
+
+    def __contains__(self, key: object) -> bool:
+        return key in self._index
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._index)
+
+    def __len__(self) -> int:
+        return len(self._index)
+
+    def keys(self) -> Any:
+        return self._index.keys()
+
+    def items(self) -> Iterator[tuple[str, bytes]]:
+        return ((key, self[key]) for key in self._index)
+
+    def values(self) -> Iterator[bytes]:
+        return (self[key] for key in self._index)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self[key] if key in self._index else default
+
+    def close(self) -> None:
+        self._file.close()
+
+    def __del__(self) -> None:
+        try:
+            self._file.close()
+        except Exception:  # noqa: S110  # best effort at interpreter shutdown
+            pass
+
+
 def _write_section(path: str, name: str, value: Any) -> int:
     """msgpack -> zstd, streamed to the file: neither the full msgpack encoding nor the full compressed output is
     held in memory (the encoder works in chunks of top-level container items)."""
+    if name in INDEXED_RECORD_SECTIONS and isinstance(value, dict) and indexed_records_enabled():
+        return _write_indexed_records(path, value)
     compressor = zstandard.ZstdCompressor(level=ZSTD_LEVEL)
     with open(path, "wb") as f, compressor.stream_writer(f, closefd=False) as stream:
         packer = msgpack.Packer(use_bin_type=True)
@@ -83,9 +167,13 @@ def _read_section(path: str) -> Any:
     """zstd -> msgpack, streamed from the file. A section written as a stream of items decodes item by item into a
     list (its encoded form is never buffered whole); any other section is one msgpack document."""
     with open(path, "rb") as f, zstandard.ZstdDecompressor().stream_reader(f) as stream:
-        if stream.read(1) == ITEM_STREAM_MARKER:
+        first = stream.read(1)
+        if first == ITEM_STREAM_MARKER:
             unpacker = msgpack.Unpacker(stream, raw=False, read_size=1 << 20, max_buffer_size=0)
             return [PickledItem(item) for item in unpacker]
+        if first == INDEXED_RECORDS_MARKER:
+            index = msgpack.unpackb(stream.read(), raw=False, strict_map_key=False)
+            return IndexedRecords(path + RECORDS_SUFFIX, index)
     with open(path, "rb") as f, zstandard.ZstdDecompressor().stream_reader(f) as stream:
         unpacker = msgpack.Unpacker(stream, raw=False, strict_map_key=False, read_size=1 << 20, max_buffer_size=0)
         return unpacker.unpack()

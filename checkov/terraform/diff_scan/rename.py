@@ -110,8 +110,51 @@ def _renamed_json_text(value: Any, old: str, new: str) -> Any:
     return json.loads(text.replace(old, new))
 
 
+class RenamedRecords:
+    """Read-only view of an indexed record section with one file path renamed: keys and each record's bytes are
+    rewritten on access (records not mentioning the old path are returned as stored)."""
+
+    def __init__(self, base: Any, old: str, new: str) -> None:
+        self._base = base
+        self._old, self._new = old, new
+        self._needle = old.encode()
+        self._to_base = {(k.replace(old, new) if old in k else k): k for k in base.keys()}
+
+    def __getitem__(self, key: str) -> bytes:
+        record = self._base[self._to_base[key]]
+        if self._needle not in record:
+            return record
+        return encode_record(_renamed_json_text(decode_record(record), self._old, self._new))
+
+    def __contains__(self, key: object) -> bool:
+        return key in self._to_base
+
+    def __iter__(self) -> Any:
+        return iter(self._to_base)
+
+    def __len__(self) -> int:
+        return len(self._to_base)
+
+    def keys(self) -> Any:
+        return self._to_base.keys()
+
+    def items(self) -> Any:
+        return ((key, self[key]) for key in self._to_base)
+
+    def values(self) -> Any:
+        return (self[key] for key in self._to_base)
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self[key] if key in self._to_base else default
+
+
 def _remap_rendered_vertices(value: dict[str, Any], old: str, new: str, encoded: bool) -> dict[str, Any]:
-    """Encoded records (msgpack, UTF-8 strings) are decoded only when their bytes contain the old path."""
+    """Encoded records (msgpack, UTF-8 strings) are decoded only when their bytes contain the old path. A read-only
+    indexed record section (artifact_store.IndexedRecords) becomes a RenamedRecords overlay instead of a copy."""
+    from checkov.terraform.diff_scan.artifact_store import IndexedRecords
+
+    if isinstance(value, IndexedRecords):
+        return RenamedRecords(value, old, new)  # type: ignore[return-value]
     needle = old.encode()
     for key in list(value):
         record = value[key]

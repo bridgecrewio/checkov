@@ -320,6 +320,7 @@ def baseline_scan(root: str, commit: Optional[str] = None, fingerprint: Optional
     `writer`: an artifact_store.SectionWriter: the artifact is written as a v3 section store while the scan runs
     (big sections leave memory as soon as they are produced); the caller commits it."""
     root = _prepare(root)
+    baseline_defaults()
     result = _parsed_scan(root, _BaselineBuilder(root, writer))
     if commit and result.artifact is not None:
         result.artifact["baseline_inputs"] = inputs.BaselineInputs(
@@ -390,6 +391,11 @@ def _apply_renames(artifact: Any, root: str, changes: ChangeSet) -> list[tuple[s
     changes.changed[:] = changed
     changes.deleted[:] = deleted
     return pairs
+
+
+def baseline_defaults() -> None:
+    """Writer-side defaults of the diff-scan baseline (a reader handles both layouts)."""
+    os.environ.setdefault("CHECKOV_DIFF_INDEXED_RECORDS", "true")
 
 
 def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inputs.ScanTarget] = None,
