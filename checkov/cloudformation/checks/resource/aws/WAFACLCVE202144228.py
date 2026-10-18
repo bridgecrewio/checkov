@@ -17,7 +17,12 @@ class WAFACLCVE202144228(BaseResourceCheck):
         properties = conf.get("Properties")
         if properties:
             rules = properties.get("Rules") or []
+            if not isinstance(rules, list):
+                # can't be resolved, e.g. a `Fn::If` expression
+                return CheckResult.UNKNOWN
             for idx_rule, rule in enumerate(rules):
+                if not isinstance(rule, dict):
+                    continue
                 self.evaluated_keys = [f"Properties/Rules/[{idx_rule}]/Statement"]
                 statement = rule.get("Statement")
                 if statement:
