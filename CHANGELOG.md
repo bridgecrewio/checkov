@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.28...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.29...HEAD)
+
+## [3.3.29](https://github.com/bridgecrewio/checkov/compare/3.3.28...3.3.29) - 2026-10-13
+
+### Bug Fix
+
+- **terraform:** extend MySQL public access check to cover flexible server resources - [#7737](https://github.com/bridgecrewio/checkov/pull/7737)
 
 ## [3.3.28](https://github.com/bridgecrewio/checkov/compare/3.3.27...3.3.28) - 2026-10-12
 
