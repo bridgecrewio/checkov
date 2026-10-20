@@ -205,9 +205,10 @@ def _render_and_export(graph: TerraformLocalGraph, root: str, encode_vertices: b
     written to disk before rendering starts (it is not needed again by the baseline) instead of being held through
     the render."""
     resource_level_pre_render = incremental_graph.capture_pre_render(graph, root)
+    pre_clock = incremental_graph.anonymise(resource_level_pre_render.get("clock_keys", []), root)
     if writer is not None:
         writer.write("rendered.pre_render", incremental_graph.anonymise(resource_level_pre_render, root))
-        resource_level_pre_render = {}
+        resource_level_pre_render = {"clock_keys": pre_clock}
     renderer = TerraformVariableRenderer(graph)
     unconverged: set[str] = set()
     loop_end: dict[str, Any] = {}
@@ -295,6 +296,18 @@ def _parsed_scan(root: str, builder: Any) -> ScanResult:
             "external_vars": dumps(runner.graph_manager.parser.external_vars),
             "external_modules": supplied,
         }}))
+        from checkov.terraform.diff_scan.scoped_checks import run_and_capture_baseline_checks
+        from checkov.terraform.graph_builder.incremental_graph import vertex_keys
+        report, f_meta, f_verts = run_and_capture_baseline_checks(
+            runner, graph, root, vertex_keys(graph, root), encode=builder.writer is not None
+        )
+        if builder.writer is not None:
+            builder.writer.write("findings.meta", f_meta)
+            builder.writer.write("findings.vertices", f_verts)
+        else:
+            builder.artifact["findings.meta"] = f_meta
+            builder.artifact["findings.vertices"] = f_verts
+        return ScanResult(graph=graph, report=report, artifact=builder.artifact)
     return ScanResult(graph=graph, report=_run_checks(runner, graph, root),
                       artifact=builder.artifact if builder else None)
 
@@ -350,13 +363,27 @@ def validate_scan_inputs(artifact: dict[str, Any], changes: ChangeSet, root: str
     return inputs.validate(baseline, target, changed, deleted, fingerprint or "")
 
 
-def repository_index(artifact: dict[str, Any], changes: ChangeSet, root: str) -> dict[str, list[str]]:
+def repository_index(artifact: dict[str, Any], changes: ChangeSet, root: str,
+                     release_files: bool = False) -> Any:
     """Files the runner reads after the graph is built: stored contents of unchanged repository files, the PR's
     changed .tf files, and the external modules the pre-scan materialised for THIS scan (they may differ from the
     baseline's: version bump, upstream change)."""
     gone = set(changes.deleted) | set(changes.changed)
-    files = {path: lines for path, lines in artifact["files"].items()
+    stored = artifact["files"]
+    if release_files:
+        _release(artifact, "files")
+    if isinstance(stored, dict) and not any(is_external_module_path(p, root) for p in stored) \
+            and not os.path.isdir(os.path.join(root, MATERIALIZED_DIR)):
+        for p in gone:
+            stored.pop(p, None)
+        for path in changes.changed:
+            if is_terraform_file(path):
+                with open(path, "r") as f:
+                    stored[path] = f.readlines()
+        return stored
+    files = {path: lines for path, lines in stored.items()
              if path not in gone and not is_external_module_path(path, root)}
+    del stored
     for path in changes.changed:
         if is_terraform_file(path):
             with open(path, "r") as f:
@@ -371,7 +398,7 @@ def repository_index(artifact: dict[str, Any], changes: ChangeSet, root: str) ->
 
 PRE_RENDER_ONLY_SECTIONS = ("vertices", "creation_digests", "fingerprints", "edges", "probes", "aliases", "alias_keys",
                             "source_module", "module_connections", "tfvar_vertices", "tfvar_blocks", "unit_by_vertex",
-                            "units", "keys", "expansions")
+                            "units", "keys", "expansions", "definitions")
 """Artifact sections only the pre-render build reads: released once the PR's pre-render graph exists. `definitions`
 stays (post-render passes read baseline definitions lazily through module.temp_tf_definition), `files` is copied into
 the repository index and released, `rendered` is released by update_graph's caller once rendering is done."""
@@ -423,6 +450,8 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault(SKIP_EMPTY_LEVEL_RENDER_ENV, "true")
     os.environ.setdefault(incremental_graph.CLOCK_EVALUATED_RULE_ENV, "true")
     os.environ.setdefault(incremental_graph.REREAD_FINAL_STATES_ENV, "true")
+    os.environ.setdefault("CHECKOV_DIFF_SCOPED_CHECKS", "true")
+    os.environ.setdefault("CHECKOV_INCREMENTAL_LAZY_FINAL_STATE", "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     renames = _apply_renames(artifact, root, changes)
@@ -431,13 +460,30 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     engine.report.renamed_files = pairs_report(renames, root)
     engine.supplied_modules = sorted(modules)
     engine.validate_inputs()
-    repository_files.set_files(repository_index(artifact, engine.changes, root))
     with _module_cache(modules):
         graph = engine.build()
     engine.report.module_file_set["frozen_callers"] = engine.install_resolved_swaps(graph)
     engine.release_pre_render_state()
-    _release(artifact, *PRE_RENDER_ONLY_SECTIONS, "files")
+    _release(artifact, *PRE_RENDER_ONLY_SECTIONS)
     render = _render(artifact, graph, root)
     pre_render = engine.finish()
-    report = _run_checks(Runner(), graph, root)
+    from checkov.terraform.diff_scan.scoped_checks import run_scoped_diff_checks
+    runner = Runner()
+    changed_files_set = set(engine.changes.changed) | set(engine.changes.deleted)
+    if os.getenv("DFO_NEGATIVE", "") == "scope_radius_minus_one":
+        effective_affected = set(render.affected_indices)
+    else:
+        effective_affected = set(render.affected_indices) | set(render.post_render_changed_indices)
+    scoped_report = run_scoped_diff_checks(
+        runner, graph, root, artifact, effective_affected, changed_files_set
+    )
+    if scoped_report is None:
+        repository_files.set_files(repository_index(artifact, engine.changes, root, release_files=True))
+        report = _run_checks(runner, graph, root)
+    else:
+        report = scoped_report
+    _release(artifact, "files", "findings.meta", "findings.vertices", "rendered", "rendered.edges",
+             "rendered.pre_render")
+    if not os.getenv("CHECKOV_DIFF_SNAPSHOT_OUT"):
+        _release(artifact, "rendered.vertices")
     return ScanResult(graph=graph, report=report, pre_render=pre_render, render=render, validation=validation)

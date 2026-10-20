@@ -117,10 +117,15 @@ class _StableKeys:
 
 
 def _check_edge_maps(graph: LocalGraph[Any]) -> None:
+    if getattr(graph, "dfo_set_edges_consistent", False):
+        return
     vertex_count = len(graph.vertices)
     for name, edge_map in (("in_edges", graph.in_edges), ("out_edges", graph.out_edges)):
-        if set(edge_map.keys()) != set(range(vertex_count)):
+        if isinstance(edge_map, dict) and getattr(edge_map, "default_factory", None) is None \
+                and set(edge_map.keys()) != set(range(vertex_count)):
             raise ScheduleUnsupported(f"{name} does not hold exactly one entry per vertex")
+        if any(k < 0 or k >= vertex_count for k in edge_map):
+            raise ScheduleUnsupported(f"{name} holds an out-of-range vertex index")
     from_out: Counter[EdgeTuple] = Counter()
     from_in: Counter[EdgeTuple] = Counter()
     for origin, edges in graph.out_edges.items():
@@ -152,13 +157,13 @@ def _check_edge_identity(edges: Counter[EdgeTuple]) -> None:
 
 def settle_rounds(graph: LocalGraph[Any], initial_end: set[int]) -> list[Optional[int]]:
     """settle(v) for every vertex (None: never settles, e.g. on a cycle or downstream of one)."""
-    remaining = [len(graph.out_edges[v]) for v in range(len(graph.vertices))]
+    remaining = [len(graph.out_edges.get(v, ())) for v in range(len(graph.vertices))]
     latest = [0] * len(graph.vertices)
     settled: list[Optional[int]] = [None] * len(graph.vertices)
     queue: deque[int] = deque()
 
     def reach(dest: int, first: int) -> None:
-        for edge in graph.in_edges[dest]:
+        for edge in graph.in_edges.get(dest, ()):
             origin = edge.origin
             if first > latest[origin]:
                 latest[origin] = first
@@ -194,7 +199,7 @@ def _loop_length(graph: LocalGraph[Any], initial_end: set[int], settled: list[Op
 
 def initial_end_vertices(graph: LocalGraph[Any]) -> set[int]:
     """VariableRenderer._get_initial_end_vertices: out-degree 0 and in-degree > 0."""
-    return {v for v, edges in graph.out_edges.items() if not edges and graph.in_edges.get(v)}
+    return {v for v, edges in graph.in_edges.items() if edges and not graph.out_edges.get(v)}
 
 
 def edge_loop_rounds(graph: LocalGraph[Any], max_loops: int) -> int:
@@ -205,7 +210,7 @@ def edge_loop_rounds(graph: LocalGraph[Any], max_loops: int) -> int:
 
 def _ordered_groups(graph: LocalGraph[Any], edges: list[Edge], keys: _StableKeys) -> list[list[Edge]]:
     def edge_order(edge: Edge) -> tuple[Any, ...]:
-        return len(graph.out_edges[edge.dest]), keys.edge(edge)
+        return len(graph.out_edges.get(edge.dest, ())), keys.edge(edge)
 
     groups: dict[str, list[Edge]] = {}
     for edge in edges:
@@ -236,9 +241,9 @@ def build_affected_schedule(graph: LocalGraph[Any], frozen: set[int], initial_en
         max_loops = 10 * len(graph.vertices) + 2
     settled = settle_rounds(graph, initial_end)
     loops = _loop_length(graph, initial_end, settled, max_loops)
-    evaluated_origins = [v for v in range(len(graph.vertices)) if v not in frozen and graph.out_edges[v]]
+    evaluated_origins = [v for v in range(len(graph.vertices)) if v not in frozen and graph.out_edges.get(v)]
     keys = _StableKeys(graph)
-    origin_edges = {origin: list(graph.out_edges[origin]) for origin in evaluated_origins}
+    origin_edges = {origin: list(graph.out_edges.get(origin, ())) for origin in evaluated_origins}
 
     def round_groups(round_index: int) -> list[list[Edge]]:
         edges = _edges_of_round(origin_edges, round_index, initial_end, settled, loops)

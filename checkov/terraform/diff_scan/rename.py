@@ -117,14 +117,20 @@ class RenamedRecords:
     def __init__(self, base: Any, old: str, new: str) -> None:
         self._base = base
         self._old, self._new = old, new
+        self._old_rel = old[len(ROOT):] if old.startswith(ROOT) else old
+        self._new_rel = new[len(ROOT):] if new.startswith(ROOT) else new
         self._needle = old.encode()
+        self._needle_rel = self._old_rel.encode()
         self._to_base = {(k.replace(old, new) if old in k else k): k for k in base.keys()}
 
     def __getitem__(self, key: str) -> bytes:
         record = self._base[self._to_base[key]]
-        if self._needle not in record:
+        if self._needle not in record and self._needle_rel not in record:
             return record
-        return encode_record(_renamed_json_text(decode_record(record), self._old, self._new))
+        decoded = _renamed_json_text(decode_record(record), self._old, self._new)
+        if self._old_rel != self._old:
+            decoded = _renamed_json_text(decoded, f'"{self._old_rel}"', f'"{self._new_rel}"')
+        return encode_record(decoded)
 
     def __contains__(self, key: object) -> bool:
         return key in self._to_base
@@ -157,11 +163,16 @@ def _remap_rendered_vertices(value: dict[str, Any], old: str, new: str, encoded:
         # read-only record view: rename by stacking an overlay (several renames in one PR stack several overlays)
         return RenamedRecords(value, old, new)  # type: ignore[return-value]
     needle = old.encode()
+    old_rel = old[len(ROOT):] if old.startswith(ROOT) else old
+    new_rel = new[len(ROOT):] if new.startswith(ROOT) else new
+    needle_rel = old_rel.encode()
     for key in list(value):
         record = value[key]
-        mentions = needle in record if encoded else old in json.dumps(record)
+        mentions = (needle in record or needle_rel in record) if encoded else (old in json.dumps(record) or old_rel in json.dumps(record))
         if mentions:
             decoded = _renamed_json_text(decode_record(record) if encoded else record, old, new)
+            if old_rel != old:
+                decoded = _renamed_json_text(decoded, f'"{old_rel}"', f'"{new_rel}"')
             record = encode_record(decoded) if encoded else decoded
         if old in key:
             del value[key]
@@ -204,9 +215,11 @@ def section_remapper(pairs: list[tuple[str, str]], root: str, encoded_vertices: 
             return value
         if name == "rendered.pre_render":
             return _remap_pre_render(value, anonymised)
-        if name == "rendered.vertices":
+        if name in ("rendered.vertices", "findings.vertices"):
             for old, new in anonymised:
                 value = _remap_rendered_vertices(value, old, new, encoded_vertices)
+            return value
+        if name == "findings.meta":
             return value
         if name == "expansions":
             for old, new in anonymised:
@@ -231,10 +244,13 @@ def apply_renames(artifact: Any, root: str, changed: list[str], deleted: list[st
                   encoded_vertices: bool) -> tuple[list[str], list[str], list[tuple[str, str]]]:
     """Remap `artifact` in place for every qualifying rename; returns the remaining (changed, deleted) and the
     applied pairs. The artifact must already be relocated to `root`."""
-    if not rename_remap_enabled():
+    from checkov.terraform.graph_builder import incremental_graph
+    if not rename_remap_enabled() or not deleted or not changed:
+        incremental_graph.PATH_RENAMES[:] = []
         return changed, deleted, []
     pairs = rename_pairs(artifact["files"], changed, deleted)
     if not pairs:
+        incremental_graph.PATH_RENAMES[:] = []
         return changed, deleted, []
     remap = section_remapper(pairs, root, encoded_vertices)
     install = getattr(artifact, "remap_on_load", None)
@@ -248,8 +264,6 @@ def apply_renames(artifact: Any, root: str, changed: list[str], deleted: list[st
                                   "vertices": remap("rendered.vertices", rendered["vertices"])}
             else:
                 artifact[name] = remap(name, artifact[name])
-    from checkov.terraform.graph_builder import incremental_graph
-
     incremental_graph.PATH_RENAMES[:] = [(_anonymised_path(o, root), _anonymised_path(n, root)) for o, n in pairs]
     if NEGATIVE_CONTROL == "rename_no_digest_backmap":
         incremental_graph.PATH_RENAMES[:] = []

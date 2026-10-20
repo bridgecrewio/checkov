@@ -97,13 +97,39 @@ def _cross_unit_links(graph: TerraformLocalGraph, owners: list[Any], unit_by_ver
     return crossing
 
 
+def _has_provider_or_module(definition: dict[str, Any]) -> bool:
+    return bool(definition.get(BlockType.PROVIDER) or definition.get(BlockType.MODULE))
+
+
+def _has_module_expansion_in_def(definition: dict[str, Any]) -> bool:
+    for call in definition.get(BlockType.MODULE, []):
+        if isinstance(call, dict):
+            for data in call.values():
+                if isinstance(data, dict) and ("count" in data or "for_each" in data):
+                    return True
+    return False
+
+
+def _local_sources_of_def(definition: dict[str, Any]) -> list[str]:
+    sources: list[str] = []
+    for call in definition.get(BlockType.MODULE, []):
+        if isinstance(call, dict):
+            for data in call.values():
+                if isinstance(data, dict):
+                    s = (data.get("source") or [None])[0]
+                    if isinstance(s, str) and s.startswith(("./", "../")):
+                        sources.append(s)
+    return sources
+
+
 def _unit_info(definitions: dict[TFDefinitionKey, Any], unit_by_vertex: list[str]) -> dict[str, Any]:
-    info: dict[str, Any] = defaultdict(lambda: {"has_foreach": False, "vertices": []})
+    info: dict[str, Any] = defaultdict(lambda: {"has_foreach": False, "has_module_foreach": False})
     for key, definition in definitions.items():
         unit = info[unit_of_key(key)]
         unit["has_foreach"] = unit["has_foreach"] or has_count_or_foreach(definition)
-    for index, unit in enumerate(unit_by_vertex):
-        info[unit]["vertices"].append(index)
+        unit["has_module_foreach"] = unit["has_module_foreach"] or _has_module_expansion_in_def(definition)
+    for unit_name in set(unit_by_vertex):
+        _ = info[unit_name]
     return dict(info)
 
 
@@ -145,6 +171,10 @@ def capture_pre_render(graph: TerraformLocalGraph, recorder: EdgeRecorder, creat
         ("alias_keys", lambda: _alias_keys(graph)),
         ("definitions", lambda: [{"key": dumps(key), "definition": dumps(definitions[key]),
                                   "resource_types": resource_types_of(definitions[key]),
+                                  "has_foreach": has_count_or_foreach(definitions[key]),
+                                  "has_module_foreach": _has_module_expansion_in_def(definitions[key]),
+                                  "has_provider_or_module": _has_provider_or_module(definitions[key]),
+                                  "local_sources": _local_sources_of_def(definitions[key]),
                                   "vertices": by_definition.get(key, [])} for key in definition_keys]),
         ("files", lambda: {path: _read_lines(path) for path in sorted({key.file_path for key in definition_keys})}),
         ("module", lambda: dumps({"source": graph.module.source, "source_dir": graph.module.source_dir,

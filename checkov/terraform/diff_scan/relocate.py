@@ -122,18 +122,24 @@ def _copying_value(r: Relocator, value: Any) -> Any:
 
 def relocate_section(key: str, value: Any, r: Relocator) -> Any:
     """One artifact section valid at the relocator's new root."""
+    from checkov.terraform.diff_scan.artifact_store import IndexedDefinitions, IndexedList
+
     if key in PICKLED_LIST_FIELDS:
+        if isinstance(value, IndexedList):
+            return value.with_transform(r.pickled)
         return [r.pickled(v) for v in value]
     if key in PICKLED_FIELDS:
         return r.pickled(value)
     if key == "definitions":
+        if isinstance(value, IndexedDefinitions):
+            return value.with_transform(lambda d: {**d, "key": r.pickled(d["key"])}, r.pickled)
         return [{**d, "key": r.pickled(d["key"]), "definition": r.pickled(d["definition"])} for d in value]
     if key == "alias_keys":
         return {name: [r.pickled(k) for k in keys] for name, keys in value.items()}
     if key == "variable_inputs":
         return {**r.value({k: v for k, v in value.items() if k != "external_vars"}),
                 "external_vars": r.pickled(value["external_vars"])}
-    if key in ("rendered", "baseline_inputs"):
+    if key in ("rendered", "baseline_inputs", "findings.meta", "findings.vertices"):
         return value
     return r.value(value)
 

@@ -55,7 +55,7 @@ ITEM_STREAM_MARKER = b"\xc1"
 """msgpack's never-used type byte: first byte of a section written as a stream of items (see _write_section)."""
 
 
-INDEXED_RECORD_SECTIONS = ("rendered.vertices",)
+INDEXED_RECORD_SECTIONS = ("rendered.vertices", "findings.vertices")
 """Sections that are {key: encoded record} maps read record by record: written as an indexed record file instead of
 one msgpack map, so a read keeps only the index (key -> offset, length) and pulls a record's bytes on demand. gcp:
 the rendered vertex records are 280 MB once decompressed; loading them as one map cost +350 MB at the render step."""
@@ -137,11 +137,179 @@ class IndexedRecords:
             pass
 
 
+INDEXED_LIST_MARKER = b"\xc8"
+"""First byte of an indexed list section (msgpack ext16 header byte: never the first byte of a map or array)."""
+
+
+class IndexedList:
+    """Read-only sequence of PickledItem records read from `<path>.records` on demand (one seek per item)."""
+
+    def __init__(self, records_path: str, offsets: list[list[int]],
+                 transform: Optional[Callable[[bytes], Any]] = None) -> None:
+        self._path = records_path
+        self._offsets = offsets
+        self._transform = transform
+        self._file = open(records_path, "rb")  # noqa: SIM115  # closed by close() / garbage collection
+
+    def __getitem__(self, index: int) -> Any:
+        offset, length = self._offsets[index]
+        if os.getenv("DFO_NEGATIVE", "") == "indexed_list_off_by_one":
+            offset += 1
+        self._file.seek(offset)
+        data = self._file.read(length)
+        if len(data) != length:
+            raise ValueError(f"truncated item in {self._path}: {index}")
+        item: Any = PickledItem(data)
+        return self._transform(item) if self._transform is not None else item
+
+    def with_transform(self, fn: Callable[[bytes], Any]) -> "IndexedList":
+        prev = self._transform
+        return IndexedList(self._path, self._offsets, (lambda b: fn(prev(b))) if prev is not None else fn)
+
+    def __len__(self) -> int:
+        return len(self._offsets)
+
+    def __iter__(self) -> Iterator[Any]:
+        return (self[i] for i in range(len(self._offsets)))
+
+    def close(self) -> None:
+        self._file.close()
+
+    def __del__(self) -> None:
+        try:
+            self._file.close()
+        except Exception:  # noqa: S110
+            pass
+
+
+def _write_indexed_list(path: str, items: Iterable[bytes]) -> int:
+    """`<path>`: zstd-compressed msgpack list of [offset, length]; `<path>.records`: raw bytes concatenated."""
+    offsets: list[list[int]] = []
+    offset = 0
+    with open(path + RECORDS_SUFFIX, "wb") as records:
+        for raw in items:
+            records.write(raw)
+            offsets.append([offset, len(raw)])
+            offset += len(raw)
+    compressor = zstandard.ZstdCompressor(level=ZSTD_LEVEL)
+    with open(path, "wb") as f, compressor.stream_writer(f, closefd=False) as stream:
+        stream.write(INDEXED_LIST_MARKER)
+        stream.write(msgpack.packb(offsets, use_bin_type=True))
+    return os.path.getsize(path) + os.path.getsize(path + RECORDS_SUFFIX)
+
+
+DEFINITION_INDEX_MARKER = b"\xc9"
+"""First byte of an indexed definitions section: metadata in `<path>`, raw definition pickles in `<path>.records`."""
+
+
+class IndexedDefinitions:
+    """List-like view of `definitions` entries where each entry's `definition` pickle is read from `<path>.records`
+    on demand (`entry["definition"]` seeks and reads; `entry["key"]`, `resource_types`, `vertices` are in memory)."""
+
+    def __init__(self, records_path: str, entries: list[dict[str, Any]],
+                 transform_definition: Optional[Callable[[bytes], Any]] = None) -> None:
+        self._path = records_path
+        self._file = open(records_path, "rb")  # noqa: SIM115
+        self._transform = transform_definition
+        self._entries = [IndexedDefinitionEntry(self, e) for e in entries]
+
+    def read_definition(self, offset: int, length: int) -> Any:
+        if os.getenv("DFO_NEGATIVE", "") == "stale_indexed_definition":
+            offset += 1
+        self._file.seek(offset)
+        data = self._file.read(length)
+        if len(data) != length:
+            raise ValueError(f"truncated definition in {self._path}@{offset}")
+        item: Any = PickledItem(data)
+        return self._transform(item) if self._transform is not None else item
+
+    def with_transform(self, fn: Callable[[dict[str, Any]], dict[str, Any]],
+                       def_fn: Callable[[bytes], Any]) -> "IndexedDefinitions":
+        prev = self._transform
+        chained = (lambda b: def_fn(prev(b))) if prev is not None else def_fn
+        raw_entries = [fn(e._raw_meta()) for e in self._entries]
+        return IndexedDefinitions(self._path, raw_entries, chained)
+
+    def __getitem__(self, index: int) -> "IndexedDefinitionEntry":
+        return self._entries[index]
+
+    def __len__(self) -> int:
+        return len(self._entries)
+
+    def __iter__(self) -> Iterator["IndexedDefinitionEntry"]:
+        return iter(self._entries)
+
+    def close(self) -> None:
+        self._file.close()
+
+    def __del__(self) -> None:
+        try:
+            self._file.close()
+        except Exception:  # noqa: S110
+            pass
+
+
+class IndexedDefinitionEntry(dict):  # type: ignore[type-arg]
+    """Dict-like definition entry (`key`, `resource_types`, `vertices`, and lazy `definition`)."""
+
+    def __init__(self, owner: IndexedDefinitions, meta: dict[str, Any]) -> None:
+        super().__init__(
+            {k: v for k, v in meta.items() if k not in ("key", "offset", "length")},
+        )
+        if "key" in meta:
+            self["key"] = PickledItem(meta["key"]) if isinstance(meta["key"], bytes) else meta["key"]
+        self._owner = owner
+        self._offset: int = meta["offset"]
+        self._length: int = meta["length"]
+
+    def _raw_meta(self) -> dict[str, Any]:
+        d = {k: v for k, v in self.items() if k != "definition"}
+        d["offset"] = self._offset
+        d["length"] = self._length
+        return d
+
+    def with_vertices(self, vertices: list[int]) -> "IndexedDefinitionEntry":
+        return IndexedDefinitionEntry(self._owner, {**self._raw_meta(), "vertices": vertices})
+
+    def __getitem__(self, k: str) -> Any:
+        if k == "definition" and "definition" not in self:
+            return self._owner.read_definition(self._offset, self._length)
+        return super().__getitem__(k)
+
+    def get(self, k: str, default: Any = None) -> Any:
+        if k == "definition":
+            return self["definition"]
+        return super().get(k, default)
+
+
+def _write_indexed_definitions(path: str, entries: list[dict[str, Any]]) -> int:
+    meta: list[dict[str, Any]] = []
+    offset = 0
+    with open(path + RECORDS_SUFFIX, "wb") as records:
+        for d in entries:
+            raw_def = d["definition"] if isinstance(d["definition"], bytes) else base64.b64decode(d["definition"])
+            raw_key = d["key"] if isinstance(d["key"], bytes) else base64.b64decode(d["key"])
+            records.write(raw_def)
+            entry_meta = {k: v for k, v in d.items() if k != "definition"}
+            entry_meta.update(key=raw_key, offset=offset, length=len(raw_def))
+            meta.append(entry_meta)
+            offset += len(raw_def)
+    compressor = zstandard.ZstdCompressor(level=ZSTD_LEVEL)
+    with open(path, "wb") as f, compressor.stream_writer(f, closefd=False) as stream:
+        stream.write(DEFINITION_INDEX_MARKER)
+        stream.write(msgpack.packb(meta, use_bin_type=True))
+    return os.path.getsize(path) + os.path.getsize(path + RECORDS_SUFFIX)
+
+
 def _write_section(path: str, name: str, value: Any) -> int:
     """msgpack -> zstd, streamed to the file: neither the full msgpack encoding nor the full compressed output is
     held in memory (the encoder works in chunks of top-level container items)."""
     if name in INDEXED_RECORD_SECTIONS and isinstance(value, dict) and indexed_records_enabled():
         return _write_indexed_records(path, value)
+    if name in PICKLE_LIST_SECTIONS and indexed_records_enabled():
+        return _write_indexed_list(path, (i if isinstance(i, bytes) else base64.b64decode(i) for i in value))
+    if name == "definitions" and isinstance(value, list) and indexed_records_enabled():
+        return _write_indexed_definitions(path, value)
     compressor = zstandard.ZstdCompressor(level=ZSTD_LEVEL)
     with open(path, "wb") as f, compressor.stream_writer(f, closefd=False) as stream:
         packer = msgpack.Packer(use_bin_type=True)
@@ -149,6 +317,11 @@ def _write_section(path: str, name: str, value: Any) -> int:
             stream.write(ITEM_STREAM_MARKER)
             for item in value:
                 stream.write(packer.pack(base64.b64decode(item)))
+        elif name in ("rendered.edges", "edges", "keys", "creation_digests", "fingerprints", "unit_by_vertex") \
+                and isinstance(value, list):
+            stream.write(ITEM_STREAM_MARKER)
+            for item in value:
+                stream.write(packer.pack(item))
         elif isinstance(value, dict):
             stream.write(packer.pack_map_header(len(value)))
             for key, item in value.items():
@@ -170,10 +343,16 @@ def _read_section(path: str) -> Any:
         first = stream.read(1)
         if first == ITEM_STREAM_MARKER:
             unpacker = msgpack.Unpacker(stream, raw=False, read_size=1 << 20, max_buffer_size=0)
-            return [PickledItem(item) for item in unpacker]
+            return [PickledItem(item) if isinstance(item, bytes) else item for item in unpacker]
         if first == INDEXED_RECORDS_MARKER:
             index = msgpack.unpackb(stream.read(), raw=False, strict_map_key=False)
             return IndexedRecords(path + RECORDS_SUFFIX, index)
+        if first == INDEXED_LIST_MARKER:
+            offsets = msgpack.unpackb(stream.read(), raw=False, strict_map_key=False)
+            return IndexedList(path + RECORDS_SUFFIX, offsets)
+        if first == DEFINITION_INDEX_MARKER:
+            meta = msgpack.unpackb(stream.read(), raw=False, strict_map_key=False)
+            return IndexedDefinitions(path + RECORDS_SUFFIX, meta)
     with open(path, "rb") as f, zstandard.ZstdDecompressor().stream_reader(f) as stream:
         unpacker = msgpack.Unpacker(stream, raw=False, strict_map_key=False, read_size=1 << 20, max_buffer_size=0)
         return unpacker.unpack()

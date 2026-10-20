@@ -5,7 +5,7 @@ from ast import literal_eval
 import logging
 import os
 import re
-from collections.abc import Hashable, Sequence
+from collections.abc import Hashable, Iterable, Sequence
 from json import JSONDecodeError
 
 import dpath
@@ -327,6 +327,11 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
     def _render_dynamic_blocks(self) -> None:
         vertex_indices = self.local_graph.vertices_by_block_type[BlockType.RESOURCE]
+        if not vertex_indices and self.frozen_vertices:
+            vertex_indices = [
+                i for i in sorted(set(range(len(self.local_graph.vertices))) - self.frozen_vertices)
+                if self.local_graph.vertices[i].block_type == BlockType.RESOURCE
+            ]
 
         for idx in vertex_indices:
             if idx in self.frozen_vertices:
@@ -511,9 +516,14 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         return False
 
     def evaluate_non_rendered_values(self) -> None:
-        for index, vertex in enumerate(self.local_graph.vertices):
+        if self.frozen_vertices and len(self.frozen_vertices) * 2 > len(self.local_graph.vertices):
+            indices: Iterable[int] = sorted(set(range(len(self.local_graph.vertices))) - self.frozen_vertices)
+        else:
+            indices = range(len(self.local_graph.vertices))
+        for index in indices:
             if index in self.frozen_vertices:
                 continue
+            vertex = self.local_graph.vertices[index]
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)

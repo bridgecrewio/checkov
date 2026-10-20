@@ -120,6 +120,10 @@ class InstanceSplicer:
         """baseline: block key (no index) -> unit positions of its vertices (main block + instances), baseline order"""
         for position, key in enumerate(engine.old_keys):
             self.by_block.setdefault(_block_key_of_vertex_key(key), []).append(position)
+        self.counted_main_positions: set[int] = {
+            p for positions in self.by_block.values() if len(positions) > 1
+            for p in positions if "[" not in _name_of(engine.old_keys[p])
+        }
         self.stats = {"blocks_reused": 0, "blocks_reexpanded": 0, "instances_created": 0, "instances_reused": 0}
 
     def _pre_expansion_digest(self, block: Any) -> str:
@@ -130,12 +134,28 @@ class InstanceSplicer:
         from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
         from checkov.terraform.diff_scan.baseline import creation_digest
 
+        ensure = getattr(block, "_ensure_loaded", None)
+        if ensure is not None:
+            ensure()
         probe = pickle_deepcopy(block)
         if isinstance(probe.config, dict):
             probe.config.pop(CustomAttributes.VIRTUAL_RESOURCES, None)
         probe.attributes.pop(CustomAttributes.ENCRYPTION, None)
         probe.attributes.pop(CustomAttributes.ENCRYPTION_DETAILS, None)
         return creation_digest(probe, self.e.root)
+
+    def _is_baseline_counted_main(self, position: int) -> bool:
+        if position in self.counted_main_positions:
+            return True
+        if "[" in _name_of(self.e.old_keys[position]):
+            return False
+        vertex = self.e._reused_vertex(position)
+        from checkov.terraform.diff_scan.expansions import block_key
+        if self.oracle is not None and block_key(vertex, self.e.root) in self.oracle.records:
+            return True
+        if self.oracle is not None and type(vertex).__name__ == "LazyTerraformBlock":
+            return False
+        return is_expanded(vertex)
 
     def _key_has_changed_statement(self, key: Any) -> bool:
         """Whether a counted block created from this definition key has a statement differing from the baseline."""
@@ -144,9 +164,10 @@ class InstanceSplicer:
         from checkov.terraform.diff_scan.expansions import block_key
 
         for position in self.e.definition_entries[key]["vertices"]:
+            if not self._is_baseline_counted_main(position):
+                continue
             vertex = self.e._reused_vertex(position)
-            if is_expanded(vertex) and "[" not in vertex.name and \
-                    self.oracle.statement_changed(block_key(vertex, self.e.root)):
+            if self.oracle.statement_changed(block_key(vertex, self.e.root)):
                 return True
         return False
 
@@ -154,6 +175,8 @@ class InstanceSplicer:
                  module_fields: dict[str, Any]) -> tuple[list[Any], set[int]]:
         e = self.e
         self.module_fields = module_fields
+        if NEGATIVE_CONTROL == "provider_pass_aborts":
+            raise IncrementalGraphUnsupported("provider_pass_aborts control tests whole-unit rebuild order")
         fresh: set[int] = set()
         replacement = getattr(e, "unit_tfvar_blocks", None)
         if replacement is None:
@@ -187,7 +210,7 @@ class InstanceSplicer:
             if not self._key_has_changed_statement(key):
                 for position in e.definition_entries[key]["vertices"]:
                     vertex = e._reused_vertex(position)
-                    if is_expanded(vertex) and raw_tf_in_graph():
+                    if self._is_baseline_counted_main(position) and raw_tf_in_graph():
                         main_blocks.append((vertex, True))
                     else:
                         vertices.append(vertex)

@@ -306,7 +306,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
             module_vertex = self.vertices[module_idx]
             composed_key = (
-                module_vertex.name,
+                module_vertex.name.split("[", 1)[0] if "[" in module_vertex.name else module_vertex.name,
                 module_vertex.path,
                 module_vertex.source_module_object,
                 module_vertex.for_each_index,
@@ -763,9 +763,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         )
 
     def update_vertices_configs(self, skip: Optional[Set[int]] = None) -> None:
-        for index, vertex in enumerate(self.vertices):
+        if skip and len(skip) * 2 > len(self.vertices):
+            indices: Iterable[int] = sorted(set(range(len(self.vertices))) - skip)
+        else:
+            indices = range(len(self.vertices))
+        for index in indices:
             if skip and index in skip:
                 continue
+            vertex = self.vertices[index]
             changed_attributes = list(vertex.changed_attributes.keys())
             changed_attributes = filter_sub_keys(changed_attributes)
             self.update_vertex_config(vertex, changed_attributes)
@@ -808,7 +813,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             update_dictionary_attribute(vertex.config, vertex_name, updated_config, dynamic_blocks)
 
     def get_resources_types_in_graph(self) -> List[str]:
-        return self.module.get_resources_types()
+        cached = getattr(self, "_cached_resources_types", None)
+        if cached is not None and len(cached) == len(self.module.resources_types):
+            return cached
+        res = self.module.get_resources_types()
+        self._cached_resources_types = res
+        return res
 
     def _update_vertices_breadcrumbs_and_module_connections(self) -> None:
         """

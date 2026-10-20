@@ -42,7 +42,8 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             # the duplicate-edge early stop is computed over the whole graph; see deterministic.py
             self.duplicate_iter_count = sys.maxsize
         self.done_edges_by_origin_vertex: Dict[int, List[Edge]] = {}
-        self.replace_cache: List[Dict[str, Any]] = [{}] * len(local_graph.vertices)
+        self.replace_cache: List[Dict[str, Any]] = [] if getattr(local_graph, "dfo_set_edges_consistent", False) \
+            else [{}] * len(local_graph.vertices)
         self.vertices_index_to_render: List[int] = []
         self.frozen_vertices: Set[int] = set()
         """Incremental mode only (set by checkov.terraform.graph_builder.incremental_graph): vertices already holding
@@ -185,6 +186,9 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
                 break
 
     def _get_initial_end_vertices(self) -> set[int]:
+        if getattr(self.local_graph, "dfo_set_edges_consistent", False):
+            return {v for v, edges in self.local_graph.in_edges.items()
+                    if edges and not self.local_graph.out_edges.get(v)}
         return self.local_graph.get_vertices_with_degrees_conditions(
             out_degree_cond=lambda d: d == 0,
             in_degree_cond=lambda d: d > 0,
