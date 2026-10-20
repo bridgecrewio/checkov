@@ -18,6 +18,32 @@ if TYPE_CHECKING:
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
+ALLOWED_MODULE_PREFIXES_ENV = "CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES"
+# 'user[:password]@' right after 'scheme://'
+URL_USER_INFO_PATTERN = re.compile(r"^([a-z][a-z0-9+.\-]*://)[^/@]*@")
+
+
+def _normalize_module_source(source: str) -> str:
+    """Lowercase, drop the 'git::' prefix and any 'user[:password]@' part, so sources and prefixes are comparable."""
+    source = source.strip().lower()
+    if source.startswith("git::"):
+        source = source[len("git::"):]
+    return URL_USER_INFO_PATTERN.sub(r"\1", source)
+
+
+def _is_allowed_module_source(source: str) -> bool:
+    """Check the module source against the CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES allowlist.
+
+    Not set -> True (allow all, original behaviour). Set -> True only if the source starts with one of the
+    comma-separated prefixes. To block all git module downloads, set the var to a non-matching value (e.g. 'none').
+    """
+    allowed_prefixes_raw = os.getenv(ALLOWED_MODULE_PREFIXES_ENV, "")
+    if not allowed_prefixes_raw.strip():
+        return True  # no allowlist configured -> allow everything (original behaviour)
+
+    allowed_prefixes = [_normalize_module_source(p) for p in allowed_prefixes_raw.split(",") if p.strip()]
+    normalized_source = _normalize_module_source(source)
+    return any(normalized_source.startswith(prefix) for prefix in allowed_prefixes)
 
 
 def _validate_ref(ref: str) -> None:
@@ -86,6 +112,12 @@ class GenericGitLoader(ModuleLoader):
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
             self._process_generic_git_repo(module_params)
+            if not _is_allowed_module_source(module_params.module_source):
+                self.logger.warning(
+                    f"Skipping module {_normalize_module_source(module_params.module_source)}: "
+                    f"not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist."
+                )
+                return ModuleContent(dir=None, failed_url=module_params.module_source)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
