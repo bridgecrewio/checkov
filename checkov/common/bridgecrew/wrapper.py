@@ -186,6 +186,9 @@ def persist_graphs(
     def _upload_graph(check_type: str, graph: LibraryGraph, _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
+            # networkx 3.6 renamed the edge list key from "links" to "edges", keep the persisted format stable
+            if "edges" in json_obj:
+                json_obj["links"] = json_obj.pop("edges")
             graph_file_name = FILE_NAME_NETWORKX
         elif isinstance(graph, PyDiGraph):
             json_obj = digraph_node_link_json(graph)
