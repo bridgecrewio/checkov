@@ -143,7 +143,7 @@ def _init_secrets_worker(
     detectors from bc_integration at construction time.
     """
     if secrets_policies and not bc_integration.customer_run_config_response:
-        bc_integration.customer_run_config_response = {'secretsPolicies': secrets_policies}
+        bc_integration.customer_run_config_response = {'secretsPolicies': secrets_policies}  # type:ignore[assignment]
 
     settings = get_settings()
     settings.clear()
