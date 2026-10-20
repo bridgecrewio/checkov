@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ephemeral-latest
+spec:
+  containers:
+  - name: app
+    image: nginx:1.27
+  ephemeralContainers:
+  - name: debugger
+    image: busybox:latest

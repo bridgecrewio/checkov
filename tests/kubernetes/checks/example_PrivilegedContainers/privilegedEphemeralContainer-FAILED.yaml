@@ -1,0 +1,14 @@
+# Ephemeral debug container must not be privileged either
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged-ephemeral
+spec:
+  containers:
+  - name: app
+    image: nginx:1.27
+  ephemeralContainers:
+  - name: debugger
+    image: busybox:1.36
+    securityContext:
+      privileged: true

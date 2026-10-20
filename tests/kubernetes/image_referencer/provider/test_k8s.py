@@ -21,6 +21,12 @@ def test_extract_images_from_resources(graph_framework):
                     "image": "busybox",
                 },
             ],
+            "ephemeralContainers": [
+                {
+                    "name": "debugger",
+                    "image": "alpine:3.20",
+                },
+            ],
             "containers": [
                 {
                     "name": "test-container",
@@ -39,7 +45,7 @@ def test_extract_images_from_resources(graph_framework):
         images = provider.extract_images_from_resources()
 
     # then
-    assert len(images) == 2
+    assert len(images) == 3
     nginx_image = Image(
             file_path="/pod.yaml",
             name="nginx",
@@ -49,8 +55,11 @@ def test_extract_images_from_resources(graph_framework):
         )
     busybox_image = Image(file_path="/pod.yaml", name="busybox", start_line=1, end_line=16,
                           related_resource_id="/pod.yaml:None")
+    alpine_image = Image(file_path="/pod.yaml", name="alpine:3.20", start_line=1, end_line=16,
+                         related_resource_id="/pod.yaml:None")
     assert nginx_image in images
     assert busybox_image in images
+    assert alpine_image in images
 
 
 @pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
