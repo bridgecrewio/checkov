@@ -12,7 +12,7 @@ jobs:
       python-version: "3.9"
 
   danger-check:
-    runs-on: [ self-hosted, public, linux, x64 ]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: read
@@ -412,7 +412,7 @@ jobs:
     env:
       PYTHON_VERSION: "3.9"
       working-directory: ./performance_tests
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v3
       - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4

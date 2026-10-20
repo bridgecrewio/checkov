@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   validate:
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
