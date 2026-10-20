@@ -44,7 +44,10 @@ class AbsSecurityGroupUnrestrictedEgress(BaseResourceCheck):
                 for rule in force_list(egress_rule):
                     if isinstance(rule, dict):
                         if self.check_self(rule):
-                            return CheckResult.PASSED
+                            # 'self' only adds the security group itself as an additional
+                            # source/destination, so a self-referencing block must not
+                            # suppress evaluation of the remaining egress blocks
+                            continue
                         if self.contains_violation(rule):
                             self.evaluated_keys = [
                                 f'egress/[{egress_conf.index(egress_rule)}]/from_port',
