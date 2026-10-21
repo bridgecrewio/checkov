@@ -1,0 +1,4 @@
+pass:
+  - "module.network.google_compute_network.vpc"
+fail:
+  - "module.standalone_network.google_compute_network.vpc"
