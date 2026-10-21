@@ -7,6 +7,7 @@ from checkov.terraform.runner import Runner
 
 
 class TestAPIManagementBackendHTTPS(unittest.TestCase):
+
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_APIManagementBackendHTTPS"
@@ -20,7 +21,6 @@ class TestAPIManagementBackendHTTPS(unittest.TestCase):
         passing_resources = {
             "azurerm_api_management_backend.pass",
         }
-
         failing_resources = {
             "azurerm_api_management_backend.fail",
         }
@@ -32,7 +32,7 @@ class TestAPIManagementBackendHTTPS(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-
+        self.assertEqual(summary["resource_count"], 6)
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
