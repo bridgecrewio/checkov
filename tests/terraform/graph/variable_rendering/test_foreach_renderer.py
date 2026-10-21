@@ -236,7 +236,17 @@ def test_tf_definitions_and_breadcrumbs():
                 {'each.value': {'name': 'security', 'product_owner': 'barak@gmail.com'}, 'each.key': 'security'},
                 {"tags": ["${try(merge(var.tags,{'product_owner': 'barak@gmail.com'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
                 ["tags"]
-        )
+        ),
+        # _resolve_nested_path: missing key resolves to None (exact-match returns None directly)
+        ({'key': '${each.value.missing}'}, {'each.value': {'port': '22'}}, {'key': None}, ['key']),
+        # _resolve_nested_path: missing key in embedded expression converts None to empty string
+        ({'key': 'prefix-${each.value.missing}-suffix'}, {'each.value': {'port': '22'}}, {'key': 'prefix--suffix'}, ['key']),
+        # _resolve_nested_path: multiple distinct nested refs in one expression
+        ({'host': '${each.value.env}-${each.value.region}'}, {'each.value': {'env': 'prod', 'region': 'us-east-1'}}, {'host': 'prod-us-east-1'}, ['host']),
+        # _resolve_nested_path: prefix-overlapping refs must not corrupt each other
+        ({'tag': '${each.value.name}-${each.value.name_suffix}'}, {'each.value': {'name': 'foo', 'name_suffix': 'bar'}}, {'tag': 'foo-bar'}, ['tag']),
+        # _resolve_nested_path: array indexing in path
+        ({'item': '${each.value.items[0].name}'}, {'each.value': {'items': [{'name': 'first'}]}}, {'item': 'first'}, ['item']),
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
@@ -597,4 +607,78 @@ def test_foreach_renderer_with_raw_asset():
             assert virtual_resource.endswith("[\"bucket_a\"]") or virtual_resource.endswith("[\"bucket_b\"]")
 
 
+def _unwrap(val):
+    """Unwrap single-element list values (the renderer wraps some attribute values in lists)."""
+    if isinstance(val, list) and len(val) == 1:
+        return val[0]
+    return val
+
+
+def test_optional_type_defaults_with_foreach():
+    """Test that optional() defaults from type constraints are merged into variable defaults.
+
+    Reproduces the scenario from GitHub issue #4874: a for_each over a variable with
+    optional(string, "RSA-HSM") should resolve each.value.type to "RSA-HSM".
+    """
+    local_graph, _ = build_and_get_graph_by_path('optional_type_defaults', render_var=True)
+
+    # Find the azurerm_key_vault_key.this resource (should be expanded by for_each)
+    key_vault_key_vertices = [
+        v for v in local_graph.vertices
+        if v and getattr(v, 'block_type', None) == 'resource'
+        and getattr(v, 'id', '').startswith('azurerm_key_vault_key.this')
+    ]
+    assert len(key_vault_key_vertices) >= 1, "Expected at least one azurerm_key_vault_key.this resource"
+
+    for vertex in key_vault_key_vertices:
+        # key_type should be resolved from optional(string, "RSA-HSM")
+        key_type = _unwrap(vertex.attributes.get("key_type"))
+        assert key_type is not None, f"key_type should be resolved, got None for {vertex.id}"
+        assert key_type == "RSA-HSM", f"Expected key_type to be 'RSA-HSM', got {key_type}"
+
+        # key_size should be resolved from optional(number, 2048)
+        key_size = _unwrap(vertex.attributes.get("key_size"))
+        assert key_size is not None, f"key_size should be resolved, got None for {vertex.id}"
+        assert key_size == 2048 or str(key_size) == "2048", f"Expected key_size to be 2048, got {key_size}"
+
+
+def test_optional_type_defaults_direct_reference():
+    """Test that optional() defaults work with direct variable references (var.config.region)."""
+    local_graph, _ = build_and_get_graph_by_path('optional_type_defaults', render_var=True)
+
+    # Find the aws_instance resource
+    instance_vertices = [
+        v for v in local_graph.vertices
+        if v and getattr(v, 'block_type', None) == 'resource'
+        and getattr(v, 'id', '').startswith('aws_instance.')
+    ]
+    assert len(instance_vertices) == 1, "Expected exactly one aws_instance resource"
+
+    vertex = instance_vertices[0]
+    # ami should be resolved from var.config.region -> optional(string, "us-east-1")
+    ami = _unwrap(vertex.attributes.get("ami"))
+    assert ami is not None, "ami should be resolved"
+    assert ami == "us-east-1", f"Expected ami to be 'us-east-1', got {ami}"
+
+    # instance_type should be resolved from var.config.port -> optional(number, 443)
+    instance_type = _unwrap(vertex.attributes.get("instance_type"))
+    assert instance_type is not None, "instance_type should be resolved"
+    assert instance_type == 443 or str(instance_type) == "443", f"Expected instance_type to be 443, got {instance_type}"
+
+
+def test_optional_type_defaults_three_level_nesting():
+    """3-level: var.infra.key_vault.key.key_type resolves from deepest optional default."""
+    local_graph, _ = build_and_get_graph_by_path('optional_type_defaults', render_var=True)
+
+    vertices = [
+        v for v in local_graph.vertices
+        if v and getattr(v, 'block_type', None) == 'resource'
+        and getattr(v, 'id', '').startswith('azurerm_key_vault_key.nested_ref')
+    ]
+    assert len(vertices) == 1, "Expected exactly one azurerm_key_vault_key.nested_ref resource"
+    vertex = vertices[0]
+    key_type = _unwrap(vertex.attributes.get("key_type"))
+    assert key_type == "RSA-HSM", f"Expected 'RSA-HSM' from 3-level nesting, got {key_type}"
+    key_size = _unwrap(vertex.attributes.get("key_size"))
+    assert key_size == 2048 or str(key_size) == "2048", f"Expected 2048, got {key_size}"
 
