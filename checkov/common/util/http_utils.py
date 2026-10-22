@@ -187,6 +187,16 @@ def get_prisma_get_headers() -> dict[str, str]:
     return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
 
 
+SENSITIVE_HEADER_NAMES = frozenset(('authorization', 'x-redlock-auth', 'proxy-authorization', 'cookie'))
+
+
+def redact_headers(headers: dict[str, Any] | None) -> dict[str, Any]:
+    """Return a copy of the headers with credential values masked, safe for logging."""
+    if not headers:
+        return {}
+    return {k: '***' if str(k).lower() in SENSITIVE_HEADER_NAMES else v for k, v in headers.items()}
+
+
 def valid_url(url: str | None) -> bool:
     """Checks for a valid URL, otherwise returns False"""
 
@@ -238,7 +248,7 @@ def request_wrapper(
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
-            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
+            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{redact_headers(headers)}")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
@@ -252,7 +262,7 @@ def request_wrapper(
             if http_error.response is not None:
                 status_code = http_error.response.status_code
 
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{redact_headers(headers)}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
