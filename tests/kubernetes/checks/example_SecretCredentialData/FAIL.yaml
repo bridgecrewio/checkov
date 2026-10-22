@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-credentials
+type: Opaque
+data:
+  password: U3VwM3JTM2NyZXQh
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-token
+type: Opaque
+data:
+  token: Z2hwXzlmOGU3ZDZjNWI0YTM5MjgxNzA2ZjVlNGQzYzJiMWEwOWY4ZTdkNmM=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: etcd-jwt-key
+type: Opaque
+stringData:
+  jwt-token.pem: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpAIBAAKCAQEA7aExampl3K3yN0tRealKeyMaterialWouldFollowHere
+    -----END RSA PRIVATE KEY-----

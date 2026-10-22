@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: operator-managed-secret
+type: Opaque
+data: {}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: empty-values
+type: Opaque
+data:
+  token: ""
+  gitHubToken: ""
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: documentation-placeholder
+type: Opaque
+data:
+  password: Y2hhbmdlbWU=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: templated-secret
+type: Opaque
+stringData:
+  password: "${DB_PASSWORD}"
+  admin-user: "<admin-username>"
