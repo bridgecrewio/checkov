@@ -59,7 +59,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
-        
+
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_invalid_chart(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -206,7 +206,8 @@ class TestRunnerValid(unittest.TestCase):
                 # Check template mapping was populated correctly
                 expected_mapping = {
                     f'{target_dir}/mychart/templates/service.yaml': os.path.join(chart_dir, "templates/service.yaml"),
-                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir, "templates/deployment.yaml")
+                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir,
+                                                                                    "templates/deployment.yaml")
                 }
 
                 # Compare the mappings - normalize paths for comparison
@@ -240,6 +241,7 @@ class TestRunnerValid(unittest.TestCase):
         r = Runner()
         r.helm_command = 'thisshouldfail'
         assert r.check_system_deps() == "helm"
+
 
 class TestHelmDependencyRemoteRepos(unittest.TestCase):
     """Tests for helm remote dependency repository allowlist.
@@ -288,6 +290,13 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
     def test_get_blocked_helm_repos_returns_empty_when_all_in_allowlist(self):
         """When all repos are in the allowlist, nothing is blocked."""
         env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "http://192.0.2.1"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertEqual(repos, [])
+
+    def test_get_blocked_helm_repos_wildcard_allows_all(self):
+        """'*' allows all repos."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "https://charts.trusted.org/, *,"}
         with mock.patch.dict(os.environ, env):
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
         self.assertEqual(repos, [])

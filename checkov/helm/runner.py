@@ -77,6 +77,8 @@ def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
         return []  # no allowlist configured → allow everything (original behaviour)
 
     allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
+    if "*" in allowed_prefixes:
+        return []  # '*' → allow everything
     remote_repos = _get_chart_remote_repos(chart_dir)
     return [repo for repo in remote_repos if not any(repo.lower().startswith(p) for p in allowed_prefixes)]
 

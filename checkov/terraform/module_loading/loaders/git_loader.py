@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import urlparse
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.util.file_utils import _is_within
@@ -18,6 +19,31 @@ if TYPE_CHECKING:
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
+_warned_hosts: set[str | None] = set()
+
+
+def get_allowed_vcs_hosts() -> set[str | None] | None:
+    """Return the hosts of the optional VCS_ALLOWED_HOSTS env var (comma-separated), None if it is not set"""
+    hosts: set[str | None] = {host.strip().lower() for host in os.getenv("VCS_ALLOWED_HOSTS", "").split(",") if host.strip()}
+    return hosts or None
+
+
+def get_source_host(source: str) -> str | None:
+    """Return the lowercased host of a module source ('host' or 'host:port' for a non 443 port).
+
+    Returns None, if the source can't be parsed or contains user info.
+    """
+    if source.startswith("git::"):
+        source = source[len("git::"):]
+    if "://" not in source:
+        source = f"https://{source}"
+    try:
+        parsed = urlparse(source)
+        if parsed.username is None and parsed.hostname:
+            return parsed.hostname if parsed.port in (None, 443) else f"{parsed.hostname}:{parsed.port}"
+    except ValueError:
+        pass
+    return None
 
 
 def _validate_ref(ref: str) -> None:
@@ -71,11 +97,26 @@ class GenericGitLoader(ModuleLoader):
         module_params.username = os.getenv("VCS_USERNAME", None)
         module_params.token = os.getenv("VCS_TOKEN", None)
 
+    def _credentials_allowed(self, module_params: ModuleParams, source: str) -> bool:
+        """If VCS_ALLOWED_HOSTS is set, credentials are only added for its hosts and the VCS_BASE_URL host"""
+        allowed_hosts = get_allowed_vcs_hosts()
+        if allowed_hosts is None:
+            return True  # VCS_ALLOWED_HOSTS is not set
+        if module_params.vcs_base_url:
+            allowed_hosts.add(get_source_host(module_params.vcs_base_url))
+        host = get_source_host(source)
+        if host is not None and host in allowed_hosts:
+            return True
+        if host not in _warned_hosts:
+            _warned_hosts.add(host)
+            self.logger.warning(f"Credentials are not added to module sources from host {host or 'unknown'}, it is not in VCS_ALLOWED_HOSTS")
+        return False
+
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         module_source_prefix = module_params.module_source_prefix if module_params.module_source_prefix else self.module_source_prefix
         if module_params.module_source.startswith(module_source_prefix):
             source = module_params.module_source.split(DEFAULT_MODULE_SOURCE_PREFIX)[-1]
-            if module_params.token and module_params.username:
+            if module_params.token and module_params.username and self._credentials_allowed(module_params, source):
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
             else:
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"

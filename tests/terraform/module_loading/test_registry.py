@@ -409,7 +409,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
     ],
     ids=["github_http_module", "generic_git_module", "ssh_github_module", "generic_ssh_module","github_http_module", "generic_ssh_module_version", "github_ssh_module_version"],
 )
-@mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
+@mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx", "GITHUB_PAT_ALLOWED_ORGS": "*"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_github_private(
     git_getter,
@@ -449,7 +449,7 @@ def test_load_github_private(
     ],
     ids=["module"],
 )
-@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})  # checkov:skip=CKV_SECRET_6 test secret
+@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx", "BITBUCKET_ALLOWED_WORKSPACES": "*"})  # checkov:skip=CKV_SECRET_6 test secret
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_bitbucket_private(
     git_getter,
