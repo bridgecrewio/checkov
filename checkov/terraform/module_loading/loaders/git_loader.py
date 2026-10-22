@@ -24,7 +24,7 @@ _warned_hosts: set[str | None] = set()
 
 def get_allowed_vcs_hosts() -> set[str | None] | None:
     """Return the hosts of the optional VCS_ALLOWED_HOSTS env var (comma-separated), None if it is not set"""
-    hosts = {host.strip().lower() for host in os.getenv("VCS_ALLOWED_HOSTS", "").split(",") if host.strip()}
+    hosts: set[str | None] = {host.strip().lower() for host in os.getenv("VCS_ALLOWED_HOSTS", "").split(",") if host.strip()}
     return hosts or None
 
 
