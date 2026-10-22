@@ -30,7 +30,7 @@ class GithubActionsOIDCTrustPolicy(BaseResourceCheck):
         try:
             # Check issuer URI
             # If it's not OIDC or GitHub Actions URI, then pass
-            issuer_oidc = conf.get("oidc")[0]
+            issuer_oidc = conf.get("oidc", [None])[0]
             if not issuer_oidc:
                 return CheckResult.PASSED
             else:
