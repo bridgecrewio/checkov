@@ -89,6 +89,38 @@ def test_determine_tf_api_endpoints_tfe(discovery_response):
     assert module_params.tf_modules_endpoint == "https://example.registry.com/api/registry/v1/modules/"
     assert module_params.tf_modules_versions_endpoint == "https://example.registry.com/api/registry/v1/modules/terraform-aws-modules/example/versions"
 
+def test_determine_tf_api_endpoints_registry_base_url():
+    # given a public-style source and a custom registry base URL (a private mirror that speaks
+    # the module registry protocol), the module is resolved against the mirror without discovery
+    loader = RegistryLoader()
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", "", "", "")
+    with mock.patch.dict("os.environ", {"TF_REGISTRY_BASE_URL": "https://mirror.example.com/artifactory/api/terraform/v1/modules/"}):
+        loader.discover(module_params)
+
+        # when
+        loader._determine_tf_api_endpoints(module_params)
+
+    # then
+    assert module_params.tf_host_name == "mirror.example.com"
+    assert module_params.module_source == "terraform-aws-modules/example"
+    assert module_params.tf_modules_endpoint == "https://mirror.example.com/artifactory/api/terraform/v1/modules/"
+    assert module_params.tf_modules_versions_endpoint == "https://mirror.example.com/artifactory/api/terraform/v1/modules/terraform-aws-modules/example/versions"
+
+def test_determine_tf_api_endpoints_registry_base_url_normalizes_trailing_slash():
+    # given a base URL without a trailing slash, it is normalized so path joins stay under the base
+    loader = RegistryLoader()
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", "", "", "")
+    with mock.patch.dict("os.environ", {"TF_REGISTRY_BASE_URL": "https://mirror.example.com/v1/modules"}):
+        loader.discover(module_params)
+
+        # when
+        loader._determine_tf_api_endpoints(module_params)
+
+    # then
+    assert module_params.tf_host_name == "mirror.example.com"
+    assert module_params.tf_modules_endpoint == "https://mirror.example.com/v1/modules/"
+    assert module_params.tf_modules_versions_endpoint == "https://mirror.example.com/v1/modules/terraform-aws-modules/example/versions"
+
 @responses.activate
 def test_load_module():
     # given
