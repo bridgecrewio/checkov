@@ -43,6 +43,7 @@ from checkov.terraform.diff_scan.instance_update import INSTANCE_UPDATE_ENV
 from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, DiffEngine, PreRenderReport, \
     RESOURCE_LEVEL_UNITS_ENV, REUSE_EXPANSIONS_ENV
 from checkov.terraform.diff_scan.relocate import relocate_artifact
+from checkov.terraform.graph_builder.utils import NESTED_PREFIX_INDEX_ENV
 from checkov.terraform.diff_scan.rename import RENAME_REMAP_ENV, apply_renames, pairs_report
 from checkov.terraform.diff_scan.module_files import MODULE_FILE_SET_ENV
 from checkov.terraform.graph_builder.foreach.module_handler import SKIP_EMPTY_LEVEL_RENDER_ENV
@@ -334,6 +335,8 @@ def baseline_scan(root: str, commit: Optional[str] = None, fingerprint: Optional
     (big sections leave memory as soon as they are produced); the caller commits it."""
     root = _prepare(root)
     baseline_defaults()
+    if writer is not None:
+        writer.root = root
     result = _parsed_scan(root, _BaselineBuilder(root, writer))
     if commit and result.artifact is not None:
         result.artifact["baseline_inputs"] = inputs.BaselineInputs(
@@ -452,6 +455,7 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault(incremental_graph.REREAD_FINAL_STATES_ENV, "true")
     os.environ.setdefault("CHECKOV_DIFF_SCOPED_CHECKS", "true")
     os.environ.setdefault("CHECKOV_INCREMENTAL_LAZY_FINAL_STATE", "true")
+    os.environ.setdefault(NESTED_PREFIX_INDEX_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     renames = _apply_renames(artifact, root, changes)

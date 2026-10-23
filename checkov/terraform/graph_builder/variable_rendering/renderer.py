@@ -24,7 +24,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
-    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
+    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes, nested_prefix_index,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
@@ -528,10 +528,12 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
             attribute_is_leaf = get_attribute_is_leaf(vertex)
+            prefix_index = nested_prefix_index(vertex.attributes)
             filtered_attributes = [
                 attr
                 for attr in vertex.attributes
-                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf)
+                if attr not in reserved_attribute_names
+                and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf, prefix_index)
                 and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
                 and not self.shouldBeFilteredByConditionAndResourceType(attr, vertex.attributes.get("resource_type", []))
             ]

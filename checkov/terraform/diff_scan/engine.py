@@ -348,6 +348,11 @@ class _PickledDefinitionsView:
         return (d["definition"] for d in self._entries.values())
 
 
+def _definition_key(stored: Any) -> TFDefinitionKey:
+    """A definitions entry's key: pickled, or already decoded by relocation (relocate._KeyRelocator)."""
+    return loads(stored) if isinstance(stored, (str, bytes)) else stored
+
+
 class LazyDefinitions(dict):  # type: ignore[type-arg]
     """module.temp_tf_definition for the post-render provider pass: baseline definitions are unpickled on first access."""
 
@@ -453,7 +458,8 @@ class DiffEngine:
             self.old_index = {k: i for i, k in enumerate(self.old_keys)}
         else:
             raw_defs = artifact["definitions"]
-            self.definition_entries = {loads(d.pop("key") if isinstance(d, IndexedDefinitionEntry) else d["key"]): d for d in raw_defs}
+            self.definition_entries = {_definition_key(d.pop("key") if isinstance(d, IndexedDefinitionEntry) else d["key"]): d
+                                       for d in raw_defs}
             if hasattr(raw_defs, "_entries"):
                 raw_defs._entries = []
             del raw_defs
@@ -575,7 +581,7 @@ class DiffEngine:
                 key = TFDefinitionKey(file_path=path, tf_source_modules=instance)
                 if definition:
                     parsed[key] = self._with_resolved_modules(key, definition)
-                else:
+                elif key in self.pickled_definitions:
                     removed.add(key)
         return parsed, set(parsed), removed - set(parsed)
 
@@ -864,7 +870,9 @@ class DiffEngine:
                 v_pos = graph.vertices[position]
                 if isinstance(v_pos, LazyTerraformBlock) and not v_pos._loaded and isinstance(v_pos._loader, tuple):
                     raw_b = v_pos._loader[0]["vertices"][v_pos._loader[1]]
-                    if not any(t.encode() in raw_b for t in tokens):
+                    # pickle stores str as UTF-8, so the shortcut holds for raw pickles only (v3 store); a v2
+                    # artifact holds base64 text, where a token's absence proves nothing.
+                    if isinstance(raw_b, bytes) and not any(t.encode() in raw_b for t in tokens):
                         continue
                 if _mentions(v_pos, tokens):
                     reasons[position] = "mentions an added/removed resource type or provider alias"
@@ -1650,6 +1658,13 @@ class DiffEngine:
         scoped |= {u for u in token_units if self.a["units"].get(u, {}).get("has_foreach")}
         self.token_units = token_units
         per_owner = ({unit_of_key(k) for k in changed | removed} | tfvar_changed | token_units) - scoped
+        if NEGATIVE_CONTROL != "per_owner_module_expansion":
+            # The per-owner path splices definition keys in sorted order and has no per-instance expansion: a unit
+            # holding a module count / for_each anywhere in its tree (the call may sit in a nested module file) would
+            # lose the expanded instances. Such units go to the scoped path (instance-level or rebuild).
+            expanded = {u for u in per_owner if self.a["units"].get(u, {}).get("has_module_foreach")}
+            scoped |= expanded
+            per_owner -= expanded
         self.touched_units = per_owner | scoped
         old_by_unit = getattr(self, "_old_by_unit", None)
         if old_by_unit is None:

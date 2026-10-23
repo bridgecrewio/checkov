@@ -94,15 +94,50 @@ def _write_snapshot(graph: Any, report: Any, root: str) -> None:
         json.dump(snapshot_scan(graph, report, root), f)
 
 
+BATCHED_REPORT_WRITES_ENV = "CHECKOV_DIFF_BATCHED_REPORT_WRITES"
+REPORT_CHUNK_CHARS = 1 << 20
+
+
+class _ChunkedWriter:
+    """Hands json.dump's small writes to `stream` in ~1 MB chunks. colorama.init(autoreset=True) (imported by
+    checkov.common.output) wraps sys.stdout in a StreamWrapper that runs an ANSI regex and a flush on every write;
+    json.dump makes ~100 writes per finding (Customer 1: 2.3M writes)."""
+
+    def __init__(self, stream: Any) -> None:
+        self._stream = stream
+        self._parts: list[str] = []
+        self._size = 0
+
+    def write(self, text: str) -> None:
+        self._parts.append(text)
+        self._size += len(text)
+        if self._size >= REPORT_CHUNK_CHARS:
+            self.flush()
+
+    def flush(self) -> None:
+        if self._parts:
+            self._stream.write("".join(self._parts))
+            self._parts.clear()
+            self._size = 0
+        self._stream.flush()
+
+
+def _report_stream() -> Any:
+    if os.getenv(BATCHED_REPORT_WRITES_ENV, "true").lower() != "true":
+        return sys.stdout
+    return _ChunkedWriter(sys.stdout)
+
+
 def _print_report(config: Any, report: Any) -> None:
     from checkov.common.util.json_utils import CustomJSONEncoder
 
     if "json" in (config.output or []):
         # streamed: the same text as print(json.dumps(...)) without holding the whole document as one string (gcp:
         # a 300 MB report peaked +780 MB as one str plus its encoding buffers)
-        json.dump(report.get_dict(is_quiet=config.quiet), sys.stdout, indent=4, cls=CustomJSONEncoder)
-        sys.stdout.write("\n")
-        sys.stdout.flush()
+        stream = _report_stream()
+        json.dump(report.get_dict(is_quiet=config.quiet), stream, indent=4, cls=CustomJSONEncoder)
+        stream.write("\n")
+        stream.flush()
     else:
         report.print_console(is_quiet=config.quiet, is_compact=config.compact)
 

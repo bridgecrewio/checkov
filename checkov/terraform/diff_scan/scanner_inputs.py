@@ -28,6 +28,17 @@ def var_files_from_env(root: str) -> Optional[list[str]]:
     return [os.path.join(root, n) for n in names] or None
 
 
+TERRAFORM_ONLY_MATERIALISE_ENV = "CHECKOV_DIFF_MATERIALISE_TERRAFORM_ONLY"
+"""Copy only the files Checkov's Terraform parser can read (*.tf, *.tf.json, *.tfvars, *.tfvars.json) of each
+external module, instead of the whole snapshot (READMEs, examples' zip archives, CI files)."""
+TERRAFORM_SUFFIXES = (".tf", ".tf.json", ".tfvars", ".tfvars.json")
+
+
+def _terraform_only(directory: str, names: list[str]) -> set[str]:
+    return {n for n in names
+            if not os.path.isdir(os.path.join(directory, n)) and not n.endswith(TERRAFORM_SUFFIXES)}
+
+
 def external_modules(root: str) -> dict[str, Any]:
     """The pre-scan's resolved external modules, keyed "<source>:<version>" as Checkov's module loader expects.
     Every scan gets ALL of them (changed or not), materialised outside the repository tree; the list comes from the
@@ -41,12 +52,13 @@ def external_modules(root: str) -> dict[str, Any]:
         addresses = [line.strip() for line in f if line.strip()]
     materialized = os.path.join(root, MATERIALIZED_DIR)
     shutil.rmtree(materialized, ignore_errors=True)
+    ignore = _terraform_only if os.getenv(TERRAFORM_ONLY_MATERIALISE_ENV, "false").lower() == "true" else None
     content: dict[str, Any] = {}
     for address in addresses:
         source, version = address.rsplit("@", 1)
         snapshot = os.path.join(store, "_sources", source_slug(source), version)
         destination = os.path.join(materialized, source_slug(source), version)
-        shutil.copytree(snapshot, destination)
+        shutil.copytree(snapshot, destination, ignore=ignore)
         content[f"{source}:{version}"] = ModuleContent(destination)
     return content
 

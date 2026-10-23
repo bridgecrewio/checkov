@@ -33,6 +33,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
+    nested_prefix_index,
     remove_index_pattern_from_str, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
     get_sanitized_terraform_resource_id
@@ -343,9 +344,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 referenced_modules: Optional[List[Dict[str, Any]]] = None) -> None:
 
         attribute_is_leaf = get_attribute_is_leaf(vertex)
+        prefix_index = nested_prefix_index(vertex.attributes)
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
-                    attribute_key, vertex.attributes, attribute_is_leaf
+                    attribute_key, vertex.attributes, attribute_is_leaf, prefix_index
             ):
                 continue
             referenced_vertices = get_referenced_vertices_in_value(

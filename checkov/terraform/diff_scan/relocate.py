@@ -120,10 +120,88 @@ def _copying_value(r: Relocator, value: Any) -> Any:
     return value
 
 
+FAST_RELOCATION_ENV = "CHECKOV_DIFF_FAST_RELOCATION"
+
+
+def fast_relocation_enabled() -> bool:
+    """Opt-in: same relocated values, less work. A plain section none of whose strings contains the old root is
+    returned untouched (Relocator.value only rewrites strings containing it); definition keys are relocated as
+    objects, sharing each relocated TFModule chain, instead of unpickle -> rewrite -> re-pickle -> unpickle."""
+    return os.getenv(FAST_RELOCATION_ENV, "false").lower() == "true"
+
+
+def _mentions_root(value: Any, old_root: str) -> bool:
+    """True if any str in `value` (dict keys included) contains `old_root`, or `value` holds anything other than
+    plain JSON-like containers and scalars (then Relocator.value decides). Iterative, no copy, stops at the first hit."""
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            if old_root in item:
+                return True
+        elif isinstance(item, dict):
+            stack.extend(item.keys())
+            stack.extend(item.values())
+        elif isinstance(item, (list, tuple)):
+            stack.extend(item)
+        elif not (item is None or isinstance(item, (int, float, bool, bytes))):
+            return True
+    return False
+
+
+class _KeyRelocator:
+    """TFDefinitionKey / TFModule relocation by value: equal results to Relocator.pickled followed by loads, each
+    distinct module chain rebuilt once."""
+
+    def __init__(self, r: Relocator) -> None:
+        self.r = r
+        self.modules: dict[Any, Any] = {}
+
+    def module(self, m: Any) -> Any:
+        if m is None:
+            return None
+        moved = self.modules.get(m)
+        if moved is None:
+            moved = dataclasses.replace(m, path=self.r.text(m.path), nested_tf_module=self.module(m.nested_tf_module))
+            self.modules[m] = moved
+        return moved
+
+    def key(self, stored: Any) -> Any:
+        """`stored`: a pickled key, or a key already relocated by value (relocation runs before rename remapping)."""
+        from checkov.terraform.modules.module_objects import TFDefinitionKey
+
+        key = loads(stored) if isinstance(stored, (str, bytes)) else stored
+        if type(key) is not TFDefinitionKey or type(key.tf_source_modules).__name__ not in ("TFModule", "NoneType"):
+            return self.r.value(key)
+        return dataclasses.replace(key, file_path=self.r.text(key.file_path),
+                                   tf_source_modules=self.module(key.tf_source_modules))
+
+
+def _relocate_section_fast(key: str, value: Any, r: Relocator) -> Any:
+    from checkov.terraform.diff_scan.artifact_store import IndexedDefinitions
+
+    if key == "definitions" and isinstance(value, IndexedDefinitions):
+        keys = _KeyRelocator(r)
+        moved = value.with_transform(lambda d: {**d, "key": keys.key(d["key"])}, r.pickled)
+        keys.modules.clear()
+        return moved
+    if key in PICKLED_LIST_FIELDS or key in PICKLED_FIELDS or key in ("definitions", "alias_keys", "variable_inputs",
+                                                                      "rendered", "baseline_inputs", "findings.meta",
+                                                                      "findings.vertices"):
+        return None
+    if not _mentions_root(value, r.old):
+        return value
+    return None
+
+
 def relocate_section(key: str, value: Any, r: Relocator) -> Any:
     """One artifact section valid at the relocator's new root."""
     from checkov.terraform.diff_scan.artifact_store import IndexedDefinitions, IndexedList
 
+    if fast_relocation_enabled():
+        fast = _relocate_section_fast(key, value, r)
+        if fast is not None:
+            return fast
     if key in PICKLED_LIST_FIELDS:
         if isinstance(value, IndexedList):
             return value.with_transform(r.pickled)
@@ -152,7 +230,16 @@ def relocate_artifact(artifact: Any, new_root: str) -> Any:
         return artifact
     relocate_on_load = getattr(artifact, "relocate_on_load", None)
     if relocate_on_load is not None:
-        relocate_on_load(lambda key, value: relocate_section(key, value, Relocator(old_root, new_root)), new_root)
+        root_free = getattr(artifact, "root_free_sections", frozenset()) if fast_relocation_enabled() else frozenset()
+        if os.getenv("DFO_NEGATIVE", "") == "root_free_section_lies":
+            root_free = root_free | {"files", "unit_by_vertex", "units"}
+
+        def relocate(key: str, value: Any) -> Any:
+            if key in root_free:
+                return value
+            return relocate_section(key, value, Relocator(old_root, new_root))
+
+        relocate_on_load(relocate, new_root)
         return artifact
     r = Relocator(old_root, new_root)
     moved: dict[str, Any] = {key: relocate_section(key, value, r) for key, value in artifact.items()}

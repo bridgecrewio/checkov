@@ -362,26 +362,61 @@ class PickledItem(bytes):
     """Raw pickle bytes of an item of a PICKLE_LIST_SECTIONS section (artifact.loads accepts it as is)."""
 
 
+PICKLE_CARRYING_SECTIONS = frozenset({"vertices", "tfvar_blocks", "module", "definitions", "alias_keys",
+                                      "variable_inputs"})
+"""Sections holding pickles, base64 text in v2 (relocate.PICKLED_* and the alias / variable-input fields): a root
+inside a pickle is invisible to a string search, so these are never declared root-free."""
+
+
+def is_plain_root_free(value: Any, root: str, name: str = "") -> bool:
+    """True if `value` is built only of dict / list / tuple / str / bytes-free scalars, no str in it (dict keys
+    included) contains `root`, and section `name` carries no pickles. Anything else is never declared root-free."""
+    if name in PICKLE_CARRYING_SECTIONS:
+        return False
+    stack = [value]
+    while stack:
+        item = stack.pop()
+        if isinstance(item, str):
+            if root in item:
+                return False
+        elif isinstance(item, dict):
+            stack.extend(item.keys())
+            stack.extend(item.values())
+        elif isinstance(item, (list, tuple)):
+            stack.extend(item)
+        elif not (item is None or isinstance(item, (int, float, bool))):
+            return False
+    return True
+
+
 class SectionWriter:
     """Writes sections one at a time as they are produced, into `<path>.partial`; `commit()` writes the manifest and
     moves the directory into place (a crash never leaves a half-written store at `path`)."""
 
-    def __init__(self, path: str, version: int) -> None:
+    def __init__(self, path: str, version: int, root: Optional[str] = None) -> None:
         self.path = path
         self.version = version
+        self.root = root
+        """the baseline root: when given, the manifest lists the plain sections that contain no string holding it"""
         self.scratch = path + ".partial"
         self.sizes: dict[str, int] = {}
+        self.root_free: list[str] = []
         shutil.rmtree(self.scratch, ignore_errors=True)
         os.makedirs(self.scratch)
 
     def write(self, name: str, value: Any) -> None:
         if name in self.sizes:
             raise ValueError(f"section written twice: {name}")
+        if self.root is not None and name != "root" and is_plain_root_free(value, self.root, name):
+            self.root_free.append(name)
         self.sizes[name] = _write_section(os.path.join(self.scratch, name + SUFFIX), name, value)
 
     def commit(self) -> dict[str, int]:
+        manifest: dict[str, Any] = {"format": FORMAT, "version": self.version, "sections": self.sizes}
+        if self.root is not None:
+            manifest["root_free_sections"] = sorted(self.root_free)
         with open(os.path.join(self.scratch, MANIFEST), "w") as f:
-            json.dump({"format": FORMAT, "version": self.version, "sections": self.sizes}, f, indent=1)
+            json.dump(manifest, f, indent=1)
         shutil.rmtree(self.path, ignore_errors=True)
         os.replace(self.scratch, self.path)
         return self.sizes
@@ -409,6 +444,8 @@ class ArtifactSections:
         self.names: list[str] = list(manifest["sections"])
         self.sizes: dict[str, int] = dict(manifest["sections"])
         self.version = manifest["version"]
+        self.root_free_sections: frozenset[str] = frozenset(manifest.get("root_free_sections", ()))
+        """written by the baseline (SectionWriter): relocation returns these sections untouched"""
         self._loaded: dict[str, Any] = {}
         self.loads: dict[str, int] = {}
         self._relocate: Optional[Callable[[str, Any], Any]] = None

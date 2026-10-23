@@ -28,6 +28,7 @@ import os
 from collections import defaultdict
 from typing import Any, Optional
 
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -205,7 +206,7 @@ def _deserialize_record(data: dict[str, Any], by_key: dict[str, int], root: str,
         caller_file_path=restored.get("caller_file_path"),
         caller_file_line_range=c_range,
         resource_address=restored.get("resource_address"),
-        severity=restored.get("severity"),
+        severity=get_severity(restored.get("severity")),
         bc_category=restored.get("bc_category"),
         benchmarks=restored.get("benchmarks"),
         description=restored.get("description"),
