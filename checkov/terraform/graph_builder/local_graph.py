@@ -11,6 +11,7 @@ from typing import List, Optional, Union, Any, Dict, Set, TypedDict, cast
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
+from checkov.common.graph.graph_builder.deterministic import module_output_index_enabled
 from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, incremental_graph_enabled, \
     realpath_memo_enabled
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -564,6 +565,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             output_blocks_with_name = self.vertices_block_name_map.get(BlockType.OUTPUT, {}).get(
                 block_name_in_other_module, []
             )
+            if module_output_index_enabled():
+                output_blocks_with_name = self._outputs_of_module_instance(
+                    block_name_in_other_module, output_blocks_with_name, dest_module_path, module_node)
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
                 if self._should_add_edge(vertex, dest_module_path, module_node):
@@ -571,6 +575,32 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if added_edge:
                         self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break
+
+    def _outputs_of_module_instance(self, name: str, candidates: List[int], dest_module_path: str,
+                                    module_node: TerraformBlock) -> List[int]:
+        # Correctness: _should_add_edge (deterministic) is True exactly for candidates with
+        # dirname(path) == dest_module_path and source_module_object == get_vertex_as_tf_module(module_node);
+        # the loop below still calls it, so this only drops candidates it would reject.
+        """The candidates _should_add_edge can accept, in their original order: deterministic mode accepts only an
+        output whose source_module_object equals this module block's instance, so the candidates are bucketed once
+        per output name by (dirname, source_module_object) instead of every call scanning all outputs of that name
+        (O(outputs) per reference -> O(1); Customer 2: 69 M _should_add_edge calls in one PR). The bucket map is
+        rebuilt whenever the name index or any candidate vertex object changed (for_each replaces vertices)."""
+        if not deterministic_graph_enabled():
+            return candidates
+        cache: Dict[str, Any] = self.__dict__.setdefault("_module_output_index", {})
+        signature = (id(self.vertices_block_name_map), len(self.vertices), len(candidates),
+                     hash(tuple(id(self.vertices[i]) for i in candidates)))
+        index = cache.get(name)
+        if index is None or index[0] != signature:
+            buckets: Dict[Any, List[int]] = defaultdict(list)
+            for vertex_index in candidates:
+                vertex = self.vertices[vertex_index]
+                if vertex.source_module_object:
+                    buckets[(self.get_dirname(vertex.path), vertex.source_module_object)].append(vertex_index)
+            index = (signature, buckets)
+            cache[name] = index
+        return index[1].get((dest_module_path, get_vertex_as_tf_module(module_node)), [])
 
     def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
         """

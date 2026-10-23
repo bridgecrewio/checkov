@@ -44,6 +44,7 @@ from checkov.terraform.diff_scan.engine import NEGATIVE_CONTROL, ChangeSet, Diff
     RESOURCE_LEVEL_UNITS_ENV, REUSE_EXPANSIONS_ENV
 from checkov.terraform.diff_scan.relocate import relocate_artifact
 from checkov.terraform.graph_builder.utils import NESTED_PREFIX_INDEX_ENV
+from checkov.common.graph.graph_builder.deterministic import MODULE_OUTPUT_INDEX_ENV
 from checkov.terraform.diff_scan.rename import RENAME_REMAP_ENV, apply_renames, pairs_report
 from checkov.terraform.diff_scan.module_files import MODULE_FILE_SET_ENV
 from checkov.terraform.graph_builder.foreach.module_handler import SKIP_EMPTY_LEVEL_RENDER_ENV
@@ -456,6 +457,7 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     os.environ.setdefault("CHECKOV_DIFF_SCOPED_CHECKS", "true")
     os.environ.setdefault("CHECKOV_INCREMENTAL_LAZY_FINAL_STATE", "true")
     os.environ.setdefault(NESTED_PREFIX_INDEX_ENV, "true")
+    os.environ.setdefault(MODULE_OUTPUT_INDEX_ENV, "true")
     if NEGATIVE_CONTROL != "no_relocation":
         artifact = relocate_artifact(artifact, root)
     renames = _apply_renames(artifact, root, changes)

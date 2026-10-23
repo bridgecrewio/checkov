@@ -70,6 +70,15 @@ def realpath_memo_enabled() -> bool:
     return os.getenv(REALPATH_MEMO_ENV, "false").lower() == "true"
 
 
+MODULE_OUTPUT_INDEX_ENV = "CHECKOV_MODULE_OUTPUT_INDEX"
+
+
+def module_output_index_enabled() -> bool:
+    """Opt-in (set by the diff-files-only scan): `module.x.out` references look up the outputs of that module
+    instance in a per-name bucket map instead of scanning every output with the same name (deterministic mode)."""
+    return os.getenv(MODULE_OUTPUT_INDEX_ENV, "false").lower() == "true"
+
+
 STABLE_KEY_CACHE_ENV = "CHECKOV_STABLE_KEY_CACHE"
 
 

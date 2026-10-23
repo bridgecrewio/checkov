@@ -1586,10 +1586,19 @@ class DiffEngine:
         sub.release_pre_render_state()
         return _UnitResult(graph, sub.report, sub)
 
+    def _unit_keys(self, unit: str) -> list[TFDefinitionKey]:
+        """Baseline definition keys of `unit`, in definition_entries order (grouped once for all units)."""
+        if self._defs_by_unit is None:
+            by_u: dict[str, list[tuple[TFDefinitionKey, Any]]] = defaultdict(list)
+            for k, entry in self.definition_entries.items():
+                by_u[unit_of_key(k)].append((k, entry))
+            self._defs_by_unit = by_u
+        return [k for k, _ in self._defs_by_unit.get(unit, ())]
+
     def _unit_definitions(self, unit: str, parsed: dict[TFDefinitionKey, Any],
                           removed: set[TFDefinitionKey]) -> dict[TFDefinitionKey, Any]:
-        definitions = {k: loads(v) for k, v in self.pickled_definitions.items()
-                       if unit_of_key(k) == unit and k not in removed and k not in parsed}
+        definitions = {k: loads(self.pickled_definitions[k]) for k in self._unit_keys(unit)
+                       if k not in removed and k not in parsed}
         definitions.update({k: v for k, v in parsed.items() if unit_of_key(k) == unit})
         return definitions
 
