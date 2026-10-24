@@ -466,6 +466,7 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     engine.report.renamed_files = pairs_report(renames, root)
     engine.supplied_modules = sorted(modules)
     engine.validate_inputs()
+    engine.drop_parse_equivalent_files()
     with _module_cache(modules):
         graph = engine.build()
     engine.report.module_file_set["frozen_callers"] = engine.install_resolved_swaps(graph)
@@ -475,7 +476,10 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
     pre_render = engine.finish()
     from checkov.terraform.diff_scan.scoped_checks import run_scoped_diff_checks
     runner = Runner()
-    changed_files_set = set(engine.changes.changed) | set(engine.changes.deleted)
+    check_changes = getattr(engine, "check_changes", engine.changes)
+    if NEGATIVE_CONTROL == "equivalent_file_not_rechecked":
+        check_changes = engine.changes
+    changed_files_set = set(check_changes.changed) | set(check_changes.deleted)
     if os.getenv("DFO_NEGATIVE", "") == "scope_radius_minus_one":
         effective_affected = set(render.affected_indices)
     else:
@@ -484,7 +488,7 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
         runner, graph, root, artifact, effective_affected, changed_files_set
     )
     if scoped_report is None:
-        repository_files.set_files(repository_index(artifact, engine.changes, root, release_files=True))
+        repository_files.set_files(repository_index(artifact, check_changes, root, release_files=True))
         report = _run_checks(runner, graph, root)
     else:
         report = scoped_report

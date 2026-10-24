@@ -53,6 +53,9 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         """Incremental mode only: called after the edge loop, before the post-loop passes (graph export)."""
         self.schedule_stats: Dict[str, Any] = {}
         """Incremental mode only: whether the affected-only edge schedule replaced the global loop, and its size."""
+        self.evaluated_labels: Optional[Callable[[int, str], bool]] = None
+        """Sub-graph renders only (foreach/subgraph_scope.py precise scope): an edge group (origin, label) is evaluated
+        only when this returns True. Skipped groups keep their place in the schedule (topology-derived)."""
 
     def render_variables_from_local_graph(self) -> None:
         self._render_variables_from_edges()
@@ -101,9 +104,15 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         if schedule.reached_cap:
             logging.warning(f"Reached max ({self.MAX_NUMBER_OF_LOOPS}) graph edge evaluation loops, breaking.")
         for groups in schedule.iter_rounds():
-            for group in groups:
+            for group in self._groups_to_evaluate(groups):
                 self._edge_evaluation_task([group])
         return True
+
+    def _groups_to_evaluate(self, groups: list[list[Edge]]) -> list[list[Edge]]:
+        if self.evaluated_labels is None:
+            return groups
+        evaluated = self.evaluated_labels
+        return [group for group in groups if evaluated(group[0].origin, group[0].label)]
 
     def _require_no_dropped_round0_edges(self, initial_end: set[int]) -> None:
         """A sub-graph render (count/for_each handlers) removes some edges from round 0 only
@@ -199,6 +208,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             edges_groups = self._stable_edge_groups(edges_groups)
         if self.frozen_vertices:
             edges_groups = [group for group in edges_groups if group[0].origin not in self.frozen_vertices]
+        edges_groups = self._groups_to_evaluate(edges_groups)
         if self.run_async:
             run_function_multithreaded(
                 func=self._edge_evaluation_task,

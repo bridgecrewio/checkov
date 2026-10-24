@@ -653,6 +653,7 @@ def _resolve_key_in_graph(key: str, graph: Any, root: str, cache: dict[str, int]
     v_type, v_name = ident[2], ident[3]
     p_idx_map = getattr(graph, "_dfo_path_index", None)
     if p_idx_map is None:
+        graph.__dict__.pop("_dfo_group_keys", None)
         p_idx_map = {}
         for idx, v in enumerate(graph.vertices):
             p_idx_map.setdefault(v.path, []).append(idx)
@@ -676,13 +677,40 @@ def _resolve_key_in_graph(key: str, graph: Any, root: str, cache: dict[str, int]
         p_idx_map[v_path] = by_tn
         candidates = by_tn
     lookup_name = v_name.split("[", 1)[0] if v_type == BlockType.MODULE and "[" in v_name else v_name
-    for idx in candidates.get((v_type, lookup_name), ()):
+    group = (v_type, lookup_name)
+    if group_key_cache_enabled():
+        return _keys_of_group(graph, candidates, v_path, group, root).get(key)
+    for idx in candidates.get(group, ()):
         v = graph.vertices[idx]
         k_idx = vertex_key(v, root)
         cache[k_idx] = idx
         if k_idx == key:
             return idx
     return None
+
+
+GROUP_KEY_CACHE_ENV = "CHECKOV_DIFF_GROUP_KEY_CACHE"
+"""Opt-in: the keys of a (path, block type, name) candidate group are computed once per graph. Without it every
+lookup recomputes the keys of the group's vertices up to the match: a module file instantiated N times gives N
+vertices of the same (path, type, name), so N lookups cost O(N^2) key computations."""
+
+
+def group_key_cache_enabled() -> bool:
+    return os.getenv(GROUP_KEY_CACHE_ENV, "false").lower() == "true"
+
+
+def _keys_of_group(graph: Any, candidates: dict[tuple[str, str], list[int]], v_path: str, group: tuple[str, str],
+                   root: str) -> dict[str, int]:
+    """key -> vertex index for one candidate group; the first index wins on equal keys (the uncached loop returns the
+    first match in candidate order)."""
+    cache: dict[tuple[str, tuple[str, str]], dict[str, int]] = graph.__dict__.setdefault("_dfo_group_keys", {})
+    keys = cache.get((v_path, group))
+    if keys is None:
+        keys = {}
+        for idx in candidates.get(group, ()):
+            keys.setdefault(vertex_key(graph.vertices[idx], root), idx)
+        cache[(v_path, group)] = keys
+    return keys
 
 
 def restore_vertex(vertex: TerraformBlock, data: dict[str, Any], by_key: dict[str, int], root: str,
@@ -1147,6 +1175,7 @@ def update_graph(artifact: dict[str, Any], graph: Any, root: str, release: Optio
     if os.getenv("CHECKOV_INCREMENTAL_LAZY_FINAL_STATE", "false").lower() == "true":
         vertex_key._chain_cache = {}  # type: ignore[attr-defined]
         graph._dfo_path_index = None  # type: ignore[attr-defined]
+        graph.__dict__.pop("_dfo_group_keys", None)
     logging.info(f"[incremental graph] {report.affected} affected / {report.frozen} frozen of {report.vertices}")
     return report
 

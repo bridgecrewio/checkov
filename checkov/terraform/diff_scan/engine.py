@@ -111,6 +111,8 @@ class PreRenderReport:
     files_ignored: list[str] = field(default_factory=list)
     """changed files Checkov's Terraform directory scan never loads (.tf.json, non-Terraform files): accepted,
     contribute nothing"""
+    files_parse_equivalent: list[str] = field(default_factory=list)
+    """changed .tf files parse-equivalent to the baseline (CHECKOV_DIFF_SKIP_EQUIVALENT_FILES): treated as unchanged"""
     mode: str = "per-owner"
     """per-owner: every unit spliced, edges rebuilt per owner | scoped-units: changed units rebuilt by Checkov"""
     units_total: int = 0
@@ -428,6 +430,13 @@ def _parse_file(path: str) -> dict[str, Any]:
     return next(iter(serialize_definitions(clean_parser_types({TFDefinitionKey(path): data})).values()))
 
 
+SKIP_EQUIVALENT_FILES_ENV = "CHECKOV_DIFF_SKIP_EQUIVALENT_FILES"
+
+
+def skip_equivalent_files_enabled() -> bool:
+    return os.getenv(SKIP_EQUIVALENT_FILES_ENV, "false").lower() == "true"
+
+
 def _module_calls(definition: dict[str, Any]) -> dict[str, Any]:
     return {name: data for call in definition.get(BlockType.MODULE, []) if isinstance(call, dict)
             for name, data in call.items() if isinstance(data, dict)}
@@ -584,6 +593,35 @@ class DiffEngine:
                 elif key in self.pickled_definitions:
                     removed.add(key)
         return parsed, set(parsed), removed - set(parsed)
+
+    def drop_parse_equivalent_files(self) -> None:
+        """Changed .tf files whose parsed definition (attributes and block line ranges, per module instance) equals the
+        baseline's are removed from the GRAPH change set (`files_parse_equivalent`): the pre-render graph cannot
+        differ. They stay in `check_changes`: comments, trailing text and line terminators reach findings through
+        code blocks and skip comments, so their findings are re-evaluated from the new text like any changed file."""
+        self.check_changes = ChangeSet(changed=list(self.changes.changed), deleted=list(self.changes.deleted))
+        if not skip_equivalent_files_enabled():
+            return
+        instances = self._instances_by_directory()
+        equivalent = {path for path in self.changes.changed
+                      if is_terraform_file(path) and not is_variable_file(path)
+                      and self._is_parse_equivalent(path, instances.get(os.path.dirname(path)))}
+        if not equivalent:
+            return
+        self.changes.changed[:] = [p for p in self.changes.changed if p not in equivalent]
+        self.report.files_parse_equivalent = sorted(os.path.relpath(p, self.root) for p in equivalent)
+
+    def _is_parse_equivalent(self, path: str, instances: Optional[set[Any]]) -> bool:
+        keys = [TFDefinitionKey(file_path=path, tf_source_modules=instance) for instance in instances or ()]
+        if not keys or not all(key in self.pickled_definitions for key in keys):
+            return False
+        try:
+            definition = _parse_file(path)
+        except IncrementalGraphUnsupported:
+            return False
+        if not definition:
+            return False
+        return all(self._with_resolved_modules(key, definition) == loads(self.pickled_definitions[key]) for key in keys)
 
     def _with_resolved_modules(self, key: TFDefinitionKey, definition: dict[str, Any]) -> dict[str, Any]:
         """Module calls are resolved by the parser; a PR may change a call's arguments, not what it loads."""

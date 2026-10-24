@@ -962,5 +962,6 @@ def run_scoped_diff_checks(runner: Runner, graph: TerraformLocalGraph, root: str
     if not os.getenv("CHECKOV_DIFF_SNAPSHOT_OUT"):
         graph._dfo_unit_key_to_pr = None  # type: ignore[attr-defined]
         graph._dfo_path_index = None  # type: ignore[attr-defined]
+        graph.__dict__.pop("_dfo_group_keys", None)
     return report
 
