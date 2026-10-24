@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
@@ -30,13 +31,16 @@ PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
-def should_include_path(full_path: str, ignore_hidden_dir: bool) -> bool:
+def should_include_path(full_path: str, ignore_hidden_dir: bool, root_folder: str | None = None) -> bool:
     if full_path in EXCLUDED_FILE_NAMES:
         return False
 
-    inside_hidden_dir = "/." in full_path
-    if inside_hidden_dir and ignore_hidden_dir:
-        return False
+    if ignore_hidden_dir:
+        # only check the path below the scanned root, a hidden dir in the root itself was chosen by the user
+        path_to_check = os.path.relpath(full_path, root_folder) if root_folder else full_path
+        parts = re.split(r"[\\/]", path_to_check)
+        if any(part.startswith(".") and part not in (".", "..") for part in parts):
+            return False
 
     return True
 
@@ -53,7 +57,7 @@ def get_folder_definitions(
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if should_include_path(full_path, env_vars_config.IGNORE_HIDDEN_DIRECTORIES):
+                if should_include_path(full_path, env_vars_config.IGNORE_HIDDEN_DIRECTORIES, root_folder):
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
