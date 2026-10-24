@@ -1,4 +1,14 @@
 pass:
   - 'Pod.default.internal-proxy-deployment.app-internal-proxy'
+  - 'Pod.default.tier-worker'
+  - 'Pod.default.env-prod'
+  - 'Pod.default.env-missing'
+  - 'Pod.default.team-payments'
+  - 'Pod.default.modern'
 fail:
   - 'Pod.default.external-proxy-deployment.app-external-proxy'
+  - 'Pod.default.tier-api'
+  - 'Pod.default.env-dev'
+  - 'Pod.default.legacy'
+  - 'Pod.default.invalid-expressions'
+  - 'Pod.default.no-labels'
