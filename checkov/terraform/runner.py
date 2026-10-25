@@ -35,7 +35,10 @@ from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.tf_parser import TFParser
 from checkov.common.util.env_vars_config import env_vars_config
-from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, module_chain_key
+from checkov.common.graph.graph_builder.deterministic import dedup_compat_enabled, deterministic_graph_enabled, \
+    module_chain_key
+from checkov.common.output.dedup_compat import dedup_to_upstream_identity
+from checkov.terraform.diff_files_only import diff_files_only_enabled
 
 if TYPE_CHECKING:
     from checkov.common.typing import _SkippedCheck, LibraryGraph, LibraryGraphConnector
@@ -147,6 +150,8 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
+        if dedup_compat_enabled() and deterministic_graph_enabled() and not diff_files_only_enabled():
+            report = dedup_to_upstream_identity(report)
 
         if runner_filter.run_image_referencer:
             image_report = self.check_container_image_references(

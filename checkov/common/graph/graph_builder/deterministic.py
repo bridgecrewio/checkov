@@ -51,6 +51,35 @@ def isolate_check_config_enabled() -> bool:
     return os.getenv(ISOLATE_CHECK_CONFIG_ENV, "false").lower() == "true"
 
 
+IDEMPOTENT_DYNAMIC_BLOCKS_ENV = "CHECKOV_IDEMPOTENT_DYNAMIC_BLOCKS"
+
+
+def idempotent_dynamic_blocks_enabled() -> bool:
+    """Opt-in: a Terraform resource check sees every dynamic block of the entity expanded exactly once, completely,
+    on a private copy (parser_functions.expand_dynamic_values_completely).
+
+    Upstream every Python resource check calls handle_dynamic_values(conf) on the shared vertex config. That call
+    expands only the first entry of each list of blocks before copying it, and appends one more copy of every block
+    per call: the N-th check sees N copies, the later ones more complete than the first. A check that reads the
+    first block (container[0], ...) therefore depends on how many checks ran before it and on which checks were
+    selected (-c / --skip-check). CHECKOV_ISOLATE_CHECK_CONFIG removes the order dependence by freezing every check
+    at upstream's first, incomplete expansion; this flag replaces that view with the complete one."""
+    return os.getenv(IDEMPOTENT_DYNAMIC_BLOCKS_ENV, "false").lower() == "true"
+
+
+DEDUP_COMPAT_ENV = "CHECKOV_DEDUP_COMPAT"
+
+
+def dedup_compat_enabled() -> bool:
+    """Opt-in, output only: the emitted report keeps one record per upstream identity
+    (check, file, line range, resource), as upstream's remove_duplicate_results does. Deterministic mode keeps one
+    record per module instance (the identity includes the module call chain), so the same module code called from N
+    root modules yields N records. The graph and the artifact's stored findings keep every instance; the full scan,
+    baseline and diff scan reports are reduced with the same rule (common.output.dedup_compat), so Full and Diff
+    still compare equal."""
+    return os.getenv(DEDUP_COMPAT_ENV, "false").lower() == "true"
+
+
 def incremental_graph_enabled() -> bool:
     """Opt-in on top of deterministic mode: a vertex's rendered state depends only on the vertices it references.
 

@@ -102,9 +102,12 @@ RESULT_SETTINGS = ("framework", "skip_framework", "check", "skip_check", "skip_p
 and every config file Checkov loaded). Variable inputs (--var-file, TF_VAR_*) are not here: the diff engine compares
 them with the baseline's and recomputes what they feed."""
 RESULT_ENV_PREFIXES = ("CKV_", "CHECKOV_ENABLE_", "CHECKOV_EXPERIMENTAL_", "CHECKOV_MAX_", "CHECKOV_RENDER_",
-                       "CHECKOV_GRAPH_FRAMEWORK", "RENDER_")
+                       "CHECKOV_GRAPH_FRAMEWORK", "RENDER_", "CHECKOV_IDEMPOTENT_DYNAMIC_BLOCKS",
+                       "CHECKOV_DEDUP_COMPAT")
 """Checkov environment settings that can change graph construction or findings (ignored directories, for_each
-handling, file size limits, render limits, ...). The PoC's own opt-in flags are set identically by every scan mode."""
+handling, file size limits, render limits, ...). The PoC's own opt-in flags are set identically by every scan mode,
+except the two finding-shaping flags, which a caller may toggle: a diff scan restores baseline findings, so the
+baseline and the PR scan must agree on them."""
 
 
 def result_settings(config: Any) -> dict[str, Any]:

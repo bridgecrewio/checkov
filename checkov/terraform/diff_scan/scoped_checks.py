@@ -32,7 +32,8 @@ from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.deterministic import module_chain_key
+from checkov.common.graph.graph_builder.deterministic import dedup_compat_enabled, module_chain_key
+from checkov.common.output.dedup_compat import dedup_to_upstream_identity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
@@ -335,6 +336,8 @@ def run_and_capture_baseline_checks(runner: Runner, graph: TerraformLocalGraph, 
     merge_reports(combined, res_report)
     merge_reports(combined, graph_report)
     combined = remove_duplicate_results(combined)
+    if dedup_compat_enabled():
+        combined = dedup_to_upstream_identity(combined)
     combined.resources |= resources_report.resources
 
     vertices_data: dict[str, Any] = {}

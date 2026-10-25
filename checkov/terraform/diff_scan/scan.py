@@ -15,7 +15,9 @@ import os
 from dataclasses import dataclass
 from typing import Any, Iterator, Optional
 
-from checkov.common.graph.graph_builder.deterministic import REALPATH_MEMO_ENV, STABLE_KEY_CACHE_ENV
+from checkov.common.graph.graph_builder.deterministic import REALPATH_MEMO_ENV, STABLE_KEY_CACHE_ENV, \
+    dedup_compat_enabled
+from checkov.common.output.dedup_compat import dedup_to_upstream_identity
 from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import AFFECTED_SCHEDULE_ENV, \
     SUBGRAPH_SCHEDULE_ENV
 from checkov.common.output.report import Report
@@ -492,6 +494,8 @@ def diff_scan(root: str, artifact: Any, changes: ChangeSet, target: Optional[inp
         report = _run_checks(runner, graph, root)
     else:
         report = scoped_report
+    if dedup_compat_enabled():
+        report = dedup_to_upstream_identity(report)
     _release(artifact, "files", "findings.meta", "findings.vertices", "rendered", "rendered.edges",
              "rendered.pre_render")
     if not os.getenv("CHECKOV_DIFF_SNAPSHOT_OUT"):
