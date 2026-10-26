@@ -32,7 +32,8 @@ from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.deterministic import dedup_compat_enabled, module_chain_key
+from checkov.common.graph.graph_builder.deterministic import dedup_compat_enabled, idempotent_dynamic_blocks_enabled, \
+    module_chain_key
 from checkov.common.output.dedup_compat import dedup_to_upstream_identity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
@@ -74,8 +75,9 @@ def scoped_checks_enabled() -> bool:
 
 
 def policy_fingerprint(runner: Runner) -> str:
-    """Hash of the active check IDs across all Terraform registries + Checkov version."""
-    ids: list[str] = [f"version:{version}"]
+    """Hash of the active check IDs across all Terraform registries + Checkov version + how resource checks expand
+    dynamic blocks (stored findings computed the other way must not be reused)."""
+    ids: list[str] = [f"version:{version}", f"idempotent_dynamic_blocks:{idempotent_dynamic_blocks_enabled()}"]
     for block_type, registry in sorted(BaseTerraformRunner.block_type_registries.items()):
         for check_list in registry.checks.values():
             for check in check_list:

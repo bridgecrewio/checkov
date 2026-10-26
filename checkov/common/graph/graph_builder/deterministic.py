@@ -55,7 +55,8 @@ IDEMPOTENT_DYNAMIC_BLOCKS_ENV = "CHECKOV_IDEMPOTENT_DYNAMIC_BLOCKS"
 
 
 def idempotent_dynamic_blocks_enabled() -> bool:
-    """Opt-in: a Terraform resource check sees every dynamic block of the entity expanded exactly once, completely,
+    """Opt-in for regular Checkov, on by default in every diff-scan mode (diff_scan.scan.FINDINGS_FIX_DEFAULTS):
+    a Terraform resource check sees every dynamic block of the entity expanded exactly once, completely,
     on a private copy (parser_functions.expand_dynamic_values_completely).
 
     Upstream every Python resource check calls handle_dynamic_values(conf) on the shared vertex config. That call
@@ -71,7 +72,8 @@ DEDUP_COMPAT_ENV = "CHECKOV_DEDUP_COMPAT"
 
 
 def dedup_compat_enabled() -> bool:
-    """Opt-in, output only: the emitted report keeps one record per upstream identity
+    """Output only, on by default in every diff-scan mode (diff_scan.scan.FINDINGS_FIX_DEFAULTS): the emitted report
+    keeps one record per upstream identity
     (check, file, line range, resource), as upstream's remove_duplicate_results does. Deterministic mode keeps one
     record per module instance (the identity includes the module call chain), so the same module code called from N
     root modules yields N records. The graph and the artifact's stored findings keep every instance; the full scan,

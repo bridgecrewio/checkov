@@ -15,8 +15,8 @@ import os
 from dataclasses import dataclass
 from typing import Any, Iterator, Optional
 
-from checkov.common.graph.graph_builder.deterministic import REALPATH_MEMO_ENV, STABLE_KEY_CACHE_ENV, \
-    dedup_compat_enabled
+from checkov.common.graph.graph_builder.deterministic import DEDUP_COMPAT_ENV, IDEMPOTENT_DYNAMIC_BLOCKS_ENV, \
+    REALPATH_MEMO_ENV, STABLE_KEY_CACHE_ENV, dedup_compat_enabled
 from checkov.common.output.dedup_compat import dedup_to_upstream_identity
 from checkov.common.graph.graph_builder.variable_rendering.affected_schedule import AFFECTED_SCHEDULE_ENV, \
     SUBGRAPH_SCHEDULE_ENV
@@ -63,10 +63,19 @@ FLAGS = {
 }
 """Every scan mode (full oracle, baseline, diff) runs with the same opt-in flags."""
 
+FINDINGS_FIX_DEFAULTS = {
+    IDEMPOTENT_DYNAMIC_BLOCKS_ENV: "true",
+    DEDUP_COMPAT_ENV: "true",
+}
+"""On by default in every scan mode: the dynamic-block bug fix and upstream's one-record-per-finding report. A caller
+may set either to "false"; the baseline and the PR scan must then agree (both are in the result fingerprints)."""
+
 
 def enable_flags() -> None:
     for name, value in FLAGS.items():
         os.environ[name] = value
+    for name, value in FINDINGS_FIX_DEFAULTS.items():
+        os.environ.setdefault(name, value)
 
 
 def _definitions_context(runner: Runner) -> dict[Any, Any]:

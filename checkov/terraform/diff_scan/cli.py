@@ -205,6 +205,7 @@ def run_diff_scan(config: Any) -> int:
         raise SystemExit("diff-files-only scanning requires exactly one -d/--directory")
     root = os.path.realpath(config.directory[0])
     _configure_inputs(config, root)
+    scan.enable_flags()
     if config.diff_full_scan:
         result = scan.full_scan(root)
     elif config.diff_baseline_out:
