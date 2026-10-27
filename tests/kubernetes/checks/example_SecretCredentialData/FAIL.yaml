@@ -4,7 +4,7 @@ metadata:
   name: app-credentials
 type: Opaque
 data:
-  password: U3VwM3JTM2NyZXQh
+  password: ZmFrZS10ZXN0LXBhc3N3b3JkLW5vdC1yZWFs
 ---
 apiVersion: v1
 kind: Secret
@@ -12,7 +12,7 @@ metadata:
   name: api-token
 type: Opaque
 data:
-  token: Z2hwXzlmOGU3ZDZjNWI0YTM5MjgxNzA2ZjVlNGQzYzJiMWEwOWY4ZTdkNmM=
+  token: ZmFrZS10ZXN0LWFwaS10b2tlbi1ub3QtcmVhbA==
 ---
 apiVersion: v1
 kind: Secret
@@ -20,7 +20,34 @@ metadata:
   name: etcd-jwt-key
 type: Opaque
 stringData:
-  jwt-token.pem: |
-    -----BEGIN RSA PRIVATE KEY-----
-    MIIEpAIBAAKCAQEA7aExampl3K3yN0tRealKeyMaterialWouldFollowHere
+  jwt-token.pem: '-----BEGIN RSA PRIVATE KEY-----
+
+    FAKEPRIVATEKEYMATERIALNOTREAL0000000000000000000000000000
+
     -----END RSA PRIVATE KEY-----
+
+    '
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: password-in-url
+type: Opaque
+stringData:
+  database-url: "postgres://app:fake-test-password@db.internal:5432/app"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: token-as-username-url
+type: Opaque
+stringData:
+  repo-url: "https://ghp_FAKETOKENNOTREAL0000000000000000@github.com/example/repo.git"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: query-token-url
+type: Opaque
+stringData:
+  webhook-url: "https://hooks.example.com/deploy?token=fake-test-token-not-real"
