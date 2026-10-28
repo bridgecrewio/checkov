@@ -434,3 +434,22 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_edges_to_count_resources_referenced_by_literal_index(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/count_resource_references'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            (local_graph.vertices[e.origin].name, local_graph.vertices[e.dest].name)
+            for e in local_graph.edges
+        }
+        expected_edges = {
+            ("aws_s3_bucket_versioning.single_literal", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_splat", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.multi_literal", "aws_s3_bucket.multi[2]"),
+            ("aws_backup_selection.multi_literals", "aws_s3_bucket.multi[0]"),
+            ("aws_backup_selection.multi_literals", "aws_s3_bucket.multi[1]"),
+        }
+        self.assertEqual(expected_edges, edges)

@@ -146,3 +146,68 @@ resource "aws_alb_target_group" "public_fargate_target_group" {
 
   depends_on = [aws_alb.public_application_load_balancer]
 }
+
+# target groups expanded by count, referenced by a literal index (#7727)
+resource "aws_lb_listener" "https_to_count_target_group" {
+  load_balancer_arn = aws_lb.public_application_load_balancer.arn
+  port              = 8443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = data.aws_acm_certificate.default_cert.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.count_https[0].arn
+  }
+}
+
+resource "aws_lb_target_group" "count_https" {
+  count       = 1
+  name        = "tg-count-https"
+  port        = 8000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = "vpc-1"
+}
+
+resource "aws_lb_listener" "https_to_count_target_group_splat" {
+  load_balancer_arn = aws_lb.public_application_load_balancer.arn
+  port              = 9443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = data.aws_acm_certificate.default_cert.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = one(aws_lb_target_group.count_https_splat[*].arn)
+  }
+}
+
+resource "aws_lb_target_group" "count_https_splat" {
+  count       = 1
+  name        = "tg-count-https-splat"
+  port        = 8000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = "vpc-1"
+}
+
+resource "aws_lb_listener" "http_to_count_target_group" {
+  load_balancer_arn = aws_lb.public_application_load_balancer.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.count_http[1].arn
+  }
+}
+
+resource "aws_lb_target_group" "count_http" {
+  count       = 2
+  name        = "tg-count-http-${count.index}"
+  port        = 8000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = "vpc-1"
+}
