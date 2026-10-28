@@ -17,6 +17,24 @@ class TestGoogleComputeFirewallUnrestrictedIngress3389(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
+    def test_failure_ipv6(self):
+        for source_range in ('::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'):
+            resource_conf = {'name': ['${var.name}-${var.region}-mesos-rdp'],
+                             'network': ['${google_compute_network.mesos-global-net.name}'],
+                             'allow': [{'protocol': ['tcp'], 'ports': [[str(PORT)]]}],
+                             'source_ranges': [['2001:db8::/32', source_range]]}
+
+            scan_result = check.scan_resource_conf(conf=resource_conf)
+            self.assertEqual(CheckResult.FAILED, scan_result, source_range)
+
+    def test_success_ipv6_restricted(self):
+        resource_conf = {'name': ['${var.name}-${var.region}-mesos-rdp'],
+                         'network': ['${google_compute_network.mesos-global-net.name}'],
+                         'allow': [{'protocol': ['tcp'], 'ports': [[str(PORT)]]}],
+                         'source_ranges': [['2001:db8::/32']]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
     def test_success_1(self):
         resource_conf = {'name': ['${var.name}-${var.region}-mesos-ssh'],
                          'network': ['${google_compute_network.mesos-global-net.name}'],
