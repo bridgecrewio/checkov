@@ -9,7 +9,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
-from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos
+from checkov.helm.runner import Runner, fix_report_paths, _get_chart_remote_repos, _get_blocked_helm_repos, \
+    _repo_matches_prefix
 from tests.helm.utils import helm_exists
 
 
@@ -59,7 +60,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
-        
+
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_invalid_chart(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -206,7 +207,8 @@ class TestRunnerValid(unittest.TestCase):
                 # Check template mapping was populated correctly
                 expected_mapping = {
                     f'{target_dir}/mychart/templates/service.yaml': os.path.join(chart_dir, "templates/service.yaml"),
-                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir, "templates/deployment.yaml")
+                    f'{target_dir}/mychart/templates/deployment.yaml': os.path.join(chart_dir,
+                                                                                    "templates/deployment.yaml")
                 }
 
                 # Compare the mappings - normalize paths for comparison
@@ -240,6 +242,7 @@ class TestRunnerValid(unittest.TestCase):
         r = Runner()
         r.helm_command = 'thisshouldfail'
         assert r.check_system_deps() == "helm"
+
 
 class TestHelmDependencyRemoteRepos(unittest.TestCase):
     """Tests for helm remote dependency repository allowlist.
@@ -291,6 +294,86 @@ class TestHelmDependencyRemoteRepos(unittest.TestCase):
         with mock.patch.dict(os.environ, env):
             repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
         self.assertEqual(repos, [])
+
+    def test_get_blocked_helm_repos_wildcard_allows_all(self):
+        """'*' allows all repos."""
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": "https://charts.trusted.org/, *,"}
+        with mock.patch.dict(os.environ, env):
+            repos = _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+        self.assertEqual(repos, [])
+
+    # ------------------------------------------------------------------
+    # allowlist host matching (scheme, host and port must match exactly)
+    # ------------------------------------------------------------------
+
+    def _blocked(self, allowlist: str, repos: list[str]) -> list[str]:
+        env = {"CHECKOV_HELM_ALLOWED_REMOTE_REPOS": allowlist}
+        with mock.patch.dict(os.environ, env), \
+                mock.patch("checkov.helm.runner._get_chart_remote_repos", return_value=repos):
+            return _get_blocked_helm_repos(self._REMOTE_DEP_DIR)
+
+    def _assert_allowed(self, allowlist: str, repo: str) -> None:
+        self.assertEqual(self._blocked(allowlist, [repo]), [], f"{repo} should be allowed by {allowlist}")
+
+    def _assert_blocked(self, allowlist: str, repo: str) -> None:
+        self.assertEqual(self._blocked(allowlist, [repo]), [repo], f"{repo} should be blocked by {allowlist}")
+
+    def test_allowlist_lookalike_host_not_allowed(self):
+        self._assert_blocked("https://charts.example.com", "https://charts.example.com.other.net/x")
+
+    def test_allowlist_port_must_match_exactly(self):
+        self._assert_blocked("https://192.0.2.1:844", "https://192.0.2.1:8443/x")
+        self._assert_allowed("https://192.0.2.1:8443/", "https://192.0.2.1:8443/x")
+
+    def test_allowlist_default_port_matches(self):
+        self._assert_allowed("https://charts.example.com", "https://charts.example.com:443/x")
+        self._assert_allowed("http://192.0.2.1", "http://192.0.2.1:80/x")
+        self._assert_blocked("https://charts.example.com", "https://charts.example.com:80/x")
+
+    def test_allowlist_userinfo_ignored_for_host_match(self):
+        self._assert_allowed("https://charts.example.com", "https://u:p@charts.example.com/x")
+        self._assert_blocked("https://charts.example.com", "https://charts.example.com@other.net/x")
+
+    def test_allowlist_query_and_fragment_not_used_as_host(self):
+        self._assert_blocked("https://charts.example.com", "https://other.net/x?@charts.example.com/")
+        self._assert_blocked("https://charts.example.com", "https://other.net/x#@charts.example.com/")
+
+    def test_allowlist_scheme_must_match(self):
+        self._assert_blocked("https://charts.example.com", "http://charts.example.com/x")
+
+    def test_allowlist_host_match_is_case_insensitive(self):
+        self._assert_allowed("https://Charts.Example.com/", "HTTPS://CHARTS.EXAMPLE.COM/x")
+
+    def test_allowlist_path_prefix(self):
+        self._assert_allowed("https://charts.example.com/stable", "https://charts.example.com/stable/app")
+        self._assert_blocked("https://charts.example.com/stable", "https://charts.example.com/incubator/app")
+
+    def test_allowlist_invalid_port_not_allowed(self):
+        self._assert_blocked("https://charts.example.com", "https://charts.example.com:99999/x")
+        self._assert_blocked("https://charts.example.com", "https://charts.example.com:abc/x")
+        self._assert_blocked("https://charts.example.com:abc", "https://charts.example.com/x")
+
+    def test_allowlist_multiple_prefixes(self):
+        repos = ["https://charts.example.com/x", "https://charts.example.com.other.net/x", "http://192.0.2.1/y"]
+        self.assertEqual(
+            self._blocked("https://charts.example.com, http://192.0.2.1", repos),
+            ["https://charts.example.com.other.net/x"],
+        )
+
+    def test_repo_matches_prefix_oci(self):
+        self.assertTrue(_repo_matches_prefix("oci://registry.example.com/charts/app", "oci://registry.example.com/charts"))
+        self.assertFalse(
+            _repo_matches_prefix("oci://registry.example.com.other.net/charts/app", "oci://registry.example.com/charts")
+        )
+        self.assertFalse(_repo_matches_prefix("oci://registry.example.com:5000/charts/app", "oci://registry.example.com/charts"))
+
+    def test_repo_matches_prefix_non_url_forms_unchanged(self):
+        # Values without '://' keep the plain prefix comparison.
+        self.assertTrue(_repo_matches_prefix("@bitnami", "@bit"))
+        self.assertTrue(_repo_matches_prefix("alias:bitnami", "alias:"))
+        self.assertFalse(_repo_matches_prefix("@bitnami", "alias:"))
+        self.assertTrue(_repo_matches_prefix("https://charts.example.com/x", "https"))
+        self.assertFalse(_repo_matches_prefix("../local-chart", "https://charts.example.com"))
 
     # ------------------------------------------------------------------
     # get_binary_output() integration tests
