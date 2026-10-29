@@ -2,6 +2,8 @@ pass:
   - "aws_s3_bucket.bucket_good_1"
   - "aws_s3_bucket.bucket_good_3"
   - "aws_s3_bucket.bucket_good_6"
+  - "aws_s3_bucket.bucket_good_dsse_inline"
+  - "aws_s3_bucket.bucket_good_dsse_sse"
 fail:
   - "aws_s3_bucket.bucket_bad_1"
   - "aws_s3_bucket.bucket_bad_2"
