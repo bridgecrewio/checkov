@@ -5,7 +5,7 @@ from ast import literal_eval
 import logging
 import os
 import re
-from collections.abc import Hashable, Sequence
+from collections.abc import Hashable, Iterable, Sequence
 from json import JSONDecodeError
 
 import dpath
@@ -24,7 +24,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
-    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
+    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes, nested_prefix_index,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
@@ -270,6 +270,13 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
         """
+        if evaluator.whole_reference_value(changed_attribute_value) is not None:
+            # `x = local.y` resolved to a map / list (evaluate_terraform.replace_string_value): already a value, not
+            # an expression; stringifying and re-parsing it breaks maps whose strings hold quotes / commas.
+            self.local_graph.update_vertex_attribute(
+                vertex, changed_attribute_key, changed_attribute_value, change_origin_id, attribute_at_dest
+            )
+            return
         str_to_evaluate = (
             str(changed_attribute_value)
             if self.attributes_no_eval(changed_attribute_key, vertex)
@@ -320,8 +327,15 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
     def _render_dynamic_blocks(self) -> None:
         vertex_indices = self.local_graph.vertices_by_block_type[BlockType.RESOURCE]
+        if not vertex_indices and self.frozen_vertices:
+            vertex_indices = [
+                i for i in sorted(set(range(len(self.local_graph.vertices))) - self.frozen_vertices)
+                if self.local_graph.vertices[i].block_type == BlockType.RESOURCE
+            ]
 
         for idx in vertex_indices:
+            if idx in self.frozen_vertices:
+                continue
             vertex = self.local_graph.vertices[idx]
             if vertex.has_dynamic_block:
                 # only check dynamic blocks on the root level for now
@@ -502,15 +516,24 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         return False
 
     def evaluate_non_rendered_values(self) -> None:
-        for index, vertex in enumerate(self.local_graph.vertices):
+        if self.frozen_vertices and len(self.frozen_vertices) * 2 > len(self.local_graph.vertices):
+            indices: Iterable[int] = sorted(set(range(len(self.local_graph.vertices))) - self.frozen_vertices)
+        else:
+            indices = range(len(self.local_graph.vertices))
+        for index in indices:
+            if index in self.frozen_vertices:
+                continue
+            vertex = self.local_graph.vertices[index]
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
             attribute_is_leaf = get_attribute_is_leaf(vertex)
+            prefix_index = nested_prefix_index(vertex.attributes)
             filtered_attributes = [
                 attr
                 for attr in vertex.attributes
-                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf)
+                if attr not in reserved_attribute_names
+                and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf, prefix_index)
                 and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
                 and not self.shouldBeFilteredByConditionAndResourceType(attr, vertex.attributes.get("resource_type", []))
             ]

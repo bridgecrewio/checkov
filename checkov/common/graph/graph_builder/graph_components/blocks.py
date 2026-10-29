@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import threading
 import typing
 from collections.abc import Collection
 from typing import Dict, Any, List, cast
@@ -14,6 +16,31 @@ from bc_jsonpath_ng.ext import parse
 
 if typing.TYPE_CHECKING:
     from bc_jsonpath_ng import JSONPath
+
+REUSE_JSONPATH_PARSER_ENV = "CHECKOV_REUSE_JSONPATH_PARSER"
+_jsonpath_parsers = threading.local()
+
+
+def _parse_jsonpath(path: str) -> JSONPath:
+    """bc_jsonpath_ng regenerates its LALR tables (ply.yacc.yacc) on every parse: ~50 ms per new attribute path.
+    Opt-in (CHECKOV_REUSE_JSONPATH_PARSER=true): build the table-driven parser once per thread and reuse it with a
+    fresh lexer per path, which is what bc_jsonpath_ng does inside one parse call."""
+    if os.getenv(REUSE_JSONPATH_PARSER_ENV, "false").lower() != "true":
+        return parse(path)
+    parser = getattr(_jsonpath_parsers, "parser", None)
+    if parser is None:
+        from bc_jsonpath_ng.ext.parser import ExtentedJsonPathParser
+        import ply.yacc
+        import bc_jsonpath_ng.parser as jsonpath_parser_module
+
+        owner = ExtentedJsonPathParser()
+        parser = (owner, ply.yacc.yacc(module=owner, debug=False, write_tables=0, start="jsonpath",
+                                       errorlog=jsonpath_parser_module.logger))
+        _jsonpath_parsers.parser = parser
+    owner, lalr = parser
+    from bc_jsonpath_ng.parser import IteratorToTokenStream
+
+    return lalr.parse(lexer=IteratorToTokenStream(owner.lexer_class().tokenize(path)))
 
 
 class Block:
@@ -195,7 +222,7 @@ class Block:
         """
         if key not in Block.jsonpath_parsed_statement_cache:
             jsonpath_key = self._get_jsonpath_key(key)
-            expr = parse(jsonpath_key)
+            expr = _parse_jsonpath(jsonpath_key)
             Block.jsonpath_parsed_statement_cache[key] = expr
         else:
             expr = Block.jsonpath_parsed_statement_cache[key]

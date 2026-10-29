@@ -14,4 +14,5 @@ class GraphRecord(Record):
                          severity=record.severity, bc_category=record.bc_category, benchmarks=record.benchmarks, details=record.details,
                          definition_context_file_path=record.definition_context_file_path)
         self.fixed_definition = record.fixed_definition
+        self.module_chain = record.module_chain
         self.breadcrumbs = breadcrumbs

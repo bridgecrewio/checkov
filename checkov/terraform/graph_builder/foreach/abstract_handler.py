@@ -2,19 +2,26 @@ from __future__ import annotations
 
 import abc
 import json
+import logging
 import re
 import typing
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
+from checkov.terraform.graph_builder.foreach.subgraph_scope import PreciseScopeUnsafe, assert_same_closure, \
+    assert_same_statements, copy_for_reference, guard_module_inputs, label_filter, placeholder_vertices, \
+    precise_read_set, read_closure, subgraph_precise_enabled, subgraph_scope_enabled, \
+    subgraph_scope_verification_enabled, unread_vertices
 from checkov.terraform.graph_builder.foreach.utils import append_virtual_resource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
+    whole_reference_value
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
 if typing.TYPE_CHECKING:
@@ -57,9 +64,54 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+        if subgraph_scope_enabled():
+            ForeachAbstractHandler._render_scoped_sub_graph(sub_graph, blocks_to_render)
+            return
         renderer = TerraformVariableRenderer(sub_graph)
         renderer.vertices_index_to_render = blocks_to_render
         renderer.render_variables_from_local_graph()
+
+    @staticmethod
+    def _render_scoped_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+        """Skips evaluations that cannot reach what the handlers read afterwards (see subgraph_scope.py)."""
+        if subgraph_precise_enabled() and ForeachAbstractHandler._render_precise_sub_graph(sub_graph, blocks_to_render):
+            return
+        reference = copy_for_reference(sub_graph) if subgraph_scope_verification_enabled() else None
+        renderer = TerraformVariableRenderer(sub_graph)
+        renderer.vertices_index_to_render = blocks_to_render
+        renderer.frozen_vertices = unread_vertices(sub_graph, blocks_to_render) | placeholder_vertices(sub_graph)
+        renderer.render_variables_from_local_graph()
+        if reference is not None:
+            reference_renderer = TerraformVariableRenderer(reference)
+            reference_renderer.vertices_index_to_render = blocks_to_render
+            reference_renderer.render_variables_from_local_graph()
+            assert_same_closure(sub_graph, reference, read_closure(sub_graph, blocks_to_render))
+
+    @staticmethod
+    def _render_precise_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> bool:
+        """Attribute-precise scope (subgraph_scope.precise_read_set): evaluates only the edge groups whose written
+        attribute the statements can observe. Renders a copy; False (sub_graph untouched) when a narrowed read
+        assumption breaks during evaluation, so the caller renders with the vertex closure."""
+        wanted = precise_read_set(sub_graph, blocks_to_render)
+        candidate = copy_for_reference(sub_graph)
+        renderer = TerraformVariableRenderer(candidate)
+        renderer.vertices_index_to_render = blocks_to_render
+        renderer.frozen_vertices = (set(range(len(candidate.vertices))) - set(wanted)) | placeholder_vertices(candidate)
+        renderer.evaluated_labels = label_filter(wanted)
+        guard_module_inputs(renderer, wanted)
+        try:
+            renderer.render_variables_from_local_graph()
+        except PreciseScopeUnsafe as error:
+            logging.info(f"precise count/for_each scope not applicable, using the vertex closure: {error}")
+            return False
+        if subgraph_scope_verification_enabled():
+            reference = copy_for_reference(sub_graph)
+            reference_renderer = TerraformVariableRenderer(reference)
+            reference_renderer.vertices_index_to_render = blocks_to_render
+            reference_renderer.render_variables_from_local_graph()
+            assert_same_statements(candidate, reference, blocks_to_render)
+        sub_graph.vertices = candidate.vertices
+        return True
 
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -209,7 +261,11 @@ class ForeachAbstractHandler:
             except ValueError:
                 pass
         if isinstance(evaluated_statement, set):
-            evaluated_statement = list(evaluated_statement)
+            if deterministic_graph_enabled():
+                # set iteration order follows the per-process string hash seed; instances are created in this order
+                evaluated_statement = sorted(evaluated_statement, key=repr)
+            else:
+                evaluated_statement = list(evaluated_statement)
         if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
             return evaluated_statement
         return None
@@ -260,6 +316,10 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def extract_from_list(val: Any) -> Any:
+        if len(val) == 1 and isinstance(val[0], dict) and whole_reference_value(val) is not None:
+            # `for_each = local.y` where local.y kept its map type (evaluate_terraform.WholeReferenceValue): the
+            # statement is the map itself, as a literal `for_each = { ... }` arrives
+            return val[0]
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     @staticmethod

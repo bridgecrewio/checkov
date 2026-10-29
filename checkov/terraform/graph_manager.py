@@ -82,7 +82,43 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
 
         logging.info("Building graph from parsed module")
         local_graph = local_graph_class(module)
-        local_graph.build_graph(render_variables=render_variables)
+
+        import_graph_path = os.getenv("CHECKOV_IMPORT_GRAPH")
+        export_graph_path = os.getenv("CHECKOV_EXPORT_GRAPH")
+        if import_graph_path:
+            import json
+            from checkov.terraform.graph_builder import incremental_graph
+
+            with open(import_graph_path) as f:
+                artifact = json.load(f)
+            local_graph.build_pre_render_graph()
+            report = incremental_graph.update_graph(artifact, local_graph, source_dir)
+            print(f"[incremental graph] {report.affected} affected / {report.frozen} frozen of {report.vertices} vertices")
+        elif export_graph_path:
+            import json
+            from checkov.terraform.graph_builder import incremental_graph
+            from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+
+            local_graph.build_pre_render_graph()
+            pre_render = incremental_graph.capture_pre_render(local_graph, source_dir)
+            renderer = TerraformVariableRenderer(local_graph)
+            unconverged: set[str] = set()
+            loop_end: dict[str, Any] = {}
+
+            def capture() -> None:
+                unconverged.update(incremental_graph.unconverged_vertices(renderer, local_graph, source_dir))
+                loop_end.update(incremental_graph.capture_loop_end(local_graph, source_dir))
+
+            renderer.on_edge_loop_end = capture
+            renderer.render_variables_from_local_graph()
+            local_graph.update_vertices_fields()
+            local_graph.build_post_render_edges()
+            artifact = incremental_graph.export_graph(local_graph, source_dir, pre_render, unconverged, loop_end)
+            with open(export_graph_path, "w") as f:
+                json.dump(artifact, f)
+            print(f"[graph exported] {len(artifact['vertices'])} vertices exported to {export_graph_path}")
+        else:
+            local_graph.build_graph(render_variables=render_variables)
 
         return local_graph, tf_definitions
 

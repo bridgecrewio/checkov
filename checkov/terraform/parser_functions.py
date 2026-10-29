@@ -194,6 +194,24 @@ def handle_dynamic_values(conf: Dict[str, List[Any]], has_dynamic_block: bool = 
     return process_dynamic_values(conf) or has_dynamic_block
 
 
+def expand_dynamic_values_completely(conf: Dict[str, Any]) -> bool:
+    """One complete expansion of every dynamic block in `conf` (in place), innermost first.
+
+    handle_dynamic_values recurses only into the first element of a list of blocks, so a dynamic block that is not
+    the first entry of a `dynamic` list is copied out before its own nested dynamic blocks are expanded. Repeated
+    calls expand those on later calls, each also appending another copy of every block. Here every list element is
+    visited before its parent is expanded, so a single call yields each block once with its nested blocks."""
+    has_dynamic_block = False
+    for value in conf.values():
+        if isinstance(value, dict):
+            has_dynamic_block = expand_dynamic_values_completely(value) or has_dynamic_block
+        elif isinstance(value, list):
+            for element in value:
+                if isinstance(element, dict):
+                    has_dynamic_block = expand_dynamic_values_completely(element) or has_dynamic_block
+    return process_dynamic_values(conf) or has_dynamic_block
+
+
 def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
     dynamic_conf: Union[List[Any], Dict[str, List[Any]]] = conf.get("dynamic", {})
 
