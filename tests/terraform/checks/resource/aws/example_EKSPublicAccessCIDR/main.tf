@@ -22,6 +22,17 @@ resource "aws_eks_cluster" "restricted" {
   }
 }
 
+resource "aws_eks_cluster" "restricted_ipv6" {
+  name     = "example"
+  role_arn = "aws_iam_role.arn"
+
+  vpc_config {
+    subnet_ids = ["subnet-12345"]
+
+    public_access_cidrs = ["2001:db8::/32"]
+  }
+}
+
 # fail
 
 resource "aws_eks_cluster" "default" {
@@ -52,5 +63,27 @@ resource "aws_eks_cluster" "open" {
     subnet_ids = ["subnet-12345"]
 
     public_access_cidrs = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_eks_cluster" "open_ipv6" {
+  name     = "example"
+  role_arn = "aws_iam_role.arn"
+
+  vpc_config {
+    subnet_ids = ["subnet-12345"]
+
+    public_access_cidrs = ["::/0"]
+  }
+}
+
+resource "aws_eks_cluster" "open_ipv6_expanded" {
+  name     = "example"
+  role_arn = "aws_iam_role.arn"
+
+  vpc_config {
+    subnet_ids = ["subnet-12345"]
+
+    public_access_cidrs = ["0000:0000:0000:0000:0000:0000:0000:0000/0"]
   }
 }
