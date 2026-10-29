@@ -4,8 +4,10 @@ from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.arm.utils import is_auth_settings_v2_config
 
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2019-08-01/sites/config-authsettings
+# https://learn.microsoft.com/en-us/azure/templates/microsoft.web/sites/config-authsettingsv2
 
 
 class AppServiceAuthentication(BaseResourceCheck):
@@ -19,12 +21,16 @@ class AppServiceAuthentication(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         self.evaluated_keys = ["name"]
         if self.entity_type == "Microsoft.Web/sites/config":
+            if is_auth_settings_v2_config(conf):
+                return self._scan_auth_settings_v2(conf)
             if "name" in conf and "authsettings" in conf["name"]:
                 if "properties" in conf and "enabled" in conf["properties"]:
                     if str(conf["properties"]["enabled"]).lower() == "true":
                         return CheckResult.PASSED
             return CheckResult.FAILED
         elif self.entity_type == "config":
+            if is_auth_settings_v2_config(conf) and conf.get("parent_type") == "Microsoft.Web/sites":
+                return self._scan_auth_settings_v2(conf)
             if "name" in conf and conf["name"] == "authsettings":
                 if "parent_type" in conf:
                     if conf["parent_type"] == "Microsoft.Web/sites":
@@ -35,6 +41,16 @@ class AppServiceAuthentication(BaseResourceCheck):
                     return CheckResult.FAILED
 
         return CheckResult.UNKNOWN
+
+    def _scan_auth_settings_v2(self, conf: dict[str, Any]) -> CheckResult:
+        # authsettingsV2 keeps the switch under properties.platform.enabled
+        self.evaluated_keys = ["name", "properties/platform/enabled"]
+        properties = conf.get("properties")
+        if isinstance(properties, dict):
+            platform = properties.get("platform")
+            if isinstance(platform, dict) and str(platform.get("enabled")).lower() == "true":
+                return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = AppServiceAuthentication()
