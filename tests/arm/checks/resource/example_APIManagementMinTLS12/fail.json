@@ -144,6 +144,24 @@
           "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": true
         }
       }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2023-05-01-preview",
+      "name": "fail_string_true",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('sku')]",
+        "capacity": "[parameters('skuCount')]"
+      },
+      "properties": {
+        "publisherEmail": "[parameters('publisherEmail')]",
+        "publisherName": "[parameters('publisherName')]",
+        "customProperties": {
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "True",
+          "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "false"
+        }
+      }
     }
   ]
 }
