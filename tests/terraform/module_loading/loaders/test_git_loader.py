@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from unittest import mock
@@ -6,7 +7,12 @@ import pytest
 
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader
-from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader, _validate_ref, _validate_subdir
+from checkov.terraform.module_loading.loaders.git_loader import (
+    GenericGitLoader,
+    _is_allowed_module_source,
+    _validate_ref,
+    _validate_subdir,
+)
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader
 from checkov.terraform.module_loading.module_params import ModuleParams
@@ -308,17 +314,19 @@ def test_allowed_module_prefixes_not_configured_keeps_current_behaviour(git_gett
     "loader_class, source, env",
     [
         (GenericGitLoader, "git::http://127.0.0.1:9999/test", {}),
-        (GenericGitLoader, "git::https://169.254.169.254/latest", {}),
+        (GenericGitLoader, "git::https://192.0.2.1/latest", {}),
         (GenericGitLoader, "git::https://gitlab.example.com/org/repo.git?ref=v1", {}),
         (GenericGitLoader, "git::ssh://git@example.com/org/repo.git", {}),
         (GenericGitLoader, "git::https://github.com.example.com/org/repo.git", {}),
         (GenericGitLoader, "git::https://github.com@other.example.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://other.example.com/x?@github.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://other.example.com/x#@github.com/org/repo.git", {}),
         (GithubLoader, "git@github.com:other/repo.git", {}),
         (BitbucketLoader, "bitbucket.org/org/repo", {}),
         (BitbucketAccessTokenLoader, "bitbucket.org/org/repo", {"BITBUCKET_TOKEN": "test"}),
     ],
-    ids=["loopback", "link_local", "other_host", "generic_ssh", "lookalike_host", "user_info_host", "github_ssh_other_org",
-         "bitbucket", "bitbucket_access_token"],
+    ids=["loopback", "ip_address", "other_host", "generic_ssh", "lookalike_host", "user_info_host",
+         "query_with_at_sign", "fragment_with_at_sign", "github_ssh_other_org", "bitbucket", "bitbucket_access_token"],
 )
 @mock.patch(GIT_GETTER_PATH, autospec=True)
 def test_module_source_not_in_allowed_prefixes_is_skipped(
@@ -358,3 +366,73 @@ def test_module_source_in_allowed_prefixes_is_loaded(
 
     git_getter.assert_called_once()
     assert content.loaded()
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "git::https://user:token@127.0.0.1:8443/x?@github.com/org/repo.git",
+        "git::https://user:token@127.0.0.1:8443/x#@github.com/org/repo.git",
+    ],
+    ids=["query_with_at_sign", "fragment_with_at_sign"],
+)
+@mock.patch(GIT_GETTER_PATH, autospec=True)
+def test_skip_warning_shows_real_host_without_credentials(git_getter, root_dir: Path, source: str, caplog) -> None:
+    with caplog.at_level(logging.WARNING):
+        _load_with_env(root_dir, GenericGitLoader, source, {ALLOWED_MODULE_PREFIXES_ENV: "https://github.com/"})
+
+    git_getter.assert_not_called()
+    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING and "Skipping module" in r.message]
+    assert len(warnings) == 1
+    assert "https://127.0.0.1:8443/x" in warnings[0]
+    assert "user" not in warnings[0]
+    assert "token" not in warnings[0]
+
+
+
+
+@pytest.mark.parametrize(
+    "source, allowed",
+    [
+        ("git::https://other.example.com/x?@github.com/org/repo", "https://github.com/"),
+        ("git::https://other.example.com/x#@github.com/org/repo", "https://github.com/"),
+        ("git::https://github.com.other.example.com/org/repo", "https://github.com"),
+        ("git::https://github.com.other.example.com/org/repo", "https://github.com/"),
+        ("https://192.0.2.1:8443/org/repo", "https://192.0.2.1:844"),
+        ("https://192.0.2.1:844/org/repo", "https://192.0.2.1:8443"),
+        ("https://github.com:8443/org/repo", "https://github.com/"),
+        ("http://github.com/org/repo", "https://github.com/"),
+        ("https://github.com/other/repo", "https://github.com/org/"),
+        ("https://github.com:notaport/org/repo", "https://github.com/"),
+    ],
+    ids=["query_with_at_sign", "fragment_with_at_sign", "lookalike_host_no_trailing_slash", "lookalike_host",
+         "port_prefix_of_other_port", "port_longer_than_source_port", "non_default_port", "different_scheme",
+         "different_path", "invalid_port"],
+)
+def test_is_allowed_module_source_rejects_non_matching_source(source: str, allowed: str) -> None:
+    with mock.patch.dict(os.environ, {ALLOWED_MODULE_PREFIXES_ENV: allowed}):
+        assert not _is_allowed_module_source(source)
+
+
+@pytest.mark.parametrize(
+    "source, allowed",
+    [
+        ("git::https://github.com/org/repo.git?ref=v1", "https://github.com"),
+        ("git::https://github.com/org/repo.git?ref=v1", "https://github.com/"),
+        ("https://github.com:443/org/repo", "https://github.com/"),
+        ("https://github.com/org/repo", "https://github.com:443/"),
+        ("http://github.com:80/org/repo", "http://github.com/"),
+        ("https://192.0.2.1:8443/org/repo", "https://192.0.2.1:8443"),
+        ("git::https://user:pass@github.com/org/repo.git", "https://github.com/"),
+        ("git::https://user:pass@github.com/org/repo.git", "https://other:creds@github.com/org/"),
+        ("git::https://GitHub.com/Org/repo.git", "https://github.com/org/"),
+        ("github.com/org/repo", "github.com/org/"),
+        ("git::ssh://git@github.com/org/repo.git", "ssh://github.com/org/"),
+    ],
+    ids=["no_trailing_slash", "trailing_slash", "explicit_default_port_in_source",
+         "explicit_default_port_in_prefix", "explicit_default_http_port", "explicit_port", "user_info_in_source",
+         "user_info_in_both", "case_insensitive", "no_scheme", "ssh_with_user"],
+)
+def test_is_allowed_module_source_accepts_matching_source(source: str, allowed: str) -> None:
+    with mock.patch.dict(os.environ, {ALLOWED_MODULE_PREFIXES_ENV: allowed}):
+        assert _is_allowed_module_source(source)

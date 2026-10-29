@@ -296,12 +296,15 @@ def test_registry_download_allowed_prefixes_not_configured_keeps_current_behavio
     "download_location",
     [
         "http://127.0.0.1:9999/module.tar.gz",
-        "http://169.254.169.254/latest/meta-data/?archive=tar.gz",
+        "http://192.0.2.1/latest/meta-data/?archive=tar.gz",
         "https://other.example.com/module.zip",
         "https://example.registry.com.other.example.com/module.zip",
         "https://example.registry.com@other.example.com/module.zip",
+        "https://other.example.com/module.zip?@example.registry.com/",
+        "https://example.registry.com:8443/module.zip",
     ],
-    ids=["loopback", "link_local", "other_host", "lookalike_host", "user_info_host"],
+    ids=["loopback", "ip_address", "other_host", "lookalike_host", "user_info_host", "query_with_at_sign",
+         "other_port"],
 )
 @responses.activate
 @mock.patch(REGISTRY_GETTER_PATH, autospec=True)
@@ -322,8 +325,9 @@ def test_registry_download_not_in_allowed_prefixes_is_skipped(registry_getter, d
         (f"https://{REGISTRY_HOST}/files/module.zip", f"https://{REGISTRY_HOST}/"),
         ("https://github.com/org/repo/archive/v1.0.0.tar.gz", f"https://{REGISTRY_HOST}/,https://github.com/"),
         ("https://GitHub.com/org/repo/archive/v1.0.0.zip", "https://github.com/"),
+        (f"https://{REGISTRY_HOST}:443/files/module.zip", f"https://{REGISTRY_HOST}"),
     ],
-    ids=["relative_to_registry", "same_registry_host", "second_prefix", "case_insensitive"],
+    ids=["relative_to_registry", "same_registry_host", "second_prefix", "case_insensitive", "default_port"],
 )
 @responses.activate
 @mock.patch(REGISTRY_GETTER_PATH, autospec=True)
