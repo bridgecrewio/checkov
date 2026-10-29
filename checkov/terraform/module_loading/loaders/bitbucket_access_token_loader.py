@@ -21,7 +21,7 @@ class BitbucketAccessTokenLoader(GenericGitLoader):
             module_params.token = app_password
 
     def _credentials_allowed(self, module_params: ModuleParams, source: str) -> bool:
-        # if VCS_ALLOWED_HOSTS is set, the Bitbucket credentials are only added for bitbucket.org
+        # If VCS_ALLOWED_HOSTS is set, the Bitbucket credentials are only added for bitbucket.org
         return get_allowed_vcs_hosts() is None or get_source_host(source) == self.module_source_prefix
 
 
