@@ -5,7 +5,8 @@ import posixpath
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Tuple
+from urllib.parse import urlsplit
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.util.file_utils import _is_within
@@ -18,6 +19,67 @@ if TYPE_CHECKING:
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
+ALLOWED_MODULE_PREFIXES_ENV = "CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES"
+# 'user[:password]@' right after 'scheme://'
+URL_USER_INFO_PATTERN = re.compile(r"^([a-z][a-z0-9+.\-]*://)[^/?#@]*@")
+URL_SCHEME_PATTERN = re.compile(r"^[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
+DEFAULT_PORTS = {"http": 80, "https": 443, "ssh": 22, "git": 9418}
+
+
+def _normalize_module_source(source: str) -> str:
+    """Lowercase, drop the 'git::' prefix and any 'user[:password]@' part, so sources and prefixes are comparable."""
+    source = source.strip().lower()
+    if source.startswith("git::"):
+        source = source[len("git::"):]
+    return URL_USER_INFO_PATTERN.sub(r"\1", source)
+
+
+def _split_module_url(url: str) -> Tuple[str, Optional[str], Optional[int], str]:
+    """Split a module source / prefix into (scheme, hostname, port, lowercased path).
+
+    Drops a leading 'git::', assumes 'https://' when no scheme is given and fills in the scheme's default port.
+    Raises ValueError for unparsable URLs (e.g. an invalid port).
+    """
+    url = url.strip()
+    if url.lower().startswith("git::"):
+        url = url[len("git::"):]
+    if not URL_SCHEME_PATTERN.match(url):
+        url = f"https://{url}"
+    parts = urlsplit(url)
+    port = parts.port
+    if port is None:
+        port = DEFAULT_PORTS.get(parts.scheme)
+    return parts.scheme, parts.hostname, port, parts.path.lower()
+
+
+def _matches_module_prefix(source: str, prefix: str) -> bool:
+    """Scheme, host and port must match exactly; the source path must start with the prefix path."""
+    try:
+        source_scheme, source_host, source_port, source_path = _split_module_url(source)
+        prefix_scheme, prefix_host, prefix_port, prefix_path = _split_module_url(prefix)
+    except ValueError:
+        return False
+    return (
+        source_scheme == prefix_scheme
+        and source_host == prefix_host
+        and source_port == prefix_port
+        and source_path.startswith(prefix_path)
+    )
+
+
+def _is_allowed_module_source(source: str) -> bool:
+    """Check the module source against the CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES allowlist.
+
+    Not set -> True (allow all, original behaviour). Set -> True only if the source matches one of the
+    comma-separated prefixes (same scheme, host and port, path starting with the prefix path).
+    To block all git module downloads, set the var to a non-matching value (e.g. 'none').
+    """
+    allowed_prefixes_raw = os.getenv(ALLOWED_MODULE_PREFIXES_ENV, "")
+    if not allowed_prefixes_raw.strip():
+        return True  # no allowlist configured -> allow everything (original behaviour)
+
+    allowed_prefixes = [p for p in allowed_prefixes_raw.split(",") if p.strip()]
+    return any(_matches_module_prefix(source, prefix) for prefix in allowed_prefixes)
 
 
 def _validate_ref(ref: str) -> None:
@@ -86,6 +148,9 @@ class GenericGitLoader(ModuleLoader):
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
             self._process_generic_git_repo(module_params)
+            if not _is_allowed_module_source(module_params.module_source):
+                self.logger.warning(f"Skipping module: not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist.")
+                return ModuleContent(dir=None, failed_url=module_params.module_source)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
