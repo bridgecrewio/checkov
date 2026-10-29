@@ -1,6 +1,8 @@
+import os
 from operator import itemgetter
+from pathlib import Path
 
-from checkov.kubernetes.kubernetes_utils import get_skipped_checks
+from checkov.kubernetes.kubernetes_utils import get_folder_definitions, get_skipped_checks, should_include_path
 
 
 def test_get_skipped_checks():
@@ -122,3 +124,83 @@ def test_get_skipped_checks_ignores_unknown_prefix():
 
     # then
     assert skipped == []
+
+
+DEPLOYMENT = """apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.14.2
+"""
+
+
+def _write_manifest(directory: Path) -> Path:
+    directory.mkdir(parents=True, exist_ok=True)
+    manifest = directory / "deployment.yaml"
+    manifest.write_text(DEPLOYMENT)
+    return manifest
+
+
+def test_get_folder_definitions_root_inside_hidden_dir(tmp_path: Path) -> None:
+    # given
+    root = tmp_path / "project" / ".build" / "chart" / "templates"
+    manifest = _write_manifest(root)
+
+    # when
+    definitions, _ = get_folder_definitions(str(root), None)
+
+    # then
+    assert str(manifest) in definitions
+
+
+def test_get_folder_definitions_root_with_parent_dir_reference(tmp_path: Path) -> None:
+    # given
+    (tmp_path / "project" / "sub").mkdir(parents=True)
+    manifest = _write_manifest(tmp_path / "project" / "templates")
+    root = os.path.join(str(tmp_path), "project", "sub", "..", "templates")
+
+    # when
+    definitions, _ = get_folder_definitions(root, None)
+
+    # then
+    assert os.path.join(root, manifest.name) in definitions
+
+
+def test_get_folder_definitions_skips_hidden_dir_below_root(tmp_path: Path) -> None:
+    # given
+    root = tmp_path / "project"
+    visible = _write_manifest(root / "templates")
+    hidden = _write_manifest(root / ".build" / "templates")
+
+    # when
+    definitions, _ = get_folder_definitions(str(root), None)
+
+    # then
+    assert str(visible) in definitions
+    assert str(hidden) not in definitions
+
+
+def test_should_include_path_relative_to_root_folder() -> None:
+    root = os.path.join("project", ".build", "chart")
+
+    assert should_include_path(os.path.join(root, "templates", "deployment.yaml"), True, root) is True
+    assert should_include_path(os.path.join(root, ".hidden", "deployment.yaml"), True, root) is False
+    assert should_include_path(os.path.join(root, ".hidden", "deployment.yaml"), False, root) is True
+
+
+def test_should_include_path_windows_separators() -> None:
+    assert should_include_path("C:\project\.hidden\deployment.yaml", True) is False
+    assert should_include_path("C:\project\not_hidden\deployment.yaml", True) is True
+    assert should_include_path("project/../templates/deployment.yaml", True) is True
