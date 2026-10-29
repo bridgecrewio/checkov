@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from enum import Enum
 from typing import Iterable, Callable, Any
 from collections.abc import Collection
@@ -135,3 +136,17 @@ def filter_failed_checks_with_unrendered_resources(report: Report) -> Report:
     ]
 
     return filtered_report
+
+
+AUTH_SETTINGS_V2_NAME_PATTERN = re.compile(r"\bauthsettingsV2\b", re.IGNORECASE)
+
+
+def is_auth_settings_v2_config(conf: dict[str, Any]) -> bool:
+    """Checks if a 'Microsoft.Web/sites/config' resource is the 'authsettingsV2' child.
+
+    The name can be a plain value like 'my-app/authsettingsV2' or an ARM expression like
+    "[format('{0}/{1}', parameters('appName'), 'authsettingsV2')]".
+    """
+
+    name = conf.get("name")
+    return isinstance(name, str) and AUTH_SETTINGS_V2_NAME_PATTERN.search(name) is not None

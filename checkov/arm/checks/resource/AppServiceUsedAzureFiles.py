@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, List
 
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.arm.utils import is_auth_settings_v2_config
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 
@@ -15,6 +16,9 @@ class AppServiceUsedAzureFiles(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        if is_auth_settings_v2_config(conf):
+            # the authentication settings child doesn't hold storage mounts
+            return CheckResult.UNKNOWN
         properties = conf.get('properties')
         if properties and isinstance(properties, dict):
             azureStorageAccounts = properties.get("azureStorageAccounts")
