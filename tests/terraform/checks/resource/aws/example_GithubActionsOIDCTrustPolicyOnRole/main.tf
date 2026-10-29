@@ -300,3 +300,71 @@ resource "aws_iam_role" "pass-fm-customer" {
     ]
   })
 }
+
+# fail-multivalue-wildcard -- tight first value, bare "*" second. IAM ORs the
+# values of one condition key, so the "*" admits every subject -> FAIL
+resource "aws_iam_role" "fail-multivalue-wildcard" {
+  name = "fail-multivalue-wildcard"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "*"]
+          }
+        }
+      }
+    ]
+  })
+}
+
+# fail-multivalue-abusable -- tight first value, abusable "workflow:..." second.
+# The same value FAILS on its own (fail-abusable); pairing must not hide it -> FAIL
+resource "aws_iam_role" "fail-multivalue-abusable" {
+  name = "fail-multivalue-abusable"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "workflow:github-actions:*"]
+          }
+        }
+      }
+    ]
+  })
+}
+
+# pass-multivalue-pinned -- every value pinned (branch + tag) -> PASS
+resource "aws_iam_role" "pass-multivalue-pinned" {
+  name = "pass-multivalue-pinned"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:sub" = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "repo:myOrg/myRepo:ref:refs/tags/v1.0.0"]
+          }
+        }
+      }
+    ]
+  })
+}
