@@ -377,14 +377,15 @@ def test_module_source_in_allowed_prefixes_is_loaded(
     ids=["query_with_at_sign", "fragment_with_at_sign"],
 )
 @mock.patch(GIT_GETTER_PATH, autospec=True)
-def test_skip_warning_shows_real_host_without_credentials(git_getter, root_dir: Path, source: str, caplog) -> None:
+def test_skip_warning_omits_module_source(git_getter, root_dir: Path, source: str, caplog) -> None:
     with caplog.at_level(logging.WARNING):
         _load_with_env(root_dir, GenericGitLoader, source, {ALLOWED_MODULE_PREFIXES_ENV: "https://github.com/"})
 
     git_getter.assert_not_called()
     warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING and "Skipping module" in r.message]
-    assert len(warnings) == 1
-    assert "https://127.0.0.1:8443/x" in warnings[0]
+    assert warnings == [f"Skipping module: not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist."]
+    assert "127.0.0.1" not in warnings[0]
+    assert "github.com" not in warnings[0]
     assert "user" not in warnings[0]
     assert "token" not in warnings[0]
 

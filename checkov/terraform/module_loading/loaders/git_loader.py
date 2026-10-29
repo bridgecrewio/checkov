@@ -149,10 +149,7 @@ class GenericGitLoader(ModuleLoader):
         try:
             self._process_generic_git_repo(module_params)
             if not _is_allowed_module_source(module_params.module_source):
-                self.logger.warning(
-                    f"Skipping module {_normalize_module_source(module_params.module_source)}: "
-                    f"not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist."
-                )
+                self.logger.warning(f"Skipping module: not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist.")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
