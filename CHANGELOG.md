@@ -1,6 +1,104 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.9...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.0...HEAD)
+
+## [3.4.0](https://github.com/bridgecrewio/checkov/compare/3.3.30...3.4.0) - 2026-10-28
+
+- no noteworthy changes
+
+## [3.3.30](https://github.com/bridgecrewio/checkov/compare/3.3.29...3.3.30) - 2026-10-20
+
+### Bug Fix
+
+- **secrets:** load platform-provided detectors in spawn-mode secrets … - [#7757](https://github.com/bridgecrewio/checkov/pull/7757)
+
+## [3.3.29](https://github.com/bridgecrewio/checkov/compare/3.3.28...3.3.29) - 2026-10-13
+
+### Bug Fix
+
+- **terraform:** extend MySQL public access check to cover flexible server resources - [#7737](https://github.com/bridgecrewio/checkov/pull/7737)
+
+## [3.3.28](https://github.com/bridgecrewio/checkov/compare/3.3.27...3.3.28) - 2026-10-12
+
+### Bug Fix
+
+- **terraform:** resolve graph edges for count/for_each indexed resource references - [#7736](https://github.com/bridgecrewio/checkov/pull/7736)
+
+## [3.3.27](https://github.com/bridgecrewio/checkov/compare/3.3.26...3.3.27) - 2026-10-11
+
+### Bug Fix
+
+- **secrets:** detect paired AWS secret in bare CSV/delimited format - [#7734](https://github.com/bridgecrewio/checkov/pull/7734)
+
+## [3.3.26](https://github.com/bridgecrewio/checkov/compare/3.3.25...3.3.26) - 2026-10-07
+
+### Bug Fix
+
+- **terraform_plan:** resolve for_each module calls in plan parser - [#7723](https://github.com/bridgecrewio/checkov/pull/7723)
+
+## [3.3.25](https://github.com/bridgecrewio/checkov/compare/3.3.23...3.3.25) - 2026-10-06
+
+### Bug Fix
+
+- **helm:** source folder should be within the directory - [#7722](https://github.com/bridgecrewio/checkov/pull/7722)
+- **kustomize:** fix file path logic - [#7720](https://github.com/bridgecrewio/checkov/pull/7720)
+- **terraform:** avoid tmp_path in git loader tests - [#7726](https://github.com/bridgecrewio/checkov/pull/7726)
+- **terraform:** external module ref keeps inside directory - [#7721](https://github.com/bridgecrewio/checkov/pull/7721)
+
+## [3.3.23](https://github.com/bridgecrewio/checkov/compare/3.3.21...3.3.23) - 2026-10-05
+
+### Bug Fix
+
+- **sca:** apply --skip-path regex and hidden-dir filtering to sca_package - [#7712](https://github.com/bridgecrewio/checkov/pull/7712)
+
+## [3.3.21](https://github.com/bridgecrewio/checkov/compare/3.3.20...3.3.21) - 2026-09-30
+
+### Bug Fix
+
+- **terraform_json:** handle HCL JSON array and single-dict block formats in parser - [#7707](https://github.com/bridgecrewio/checkov/pull/7707)
+
+## [3.3.20](https://github.com/bridgecrewio/checkov/compare/3.3.19...3.3.20) - 2026-09-27
+
+### Bug Fix
+
+- **terraform_plan:** skip resources being removed from state ('forget' action) - [#7676](https://github.com/bridgecrewio/checkov/pull/7676)
+
+## [3.3.19](https://github.com/bridgecrewio/checkov/compare/3.3.17...3.3.19) - 2026-09-17
+
+### Feature
+
+- **terraform:** add CKV_AWS_394 for unconstrained aws_availability_zones data source - [#7658](https://github.com/bridgecrewio/checkov/pull/7658)
+
+## [3.3.17](https://github.com/bridgecrewio/checkov/compare/3.3.16...3.3.17) - 2026-09-10
+
+### Bug Fix
+
+- **general:** honour scope.provider for platform-downloaded custom po… - [#7677](https://github.com/bridgecrewio/checkov/pull/7677)
+
+## [3.3.16](https://github.com/bridgecrewio/checkov/compare/3.3.15...3.3.16) - 2026-08-30
+
+### Bug Fix
+
+- **terraform:** Added current Azure Terraform resources and taggable resources as of hashicorp/azurerm provider version 4.81 - [#7652](https://github.com/bridgecrewio/checkov/pull/7652)
+
+## [3.3.15](https://github.com/bridgecrewio/checkov/compare/3.3.13...3.3.15) - 2026-08-27
+
+### Bug Fix
+
+- **sca:** match CVE suppressions case-insensitively - [#7659](https://github.com/bridgecrewio/checkov/pull/7659)
+- **sca:** match CvesAccounts suppressions on unprefixed account ids - [#7660](https://github.com/bridgecrewio/checkov/pull/7660)
+
+## [3.3.13](https://github.com/bridgecrewio/checkov/compare/3.3.12...3.3.13) - 2026-08-20
+
+### Bug Fix
+
+- **kubernetes:** Fix K8S suppressions annotations - [#7651](https://github.com/bridgecrewio/checkov/pull/7651)
+
+## [3.3.12](https://github.com/bridgecrewio/checkov/compare/3.3.9...3.3.12) - 2026-08-19
+
+### Bug Fix
+
+- **sca:** correct Windows path handling in image referencer - [#7650](https://github.com/bridgecrewio/checkov/pull/7650)
 
 ## [3.3.9](https://github.com/bridgecrewio/checkov/compare/3.3.8...3.3.9) - 2026-08-02
 

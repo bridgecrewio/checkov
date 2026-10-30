@@ -27,6 +27,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult, _EntityContext
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.file_utils import _is_within
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
     PARENT_RESOURCE_ID_KEY_NAME
@@ -48,6 +49,10 @@ if TYPE_CHECKING:
 # Regex matching any remote resource reference that kustomize would fetch over the network.
 # Covers: http(s)://, git::, ssh://, github.com/ shorthand
 _REMOTE_REF = re.compile(r'^(https?://|git::|ssh://|github\.com/)', re.IGNORECASE)
+
+# Characters that must never appear in a rendered manifest file name, as they allow escaping the target folder.
+# ':' is only a path (drive/stream) separator on Windows, and is a valid character in K8s names (ex. RBAC resources).
+_UNSAFE_FILENAME_CHARS = ("/", "\\", "\0") + ((":",) if platform.system() == "Windows" else ())
 
 # Keys in kustomization.yaml that may contain remote references
 _REMOTE_REF_KEYS = ('resources', 'bases', 'components', 'crds')
@@ -829,6 +834,23 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return report
 
     @staticmethod
+    def _sanitize_filename_component(value: Any) -> str:
+        """Neutralize characters that let a metadata value act as a path instead of a file name.
+
+        Only path separators (and NUL / Windows drive separators) are replaced, so file names of valid
+        Kubernetes resources (which can't contain '/') stay exactly the same, e.g. 'system:aggregate-to-edit'.
+        """
+        sanitized = str(value)
+        for char in _UNSAFE_FILENAME_CHARS:
+            sanitized = sanitized.replace(char, "_")
+        return sanitized
+
+    @staticmethod
+    def _build_rendered_manifest_filename(item_name: list[Any]) -> str:
+        """Build the '<kind>-<namespace>-<name>.yaml' file name for a rendered manifest from its metadata"""
+        return f"{'-'.join(Runner._sanitize_filename_component(part) for part in item_name)}.yaml"
+
+    @staticmethod
     def _curWriterValidateStoreMapAndClose(
         cur_writer: TextIO, file_path: str, shared_kustomize_file_mappings: dict[str, str]
     ) -> None:
@@ -854,10 +876,18 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                     else:
                         itemName.append("noname")
 
-                    filename = f"{'-'.join(itemName)}.yaml"
-                    newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename)
-                    os.rename(currentFileName, newFullPathFilename)
-                    shared_kustomize_file_mappings[newFullPathFilename] = file_path
+                    filename = Runner._build_rendered_manifest_filename(itemName)
+                    parent_dir = str(pathlib.Path(currentFileName).parent)
+                    new_full_path_filename = str(pathlib.Path(parent_dir) / filename)
+                    if not _is_within(parent_dir, new_full_path_filename):
+                        # Defense in depth - should be unreachable after sanitization
+                        logging.warning(
+                            f"Kustomize: refusing to write rendered manifest outside of {parent_dir}. "
+                            f"Kustomization: {file_path}"
+                        )
+                        return
+                    os.rename(currentFileName, new_full_path_filename)
+                    shared_kustomize_file_mappings[new_full_path_filename] = file_path
                 else:
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {file_path}. Templated output: {currentFileName}.')
         except IsADirectoryError:

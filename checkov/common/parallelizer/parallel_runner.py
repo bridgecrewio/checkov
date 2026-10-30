@@ -5,16 +5,27 @@ import logging
 import multiprocessing
 import os
 import platform
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Sequence
+from multiprocessing.connection import wait as mp_wait
 from multiprocessing.pool import Pool
-from typing import Any, List, Generator, Callable, Optional, TypeVar, TYPE_CHECKING
+from typing import Any, List, Generator, Callable, Optional, Tuple, TypeVar, TYPE_CHECKING, cast
 
 from checkov.common.models.enums import ParallelizationType
 
 if TYPE_CHECKING:
     from multiprocessing.connection import Connection
+    from multiprocessing.process import BaseProcess
 
 _T = TypeVar("_T")
+
+# When draining fork-worker results, read from whichever pipe is ready instead
+# of one worker at a time. A pipe's OS buffer is small (~64KB): with in-order
+# draining, a worker whose output overflows the buffer blocks on send() while
+# the parent is busy reading an earlier worker, serialising the whole scan.
+# Servicing ready pipes removes that stall. This changes only the order results
+# are read, never what work runs or what is produced.
+# Set CHECKOV_PERF_INTERLEAVED_DRAIN=0 to restore the original in-order drain.
+_INTERLEAVED_DRAIN_ENABLED: bool = os.getenv("CHECKOV_PERF_INTERLEAVED_DRAIN", "1") != "0"
 
 
 class ParallelRunException(Exception):
@@ -61,13 +72,21 @@ class ParallelRunner:
         func: Callable[..., _T],
         items: List[Any],
         group_size: Optional[int] = None,
+        pool_initializer: Optional[Callable[..., None]] = None,
+        pool_initargs: Optional[Tuple[Any, ...]] = None,
     ) -> Iterable[_T]:
+        # pool_initializer/pool_initargs apply only to the SPAWN path: spawned
+        # workers start with blank memory and must rebuild any module-global
+        # state (e.g. detect-secrets plugin settings) before running. The
+        # thread/fork/sequential paths inherit the parent's state and ignore them.
         if self.type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
         elif self.type == ParallelizationType.FORK:
             return self._run_function_multiprocess_fork(func, items, group_size)
         elif self.type == ParallelizationType.SPAWN:
-            return self._run_function_multiprocess_spawn(func, items, group_size)
+            return self._run_function_multiprocess_spawn(
+                func, items, group_size, pool_initializer, pool_initargs
+            )
         else:
             return self._run_function_sequential(func, items)
 
@@ -108,7 +127,18 @@ class ParallelRunner:
             )
             processes.append((process, parent_conn, len(group_of_items)))
             process.start()
+            child_conn.close()
 
+        if _INTERLEAVED_DRAIN_ENABLED:
+            yield from self._drain_interleaved(processes)
+        else:
+            yield from self._drain_sequential(processes)
+
+    @staticmethod
+    def _drain_sequential(
+        processes: Sequence[Tuple["BaseProcess", "Connection", int]],
+    ) -> Generator[Any, None, None]:
+        """Original behaviour: drain each worker's pipe to completion, in order."""
         for _, parent_conn, group_len in processes:
             for _ in range(group_len):
                 try:
@@ -121,11 +151,55 @@ class ParallelRunner:
                 except EOFError:
                     pass
 
+    @staticmethod
+    def _drain_interleaved(
+        processes: Sequence[Tuple["BaseProcess", "Connection", int]],
+    ) -> Generator[Any, None, None]:
+        """Yield results from whichever worker pipe is ready next.
+
+        Unlike _drain_sequential, this never blocks on one worker while another
+        already has data waiting, removing the pipe back-pressure stall described
+        on _INTERLEAVED_DRAIN_ENABLED. Results are yielded in ready-order rather
+        than worker-order; no caller depends on ordering.
+        """
+        # Map each non-empty worker pipe to the number of results still expected.
+        remaining: dict["Connection", int] = {
+            parent_conn: group_len
+            for _, parent_conn, group_len in processes
+            if group_len > 0
+        }
+
+        while remaining:
+            # wait() blocks until at least one pipe has data. It is generic over
+            # waitable objects, but we only ever pass Connection objects.
+            for conn in cast(List["Connection"], mp_wait(list(remaining.keys()))):
+                try:
+                    value = conn.recv()
+                except EOFError:
+                    # Worker closed early (e.g. process killed) with results still
+                    # outstanding; stop tracking it, matching _drain_sequential.
+                    del remaining[conn]
+                    continue
+
+                if isinstance(value, ParallelRunException):
+                    raise value.internal_exception.with_traceback(value.internal_exception.__traceback__)
+
+                yield value
+                remaining[conn] -= 1
+                if remaining[conn] == 0:
+                    del remaining[conn]
+
     def _run_function_multiprocess_spawn(
-        self, func: Callable[[Any], _T], items: list[Any], group_size: int | None
+        self, func: Callable[[Any], _T], items: list[Any], group_size: int | None,
+        pool_initializer: Optional[Callable[..., None]] = None,
+        pool_initargs: Optional[Tuple[Any, ...]] = None,
     ) -> Iterable[_T]:
         if multiprocessing.current_process().daemon:
-            # can't create a new pool, when already inside a pool
+            # Can't create a pool from inside a pool, so fall back to threads.
+            # This fallback does not run pool_initializer, so callers relying on
+            # it must ensure the same state is valid in the parent process. The
+            # secrets scan satisfies this: the parent configures settings before
+            # scanning.
             return self._run_function_multithreaded(func, items)
 
         if not group_size:
@@ -134,7 +208,15 @@ class ParallelRunner:
         logging.debug(
             f"Running function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with parallelization type 'spawn'"
         )
-        with Pool(processes=self.workers_number, context=multiprocessing.get_context("spawn")) as p:
+        # pool_initializer runs once per worker process to rebuild any
+        # module-global state the target function needs (spawned workers start
+        # with blank memory).
+        with Pool(
+            processes=self.workers_number,
+            context=multiprocessing.get_context("spawn"),
+            initializer=pool_initializer,
+            initargs=pool_initargs or (),
+        ) as p:
             if items and isinstance(items[0], tuple):
                 # need to use 'starmap' to pass multiple arguments to the target function
                 return p.starmap(func, items, chunksize=group_size)

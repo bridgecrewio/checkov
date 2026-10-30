@@ -20,6 +20,7 @@ from checkov.common.images.image_referencer import fix_related_resource_ids, Ima
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.file_utils import _is_within
 from checkov.helm.image_referencer.manager import HelmImageReferencerManager
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -221,6 +222,20 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return self.check_type
 
     @staticmethod
+    def _is_safe_source_path(target_dir: str, source: str) -> bool:
+        """Check the path from a '# Source: ' line of the helm template output stays inside target_dir.
+
+        Helm always renders it as a relative path inside the chart, ex. 'mychart/templates/deployment.yaml',
+        so absolute paths and '..' segments can only come from the template content itself.
+        """
+        if not source or "\0" in source or os.path.isabs(source) or source.startswith(("/", "\\")):
+            return False
+        if ".." in re.split(r"[/\\]", source):
+            return False
+        # defense in depth - the resolved file path must be inside the target dir
+        return bool(_is_within(target_dir, os.path.join(target_dir, source)))
+
+    @staticmethod
     def _parse_output(target_dir: str, output: bytes, chart_dir: str, template_mapping: dict[str, str]) -> None:
         output_str = str(output, 'utf-8')
         reader = io.StringIO(output_str)
@@ -241,26 +256,34 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 if not s.startswith('# Source: '):
                     raise Exception(f'Line {line_num}: Expected line to start with # Source: {s}')
                 source = s[10:]
-                if source != cur_source_file:
+                if not Runner._is_safe_source_path(target_dir, source):
+                    # Drop this document - its content must not be written outside of the target dir
+                    logging.warning(f"Helm: skipping rendered document with an invalid source path: {source!r}")
                     if cur_writer:
                         cur_writer.close()
-                    file_path = os.path.join(target_dir, source)
-                    parent = os.path.dirname(file_path)
-                    os.makedirs(parent, exist_ok=True)
-                    cur_source_file = source
-                    cur_writer = open(os.path.join(target_dir, source), 'a')
+                    cur_writer = None
+                    cur_source_file = None
+                else:
+                    if source != cur_source_file:
+                        if cur_writer:
+                            cur_writer.close()
+                        file_path = os.path.join(target_dir, source)
+                        parent = os.path.dirname(file_path)
+                        os.makedirs(parent, exist_ok=True)
+                        cur_source_file = source
+                        cur_writer = open(os.path.join(target_dir, source), 'a')
 
-                # Now extract the original template path from the source comment
-                # Format is typically: "chartname/templates/deployment.yaml"
-                # We need to extract just the "templates/deployment.yaml" part
-                template_path = source.split('/', 1)[1] if '/' in source else source
+                    # Now extract the original template path from the source comment
+                    # Format is typically: "chartname/templates/deployment.yaml"
+                    # We need to extract just the "templates/deployment.yaml" part
+                    template_path = source.split('/', 1)[1] if '/' in source else source
 
-                # Construct the path to the original template file
-                original_template = os.path.join(chart_dir, template_path)
+                    # Construct the path to the original template file
+                    original_template = os.path.join(chart_dir, template_path)
 
-                if os.path.exists(original_template):
-                    # Store mapping: temp file path (without prefix) -> original template path
-                    template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
+                    if os.path.exists(original_template):
+                        # Store mapping: temp file path (without prefix) -> original template path
+                        template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
 
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)

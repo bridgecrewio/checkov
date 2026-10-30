@@ -7,7 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from checkov.common.util.file_utils import read_file_safe, get_file_size_safe, extract_tar_archive, safe_relpath
+from checkov.common.util.file_utils import read_file_safe, get_file_size_safe, extract_tar_archive, safe_relpath, \
+    _is_within
 
 def test_sanity_read_file():
     file_to_check = f"{os.path.dirname(os.path.realpath(__file__))}/resources/existing_file"
@@ -119,3 +120,40 @@ def test_safe_relpath_cross_drive_fallback(caplog: pytest.LogCaptureFixture) -> 
 
     assert result == os.path.basename(file_path)
     assert any("falling back" in record.message for record in caplog.records)
+
+
+@pytest.mark.parametrize(
+    "target, expected",
+    [
+        ("base", True),
+        ("base/a.yaml", True),
+        ("base/sub/dir/a.yaml", True),
+        ("base/./a.yaml", True),
+        ("base//a.yaml", True),
+        ("base/sub/../a.yaml", True),
+        ("base/my..file.yaml", True),
+        ("base/..", False),
+        ("base/../outside/a.yaml", False),
+        ("base/sub/../../outside", False),
+        ("base_sibling/a.yaml", False),
+        ("outside/a.yaml", False),
+        ("/etc/passwd", False),
+    ],
+)
+def test_is_within(target: str, expected: bool) -> None:
+    root = os.path.abspath("checkov_is_within_test_root")
+    target_path = target if os.path.isabs(target) else os.path.join(root, target)
+
+    assert _is_within(os.path.join(root, "base"), target_path) is expected
+
+
+def test_is_within_does_not_access_the_file_system() -> None:
+    # os.path.realpath segfaults on python 3.9/3.10 in some environments, the check must stay lexical
+    with patch("os.path.realpath", side_effect=AssertionError("realpath must not be called")):
+        assert _is_within("/base", "/base/a.yaml")
+        assert not _is_within("/base", "/base/../a.yaml")
+
+
+def test_is_within_different_drives_returns_false() -> None:
+    with patch("os.path.commonpath", side_effect=ValueError("Paths don't have the same drive")):
+        assert not _is_within("C:\\base", "D:\\base\\a.yaml")
