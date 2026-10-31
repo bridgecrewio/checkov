@@ -142,16 +142,14 @@ const bucket = new aws_s3.Bucket(this, 'MyBucket', {
 });
 const cfnBucket = bucket.node.defaultChild as aws_s3.CfnBucket;
 
-cfnBucket.cfnOptions.metadata = {
-  'checkov': {
-    'skip': [
-      {
-        'id': 'CKV_AWS_18',
-        'comment': 'Ensure the S3 bucket has access logging enabled'
-      }
-    ]
-  }
-}
+cfnBucket.addMetadata('checkov', {
+  'skip': [
+    {
+      'id': 'CKV_AWS_18',
+      'comment': 'Ensure the S3 bucket has access logging enabled'
+    }
+  ]
+});
 ```
 Run the `synth` command to generate a CloudFormation template and scan it
 ```shell
@@ -165,6 +163,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Metadata:
+      aws:cdk:path: AppStack/MyBucket/Resource
       checkov:
         skip:
           - id: CKV_AWS_18
@@ -179,18 +178,18 @@ $ checkov -f cdk.out/AppStack.template.json
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By Prisma Cloud | version: 3.0.1
+By Prisma Cloud | version: 3.3.29
 
 cloudformation scan results:
 
-Passed checks: 3, Failed checks: 5, Skipped checks: 1
+Passed checks: 4, Failed checks: 4, Skipped checks: 1
 
 ...
 
 Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
         Suppress comment: Ensure the S3 bucket has access logging enabled
-        File: /../anton/cfn.json:3-22
+        File: /cdk.out/AppStack.template.json:3-23
         Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
 
 
