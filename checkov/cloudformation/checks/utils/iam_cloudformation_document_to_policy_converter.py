@@ -11,7 +11,9 @@ def convert_cloudformation_conf_to_iam_policy(conf: dict[str, Any]) -> dict[str,
     """
     result = pickle_deepcopy(conf)
     if "Statement" in result.keys():
-        result["Statement"] = result.pop("Statement")
+        # IAM grammar allows Statement to be a single object; normalize to a list so it can be iterated
+        if isinstance(result["Statement"], dict):
+            result["Statement"] = [result["Statement"]]
         for statement in map(dict, result["Statement"]):
             if "Action" in statement:
                 statement["Action"] = str(statement.pop("Action")[0])
