@@ -21,6 +21,7 @@ class DockerSocketVolume(BaseK8Check):
             "Deployment",
             "DaemonSet",
             "StatefulSet",
+            "Rollout",  # Argo Rollouts, same spec.template shape as a Deployment
             "ReplicaSet",
             "ReplicationController",
             "Job",

@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.data_structures_utils import find_in_dict
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check, is_rollout_without_template
 from checkov.kubernetes.checks.resource.registry import registry
 
 
@@ -17,12 +17,17 @@ class BaseK8sRootContainerCheck(BaseK8Check):
             id: str,
             guideline: Optional[str] = None,
     ) -> None:
-        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController',
+        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'Rollout', 'ReplicaSet', 'ReplicationController',
                           'Job', 'CronJob')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind,
                          guideline=guideline)
         registry.register(self)
+
+    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+        if is_rollout_without_template(conf):
+            return CheckResult.UNKNOWN
+        return super().scan_entity_conf(conf, entity_type)
 
     @abstractmethod
     def scan_spec_conf(self, conf: Dict[str, Any]) -> CheckResult:

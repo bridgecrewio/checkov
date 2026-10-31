@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: insecure
+  namespace: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: insecure
+  template:
+    metadata:
+      labels:
+        app: insecure
+    spec:
+      containers:
+        - name: app
+          image: example.com/app:1.0.0
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: {}
