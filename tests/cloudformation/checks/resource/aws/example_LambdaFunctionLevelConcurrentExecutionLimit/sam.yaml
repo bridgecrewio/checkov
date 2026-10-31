@@ -6,11 +6,11 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       ReservedConcurrentExecutions: 100
 
   Default:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13

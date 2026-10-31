@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       DeadLetterQueue:
         TargetArn: arn:aws:sqs:eu-central-1:123456789012:dlq
         Type: SQS
@@ -15,4 +15,4 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
