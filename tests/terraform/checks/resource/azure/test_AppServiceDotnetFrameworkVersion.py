@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AppServiceDotnetFrameworkVersion import check
@@ -43,6 +44,31 @@ class TestAppServiceDotnetFrameworkVersion(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+
+    def test_dict_version_does_not_crash(self):
+        # Regression test: when dotnet_version resolves to a dict (unresolved Terraform
+        # reference) instead of a string, the check must return UNKNOWN rather than raising
+        # TypeError: unhashable type: 'dict'.
+        conf = {
+            'site_config': [{
+                'application_stack': [{
+                    'dotnet_version': [{'__startline__': 1, '__endline__': 2}]
+                }]
+            }]
+        }
+        result = check.scan_resource_conf(conf)
+        self.assertEqual(result, CheckResult.UNKNOWN)
+
+    def test_dict_framework_version_does_not_crash(self):
+        # Regression test: same crash via dotnet_framework_version path.
+        conf = {
+            'site_config': [{
+                'dotnet_framework_version': [{'__startline__': 1, '__endline__': 2}]
+            }]
+        }
+        result = check.scan_resource_conf(conf)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
 
 if __name__ == '__main__':
