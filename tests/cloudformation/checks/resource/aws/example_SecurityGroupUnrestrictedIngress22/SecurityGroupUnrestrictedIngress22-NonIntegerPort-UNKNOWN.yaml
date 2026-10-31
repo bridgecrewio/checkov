@@ -1,0 +1,15 @@
+Description: Security Group Example - non-integer FromPort should not crash
+Parameters:
+  IngressPort:
+    Type: String
+    Default: ''
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref IngressPort
+          ToPort: !Ref IngressPort
+          CidrIp: 0.0.0.0/0
