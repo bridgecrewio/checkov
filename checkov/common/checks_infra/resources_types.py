@@ -4662,7 +4662,9 @@ resources_types = {
         "google_secret_manager_regional_secret",
         "google_spanner_instance_config",
         "google_transcoder_job",
-        "google_transcoder_job_template"
+        "google_transcoder_job_template",
+        "google_sql_database_instance",
+        "google_container_cluster"
     ],
     "azure_taggable": [
         "azurerm_aadb2c_directory",
