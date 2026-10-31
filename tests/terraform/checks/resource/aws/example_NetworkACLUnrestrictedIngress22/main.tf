@@ -405,3 +405,59 @@ resource "aws_network_acl_rule" "unknown2" {
   from_port      = 80
   to_port        = 80
 }
+
+resource "aws_network_acl" "mixed_rule_no_types" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    protocol   = "-1"
+    rule_no    = "800" # string
+    action     = "deny"
+    cidr_block = "10.0.0.0/8"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  ingress {
+    protocol   = "-1"
+    rule_no    = 900 # int
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+}
+
+resource "aws_network_acl" "dynamic_rule_no" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 204
+    action     = "allow"
+    cidr_block = "10.0.5.0/24"
+    from_port  = 22
+    to_port    = 22
+  }
+
+  dynamic "ingress" {
+    for_each = { for idx, cidr in var.peered_cidr_blocks : idx => cidr }
+    content {
+      protocol   = "tcp"
+      rule_no    = 220 + tonumber(ingress.key)
+      action     = "allow"
+      cidr_block = ingress.value
+      from_port  = 22
+      to_port    = 22
+    }
+  }
+
+  ingress {
+    protocol   = "-1"
+    rule_no    = 213
+    action     = "deny"
+    cidr_block = "10.0.0.0/16"
+    from_port  = 0
+    to_port    = 0
+  }
+}

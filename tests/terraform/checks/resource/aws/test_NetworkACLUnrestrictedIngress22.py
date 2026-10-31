@@ -21,6 +21,7 @@ class TestNetworkACLUnrestrictedIngress22(unittest.TestCase):
             "aws_network_acl.pass",
             "aws_network_acl.pass2",
             "aws_network_acl.pass3",
+            "aws_network_acl.dynamic_rule_no",
             "aws_network_acl_rule.pass",
             "aws_network_acl_rule.pass2",
             "aws_network_acl_rule.pass3"
@@ -30,6 +31,7 @@ class TestNetworkACLUnrestrictedIngress22(unittest.TestCase):
             "aws_network_acl.fail2",
             "aws_network_acl.fail3",
             "aws_network_acl.fail4",
+            "aws_network_acl.mixed_rule_no_types",
             "aws_network_acl_rule.fail",
             "aws_network_acl_rule.fail2",
             "aws_network_acl_rule.public_ingress",
