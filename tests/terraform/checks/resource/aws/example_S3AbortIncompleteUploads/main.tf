@@ -223,3 +223,144 @@ resource "aws_s3_bucket_lifecycle_configuration" "resource_with_dynamic_rule_pas
     }
   }
 }
+# a static rule and a dynamic rule in the same resource, either order. the static rule is
+# the one the check is looking for, and rendering the dynamic block must not drop it
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass_static_then_dynamic" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    id     = "abort-incomplete-uploads"
+    status = "Enabled"
+    filter {}
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = var.config.abort_incomplete_multipart_upload
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.versioning ? [1] : []
+
+    content {
+      id     = "expire-noncurrent-versions"
+      status = "Enabled"
+      filter {}
+
+      noncurrent_version_expiration {
+        noncurrent_days = 1
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass_dynamic_then_static" {
+  bucket = aws_s3_bucket.bucket.id
+
+  dynamic "rule" {
+    for_each = var.versioning ? [1] : []
+
+    content {
+      id     = "expire-noncurrent-versions"
+      status = "Enabled"
+
+      noncurrent_version_expiration {
+        noncurrent_days = 1
+      }
+    }
+  }
+
+  rule {
+    id     = "abort-incomplete-uploads"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass_disabled_dynamic_rule" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    id     = "abort-incomplete-uploads"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.bucket_transition_lifecycle_rule
+
+    content {
+      id     = rule.value["id"]
+      status = rule.value["status"]
+
+      abort_incomplete_multipart_upload {
+        days_after_initiation = rule.value["abort_incomplete_multipart_upload_days"]
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass_multiple_dynamic_rules" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    id     = "abort-incomplete-uploads"
+    status = "Enabled"
+    filter {}
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.versioning ? [1] : []
+
+    content {
+      id     = "expire-noncurrent-versions"
+      status = "Enabled"
+      filter {}
+
+      noncurrent_version_expiration {
+        noncurrent_days = 1
+      }
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.expire_days > 0 ? [1] : []
+
+    content {
+      id     = "expire-current"
+      status = "Enabled"
+      filter {}
+
+      expiration {
+        days = var.expire_days
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "fail_dynamic_only" {
+  bucket = aws_s3_bucket.bucket.id
+
+  dynamic "rule" {
+    for_each = var.versioning ? [1] : []
+
+    content {
+      id     = "expire-noncurrent-versions"
+      status = "Enabled"
+
+      noncurrent_version_expiration {
+        noncurrent_days = 1
+      }
+    }
+  }
+}
