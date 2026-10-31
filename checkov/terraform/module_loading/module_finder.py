@@ -60,7 +60,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
     if parsing_errors is None:
         parsing_errors = {}
 
-    excluded_paths_regex = re.compile('|'.join(f"({excluded_paths})")) if excluded_paths else None
+    excluded_paths_regex = re.compile('|'.join(f"({p})" for p in excluded_paths)) if excluded_paths else None
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith(".tf"):
