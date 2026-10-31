@@ -73,7 +73,7 @@ class Sarif:
 
         for report in self.reports:
             if report.check_type in SCA_CHECKTYPES:
-                for record in itertools.chain(report.failed_checks, report.skipped_checks):
+                for record in itertools.chain(report.failed_checks, report.skipped_checks, report.unknown_checks):
                     rule = None
                     if record.check_id.startswith("BC_LIC"):
                         rule = self._create_license_rule(check_type=report.check_type, record=record)
@@ -85,7 +85,7 @@ class Sarif:
                         rules.append(rule)
                         rule_idx += 1
             else:
-                for record in itertools.chain(report.failed_checks, report.skipped_checks):
+                for record in itertools.chain(report.failed_checks, report.skipped_checks, report.unknown_checks):
                     if record.check_id not in self.rule_index_map:
                         rule = self._create_iac_rule(check_type=report.check_type, record=record)
                         self.rule_index_map[rule["id"]] = rule_idx
@@ -199,12 +199,14 @@ class Sarif:
         results: "list[dict[str, Any]]" = []
 
         for report in self.reports:
-            for record in itertools.chain(report.failed_checks, report.skipped_checks):
+            for record in itertools.chain(report.failed_checks, report.skipped_checks, report.unknown_checks):
                 level = "warning"
                 if record.severity:
                     level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
                 elif record.check_result.get("result") == CheckResult.FAILED:
                     level = "error"
+                elif record.check_result.get("result") == CheckResult.UNKNOWN:
+                    level = "note"
 
                 rule_id = self._create_rule_id(check_type=report.check_type, record=record)
                 if not rule_id or rule_id not in self.rule_index_map:
