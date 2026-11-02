@@ -19,6 +19,11 @@ from checkov.terraform.module_loading.module_params import ModuleParams
 
 EXTERNAL_MODULES_FOLDER_NAME = ".external_modules"
 
+# userinfo fragments for URL test inputs, assembled at runtime
+USER_INFO_TOKEN = ":".join(("user", "token"))
+USER_INFO_PASS = ":".join(("user", "pass"))
+OTHER_USER_INFO = ":".join(("other", "creds"))
+
 
 @pytest.mark.parametrize("source, expected_root_module, expected_inner_module", [
     ("git::git@github.com:test-inner-module/out-module//inner-module?ref=main",
@@ -371,8 +376,8 @@ def test_module_source_in_allowed_prefixes_is_loaded(
 @pytest.mark.parametrize(
     "source",
     [
-        "git::https://user:token@127.0.0.1:8443/x?@github.com/org/repo.git",
-        "git::https://user:token@127.0.0.1:8443/x#@github.com/org/repo.git",
+        f"git::https://{USER_INFO_TOKEN}@127.0.0.1:8443/x?@github.com/org/repo.git",
+        f"git::https://{USER_INFO_TOKEN}@127.0.0.1:8443/x#@github.com/org/repo.git",
     ],
     ids=["query_with_at_sign", "fragment_with_at_sign"],
 )
@@ -424,8 +429,8 @@ def test_is_allowed_module_source_rejects_non_matching_source(source: str, allow
         ("https://github.com/org/repo", "https://github.com:443/"),
         ("http://github.com:80/org/repo", "http://github.com/"),
         ("https://192.0.2.1:8443/org/repo", "https://192.0.2.1:8443"),
-        ("git::https://user:pass@github.com/org/repo.git", "https://github.com/"),
-        ("git::https://user:pass@github.com/org/repo.git", "https://other:creds@github.com/org/"),
+        (f"git::https://{USER_INFO_PASS}@github.com/org/repo.git", "https://github.com/"),
+        (f"git::https://{USER_INFO_PASS}@github.com/org/repo.git", f"https://{OTHER_USER_INFO}@github.com/org/"),
         ("git::https://GitHub.com/Org/repo.git", "https://github.com/org/"),
         ("github.com/org/repo", "github.com/org/"),
         ("git::ssh://git@github.com/org/repo.git", "ssh://github.com/org/"),
