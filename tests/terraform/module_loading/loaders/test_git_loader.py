@@ -437,3 +437,28 @@ def test_is_allowed_module_source_rejects_non_matching_source(source: str, allow
 def test_is_allowed_module_source_accepts_matching_source(source: str, allowed: str) -> None:
     with mock.patch.dict(os.environ, {ALLOWED_MODULE_PREFIXES_ENV: allowed}):
         assert _is_allowed_module_source(source)
+
+
+@pytest.mark.parametrize(
+    "env, source, injected",
+    [
+        # VCS_ALLOWED_HOSTS not set -> credentials are added for any host (unchanged behaviour)
+        ({}, "git::https://github.com/org/repo.git", True),
+        ({}, "git::https://other.example.com/org/repo.git", True),
+        ({"VCS_BASE_URL": "https://git.example.com"}, "git::https://git.example.com/org/repo.git", True),
+        # VCS_ALLOWED_HOSTS set -> only the listed hosts and the VCS_BASE_URL host
+        ({"VCS_ALLOWED_HOSTS": " GitLab.com , "}, "git::https://gitlab.com/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com", "VCS_BASE_URL": "https://git.example.com"}, "git::https://git.example.com/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "git.example.com:8443"}, "git::https://git.example.com:8443/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://other.example.com/org/repo.git", False),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://gitlab.com.example.com/org/repo.git", False),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://gitlab.com@other.example.com/org/repo.git", False),
+    ],
+)
+def test_vcs_allowed_hosts(env: dict[str, str], source: str, injected: bool) -> None:
+    loader = GenericGitLoader()
+    module_params = _module_params(Path("test"), source)
+    with mock.patch.dict(os.environ, {"VCS_USERNAME": "user", "VCS_TOKEN": "token", **env}, clear=True):
+        loader.discover(module_params)
+        loader._is_matching_loader(module_params)
+    assert ("user:token@" in module_params.module_source) is injected

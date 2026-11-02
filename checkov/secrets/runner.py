@@ -113,13 +113,38 @@ _SECRETS_DISABLED_FILTERS = [
 ]
 
 
-def _init_secrets_worker(config: Dict[str, Any], disabled_filters: List[str]) -> None:
+def _get_platform_secrets_policies() -> Optional[List[Dict[str, Any]]]:
+    """Return the platform secrets policies downloaded by the parent process, if any.
+
+    These policies are turned into regex detectors by load_detectors(), which reads
+    them from bc_integration. Spawned workers do not inherit bc_integration state,
+    so the parent has to pass them explicitly.
+    """
+    run_config = bc_integration.customer_run_config_response
+    if not run_config:
+        return None
+    policies: Optional[List[Dict[str, Any]]] = run_config.get('secretsPolicies')
+    return policies
+
+
+def _init_secrets_worker(
+        config: Dict[str, Any],
+        disabled_filters: List[str],
+        secrets_policies: Optional[List[Dict[str, Any]]] = None,
+) -> None:
     """Pool initializer for SPAWN workers. Runs once per worker process.
 
     Rebuilds detect-secrets settings from the parent-provided config and disables
     the same filters the parent disabled, so a spawned worker produces
     byte-identical findings to the thread/in-process path.
+
+    secrets_policies carries the platform secrets policies. They must be in place
+    before get_plugins() instantiates CustomRegexDetector, which loads its
+    detectors from bc_integration at construction time.
     """
+    if secrets_policies and not bc_integration.customer_run_config_response:
+        bc_integration.customer_run_config_response = {'secretsPolicies': secrets_policies}  # type:ignore[assignment]
+
     settings = get_settings()
     settings.clear()
     configure_settings_from_baseline(config)
@@ -593,7 +618,7 @@ class Runner(BaseRunner[None, None, None]):
                 func=Runner._safe_scan,
                 items=items,
                 pool_initializer=_init_secrets_worker,
-                pool_initargs=(worker_config, _SECRETS_DISABLED_FILTERS),
+                pool_initargs=(worker_config, _SECRETS_DISABLED_FILTERS, _get_platform_secrets_policies()),
             )
         else:
             results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
