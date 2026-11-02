@@ -210,3 +210,93 @@ class TestParserInternals(unittest.TestCase):
         # then
         assert module
         assert len(tf_definitions) == 2  # need to be 2 files (the module reference and the actual module content)
+
+    def test_relative_module_path_resolved_from_file_directory(self):
+        """
+        Regression test for GitHub issue #7547.
+        
+        When Checkov is run from a repo root, TF files in nested directories
+        that reference modules via relative paths (e.g. ../../../../modules/foo)
+        should resolve those paths from the declaring file's directory, not
+        from Checkov's current working directory.
+        """
+        import tempfile
+        import os
+        
+        parser = TFParser()
+        
+        # Create a temporary repo structure:
+        #   tmpdir/
+        #   ├── infrastructure/a/b/c/d/main.tf   (source = "../../../../../../modules/cloudsql-mysql")
+        #   └── modules/cloudsql-mysql/main.tf
+        with tempfile.TemporaryDirectory() as tmpdir:
+            stack_dir = os.path.join(tmpdir, "infrastructure", "a", "b", "c", "d")
+            module_dir = os.path.join(tmpdir, "modules", "cloudsql-mysql")
+            os.makedirs(stack_dir, exist_ok=True)
+            os.makedirs(module_dir, exist_ok=True)
+            
+            with open(os.path.join(module_dir, "main.tf"), "w") as f:
+                f.write('variable "name" { type = string }\n')
+            
+            with open(os.path.join(stack_dir, "main.tf"), "w") as f:
+                f.write('module "cloudsql" {\n  source = "../../../../../modules/cloudsql-mysql"\n}\n') 
+            # Parse from repo root (simulating `checkov -d tmpdir`)
+            out_definitions = parser.parse_directory(
+                directory=tmpdir,
+                out_evaluations_context={},
+                download_external_modules=False,
+            )
+            
+            # The module file should have been successfully loaded
+            module_files = [
+                k for k in out_definitions.keys()
+                if "cloudsql-mysql" in str(k)
+            ]
+            self.assertTrue(
+                len(module_files) > 0,
+                f"Module files should be present in parsed definitions. Got: {list(out_definitions.keys())}"
+            )
+
+    def test_get_module_source_resolves_relative_path_from_cwd(self):
+        """
+        Direct unit test for TFParser.get_module_source() ensuring relative
+        module sources are resolved to absolute paths from the file's directory,
+        even when TFDefinitionKey stores a relative path (as happens when
+        parse_directory is called with a relative directory like '.').
+        """
+        import tempfile
+        import os
+
+        parser = TFParser()
+        original_cwd = os.getcwd()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            nested_dir = os.path.join(tmpdir, "infrastructure", "a", "b", "c", "d")
+            os.makedirs(nested_dir, exist_ok=True)
+
+            try:
+                os.chdir(tmpdir)
+
+                # Simulate a TFDefinitionKey with a relative path (as Checkov creates
+                # when scanning from the repo root/CWD with a relative directory)
+                file_key = TFDefinitionKey(
+                    file_path=os.path.join("infrastructure", "a", "b", "c", "d", "main.tf")
+                )
+
+                module_call_data = {
+                    "source": ["../../../../../modules/cloudsql-mysql"],  # was 6, now 5
+                    "version": ["latest"],
+                }
+
+                source = parser.get_module_source(module_call_data, "cloudsql", file_key)
+
+                expected = os.path.normpath(os.path.join(tmpdir, "modules", "cloudsql-mysql"))
+                self.assertEqual(
+                    source,
+                    expected,
+                    f"Relative module source should resolve to absolute path from file's directory.\n"
+                    f"Got:      {source}\n"
+                    f"Expected: {expected}"
+                )
+            finally:
+                os.chdir(original_cwd)
