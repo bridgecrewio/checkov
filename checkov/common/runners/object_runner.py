@@ -130,11 +130,14 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
             if files:
                 self._load_files(files)
             if root_folder:
+                # Collect the whole walk and load once. '_load_files' forks a worker pool per
+                # call, so calling it per directory forks a pool per directory per runner.
+                files_to_load: list[str] = []
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
                     filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
-                    files_to_load = [os.path.join(root, f_name) for f_name in f_names]
-                    self._load_files(files_to_load=files_to_load)
+                    files_to_load.extend(os.path.join(root, f_name) for f_name in f_names)
+                self._load_files(files_to_load=files_to_load)
 
             self.context = self.build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
