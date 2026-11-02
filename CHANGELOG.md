@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.2...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.3...HEAD)
+
+## [3.4.3](https://github.com/bridgecrewio/checkov/compare/3.4.2...3.4.3) - 2026-11-02
+
+### Bug Fix
+
+- **terraform:** build userinfo test URLs dynamically - [#7776](https://github.com/bridgecrewio/checkov/pull/7776)
 
 ## [3.4.2](https://github.com/bridgecrewio/checkov/compare/3.4.0...3.4.2) - 2026-11-02
 
