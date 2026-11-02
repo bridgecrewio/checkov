@@ -14,6 +14,11 @@ from checkov.common.goget.registry.get_registry import RegistryGetter
 from checkov.common.util.http_utils import DEFAULT_TIMEOUT
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
+from checkov.terraform.module_loading.loaders.git_loader import (
+    ALLOWED_MODULE_PREFIXES_ENV,
+    _is_allowed_module_source,
+    _normalize_module_source,
+)
 from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints
@@ -116,6 +121,12 @@ class RegistryLoader(ModuleLoader):
         self.logger.debug(f"Cloning module from normalized url {module_download_url}")
         archive_extension = self._get_archive_extension(module_download_url)
         if archive_extension:
+            if not _is_allowed_module_source(module_download_url):
+                self.logger.warning(
+                    f"Skipping module download {_normalize_module_source(module_download_url)}: "
+                    f"not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist."
+                )
+                return ModuleContent(dir=None, failed_url=module_params.module_source)
             try:
                 registry_getter = RegistryGetter(module_download_url, archive_extension)
                 registry_getter.temp_dir = module_params.dest_dir
