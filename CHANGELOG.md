@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.0...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.2...HEAD)
+
+## [3.4.2](https://github.com/bridgecrewio/checkov/compare/3.4.0...3.4.2) - 2026-11-02
+
+### Bug Fix
+
+- **general:** harden network and credential handling defaults - [#7701](https://github.com/bridgecrewio/checkov/pull/7701)
+- **terraform:** add optional allowlist for external module download sources - [#7758](https://github.com/bridgecrewio/checkov/pull/7758)
 
 ## [3.4.0](https://github.com/bridgecrewio/checkov/compare/3.3.30...3.4.0) - 2026-10-28
 
