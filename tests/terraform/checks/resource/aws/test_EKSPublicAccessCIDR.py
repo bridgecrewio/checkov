@@ -20,19 +20,22 @@ class TestEKSPublicAccessCIDR(unittest.TestCase):
         passing_resources = {
             "aws_eks_cluster.disabled",
             "aws_eks_cluster.restricted",
+            "aws_eks_cluster.restricted_ipv6",
         }
 
         failing_resources = {
             "aws_eks_cluster.default",
             "aws_eks_cluster.empty",
             "aws_eks_cluster.open",
+            "aws_eks_cluster.open_ipv6",
+            "aws_eks_cluster.open_ipv6_expanded",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 5)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
