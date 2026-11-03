@@ -119,6 +119,56 @@ class TestGitGetter(unittest.TestCase):
         )
         self.assertEqual("aa218", getter.commit_id, "Parsed source commit_id is wrong for 5-char commit")
 
+    def test_parse_tag_with_depth(self):
+        url = "https://my-git.com/owner/repository-name?ref=v1.2.3&depth=1"
+        getter = GitGetter(url)
+
+        self.assertEqual("https://my-git.com/owner/repository-name", getter.url, "Parsed source url is wrong")
+        self.assertEqual("v1.2.3", getter.tag, "Parsed source tag is wrong")
+
+    def test_parse_tag_after_depth(self):
+        url = "https://my-git.com/owner/repository-name?depth=1&ref=tags/v1.2.3"
+        getter = GitGetter(url)
+
+        self.assertEqual("https://my-git.com/owner/repository-name", getter.url, "Parsed source url is wrong")
+        self.assertEqual("v1.2.3", getter.tag, "Parsed source tag is wrong")
+
+    def test_parse_branch_with_depth(self):
+        url = "https://my-git.com/owner/repository-name?ref=heads/omryBranch&depth=1"
+        getter = GitGetter(url)
+
+        self.assertEqual("https://my-git.com/owner/repository-name", getter.url, "Parsed source url is wrong")
+        self.assertEqual("omryBranch", getter.branch, "Parsed source branch is wrong")
+
+    def test_parse_commit_id_with_depth(self):
+        url = "https://my-git.com/owner/repository-name?ref=aa218f56b14c9653891f9e74264a383fa43fefbd&depth=1"
+        getter = GitGetter(url)
+
+        self.assertEqual("https://my-git.com/owner/repository-name", getter.url, "Parsed source url is wrong")
+        self.assertEqual("aa218f56b14c9653891f9e74264a383fa43fefbd", getter.commit_id,
+                         "Parsed source commit_id is wrong")
+
+    def test_parse_ref_keeps_other_query_params(self):
+        url = "https://my-git.com/owner/repository-name//sub/path?ref=v1.2.3&depth=1&key=value"
+        getter = GitGetter(url)
+
+        self.assertEqual("https://my-git.com/owner/repository-name//sub/path?key=value", getter.url,
+                         "Parsed source url is wrong")
+        self.assertEqual("v1.2.3", getter.tag, "Parsed source tag is wrong")
+        git_url, subdir = getter._source_subdir()
+        self.assertEqual("https://my-git.com/owner/repository-name?key=value", git_url)
+        self.assertEqual("/sub/path", subdir)
+
+    @patch('checkov.common.goget.github.get_git.Repo')
+    def test_do_get_tag_with_depth(self, mock_repo):
+        url = "https://my-git.com/repo.git?ref=v4.6.0&depth=1"
+        getter = GitGetter(url, create_clone_and_result_dirs=False)
+        getter.temp_dir = "/tmp/test"
+
+        getter.do_get()
+
+        mock_repo.clone_from.assert_called_once_with("https://my-git.com/repo.git", "/tmp/test", depth=1, b="v4.6.0")
+
     @patch('checkov.common.goget.github.get_git.Repo')
     @patch('shutil.copytree')
     @patch('os.makedirs')
