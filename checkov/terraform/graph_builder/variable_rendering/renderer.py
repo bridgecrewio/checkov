@@ -336,10 +336,46 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     changed_attributes = []
 
                     for block_name, block_confs in rendered_blocks.items():
+                        static_blocks = self._extract_static_blocks(
+                            vertex.attributes.get(block_name), dynamic_blocks, block_name
+                        )
+                        if static_blocks:
+                            # a resource can declare the same block both statically and via 'dynamic'.
+                            # the static ones are not part of the rendering, so they have to be carried
+                            # over, otherwise they are lost and checks see only the rendered ones
+                            block_confs = static_blocks + (
+                                block_confs if isinstance(block_confs, list) else [block_confs]
+                            )
                         vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
                         changed_attributes.append(block_name)
 
                     self.local_graph.update_vertex_config(vertex, changed_attributes, True)
+
+    @staticmethod
+    def _extract_static_blocks(
+        current_blocks: Any, dynamic_blocks: list[dict[str, Any]] | dict[str, Any], block_name: str
+    ) -> list[Any]:
+        """Returns the blocks named 'block_name' that were written statically, not via 'dynamic'
+
+        process_dynamic_values() appends the unrendered content of every 'dynamic' block to the
+        attribute of the same name, so the statically declared blocks are the leading entries.
+        """
+        if not isinstance(current_blocks, list):
+            return []
+
+        blocks = dynamic_blocks if isinstance(dynamic_blocks, list) else [dynamic_blocks]
+        appended = 0
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+            for name, values in block.items():
+                if name != block_name or not isinstance(values, dict) or "content" not in values:
+                    continue
+                content = values["content"]
+                appended += len(content) if isinstance(content, list) else 1
+
+        static_count = len(current_blocks) - appended
+        return current_blocks[:static_count] if static_count > 0 else []
 
     @staticmethod
     def _extract_dynamic_arguments(block_name: str, block_content: Dict[str, Any], dynamic_arguments: List[str],
