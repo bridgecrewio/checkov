@@ -1,0 +1,18 @@
+Description: FromPort resolves to a non-integer via an optional parameter
+Parameters:
+  SSHFromPort:
+    Description: Optional ingress start port; empty means "not configured"
+    Type: String
+    Default: ''
+Resources:
+  UnresolvedPortSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: vpc-000000 #dummy vpc id
+      GroupDescription: SG whose FromPort comes from an empty parameter
+      SecurityGroupIngress:
+        - Description: FromPort is an empty string once the parameter resolves
+          IpProtocol: tcp
+          FromPort: !Ref SSHFromPort
+          ToPort: '22'
+          CidrIp: "0.0.0.0/0"
