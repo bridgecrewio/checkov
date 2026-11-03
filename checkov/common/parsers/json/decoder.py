@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from collections.abc import Sequence
 from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray  # type:ignore  # they are not explicitly exported
@@ -270,6 +271,9 @@ class Decoder(JSONDecoder):
         self, s_and_end: tuple[str, int], scan_once: Callable[[str, int], tuple[Any, int]], **kwargs: Any
     ) -> tuple[ListNode, int]:
         """ Convert JSON array to be a list_node object """
+        if sys.version_info >= (3, 15):
+            # Python 3.15 added a required 'array_hook' argument, the result is wrapped into a ListNode below
+            kwargs.setdefault("array_hook", None)
         values, end = JSONArray(s_and_end, scan_once, **kwargs)
         s, start = s_and_end
         beg_mark, end_mark = get_beg_end_mark(s, start, end, self.newline_indexes)
