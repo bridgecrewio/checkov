@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2024-04-01",
+      "name": "[format('{0}/{1}', parameters('appName'), 'authsettingsV2')]",
+      "properties": {
+        "platform": {
+          "enabled": true,
+          "runtimeVersion": "~1"
+        },
+        "globalValidation": {
+          "requireAuthentication": true,
+          "unauthenticatedClientAction": "Return401"
+        },
+        "httpSettings": {
+          "requireHttps": true
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2024-04-01",
+      "name": "disabled-app/authsettingsV2",
+      "properties": {
+        "platform": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2024-04-01",
+      "name": "legacy-app/authsettings",
+      "properties": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2024-04-01",
+      "name": "web-app/web",
+      "properties": {
+        "httpLoggingEnabled": false,
+        "detailedErrorLoggingEnabled": false,
+        "requestTracingEnabled": false,
+        "netFrameworkVersion": "v4.0",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2024-04-01",
+      "name": "nested-app",
+      "location": "westeurope",
+      "properties": {},
+      "resources": [
+        {
+          "type": "config",
+          "apiVersion": "2024-04-01",
+          "name": "authsettingsV2",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', 'nested-app')]"
+          ],
+          "properties": {
+            "platform": {
+              "enabled": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
