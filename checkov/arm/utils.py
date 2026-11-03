@@ -93,8 +93,16 @@ def extract_resource_name_from_resource_id_func(resource_id: str) -> str:
     '''
         Examples:
             resourceId('Microsoft.Network/virtualNetworks/', virtualNetworkName) -> virtualNetworkName
+
+        If the expression has no second argument (for example resourceId(parameters('vnetId')))
+        the resource name can not be extracted, so the cleaned expression is returned as is.
+        Callers use the result as a lookup key, so an unknown key is skipped instead of
+        crashing the whole ARM scan with an IndexError.
     '''
-    return clean_string(resource_id.split(',')[1].split(')')[0])
+    parts = resource_id.split(',')
+    if len(parts) < 2:
+        return clean_string(resource_id)
+    return clean_string(parts[1].split(')')[0])
 
 
 def extract_resource_name_from_reference_func(reference: str) -> str:
@@ -107,7 +115,9 @@ def extract_resource_name_from_reference_func(reference: str) -> str:
                 reference(resourceId('Microsoft.Network/publicIPAddresses', 'ipAddressName')) -> ipAddressName
     '''
     resource_name = ')'.join(reference.split('reference(', 1)[1].split(')')[:-1])
-    if 'resourceId' in resource_name:
+    # Check for the function call itself and not only the word, otherwise a name such as
+    # parameters('resourceId') or variables('resourceIdentity') makes the split below fail
+    if 'resourceId(' in resource_name:
         return clean_string(
             ''.join(resource_name.split('resourceId(', 1)[1].split(')')[0]).split(',')[-1])
     else:

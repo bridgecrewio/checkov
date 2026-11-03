@@ -334,6 +334,19 @@ class TestRunnerValid(unittest.TestCase):
         assert summary["skipped"] == 0
         assert summary["parsing_errors"] == 0
 
+    def test_runner_resource_id_in_parameter_name(self):
+        # a parameter named "resourceId" used inside reference() used to crash the ARM runner
+        # with an IndexError (https://github.com/bridgecrewio/checkov/issues/7633)
+        test_file = Path(__file__).parent.parent / "examples" / "ResourceIdInParameterName" / "template.json"
+
+        report = Runner().run(root_folder=None, files=[str(test_file)], runner_filter=RunnerFilter(framework=["arm"]))
+
+        summary = report.get_summary()
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertGreater(summary["passed"] + summary["failed"], 0)
+        resource_ids = {record.resource for record in report.failed_checks + report.passed_checks}
+        self.assertIn("Microsoft.Storage/storageAccounts.checkovstorage", resource_ids)
+
     def tearDown(self):
         arm_resource_registry.checks = self.orig_checks
 
