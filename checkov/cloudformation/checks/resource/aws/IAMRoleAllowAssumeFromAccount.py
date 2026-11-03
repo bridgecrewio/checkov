@@ -39,17 +39,33 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         else:
             return CheckResult.UNKNOWN
 
-        if 'Statement' in assume_role_block.keys():
-            if isinstance(assume_role_block['Statement'], list) and 'Principal' in \
-                    assume_role_block['Statement'][0]:
-                if 'AWS' in assume_role_block['Statement'][0]['Principal']:
-                    if isinstance(assume_role_block['Statement'][0]['Principal']['AWS'], list) \
-                            and isinstance(assume_role_block['Statement'][0]['Principal']['AWS'][0], str):
-                        if re.match(ACCOUNT_ACCESS, assume_role_block['Statement'][0]['Principal']['AWS'][0]):
-                            self.evaluated_keys = ['Properties/AssumeRolePolicyDocument/Statement']
-                            return CheckResult.FAILED
-
+        if not isinstance(assume_role_block, dict) or 'Statement' not in assume_role_block:
             return CheckResult.PASSED
+
+        statements = assume_role_block['Statement']
+        if not isinstance(statements, list):
+            statements = [statements]
+
+        for statement in statements:
+            if not isinstance(statement, dict) or statement.get('Effect') == 'Deny':
+                continue
+            principal = statement.get('Principal')
+            if not isinstance(principal, dict) or 'AWS' not in principal:
+                continue
+
+            aws_principals = principal['AWS']
+            # Can be a string or a list of strings
+            if isinstance(aws_principals, str):
+                aws_principals = [aws_principals]
+            if not isinstance(aws_principals, list):
+                continue
+
+            for aws_principal in aws_principals:
+                if isinstance(aws_principal, str) and re.match(ACCOUNT_ACCESS, aws_principal):
+                    self.evaluated_keys = ['Properties/AssumeRolePolicyDocument/Statement']
+                    return CheckResult.FAILED
+
+        return CheckResult.PASSED
 
 
 check = IAMRoleAllowAssumeFromAccount()
