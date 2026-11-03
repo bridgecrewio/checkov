@@ -39,7 +39,44 @@ resource "google_compute_firewall" "allow_null" {
   target_tags   = ["ssh"]
 }
 
+resource "google_compute_firewall" "restricted_ipv6" {
+  name    = "example"
+  network = "google_compute_network.vpc.name"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["2001:db8::/32"]
+  target_tags   = ["ssh"]
+}
+
 # fail
+
+resource "google_compute_firewall" "allow_ssh_ipv6" {
+  name    = "example"
+  network = "google_compute_network.vpc.name"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["::/0"]
+}
+
+resource "google_compute_firewall" "allow_ssh_ipv4_and_ipv6" {
+  name    = "example"
+  network = "google_compute_network.vpc.name"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["10.0.0.0/8", "::/0"]
+}
 
 resource "google_compute_firewall" "allow_all" {
   name    = "example"
