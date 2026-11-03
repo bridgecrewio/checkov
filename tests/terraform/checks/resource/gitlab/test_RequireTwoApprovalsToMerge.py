@@ -19,17 +19,20 @@ class TestRequireTwoApprovalsToMerge(unittest.TestCase):
 
         passing_resources = {
             "gitlab_project.pass",
+            "gitlab_project.pass_new",
         }
         failing_resources = {
             "gitlab_project.fail",
             "gitlab_project.fail2",
+            "gitlab_project.fail_new",
+            "gitlab_project.fail_other",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
