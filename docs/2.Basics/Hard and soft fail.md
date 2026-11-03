@@ -29,7 +29,7 @@ For soft fails, a failed check *matches* the threshold if its severity is less t
 
 Use the `--hard-fail-on` option to pass one or more check IDs and / or severity levels to specify which failed checks will result in an error result. If all failed checks do *not* match any criteria in the hard-fail list, then the result of the scan will be a soft fail (`0`).
 
-For hard fails, a a failed check *matches* the threshold if its severity is greater than or equal to the hard fail severity. If you specify more than one severity for hard fail, then the lowest severity will be used as the threshold.
+For hard fails, a failed check *matches* the threshold if its severity is greater than or equal to the hard fail severity. If you specify more than one severity for hard fail, then the lowest severity will be used as the threshold.
 
 ## Combining options
 
