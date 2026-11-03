@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       VpcConfig:
         SecurityGroupIds:
           - sg-12345

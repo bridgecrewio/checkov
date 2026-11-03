@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       Environment:
         Variables:
           key: value
@@ -16,13 +16,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
 
   EnvAndNoKey:
     Type: AWS::Serverless::Function
     Properties:
       Handler: app.lambdaHandler
-      Runtime: python3.9
+      Runtime: python3.13
       Environment:
         Variables:
           key: value
