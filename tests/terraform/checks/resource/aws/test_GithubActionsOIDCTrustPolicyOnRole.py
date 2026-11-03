@@ -39,6 +39,7 @@ class TestGithubActionsOIDCTrustPolicyOnRole(unittest.TestCase):
             "aws_iam_role.pass-org-only",
             "aws_iam_role.pass-gh-org",
             "aws_iam_role.pass-fm-customer",
+            "aws_iam_role.pass_immutable",
         }
         failing_resources = {
             "aws_iam_role.fail1",
