@@ -26,3 +26,27 @@ resource "gitlab_project" "fail2" {
     prevent_secrets        = false
   }
 }
+
+resource "gitlab_project" "pass_new" {
+  name = "example-new"
+}
+
+resource "gitlab_project_push_rules" "pass_new" {
+  project         = gitlab_project.pass_new.id
+  prevent_secrets = true
+}
+
+resource "gitlab_project" "fail_new" {
+  name = "example-new"
+}
+
+resource "gitlab_project_push_rules" "fail_new" {
+  project         = gitlab_project.fail_new.id
+  prevent_secrets = false
+}
+
+# No push rules of its own: the rules attached to pass_new must not
+# make this project pass.
+resource "gitlab_project" "fail_other" {
+  name = "example-new"
+}

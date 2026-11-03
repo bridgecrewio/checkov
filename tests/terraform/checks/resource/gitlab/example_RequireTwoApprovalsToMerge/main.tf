@@ -31,3 +31,28 @@ resource "gitlab_project" "pass" {
     prevent_secrets        = true
   }
 }
+resource "gitlab_project" "pass_new" {
+  name = "example-new"
+}
+
+resource "gitlab_project_approval_rule" "pass_new" {
+  project            = gitlab_project.pass_new.id
+  name               = "reviewers"
+  approvals_required = 2
+}
+
+resource "gitlab_project" "fail_new" {
+  name = "example-new"
+}
+
+resource "gitlab_project_approval_rule" "fail_new" {
+  project            = gitlab_project.fail_new.id
+  name               = "reviewers"
+  approvals_required = 1
+}
+
+# No approval rule of its own: the rule attached to pass_new must not
+# make this project pass.
+resource "gitlab_project" "fail_other" {
+  name = "example-new"
+}
