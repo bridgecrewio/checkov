@@ -86,3 +86,20 @@ resource "aws_vpc_security_group_ingress_rule" "fail" {
   ip_protocol = "tcp"
   to_port     = -1
 }
+resource "aws_vpc_security_group_ingress_rule" "fail_all_traffic" {
+  security_group_id = aws_security_group.example.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "fail_all_traffic_ipv6" {
+  security_group_id = aws_security_group.example.id
+  cidr_ipv6         = "::/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "pass_all_traffic_sg" {
+  security_group_id            = aws_security_group.example.id
+  referenced_security_group_id = aws_security_group.other.id
+  ip_protocol                  = "-1"
+}
