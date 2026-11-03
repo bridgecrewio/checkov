@@ -298,10 +298,45 @@ def generate_possible_strings_from_wildcards(origin_string: str, max_entries: in
     return generated_strings
 
 
-def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any], attribute_is_leaf: Optional[Dict[str, bool]] = None) -> bool:
+NESTED_PREFIX_INDEX_ENV = "CHECKOV_NESTED_PREFIX_INDEX"
+NESTED_PREFIX_INDEX_MIN_KEYS = 64
+
+
+class NumericKeyPrefixIndex:
+    """The keys of one attributes dict that contain a numeric part (NESTED_ATTRIBUTE_PATTERN), sorted, so "is there a
+    key other than K that starts with K and has a numeric part" is a binary search instead of a scan of every key.
+    Built once per vertex by callers that iterate the vertex's (unchanging) key set; same answers as the scan."""
+
+    def __init__(self, attributes: Dict[str, Any]) -> None:
+        self.keys = sorted(a for a in attributes if NESTED_ATTRIBUTE_PATTERN.search(a))
+
+    def numeric_prefixed(self, attribute_key: str) -> List[str]:
+        from bisect import bisect_left
+
+        found = []
+        for key in self.keys[bisect_left(self.keys, attribute_key):]:
+            if not key.startswith(attribute_key):
+                break
+            if key != attribute_key:
+                found.append(key)
+                break
+        return found
+
+
+def nested_prefix_index(attributes: Dict[str, Any]) -> Optional[NumericKeyPrefixIndex]:
+    """An index for large attribute dicts when CHECKOV_NESTED_PREFIX_INDEX=true (diff scans set it), else None."""
+    if len(attributes) < NESTED_PREFIX_INDEX_MIN_KEYS or os.getenv(NESTED_PREFIX_INDEX_ENV, "false").lower() != "true":
+        return None
+    return NumericKeyPrefixIndex(attributes)
+
+
+def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any],
+                                    attribute_is_leaf: Optional[Dict[str, bool]] = None,
+                                    prefix_index: Optional[NumericKeyPrefixIndex] = None) -> bool:
     """
     :param attribute_key: key inside the  `attributes` dictionary
     :param attributes:
+    :param prefix_index: NumericKeyPrefixIndex of `attributes` (same result, O(log n) instead of O(n) per key)
     :return: True if attribute_key has inner attributes.
     Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
     Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
@@ -309,7 +344,9 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     if attribute_is_leaf is None:
         attribute_is_leaf = {}
     if attribute_is_leaf.get(attribute_key):
-        prefixes_with_attribute_key = []
+        prefixes_with_attribute_key: List[str] = []
+    elif prefix_index is not None:
+        prefixes_with_attribute_key = prefix_index.numeric_prefixed(attribute_key)
     else:
         prefixes_with_attribute_key = [a for a in attributes if a.startswith(attribute_key) and a != attribute_key]
     if not any(re.findall(NESTED_ATTRIBUTE_PATTERN, a) for a in prefixes_with_attribute_key):
