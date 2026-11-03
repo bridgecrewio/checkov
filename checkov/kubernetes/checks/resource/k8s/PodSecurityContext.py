@@ -4,7 +4,7 @@ from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.data_structures_utils import find_in_dict
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check, is_rollout_without_template
 
 
 class PodSecurityContext(BaseK8Check):
@@ -21,6 +21,7 @@ class PodSecurityContext(BaseK8Check):
             "Deployment",
             "DaemonSet",
             "StatefulSet",
+            "Rollout",  # Argo Rollouts, same spec.template shape as a Deployment
             "ReplicaSet",
             "ReplicationController",
             "Job",
@@ -30,6 +31,9 @@ class PodSecurityContext(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
+        if is_rollout_without_template(conf):
+            return CheckResult.UNKNOWN
+
         spec = {}
 
         if conf["kind"] == "Pod":

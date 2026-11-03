@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: hardened
+  namespace: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hardened
+  strategy:
+    blueGreen:
+      activeService: hardened-active
+  template:
+    metadata:
+      labels:
+        app: hardened
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: app
+          image: example.com/app@sha256:6a5fbbe8c5d2d33e0b7a9f1c3a4f5e6d7c8b9a0f1e2d3c4b5a6f7e8d9c0b1a2f
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
