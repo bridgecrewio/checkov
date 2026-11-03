@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 from checkov.kubernetes.kubernetes_utils import remove_metadata_from_attribute
@@ -44,18 +46,56 @@ class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
                 continue
             match_labels = pod_selector.get("matchLabels")
             remove_metadata_from_attribute(match_labels)
+            match_expressions = pod_selector.get("matchExpressions")
 
-            # the network policy has specific pod labels
-            if match_labels and pod.metadata is not None and pod.metadata.labels is not None:
-                pod_labels = pod.metadata.labels
-                if len(match_labels) > len(pod_labels):
-                    continue
-                # find shared label between the inspected vertex and the iterated potential vertex
-                shared_labels = [k for k in match_labels if k in pod_labels and match_labels[k] == pod_labels[k]]
-                if len(shared_labels) == len(match_labels):
-                    connections.append(potential_pod_index)
             # the network policy has a podSelector property with no labels and should apply for all pods
-            else:
+            if not match_labels and not match_expressions:
                 connections.append(potential_pod_index)
+                continue
+
+            # the network policy has specific pod labels and/or expressions, all of them have to match
+            # an invalid selector doesn't match any pod
+            if match_labels and not isinstance(match_labels, dict):
+                continue
+            if match_expressions and not isinstance(match_expressions, list):
+                continue
+            pod_labels = pod.metadata.labels if pod.metadata is not None and pod.metadata.labels is not None else {}
+            if match_labels and not all(k in pod_labels and pod_labels[k] == v for k, v in match_labels.items()):
+                continue
+            if match_expressions and not all(
+                NetworkPolicyEdgeBuilder._match_expression(expression, pod_labels) for expression in match_expressions
+            ):
+                continue
+            connections.append(potential_pod_index)
 
         return connections
+
+    @staticmethod
+    def _match_expression(expression: Any, pod_labels: dict[str, Any]) -> bool:
+        """
+        evaluates a single matchExpressions requirement against the pod labels.
+        an invalid requirement makes the whole selector invalid, therefore it doesn't match any pod.
+        """
+
+        if not isinstance(expression, dict):
+            return False
+
+        key = expression.get("key")
+        operator = expression.get("operator")
+        values = expression.get("values")
+        if not isinstance(key, str):
+            return False
+        if operator in ("In", "NotIn"):
+            if not values or not isinstance(values, list):
+                return False
+            if operator == "In":
+                return key in pod_labels and pod_labels[key] in values
+            return key not in pod_labels or pod_labels[key] not in values
+        if operator in ("Exists", "DoesNotExist"):
+            if values:
+                return False
+            if operator == "Exists":
+                return key in pod_labels
+            return key not in pod_labels
+
+        return False
