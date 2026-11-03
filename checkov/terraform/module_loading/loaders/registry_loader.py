@@ -261,7 +261,7 @@ class RegistryLoader(ModuleLoader):
             query_params = query_params_str.split("&")
             for query_param in query_params:
                 if query_param.startswith("archive="):
-                    return query_params_str.split("=")[1]
+                    return query_param.split("=", 1)[1]
         return None
 
 
