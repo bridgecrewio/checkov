@@ -1,0 +1,6 @@
+pass:
+  - "aws_cloudfront_distribution.pass_v1"
+  - "aws_cloudfront_distribution.pass"
+  - "aws_cloudfront_distribution.fail_v2_incomplete_chain"
+fail:
+  - "aws_cloudfront_distribution.fail"
