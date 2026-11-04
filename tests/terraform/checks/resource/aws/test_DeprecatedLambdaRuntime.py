@@ -24,6 +24,7 @@ class TestDeprecatedLambdaRuntime(unittest.TestCase):
         failing_resources = {
             "aws_lambda_function.fail",
             "aws_lambda_function.fail2",
+            "aws_lambda_function.fail3",
         }
 
         skipped_resources = {}
