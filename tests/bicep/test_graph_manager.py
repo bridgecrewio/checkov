@@ -14,16 +14,17 @@ def test_build_graph_from_source_directory():
     playground_file = EXAMPLES_DIR / "playground.bicep"
     graph_file = EXAMPLES_DIR / "graph.bicep"
     loop_file = EXAMPLES_DIR / "loop.bicep"
+    multiline_function_file = EXAMPLES_DIR / "multiline_function.bicep"
     graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, definitions = graph_manager.build_graph_from_source_directory(source_dir=str(EXAMPLES_DIR))
 
     # then
-    assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file}  # should not include 'malformed.bicep' file
+    assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file, multiline_function_file}  # should not include 'malformed.bicep' file
 
-    assert len(local_graph.vertices) == 48
-    assert len(local_graph.edges) == 47
+    assert len(local_graph.vertices) == 50
+    assert len(local_graph.edges) == 53
 
     storage_account_idx = local_graph.vertices_by_name["diagsAccount"]  # vertices_by_name exists for BicepGraphManager
     storage_account = local_graph.vertices[storage_account_idx]
@@ -39,10 +40,17 @@ def test_build_graph_from_source_directory():
         "config": {
             "name": "diags${uniqueString(resourceGroup().id)}",
             "location": {
-                "function": {
-                    "type": "resource_group",
-                    "parameters": {"resource_group_name": None, "subscription_id": None},
-                    "property_name": "location",
+                "operator": {
+                    "type": "property_accessor",
+                    "operands": {
+                        "operand_1": {
+                            "function": {
+                                "type": "resource_group",
+                                "parameters": {"resource_group_name": None, "subscription_id": None},
+                            }
+                        },
+                        "operand_2": "location",
+                    },
                 }
             },
             "sku": {"name": "Standard_LRS"},
@@ -80,10 +88,17 @@ def test_build_graph_from_definitions():
         "config": {
             "name": "diags${uniqueString(resourceGroup().id)}",
             "location": {
-                "function": {
-                    "type": "resource_group",
-                    "parameters": {"resource_group_name": None, "subscription_id": None},
-                    "property_name": "location",
+                "operator": {
+                    "type": "property_accessor",
+                    "operands": {
+                        "operand_1": {
+                            "function": {
+                                "type": "resource_group",
+                                "parameters": {"resource_group_name": None, "subscription_id": None},
+                            }
+                        },
+                        "operand_2": "location",
+                    },
                 }
             },
             "sku": {"name": "Standard_LRS"},

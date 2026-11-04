@@ -33,3 +33,14 @@ def test_parse_malformed_file():
     # then
     assert template is None
     assert file_lines is None
+
+def test_parse_multiline_function():
+    # given 
+    test_file = EXAMPLES_DIR / "multiline_function.bicep"
+
+    # when
+    template, file_lines = Parser().parse(test_file)
+
+    # then
+    assert template is not None
+    assert file_lines is not None
