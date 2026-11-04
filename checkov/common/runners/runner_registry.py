@@ -723,7 +723,7 @@ class RunnerRegistry:
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report: Report) -> None:
-        for record in itertools.chain(scan_report.failed_checks, scan_report.passed_checks, scan_report.skipped_checks):
+        for record in itertools.chain(scan_report.failed_checks, scan_report.passed_checks, scan_report.skipped_checks, scan_report.unknown_checks):
             guideline = metadata_integration.get_guideline(record.check_id)
             if guideline:
                 record.set_guideline(guideline)
