@@ -434,3 +434,105 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_edges_to_count_resources_referenced_by_literal_index(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/count_resource_references'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            (local_graph.vertices[e.origin].name, local_graph.vertices[e.dest].name)
+            for e in local_graph.edges
+        }
+        expected_edges = {
+            ("aws_s3_bucket_versioning.single_literal", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_splat", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.multi_literal", "aws_s3_bucket.multi[2]"),
+            ("aws_s3_bucket_versioning.multi_literal_whitespace", "aws_s3_bucket.multi[1]"),
+            ("aws_s3_bucket_versioning.multi_legacy_index", "aws_s3_bucket.multi[1]"),
+            ("aws_s3_bucket_versioning.multi_decimal_index", "aws_s3_bucket.multi[1]"),
+            ("aws_backup_selection.multi_literals", "aws_s3_bucket.multi[0]"),
+            ("aws_backup_selection.multi_literals", "aws_s3_bucket.multi[1]"),
+            ("aws_s3_bucket_versioning.single_length", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_legacy_splat", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.multi_template", "aws_s3_bucket.multi[1]"),
+            ("single_id", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_through_local", "single_id"),
+            ("aws_s3_bucket_versioning.single_through_local", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_trailing_backslash", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_apostrophe", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_heredoc_in_function", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_between_strings", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_after_heredoc", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_backslash_before_template", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_template_directive", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_template_directive_object", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.single_literal_and_splat", "aws_s3_bucket.single[0]"),
+            ("aws_s3_bucket_versioning.for_each_single_values", 'aws_s3_bucket.for_each_single["only"]'),
+            ("aws_s3_bucket_versioning.for_each_single_depends_on", 'aws_s3_bucket.for_each_single["only"]'),
+        }
+        self.assertEqual(expected_edges, edges)
+
+    def test_plain_text_mention_of_count_resource_does_not_break_rendering(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../variable_rendering/resources/count_resource_plain_text_reference'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            (local_graph.vertices[e.origin].name, local_graph.vertices[e.dest].name)
+            for e in local_graph.edges
+        }
+        self.assertNotIn(("other_secret_ref", "aws_elasticache_replication_group.widget[0]"), edges)
+
+        deployment = next(v for v in local_graph.vertices if v.name == "kubernetes_deployment_v1.target[0]")
+        self.assertEqual(
+            "example/app:1.0.0@sha256:aaaa", deployment.attributes["spec.template.spec.container.image"]
+        )
+
+    def test_edges_to_count_modules_referenced_by_literal_index(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../variable_rendering/resources/count_module_references'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            (local_graph.vertices[e.origin].name, local_graph.vertices[e.dest].name)
+            for e in local_graph.edges
+        }
+        self.assertIn(("aws_s3_bucket_versioning.literal", "id"), edges)
+
+    def test_edges_to_count_resources_through_string_in_function_in_local(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../variable_rendering/resources/count_module_references'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            local_graph.vertices[e.dest].name
+            for e in local_graph.edges
+            if local_graph.vertices[e.origin].name == "aws_s3_bucket_versioning.through_local"
+            and local_graph.vertices[e.dest].block_type == BlockType.RESOURCE
+        }
+        self.assertEqual({"aws_s3_bucket.passed[1]"}, edges)
+
+    def test_edges_to_count_resources_passed_to_modules(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../variable_rendering/resources/count_module_references'))
+        module, _ = TFParser().parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        edges = {
+            (local_graph.vertices[e.origin].name, local_graph.vertices[e.dest].name)
+            for e in local_graph.edges
+            if local_graph.vertices[e.origin].name == "aws_s3_bucket_versioning.takes_input"
+            and local_graph.vertices[e.dest].block_type == BlockType.RESOURCE
+        }
+        self.assertEqual(
+            {
+                ("aws_s3_bucket_versioning.takes_input", "aws_s3_bucket.passed[1]"),
+                ("aws_s3_bucket_versioning.takes_input", "aws_s3_bucket.passed[2]"),
+            },
+            edges,
+        )

@@ -66,6 +66,14 @@ INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
 INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
 MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 NESTED_ATTRIBUTE_PATTERN = re.compile(r"\.\d+")
+STRING_OPEN = "\x01"
+STRING_CLOSE = "\x02"
+INTERPOLATION = "\x03"
+# valid code can't have a string next to a word, the words 'if' and 'in' are the only exceptions
+TEXT_BETWEEN_STRINGS_PATTERN = re.compile(
+    rf"{STRING_CLOSE}\s*(?!if\b)\w[^{STRING_OPEN}{INTERPOLATION}]*{STRING_OPEN}"
+    rf"|{STRING_CLOSE}[^{STRING_OPEN}{INTERPOLATION}]*\b(?!(?:if|in)\b)\w+[\])]*\s*{STRING_OPEN}"
+)
 
 
 def get_vertices_references(
@@ -182,6 +190,72 @@ def remove_index_pattern_from_str(str_value: str) -> str:
     str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
     str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
     return str_value
+
+
+def get_reference_indexes_in_expressions(value: Any, reference_name: str, is_rendered: bool = False) -> set[Optional[int]]:
+    """
+    Returns how `reference_name` is used by the expressions in `value`: the literal numeric index of each use, which
+    `remove_index_pattern_from_str` strips from the references, or None for a use without one.
+    ex. {0, 2} for '${aws_lb_target_group.x[0].arn}' and '${aws_lb_target_group.x[2].arn}', {None} for '${length(aws_lb_target_group.x)}'.
+    Plain text like 'see aws_lb_target_group.x for details' is not a use. Rendering removes the '${}' markers,
+    which makes the two indistinguishable, so with `is_rendered` the whole string is searched.
+    """
+    indexes: set[Optional[int]] = set()
+    if isinstance(value, list):
+        for sub_value in value:
+            indexes |= get_reference_indexes_in_expressions(sub_value, reference_name, is_rendered)
+    elif isinstance(value, dict):
+        for sub_value in value.values():
+            indexes |= get_reference_indexes_in_expressions(sub_value, reference_name, is_rendered)
+    elif isinstance(value, str) and reference_name in value:
+        pattern = rf"(?<![\w.-]){re.escape(reference_name)}(?![\w-])(?:\s*\[\s*(\d+)(?:\.0+)?\s*\]|\.(\d+)(?![\w-]))?"
+        expressions = value if is_rendered else get_template_expressions(value)
+        for index, legacy_index in re.findall(pattern, expressions):
+            indexes.add(int(index or legacy_index) if index or legacy_index else None)
+    return indexes
+
+
+def get_template_expressions(value: str) -> str:
+    """
+    Returns the code of the `${...}` and `%{...}` expressions in a string, with all literal text removed,
+    ex. 'a ${format("b %s", var.c)} d' -> 'format(, var.c)'.
+    The parser unescapes `\\\\` to `\\`, which makes the closing quote of "a\\\\" look like an escaped one. The strings
+    can't be told apart then, so if a string seems to never close, the value is returned as is.
+    A heredoc in a function is stored in quotes with its own quotes kept, ex. "see "a" b "c"", so the text between its
+    quotes looks like code. It is recognized by being next to a string where valid code can't be, and removed as well.
+    """
+    code: list[str] = []
+    open_tokens: list[str] = []
+    index = 0
+    while index < len(value):
+        char = value[index]
+        in_text = not open_tokens or open_tokens[-1] in ('"', "'")
+        if in_text and open_tokens and char == "\\" and value[index + 1:index + 2] not in ("$", "%"):
+            index += 2
+        elif in_text and value[index:index + 3] in ("$${", "%%{"):
+            index += 3
+        elif value[index:index + 2] in ("${", "%{"):
+            open_tokens.append("{")
+            code.append(INTERPOLATION)
+            index += 2
+        else:
+            if in_text:
+                if open_tokens and char == open_tokens[-1]:
+                    open_tokens.pop()
+                    code.append(STRING_CLOSE)
+            elif char in ('"', "'"):
+                open_tokens.append(char)
+                code.append(STRING_OPEN)
+            elif char == "{":
+                open_tokens.append(char)
+                code.append(" ")
+            elif char == "}":
+                open_tokens.pop()
+                code.append(" ")
+            else:
+                code.append(char)
+            index += 1
+    return value if open_tokens else re.sub(TEXT_BETWEEN_STRINGS_PATTERN, " ", "".join(code))
 
 
 def remove_interpolation(str_value: str) -> str:
