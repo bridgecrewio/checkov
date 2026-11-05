@@ -1,0 +1,4 @@
+fail:
+  - "aws_securityhub_account.fail_no_subscription"
+pass:
+  - "aws_securityhub_account.pass"
