@@ -29,12 +29,19 @@ class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
         """
 
         connections: list[int] = []
+        network_policy = vertex
+        network_policy_namespace = (network_policy.attributes.get("metadata") or {}).get("namespace") or "default"
+
         for potential_pod_index, potential_vertex in enumerate(vertices):
             if potential_vertex.id == vertex.id or potential_vertex.attributes.get("kind") != "Pod":
                 continue
 
-            network_policy = vertex
             pod = potential_vertex
+            pod_namespace = (pod.attributes.get("metadata") or {}).get("namespace") or "default"
+
+            # NetworkPolicies are namespace-scoped and only apply to pods in the same namespace
+            if pod_namespace != network_policy_namespace:
+                continue
 
             pod_spec = network_policy.attributes.get("spec", {})
             if pod_spec is None:
@@ -54,7 +61,7 @@ class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
                 shared_labels = [k for k in match_labels if k in pod_labels and match_labels[k] == pod_labels[k]]
                 if len(shared_labels) == len(match_labels):
                     connections.append(potential_pod_index)
-            # the network policy has a podSelector property with no labels and should apply for all pods
+            # the network policy has a podSelector property with no labels and should apply for all pods in the namespace
             else:
                 connections.append(potential_pod_index)
 
