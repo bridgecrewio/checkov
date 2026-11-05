@@ -668,6 +668,12 @@ gha_workflow = {
             "$ref": "#/definitions/globs",
             "description": "When using the push and pull_request events, you can configure a workflow to run on specific branches or tags. If you only define only tags or only branches, the workflow won't run for events affecting the undefined Git ref.\nThe branches, branches-ignore, tags, and tags-ignore keywords accept glob patterns that use the * and ** wildcard characters to match more than one branch or tag name. For more information, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet.\nThe patterns defined in branches and tags are evaluated against the Git ref's name. For example, defining the pattern mona/octocat in branches will match the refs/heads/mona/octocat Git ref. The pattern releases/** will match the refs/heads/releases/10 Git ref.\nYou can use two types of filters to prevent a workflow from running on pushes and pull requests to tags and branches:\n- branches or branches-ignore - You cannot use both the branches and branches-ignore filters for the same event in a workflow. Use the branches filter when you need to filter branches for positive matches and exclude branches. Use the branches-ignore filter when you only need to exclude branch names.\n- tags or tags-ignore - You cannot use both the tags and tags-ignore filters for the same event in a workflow. Use the tags filter when you need to filter tags for positive matches and exclude tags. Use the tags-ignore filter when you only need to exclude tag names.\nYou can exclude tags and branches using the ! character. The order that you define patterns matters.\n- A matching negative pattern (prefixed with !) after a positive match will exclude the Git ref.\n- A matching positive pattern after a negative match will include the Git ref again."
         },
+        "cache-mode": {
+            "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+            "description": "Controls the cache access granted to a workflow or job. read restores the cache but never saves, write restores and saves, write-only saves but never restores, and none disables cache access. A job-level value overrides the workflow-level value for that job.",
+            "type": "string",
+            "enum": ["read", "write", "write-only", "none"]
+        },
         "concurrency": {
             "type": "object",
             "properties": {
@@ -1199,6 +1205,9 @@ gha_workflow = {
                             "$ref": "#/definitions/concurrency"
                         }
                     ]
+                },
+                "cache-mode": {
+                    "$ref": "#/definitions/cache-mode"
                 }
             },
             "additionalProperties": {
@@ -1561,6 +1570,9 @@ gha_workflow = {
                             "$ref": "#/definitions/concurrency"
                         }
                     ]
+                },
+                "cache-mode": {
+                    "$ref": "#/definitions/cache-mode"
                 }
             },
             "required": ["runs-on"],
@@ -3098,6 +3110,9 @@ gha_workflow = {
                     "$ref": "#/definitions/concurrency"
                 }
             ]
+        },
+        "cache-mode": {
+            "$ref": "#/definitions/cache-mode"
         },
         "jobs": {
             "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobs",
