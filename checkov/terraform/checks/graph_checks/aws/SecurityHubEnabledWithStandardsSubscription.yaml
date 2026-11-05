@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AWS_79"
+  name: "Ensure AWS Security Hub is enabled with at least one standards subscription"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - aws_securityhub_account
+    - cond_type: connection
+      resource_types:
+        - aws_securityhub_account
+      connected_resource_types:
+        - aws_securityhub_standards_subscription
+      operator: exists
