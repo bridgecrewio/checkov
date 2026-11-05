@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any
 
 import yaml
@@ -40,6 +40,10 @@ class Runner(YamlRunner):
             graph_class=graph_class,
             graph_manager=graph_manager,
         )
+        # Workflow files that were found on disk but dropped while loading
+        # (YAML parse failure or schema validation failure). They are reported
+        # as parsing errors by run(), so a file is never skipped silently.
+        self.unparsable_files: set[str] = set()
 
     def require_external_checks(self) -> bool:
         return False
@@ -68,6 +72,19 @@ class Runner(YamlRunner):
             if all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
         return None
+
+    def _load_files(
+            self,
+            files_to_load: list[str],
+            filename_fn: Callable[[str], str] | None = None,
+    ) -> None:
+        previously_loaded = set(self.definitions)
+        super()._load_files(files_to_load, filename_fn)
+        for file_path in files_to_load:
+            loaded_path = filename_fn(file_path) if filename_fn else file_path
+            if loaded_path not in self.definitions and loaded_path not in previously_loaded \
+                    and is_workflow_file(loaded_path):
+                self.unparsable_files.add(loaded_path)
 
     def included_paths(self) -> Iterable[str]:
         return [".github"]
@@ -114,6 +131,12 @@ class Runner(YamlRunner):
         runner_filter = runner_filter or RunnerFilter()
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        if isinstance(report, Report):
+            # Surface workflow files that failed to load instead of dropping
+            # them silently: a schema validation failure must not quietly
+            # disable the scan for that file.
+            report.add_parsing_errors(sorted(self.unparsable_files))
+            self.unparsable_files.clear()
         return report
 
     def populate_metadata_dict(self) -> None:
