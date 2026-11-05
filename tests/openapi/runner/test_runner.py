@@ -1,6 +1,7 @@
 import os
 import unittest
 import json
+from unittest.mock import patch
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -24,6 +25,14 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(report.skipped_checks, [])
+
+    def test_parse_format_handles_permission_error(self) -> None:
+        runner = Runner()
+
+        with patch.object(Runner, "load_file", side_effect=PermissionError):
+            result = runner.parse_format("unreadable.json", Runner._parse_file)
+
+        self.assertIsNone(result)
 
     def test_runner_honors_enforcement_rules(self) -> None:
         current_dir = os.path.dirname(__file__)
