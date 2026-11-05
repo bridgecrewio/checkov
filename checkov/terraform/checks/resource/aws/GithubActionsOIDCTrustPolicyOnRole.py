@@ -52,8 +52,8 @@ class GithubActionsOIDCTrustPolicyOnRole(BaseResourceCheck):
 
             if not self._has_github_oidc_federated_principal(statement):
                 # No GH-OIDC federated principal in this statement -> not our concern.
-                # (Matches CKV_AWS_358 behavior: "if not found_federated_gh_oidc: return PASSED")
-                return CheckResult.PASSED
+                # (Matches CKV_AWS_358 behavior: "if not found_federated_gh_oidc: continue")
+                continue
 
             # Federated GH-OIDC principal MUST come with a Condition.
             condition = statement.get("Condition")
