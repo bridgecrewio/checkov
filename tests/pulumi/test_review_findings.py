@@ -367,3 +367,81 @@ def test_secrets_without_line_numbers_are_masked(tmp_path: Path, monkeypatch: py
 
     assert resources
     assert "line-secret-value" not in "".join(line for _, line in file_lines or [])
+
+
+def _masked_text(file_path: Path) -> str:
+    errors: dict[str, str] = {}
+    resources, file_lines = parse_pulumi_file(str(file_path), errors)
+    assert resources and not errors
+    return "".join(line for _, line in file_lines or [])
+
+
+def test_resource_inputs_named_config_are_not_masked(tmp_path: Path) -> None:
+    """Only the stack config is provider config, a resource input called 'config' must not mask the file"""
+
+    file_path = tmp_path / "preview.json"
+    environment = state(
+        "gcp:composer/environment:Environment", "env",
+        {"name": "visible-name", "config": {"nodeCount": 3, "softwareConfig": {"imageVersion": "visible-version"}}},
+    )
+    file_path.write_text(json.dumps(preview(environment, config={"gcp:project": "p"}), indent=4))
+
+    text = _masked_text(file_path)
+
+    assert "visible-name" in text
+    assert "visible-version" in text
+
+
+@pytest.mark.parametrize("indent", [None, 4])
+def test_provider_resource_credentials_are_masked(tmp_path: Path, indent: int | None) -> None:
+    """Providers keep their config in their inputs and outputs, ex. in a stack export or for explicit providers"""
+
+    provider_config = {"region": "us-east-1", "accessKey": "plain-access-key", "secretKey": "plain-secret-key",
+                       "skipCredentialsValidation": "true", "version": "7.53.0"}
+    provider = state("pulumi:providers:aws", "default_7_53_0", provider_config, outputs=provider_config)
+    file_path = tmp_path / "stack_export.json"
+    file_path.write_text(json.dumps({"deployment": {"resources": [provider]}}, indent=indent))
+
+    text = _masked_text(file_path)
+
+    assert "plain-access-key" not in text
+    assert "plain-secret-key" not in text
+    assert "us-east-1" in text
+    assert "7.53.0" in text
+
+
+def test_provider_resource_credentials_are_masked_in_events(tmp_path: Path) -> None:
+    provider = state("pulumi:providers:aws", "prod", {"region": "us-east-1", "secretKey": "plain-secret-key"})
+    bucket = state("aws:s3/bucket:Bucket", "b", {"bucket": "visible-bucket"})
+    events = [
+        {"sequence": 0, "resourcePreEvent": {"metadata": {"op": "create", "new": provider}}},
+        {"sequence": 1, "resourcePreEvent": {"metadata": {"op": "create", "new": bucket}}},
+    ]
+    file_path = tmp_path / "preview_events.jsonl"
+    file_path.write_text("\n".join(json.dumps(e) for e in events) + "\n")
+
+    text = _masked_text(file_path)
+
+    assert "plain-secret-key" not in text
+    assert "visible-bucket" in text
+
+
+def test_plaintext_secrets_on_one_line_keep_the_other_values(tmp_path: Path) -> None:
+    """Masking the plaintext of a secret must not shift the columns of the other masked values in the same line"""
+
+    def secret(value: str) -> dict[str, str]:
+        return {**SECRET_SIG, "plaintext": json.dumps(value)}
+
+    bucket = state("aws:s3/bucket:Bucket", "b", {
+        "acl": secret("a-plaintext-value-which-is-longer-than-the-mask"),
+        "tags": {"key": secret("v")},
+        "bucket": "after-the-secrets",
+    })
+    file_path = tmp_path / "preview.json"
+    file_path.write_text(json.dumps(preview(bucket)))
+
+    text = _masked_text(file_path)
+
+    assert "a-plaintext-value" not in text
+    assert '"bucket": "after-the-secrets"' in text
+    json.loads(text)

@@ -16,7 +16,7 @@ PULUMI_URN_PREFIX = "urn:pulumi:"
 MASK = "*" * GENERIC_OBFUSCATION_LENGTH
 # the plaintext of a secret value, ex. {"<sig key>": "<secret sig>", "plaintext": "\"password\""}
 # provider config, which is shown in code blocks, the other values can contain credentials, ex. 'azure:clientSecret'
-NON_SENSITIVE_CONFIG = {"environment", "location", "profile", "project", "region", "zone"}
+NON_SENSITIVE_CONFIG = {"environment", "location", "profile", "project", "region", "version", "zone"}
 BOOLEAN_VALUE = re.compile(r"^(true|false)$", re.IGNORECASE)
 SECRET_PLAINTEXT = re.compile(r'"plaintext"\s*:\s*"(?:[^"\\]|\\.)*"')
 
@@ -190,32 +190,54 @@ def _is_secret(value: Any) -> bool:
 
 
 def _is_sensitive_config(key: str, value: Any) -> bool:
+    if key.startswith("__"):
+        # Pulumi internals, ex. '__defaults'
+        return False
     if isinstance(value, (dict, list)):
         return True
-    if isinstance(value, bool) or (isinstance(value, str) and BOOLEAN_VALUE.match(value)):
-        # Pulumi writes the config as strings, booleans aren't credentials
-        return False
-    if not isinstance(value, (str, int, float)):
+    if not isinstance(value, str) or BOOLEAN_VALUE.match(value):
+        # Pulumi writes the config as strings, booleans and numbers aren't credentials.
+        # numbers also have no line numbers, which are needed to mask them
         return False
     return key.split(":", 1)[-1] not in NON_SENSITIVE_CONFIG
 
 
+def _sensitive_config_nodes(config: Any) -> list[Any]:
+    if not isinstance(config, dict):
+        return []
+    return [
+        value for key, value in config.items()
+        if isinstance(key, str) and key not in LINE_FIELD_NAMES and _is_sensitive_config(key, value)
+    ]
+
+
+def _is_provider_state(value: dict[str, Any]) -> bool:
+    resource_type = value.get("type")
+    return isinstance(resource_type, str) and resource_type.startswith(PROVIDER_TYPE_PREFIX) and "urn" in value
+
+
 def _secret_nodes(data: Any) -> list[Any]:
-    """Secret values and credentials in the provider config, which is set without '--secret'"""
+    """Secret values and credentials in the provider config, which is set without '--secret'
+
+    The provider config is part of the stack config ('config' of a preview or the prelude event of an event log)
+    and of the inputs and outputs of the provider resources.
+    """
 
     nodes = []
+    if isinstance(data, dict):
+        nodes.extend(_sensitive_config_nodes(data.get("config")))
+        prelude = data.get("preludeEvent")
+        if isinstance(prelude, dict):
+            nodes.extend(_sensitive_config_nodes(prelude.get("config")))
     stack = [data]
     while stack:
         current = stack.pop()
         if _is_secret(current):
             nodes.append(current)
         elif isinstance(current, dict):
-            config = current.get("config")
-            if isinstance(config, dict):
-                nodes.extend(
-                    value for key, value in config.items()
-                    if isinstance(key, str) and key not in LINE_FIELD_NAMES and _is_sensitive_config(key, value)
-                )
+            if _is_provider_state(current):
+                nodes.extend(_sensitive_config_nodes(current.get("inputs")))
+                nodes.extend(_sensitive_config_nodes(current.get("outputs")))
             stack.extend(current.values())
         elif isinstance(current, list):
             stack.extend(current)
@@ -254,15 +276,15 @@ def _without_nested(spans: list[tuple[int, int, int, int]]) -> list[tuple[int, i
 
 
 def _mask_secrets(file_lines: list[tuple[int, str]], data: Any) -> list[tuple[int, str]]:
-    # with '--show-secrets' secrets are written in plaintext, always as JSON encoded string
-    file_lines = [(idx, SECRET_PLAINTEXT.sub(f'"plaintext": "{MASK}"', line)) for idx, line in file_lines]
     nodes = _secret_nodes(data)
-    if not nodes:
-        return file_lines
-    if all(hasattr(node, "start_mark") and hasattr(node, "end_mark") for node in nodes):
-        return _mask_spans(file_lines, nodes)
-    # no line numbers, ex. large files, which have no code blocks anyway, everything is masked to be safe
-    return [(idx, f"{MASK}\n") for idx, _ in file_lines]
+    if nodes:
+        if not all(hasattr(node, "start_mark") and hasattr(node, "end_mark") for node in nodes):
+            # no line numbers, ex. large files, which have no code blocks anyway, everything is masked to be safe
+            return [(idx, f"{MASK}\n") for idx, _ in file_lines]
+        # before any other replacement, the columns of the nodes refer to the original lines
+        file_lines = _mask_spans(file_lines, nodes)
+    # with '--show-secrets' secrets are written in plaintext, always as JSON encoded string
+    return [(idx, SECRET_PLAINTEXT.sub(f'"plaintext": "{MASK}"', line)) for idx, line in file_lines]
 
 
 def _mask_event_secrets(file_lines: list[tuple[int, str]], content: str) -> list[tuple[int, str]]:
