@@ -36,6 +36,7 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.KUBERNETES: CodeCategoryType.IAC,
     CheckType.KUSTOMIZE: CodeCategoryType.IAC,
     CheckType.OPENAPI: CodeCategoryType.IAC,
+    CheckType.PULUMI: CodeCategoryType.IAC,
     CheckType.SCA_PACKAGE: [CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES],
     CheckType.SCA_IMAGE: [CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES],
     CheckType.SECRETS: CodeCategoryType.SECRETS,

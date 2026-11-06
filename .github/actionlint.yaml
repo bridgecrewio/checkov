@@ -1,3 +1,4 @@
 self-hosted-runner:
   labels:
     - public
+    - ubuntu-24.04
