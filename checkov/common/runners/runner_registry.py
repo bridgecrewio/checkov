@@ -272,7 +272,8 @@ class RunnerRegistry:
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
+        # Pulumi resources use Terraform addresses, but don't originate from the Terraform configuration
+        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis and scan_report.check_type != CheckType.PULUMI:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,

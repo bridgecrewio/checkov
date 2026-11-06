@@ -1,0 +1,88 @@
+name: checkov-gcp
+runtime: yaml
+resources:
+  insecureBucket:
+    type: gcp:storage:Bucket
+    properties:
+      name: checkov-insecure-bucket
+      location: US
+  secureBucket:
+    type: gcp:storage:Bucket
+    properties:
+      name: checkov-secure-bucket
+      location: US
+      uniformBucketLevelAccess: true
+      publicAccessPrevention: enforced
+      versioning:
+        enabled: true
+      logging:
+        logBucket: checkov-logs-bucket
+  publicBinding:
+    type: gcp:storage:BucketIAMMember
+    properties:
+      bucket: ${insecureBucket.name}
+      role: roles/storage.objectViewer
+      member: allUsers
+  sqlInstance:
+    type: gcp:sql:DatabaseInstance
+    properties:
+      name: checkov-sql
+      databaseVersion: POSTGRES_15
+      region: us-central1
+      deletionProtection: false
+      settings:
+        tier: db-f1-micro
+        ipConfiguration:
+          ipv4Enabled: true
+          authorizedNetworks:
+            - name: all
+              value: 0.0.0.0/0
+        databaseFlags:
+          - name: log_checkpoints
+            value: "off"
+  firewall:
+    type: gcp:compute:Firewall
+    properties:
+      name: checkov-open-firewall
+      network: default
+      sourceRanges: ["0.0.0.0/0"]
+      allows:
+        - protocol: tcp
+          ports: ["22", "3389"]
+  vm:
+    type: gcp:compute:Instance
+    properties:
+      name: checkov-vm
+      machineType: e2-micro
+      zone: us-central1-a
+      canIpForward: true
+      bootDisk:
+        initializeParams:
+          image: debian-cloud/debian-12
+      networkInterfaces:
+        - network: default
+          accessConfigs:
+            - {}
+      metadata:
+        serial-port-enable: "true"
+      serviceAccount:
+        email: 123456789-compute@developer.gserviceaccount.com
+        scopes: ["cloud-platform"]
+  cluster:
+    type: gcp:container:Cluster
+    properties:
+      name: checkov-gke
+      location: us-central1
+      initialNodeCount: 1
+      deletionProtection: false
+      enableLegacyAbac: true
+      minMasterVersion: "1.33"
+      masterAuth:
+        clientCertificateConfig:
+          issueClientCertificate: true
+  key:
+    type: gcp:kms:CryptoKey
+    properties:
+      name: checkov-key
+      keyRing: projects/fake-project/locations/global/keyRings/checkov
+      rotationPeriod: 100000s

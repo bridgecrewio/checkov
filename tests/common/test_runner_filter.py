@@ -725,6 +725,7 @@ class TestRunnerFilter(unittest.TestCase):
             'kubernetes': Severities[BcSeverities.LOW],
             'kustomize': Severities[BcSeverities.LOW],
             'openapi': Severities[BcSeverities.LOW],
+            'pulumi': Severities[BcSeverities.LOW],
             'sca_package': {
                 CodeCategoryType.LICENSES: Severities[BcSeverities.HIGH],
                 CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.MEDIUM]

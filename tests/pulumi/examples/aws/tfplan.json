@@ -1,0 +1,2259 @@
+{
+    "format_version": "1.2",
+    "terraform_version": "1.15.5",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_db_instance.db",
+                    "mode": "managed",
+                    "type": "aws_db_instance",
+                    "name": "db",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 2,
+                    "values": {
+                        "allocated_storage": 20,
+                        "allow_major_version_upgrade": null,
+                        "apply_immediately": false,
+                        "auto_minor_version_upgrade": true,
+                        "blue_green_update": [],
+                        "copy_tags_to_snapshot": false,
+                        "custom_iam_instance_profile": null,
+                        "customer_owned_ip_enabled": null,
+                        "dedicated_log_volume": false,
+                        "delete_automated_backups": true,
+                        "deletion_protection": null,
+                        "domain": null,
+                        "domain_auth_secret_arn": null,
+                        "domain_dns_ips": null,
+                        "domain_iam_role_name": null,
+                        "domain_ou": null,
+                        "enabled_cloudwatch_logs_exports": null,
+                        "engine": "mysql",
+                        "final_snapshot_identifier": null,
+                        "iam_database_authentication_enabled": null,
+                        "identifier": "checkov-db",
+                        "instance_class": "db.t3.micro",
+                        "manage_master_user_password": null,
+                        "max_allocated_storage": null,
+                        "monitoring_interval": 0,
+                        "password": "SuperSecret123!",
+                        "password_wo": null,
+                        "password_wo_version": null,
+                        "performance_insights_enabled": false,
+                        "publicly_accessible": true,
+                        "region": "us-east-1",
+                        "replicate_source_db": null,
+                        "restore_to_point_in_time": [],
+                        "s3_import": [],
+                        "skip_final_snapshot": true,
+                        "storage_encrypted": false,
+                        "tags": null,
+                        "timeouts": null,
+                        "upgrade_storage_config": null,
+                        "username": "admin",
+                        "warning_event_categories": null
+                    },
+                    "sensitive_values": {
+                        "blue_green_update": [],
+                        "listener_endpoint": [],
+                        "master_user_secret": [],
+                        "password": true,
+                        "password_wo": true,
+                        "replicas": [],
+                        "restore_to_point_in_time": [],
+                        "s3_import": [],
+                        "tags_all": {},
+                        "vpc_security_group_ids": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "identifier": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_dynamodb_table.table",
+                    "mode": "managed",
+                    "type": "aws_dynamodb_table",
+                    "name": "table",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "attribute": [
+                            {
+                                "name": "id",
+                                "type": "S"
+                            }
+                        ],
+                        "billing_mode": "PAY_PER_REQUEST",
+                        "deletion_protection_enabled": null,
+                        "hash_key": "id",
+                        "import_table": [],
+                        "local_secondary_index": [],
+                        "name": "checkov-table",
+                        "on_demand_throughput": [],
+                        "point_in_time_recovery": [
+                            {
+                                "enabled": true
+                            }
+                        ],
+                        "range_key": null,
+                        "region": "us-east-1",
+                        "replica": [],
+                        "restore_backup_arn": null,
+                        "restore_date_time": null,
+                        "restore_source_name": null,
+                        "restore_source_table_arn": null,
+                        "restore_to_latest_time": null,
+                        "stream_enabled": null,
+                        "table_class": null,
+                        "tags": null,
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "attribute": [
+                            {}
+                        ],
+                        "global_secondary_index": [],
+                        "global_table_witness": [],
+                        "import_table": [],
+                        "local_secondary_index": [],
+                        "on_demand_throughput": [],
+                        "point_in_time_recovery": [
+                            {}
+                        ],
+                        "replica": [],
+                        "server_side_encryption": [],
+                        "tags_all": {},
+                        "ttl": [],
+                        "warm_throughput": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "name": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_iam_policy.adminPolicy",
+                    "mode": "managed",
+                    "type": "aws_iam_policy",
+                    "name": "adminPolicy",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "delay_after_policy_creation_in_ms": null,
+                        "description": null,
+                        "name": "admin-policy",
+                        "path": "/",
+                        "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+                        "tags": null
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "arn": null
+                    }
+                },
+                {
+                    "address": "aws_iam_role.lambdaRole",
+                    "mode": "managed",
+                    "type": "aws_iam_role",
+                    "name": "lambdaRole",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                        "description": null,
+                        "force_detach_policies": false,
+                        "max_session_duration": 3600,
+                        "name": "checkov-lambda-role",
+                        "path": "/",
+                        "permissions_boundary": null,
+                        "tags": null
+                    },
+                    "sensitive_values": {
+                        "inline_policy": [],
+                        "managed_policy_arns": [],
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "name": null
+                    }
+                },
+                {
+                    "address": "aws_instance.instance",
+                    "mode": "managed",
+                    "type": "aws_instance",
+                    "name": "instance",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 2,
+                    "values": {
+                        "ami": "ami-12345678",
+                        "associate_public_ip_address": true,
+                        "credit_specification": [],
+                        "force_destroy": false,
+                        "get_password_data": false,
+                        "hibernation": null,
+                        "instance_type": "t3.micro",
+                        "launch_template": [],
+                        "metadata_options": [
+                            {
+                                "http_endpoint": "enabled",
+                                "http_protocol_ipv6": "disabled",
+                                "http_tokens": "optional"
+                            }
+                        ],
+                        "region": "us-east-1",
+                        "root_block_device": [
+                            {
+                                "delete_on_termination": true,
+                                "encrypted": false,
+                                "tags": null,
+                                "volume_size": 8
+                            }
+                        ],
+                        "source_dest_check": true,
+                        "tags": {
+                            "Name": "checkov-instance"
+                        },
+                        "tags_all": {
+                            "Name": "checkov-instance"
+                        },
+                        "timeouts": null,
+                        "user_data": null,
+                        "user_data_replace_on_change": false,
+                        "volume_tags": null
+                    },
+                    "sensitive_values": {
+                        "capacity_reservation_specification": [],
+                        "cpu_options": [],
+                        "credit_specification": [],
+                        "ebs_block_device": [],
+                        "enclave_options": [],
+                        "ephemeral_block_device": [],
+                        "instance_market_options": [],
+                        "ipv6_addresses": [],
+                        "launch_template": [],
+                        "maintenance_options": [],
+                        "metadata_options": [
+                            {}
+                        ],
+                        "network_interface": [],
+                        "primary_network_interface": [],
+                        "private_dns_name_options": [],
+                        "root_block_device": [
+                            {
+                                "tags_all": {}
+                            }
+                        ],
+                        "secondary_network_interface": [],
+                        "secondary_private_ips": [],
+                        "security_groups": [],
+                        "tags": {},
+                        "tags_all": {},
+                        "vpc_security_group_ids": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_kms_key.plainKey",
+                    "mode": "managed",
+                    "type": "aws_kms_key",
+                    "name": "plainKey",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bypass_policy_lockout_safety_check": false,
+                        "custom_key_store_id": null,
+                        "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+                        "deletion_window_in_days": null,
+                        "description": "key without rotation",
+                        "enable_key_rotation": false,
+                        "is_enabled": true,
+                        "key_usage": "ENCRYPT_DECRYPT",
+                        "region": "us-east-1",
+                        "tags": null,
+                        "timeouts": null,
+                        "xks_key_id": null
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_kms_key.rotatedKey",
+                    "mode": "managed",
+                    "type": "aws_kms_key",
+                    "name": "rotatedKey",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bypass_policy_lockout_safety_check": false,
+                        "custom_key_store_id": null,
+                        "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+                        "deletion_window_in_days": 7,
+                        "description": "key with rotation",
+                        "enable_key_rotation": true,
+                        "is_enabled": true,
+                        "key_usage": "ENCRYPT_DECRYPT",
+                        "policy": "{\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Resource\":\"*\",\"Sid\":\"root\"}],\"Version\":\"2012-10-17\"}",
+                        "region": "us-east-1",
+                        "tags": null,
+                        "timeouts": null,
+                        "xks_key_id": null
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_lambda_function.fn",
+                    "mode": "managed",
+                    "type": "aws_lambda_function",
+                    "name": "fn",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "capacity_provider_config": [],
+                        "code_signing_config_arn": null,
+                        "dead_letter_config": [],
+                        "description": null,
+                        "durable_config": [],
+                        "environment": [
+                            {
+                                "variables": {
+                                    "STAGE": "dev"
+                                }
+                            }
+                        ],
+                        "file_system_config": [],
+                        "filename": "app.zip",
+                        "function_name": "checkov-fn",
+                        "handler": "index.handler",
+                        "image_config": [],
+                        "image_uri": null,
+                        "kms_key_arn": null,
+                        "layers": null,
+                        "memory_size": 128,
+                        "package_type": "Zip",
+                        "publish": false,
+                        "publish_to": null,
+                        "region": "us-east-1",
+                        "replace_security_groups_on_destroy": null,
+                        "replacement_security_group_ids": null,
+                        "reserved_concurrent_executions": -1,
+                        "runtime": "python3.12",
+                        "s3_bucket": null,
+                        "s3_key": null,
+                        "s3_object_version": null,
+                        "skip_destroy": false,
+                        "snap_start": [],
+                        "source_kms_key_arn": null,
+                        "tags": null,
+                        "tenancy_config": [],
+                        "timeout": 3,
+                        "timeouts": null,
+                        "tracing_config": [
+                            {
+                                "mode": "Active"
+                            }
+                        ],
+                        "use_resource_timeout_for_propagation": null,
+                        "vpc_config": []
+                    },
+                    "sensitive_values": {
+                        "architectures": [],
+                        "capacity_provider_config": [],
+                        "dead_letter_config": [],
+                        "durable_config": [],
+                        "environment": [
+                            {
+                                "variables": {}
+                            }
+                        ],
+                        "ephemeral_storage": [],
+                        "file_system_config": [],
+                        "image_config": [],
+                        "logging_config": [],
+                        "snap_start": [],
+                        "tags_all": {},
+                        "tenancy_config": [],
+                        "tracing_config": [
+                            {}
+                        ],
+                        "vpc_config": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "function_name": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket.insecureBucket",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "insecureBucket",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "checkov-insecure-bucket",
+                        "force_destroy": false,
+                        "region": "us-east-1",
+                        "tags": {
+                            "Environment": "dev"
+                        },
+                        "tags_all": {
+                            "Environment": "dev"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "cors_rule": [],
+                        "grant": [],
+                        "lifecycle_rule": [],
+                        "logging": [],
+                        "object_lock_configuration": [],
+                        "replication_configuration": [],
+                        "server_side_encryption_configuration": [],
+                        "tags": {},
+                        "tags_all": {},
+                        "versioning": [],
+                        "website": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket.secureBucket",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "secureBucket",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "checkov-secure-bucket",
+                        "force_destroy": false,
+                        "region": "us-east-1",
+                        "tags": null,
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "cors_rule": [],
+                        "grant": [],
+                        "lifecycle_rule": [],
+                        "logging": [],
+                        "object_lock_configuration": [],
+                        "replication_configuration": [],
+                        "server_side_encryption_configuration": [],
+                        "tags_all": {},
+                        "versioning": [],
+                        "website": []
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket_logging.secureLogging",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_logging",
+                    "name": "secureLogging",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "expected_bucket_owner": null,
+                        "region": "us-east-1",
+                        "target_grant": [],
+                        "target_object_key_format": [],
+                        "target_prefix": "logs/"
+                    },
+                    "sensitive_values": {
+                        "target_grant": [],
+                        "target_object_key_format": []
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket_public_access_block.securePab",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_public_access_block",
+                    "name": "securePab",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "block_public_acls": true,
+                        "block_public_policy": true,
+                        "ignore_public_acls": true,
+                        "region": "us-east-1",
+                        "restrict_public_buckets": true,
+                        "skip_destroy": null
+                    },
+                    "sensitive_values": {},
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket_server_side_encryption_configuration.secureEncryption",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_server_side_encryption_configuration",
+                    "name": "secureEncryption",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "expected_bucket_owner": null,
+                        "region": "us-east-1",
+                        "rule": [
+                            {
+                                "apply_server_side_encryption_by_default": [
+                                    {
+                                        "sse_algorithm": "aws:kms"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "sensitive_values": {
+                        "rule": [
+                            {
+                                "apply_server_side_encryption_by_default": [
+                                    {}
+                                ],
+                                "blocked_encryption_types": []
+                            }
+                        ]
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_s3_bucket_versioning.secureVersioning",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_versioning",
+                    "name": "secureVersioning",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "expected_bucket_owner": null,
+                        "mfa": null,
+                        "region": "us-east-1",
+                        "versioning_configuration": [
+                            {
+                                "status": "Enabled"
+                            }
+                        ]
+                    },
+                    "sensitive_values": {
+                        "versioning_configuration": [
+                            {}
+                        ]
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "account_id": null,
+                        "bucket": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_security_group.openSg",
+                    "mode": "managed",
+                    "type": "aws_security_group",
+                    "name": "openSg",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 1,
+                    "values": {
+                        "description": "open ssh",
+                        "ingress": [
+                            {
+                                "cidr_blocks": [
+                                    "0.0.0.0/0"
+                                ],
+                                "description": "ssh from anywhere",
+                                "from_port": 22,
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "protocol": "tcp",
+                                "security_groups": [],
+                                "self": false,
+                                "to_port": 22
+                            }
+                        ],
+                        "name": "open-sg",
+                        "region": "us-east-1",
+                        "revoke_rules_on_delete": false,
+                        "tags": null,
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "egress": [],
+                        "ingress": [
+                            {
+                                "cidr_blocks": [
+                                    false
+                                ],
+                                "ipv6_cidr_blocks": [],
+                                "prefix_list_ids": [],
+                                "security_groups": []
+                            }
+                        ],
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 0,
+                    "identity": {
+                        "account_id": null,
+                        "id": null,
+                        "region": null
+                    }
+                },
+                {
+                    "address": "aws_sqs_queue.queue",
+                    "mode": "managed",
+                    "type": "aws_sqs_queue",
+                    "name": "queue",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "content_based_deduplication": false,
+                        "delay_seconds": 0,
+                        "fifo_queue": false,
+                        "kms_master_key_id": null,
+                        "max_message_size": 262144,
+                        "message_retention_seconds": 345600,
+                        "name": "checkov-queue",
+                        "receive_wait_time_seconds": 0,
+                        "region": "us-east-1",
+                        "tags": null,
+                        "timeouts": null,
+                        "visibility_timeout_seconds": 30
+                    },
+                    "sensitive_values": {
+                        "tags_all": {}
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "url": null
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "aws_db_instance.db",
+            "mode": "managed",
+            "type": "aws_db_instance",
+            "name": "db",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "allocated_storage": 20,
+                    "allow_major_version_upgrade": null,
+                    "apply_immediately": false,
+                    "auto_minor_version_upgrade": true,
+                    "blue_green_update": [],
+                    "copy_tags_to_snapshot": false,
+                    "custom_iam_instance_profile": null,
+                    "customer_owned_ip_enabled": null,
+                    "dedicated_log_volume": false,
+                    "delete_automated_backups": true,
+                    "deletion_protection": null,
+                    "domain": null,
+                    "domain_auth_secret_arn": null,
+                    "domain_dns_ips": null,
+                    "domain_iam_role_name": null,
+                    "domain_ou": null,
+                    "enabled_cloudwatch_logs_exports": null,
+                    "engine": "mysql",
+                    "final_snapshot_identifier": null,
+                    "iam_database_authentication_enabled": null,
+                    "identifier": "checkov-db",
+                    "instance_class": "db.t3.micro",
+                    "manage_master_user_password": null,
+                    "max_allocated_storage": null,
+                    "monitoring_interval": 0,
+                    "password": "SuperSecret123!",
+                    "password_wo": null,
+                    "password_wo_version": null,
+                    "performance_insights_enabled": false,
+                    "publicly_accessible": true,
+                    "region": "us-east-1",
+                    "replicate_source_db": null,
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "skip_final_snapshot": true,
+                    "storage_encrypted": false,
+                    "tags": null,
+                    "timeouts": null,
+                    "upgrade_storage_config": null,
+                    "username": "admin",
+                    "warning_event_categories": null
+                },
+                "after_unknown": {
+                    "address": true,
+                    "arn": true,
+                    "availability_zone": true,
+                    "backup_retention_period": true,
+                    "backup_target": true,
+                    "backup_window": true,
+                    "blue_green_update": [],
+                    "ca_cert_identifier": true,
+                    "character_set_name": true,
+                    "database_insights_mode": true,
+                    "db_name": true,
+                    "db_subnet_group_name": true,
+                    "domain_fqdn": true,
+                    "endpoint": true,
+                    "engine_lifecycle_support": true,
+                    "engine_version": true,
+                    "engine_version_actual": true,
+                    "hosted_zone_id": true,
+                    "id": true,
+                    "identifier_prefix": true,
+                    "iops": true,
+                    "kms_key_id": true,
+                    "latest_restorable_time": true,
+                    "license_model": true,
+                    "listener_endpoint": true,
+                    "maintenance_window": true,
+                    "master_user_secret": true,
+                    "master_user_secret_kms_key_id": true,
+                    "monitoring_role_arn": true,
+                    "multi_az": true,
+                    "multi_tenant": true,
+                    "nchar_character_set_name": true,
+                    "network_type": true,
+                    "option_group_name": true,
+                    "parameter_group_name": true,
+                    "performance_insights_kms_key_id": true,
+                    "performance_insights_retention_period": true,
+                    "port": true,
+                    "replica_mode": true,
+                    "replicas": true,
+                    "resource_id": true,
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "snapshot_identifier": true,
+                    "status": true,
+                    "storage_throughput": true,
+                    "storage_type": true,
+                    "tags_all": true,
+                    "timezone": true,
+                    "upgrade_rollout_order": true,
+                    "vpc_security_group_ids": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "blue_green_update": [],
+                    "listener_endpoint": [],
+                    "master_user_secret": [],
+                    "password": true,
+                    "password_wo": true,
+                    "replicas": [],
+                    "restore_to_point_in_time": [],
+                    "s3_import": [],
+                    "tags_all": {},
+                    "vpc_security_group_ids": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "identifier": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_dynamodb_table.table",
+            "mode": "managed",
+            "type": "aws_dynamodb_table",
+            "name": "table",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "attribute": [
+                        {
+                            "name": "id",
+                            "type": "S"
+                        }
+                    ],
+                    "billing_mode": "PAY_PER_REQUEST",
+                    "deletion_protection_enabled": null,
+                    "hash_key": "id",
+                    "import_table": [],
+                    "local_secondary_index": [],
+                    "name": "checkov-table",
+                    "on_demand_throughput": [],
+                    "point_in_time_recovery": [
+                        {
+                            "enabled": true
+                        }
+                    ],
+                    "range_key": null,
+                    "region": "us-east-1",
+                    "replica": [],
+                    "restore_backup_arn": null,
+                    "restore_date_time": null,
+                    "restore_source_name": null,
+                    "restore_source_table_arn": null,
+                    "restore_to_latest_time": null,
+                    "stream_enabled": null,
+                    "table_class": null,
+                    "tags": null,
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "attribute": [
+                        {}
+                    ],
+                    "global_secondary_index": true,
+                    "global_table_witness": true,
+                    "id": true,
+                    "import_table": [],
+                    "local_secondary_index": [],
+                    "on_demand_throughput": [],
+                    "point_in_time_recovery": [
+                        {
+                            "recovery_period_in_days": true
+                        }
+                    ],
+                    "read_capacity": true,
+                    "replica": [],
+                    "server_side_encryption": true,
+                    "stream_arn": true,
+                    "stream_label": true,
+                    "stream_view_type": true,
+                    "tags_all": true,
+                    "ttl": true,
+                    "warm_throughput": true,
+                    "write_capacity": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "attribute": [
+                        {}
+                    ],
+                    "global_secondary_index": [],
+                    "global_table_witness": [],
+                    "import_table": [],
+                    "local_secondary_index": [],
+                    "on_demand_throughput": [],
+                    "point_in_time_recovery": [
+                        {}
+                    ],
+                    "replica": [],
+                    "server_side_encryption": [],
+                    "tags_all": {},
+                    "ttl": [],
+                    "warm_throughput": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "name": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_iam_policy.adminPolicy",
+            "mode": "managed",
+            "type": "aws_iam_policy",
+            "name": "adminPolicy",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "delay_after_policy_creation_in_ms": null,
+                    "description": null,
+                    "name": "admin-policy",
+                    "path": "/",
+                    "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+                    "tags": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "attachment_count": true,
+                    "id": true,
+                    "name_prefix": true,
+                    "policy_id": true,
+                    "tags_all": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "arn": null
+                }
+            }
+        },
+        {
+            "address": "aws_iam_role.lambdaRole",
+            "mode": "managed",
+            "type": "aws_iam_role",
+            "name": "lambdaRole",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                    "description": null,
+                    "force_detach_policies": false,
+                    "max_session_duration": 3600,
+                    "name": "checkov-lambda-role",
+                    "path": "/",
+                    "permissions_boundary": null,
+                    "tags": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "create_date": true,
+                    "id": true,
+                    "inline_policy": true,
+                    "managed_policy_arns": true,
+                    "name_prefix": true,
+                    "tags_all": true,
+                    "unique_id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "inline_policy": [],
+                    "managed_policy_arns": [],
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "name": null
+                }
+            }
+        },
+        {
+            "address": "aws_instance.instance",
+            "mode": "managed",
+            "type": "aws_instance",
+            "name": "instance",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "ami": "ami-12345678",
+                    "associate_public_ip_address": true,
+                    "credit_specification": [],
+                    "force_destroy": false,
+                    "get_password_data": false,
+                    "hibernation": null,
+                    "instance_type": "t3.micro",
+                    "launch_template": [],
+                    "metadata_options": [
+                        {
+                            "http_endpoint": "enabled",
+                            "http_protocol_ipv6": "disabled",
+                            "http_tokens": "optional"
+                        }
+                    ],
+                    "region": "us-east-1",
+                    "root_block_device": [
+                        {
+                            "delete_on_termination": true,
+                            "encrypted": false,
+                            "tags": null,
+                            "volume_size": 8
+                        }
+                    ],
+                    "source_dest_check": true,
+                    "tags": {
+                        "Name": "checkov-instance"
+                    },
+                    "tags_all": {
+                        "Name": "checkov-instance"
+                    },
+                    "timeouts": null,
+                    "user_data": null,
+                    "user_data_replace_on_change": false,
+                    "volume_tags": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "availability_zone": true,
+                    "capacity_reservation_specification": true,
+                    "cpu_options": true,
+                    "credit_specification": [],
+                    "disable_api_stop": true,
+                    "disable_api_termination": true,
+                    "ebs_block_device": true,
+                    "ebs_optimized": true,
+                    "enable_primary_ipv6": true,
+                    "enclave_options": true,
+                    "ephemeral_block_device": true,
+                    "host_id": true,
+                    "host_resource_group_arn": true,
+                    "iam_instance_profile": true,
+                    "id": true,
+                    "instance_initiated_shutdown_behavior": true,
+                    "instance_lifecycle": true,
+                    "instance_market_options": true,
+                    "instance_state": true,
+                    "ipv6_address_count": true,
+                    "ipv6_addresses": true,
+                    "key_name": true,
+                    "launch_template": [],
+                    "maintenance_options": true,
+                    "metadata_options": [
+                        {
+                            "http_put_response_hop_limit": true,
+                            "instance_metadata_tags": true
+                        }
+                    ],
+                    "monitoring": true,
+                    "network_interface": true,
+                    "outpost_arn": true,
+                    "password_data": true,
+                    "placement_group": true,
+                    "placement_group_id": true,
+                    "placement_partition_number": true,
+                    "primary_network_interface": true,
+                    "primary_network_interface_id": true,
+                    "private_dns": true,
+                    "private_dns_name_options": true,
+                    "private_ip": true,
+                    "public_dns": true,
+                    "public_ip": true,
+                    "root_block_device": [
+                        {
+                            "device_name": true,
+                            "iops": true,
+                            "kms_key_id": true,
+                            "tags_all": true,
+                            "throughput": true,
+                            "volume_id": true,
+                            "volume_type": true
+                        }
+                    ],
+                    "secondary_network_interface": true,
+                    "secondary_private_ips": true,
+                    "security_groups": true,
+                    "spot_instance_request_id": true,
+                    "subnet_id": true,
+                    "tags": {},
+                    "tags_all": {},
+                    "tenancy": true,
+                    "user_data_base64": true,
+                    "vpc_security_group_ids": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "capacity_reservation_specification": [],
+                    "cpu_options": [],
+                    "credit_specification": [],
+                    "ebs_block_device": [],
+                    "enclave_options": [],
+                    "ephemeral_block_device": [],
+                    "instance_market_options": [],
+                    "ipv6_addresses": [],
+                    "launch_template": [],
+                    "maintenance_options": [],
+                    "metadata_options": [
+                        {}
+                    ],
+                    "network_interface": [],
+                    "primary_network_interface": [],
+                    "private_dns_name_options": [],
+                    "root_block_device": [
+                        {
+                            "tags_all": {}
+                        }
+                    ],
+                    "secondary_network_interface": [],
+                    "secondary_private_ips": [],
+                    "security_groups": [],
+                    "tags": {},
+                    "tags_all": {},
+                    "vpc_security_group_ids": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_kms_key.plainKey",
+            "mode": "managed",
+            "type": "aws_kms_key",
+            "name": "plainKey",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bypass_policy_lockout_safety_check": false,
+                    "custom_key_store_id": null,
+                    "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+                    "deletion_window_in_days": null,
+                    "description": "key without rotation",
+                    "enable_key_rotation": false,
+                    "is_enabled": true,
+                    "key_usage": "ENCRYPT_DECRYPT",
+                    "region": "us-east-1",
+                    "tags": null,
+                    "timeouts": null,
+                    "xks_key_id": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "id": true,
+                    "key_id": true,
+                    "multi_region": true,
+                    "policy": true,
+                    "rotation_period_in_days": true,
+                    "tags_all": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_kms_key.rotatedKey",
+            "mode": "managed",
+            "type": "aws_kms_key",
+            "name": "rotatedKey",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bypass_policy_lockout_safety_check": false,
+                    "custom_key_store_id": null,
+                    "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+                    "deletion_window_in_days": 7,
+                    "description": "key with rotation",
+                    "enable_key_rotation": true,
+                    "is_enabled": true,
+                    "key_usage": "ENCRYPT_DECRYPT",
+                    "policy": "{\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Resource\":\"*\",\"Sid\":\"root\"}],\"Version\":\"2012-10-17\"}",
+                    "region": "us-east-1",
+                    "tags": null,
+                    "timeouts": null,
+                    "xks_key_id": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "id": true,
+                    "key_id": true,
+                    "multi_region": true,
+                    "rotation_period_in_days": true,
+                    "tags_all": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_lambda_function.fn",
+            "mode": "managed",
+            "type": "aws_lambda_function",
+            "name": "fn",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "capacity_provider_config": [],
+                    "code_signing_config_arn": null,
+                    "dead_letter_config": [],
+                    "description": null,
+                    "durable_config": [],
+                    "environment": [
+                        {
+                            "variables": {
+                                "STAGE": "dev"
+                            }
+                        }
+                    ],
+                    "file_system_config": [],
+                    "filename": "app.zip",
+                    "function_name": "checkov-fn",
+                    "handler": "index.handler",
+                    "image_config": [],
+                    "image_uri": null,
+                    "kms_key_arn": null,
+                    "layers": null,
+                    "memory_size": 128,
+                    "package_type": "Zip",
+                    "publish": false,
+                    "publish_to": null,
+                    "region": "us-east-1",
+                    "replace_security_groups_on_destroy": null,
+                    "replacement_security_group_ids": null,
+                    "reserved_concurrent_executions": -1,
+                    "runtime": "python3.12",
+                    "s3_bucket": null,
+                    "s3_key": null,
+                    "s3_object_version": null,
+                    "skip_destroy": false,
+                    "snap_start": [],
+                    "source_kms_key_arn": null,
+                    "tags": null,
+                    "tenancy_config": [],
+                    "timeout": 3,
+                    "timeouts": null,
+                    "tracing_config": [
+                        {
+                            "mode": "Active"
+                        }
+                    ],
+                    "use_resource_timeout_for_propagation": null,
+                    "vpc_config": []
+                },
+                "after_unknown": {
+                    "architectures": true,
+                    "arn": true,
+                    "capacity_provider_config": [],
+                    "code_sha256": true,
+                    "dead_letter_config": [],
+                    "durable_config": [],
+                    "environment": [
+                        {
+                            "variables": {}
+                        }
+                    ],
+                    "ephemeral_storage": true,
+                    "file_system_config": [],
+                    "id": true,
+                    "image_config": [],
+                    "invoke_arn": true,
+                    "last_modified": true,
+                    "logging_config": true,
+                    "qualified_arn": true,
+                    "qualified_invoke_arn": true,
+                    "response_streaming_invoke_arn": true,
+                    "role": true,
+                    "signing_job_arn": true,
+                    "signing_profile_version_arn": true,
+                    "snap_start": [],
+                    "source_code_hash": true,
+                    "source_code_size": true,
+                    "tags_all": true,
+                    "tenancy_config": [],
+                    "tracing_config": [
+                        {}
+                    ],
+                    "version": true,
+                    "vpc_config": []
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "architectures": [],
+                    "capacity_provider_config": [],
+                    "dead_letter_config": [],
+                    "durable_config": [],
+                    "environment": [
+                        {
+                            "variables": {}
+                        }
+                    ],
+                    "ephemeral_storage": [],
+                    "file_system_config": [],
+                    "image_config": [],
+                    "logging_config": [],
+                    "snap_start": [],
+                    "tags_all": {},
+                    "tenancy_config": [],
+                    "tracing_config": [
+                        {}
+                    ],
+                    "vpc_config": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "function_name": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket.insecureBucket",
+            "mode": "managed",
+            "type": "aws_s3_bucket",
+            "name": "insecureBucket",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "checkov-insecure-bucket",
+                    "force_destroy": false,
+                    "region": "us-east-1",
+                    "tags": {
+                        "Environment": "dev"
+                    },
+                    "tags_all": {
+                        "Environment": "dev"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "acceleration_status": true,
+                    "acl": true,
+                    "arn": true,
+                    "bucket_domain_name": true,
+                    "bucket_namespace": true,
+                    "bucket_prefix": true,
+                    "bucket_region": true,
+                    "bucket_regional_domain_name": true,
+                    "cors_rule": true,
+                    "grant": true,
+                    "hosted_zone_id": true,
+                    "id": true,
+                    "lifecycle_rule": true,
+                    "logging": true,
+                    "object_lock_configuration": true,
+                    "object_lock_enabled": true,
+                    "policy": true,
+                    "replication_configuration": true,
+                    "request_payer": true,
+                    "server_side_encryption_configuration": true,
+                    "tags": {},
+                    "tags_all": {},
+                    "versioning": true,
+                    "website": true,
+                    "website_domain": true,
+                    "website_endpoint": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "cors_rule": [],
+                    "grant": [],
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "object_lock_configuration": [],
+                    "replication_configuration": [],
+                    "server_side_encryption_configuration": [],
+                    "tags": {},
+                    "tags_all": {},
+                    "versioning": [],
+                    "website": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket.secureBucket",
+            "mode": "managed",
+            "type": "aws_s3_bucket",
+            "name": "secureBucket",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "checkov-secure-bucket",
+                    "force_destroy": false,
+                    "region": "us-east-1",
+                    "tags": null,
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "acceleration_status": true,
+                    "acl": true,
+                    "arn": true,
+                    "bucket_domain_name": true,
+                    "bucket_namespace": true,
+                    "bucket_prefix": true,
+                    "bucket_region": true,
+                    "bucket_regional_domain_name": true,
+                    "cors_rule": true,
+                    "grant": true,
+                    "hosted_zone_id": true,
+                    "id": true,
+                    "lifecycle_rule": true,
+                    "logging": true,
+                    "object_lock_configuration": true,
+                    "object_lock_enabled": true,
+                    "policy": true,
+                    "replication_configuration": true,
+                    "request_payer": true,
+                    "server_side_encryption_configuration": true,
+                    "tags_all": true,
+                    "versioning": true,
+                    "website": true,
+                    "website_domain": true,
+                    "website_endpoint": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "cors_rule": [],
+                    "grant": [],
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "object_lock_configuration": [],
+                    "replication_configuration": [],
+                    "server_side_encryption_configuration": [],
+                    "tags_all": {},
+                    "versioning": [],
+                    "website": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket_logging.secureLogging",
+            "mode": "managed",
+            "type": "aws_s3_bucket_logging",
+            "name": "secureLogging",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "expected_bucket_owner": null,
+                    "region": "us-east-1",
+                    "target_grant": [],
+                    "target_object_key_format": [],
+                    "target_prefix": "logs/"
+                },
+                "after_unknown": {
+                    "bucket": true,
+                    "id": true,
+                    "target_bucket": true,
+                    "target_grant": [],
+                    "target_object_key_format": []
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "target_grant": [],
+                    "target_object_key_format": []
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket_public_access_block.securePab",
+            "mode": "managed",
+            "type": "aws_s3_bucket_public_access_block",
+            "name": "securePab",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "block_public_acls": true,
+                    "block_public_policy": true,
+                    "ignore_public_acls": true,
+                    "region": "us-east-1",
+                    "restrict_public_buckets": true,
+                    "skip_destroy": null
+                },
+                "after_unknown": {
+                    "bucket": true,
+                    "id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {},
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket_server_side_encryption_configuration.secureEncryption",
+            "mode": "managed",
+            "type": "aws_s3_bucket_server_side_encryption_configuration",
+            "name": "secureEncryption",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "expected_bucket_owner": null,
+                    "region": "us-east-1",
+                    "rule": [
+                        {
+                            "apply_server_side_encryption_by_default": [
+                                {
+                                    "sse_algorithm": "aws:kms"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "after_unknown": {
+                    "bucket": true,
+                    "id": true,
+                    "rule": [
+                        {
+                            "apply_server_side_encryption_by_default": [
+                                {
+                                    "kms_master_key_id": true
+                                }
+                            ],
+                            "blocked_encryption_types": true,
+                            "bucket_key_enabled": true
+                        }
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "rule": [
+                        {
+                            "apply_server_side_encryption_by_default": [
+                                {}
+                            ],
+                            "blocked_encryption_types": []
+                        }
+                    ]
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_s3_bucket_versioning.secureVersioning",
+            "mode": "managed",
+            "type": "aws_s3_bucket_versioning",
+            "name": "secureVersioning",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "expected_bucket_owner": null,
+                    "mfa": null,
+                    "region": "us-east-1",
+                    "versioning_configuration": [
+                        {
+                            "status": "Enabled"
+                        }
+                    ]
+                },
+                "after_unknown": {
+                    "bucket": true,
+                    "id": true,
+                    "versioning_configuration": [
+                        {
+                            "mfa_delete": true
+                        }
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "versioning_configuration": [
+                        {}
+                    ]
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "bucket": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_security_group.openSg",
+            "mode": "managed",
+            "type": "aws_security_group",
+            "name": "openSg",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "description": "open ssh",
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "ssh from anywhere",
+                            "from_port": 22,
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "protocol": "tcp",
+                            "security_groups": [],
+                            "self": false,
+                            "to_port": 22
+                        }
+                    ],
+                    "name": "open-sg",
+                    "region": "us-east-1",
+                    "revoke_rules_on_delete": false,
+                    "tags": null,
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "egress": true,
+                    "id": true,
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        }
+                    ],
+                    "name_prefix": true,
+                    "owner_id": true,
+                    "tags_all": true,
+                    "vpc_id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "egress": [],
+                    "ingress": [
+                        {
+                            "cidr_blocks": [
+                                false
+                            ],
+                            "ipv6_cidr_blocks": [],
+                            "prefix_list_ids": [],
+                            "security_groups": []
+                        }
+                    ],
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "account_id": null,
+                    "id": null,
+                    "region": null
+                }
+            }
+        },
+        {
+            "address": "aws_sqs_queue.queue",
+            "mode": "managed",
+            "type": "aws_sqs_queue",
+            "name": "queue",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "content_based_deduplication": false,
+                    "delay_seconds": 0,
+                    "fifo_queue": false,
+                    "kms_master_key_id": null,
+                    "max_message_size": 262144,
+                    "message_retention_seconds": 345600,
+                    "name": "checkov-queue",
+                    "receive_wait_time_seconds": 0,
+                    "region": "us-east-1",
+                    "tags": null,
+                    "timeouts": null,
+                    "visibility_timeout_seconds": 30
+                },
+                "after_unknown": {
+                    "arn": true,
+                    "deduplication_scope": true,
+                    "fifo_throughput_limit": true,
+                    "id": true,
+                    "kms_data_key_reuse_period_seconds": true,
+                    "name_prefix": true,
+                    "policy": true,
+                    "redrive_allow_policy": true,
+                    "redrive_policy": true,
+                    "sqs_managed_sse_enabled": true,
+                    "tags_all": true,
+                    "url": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "tags_all": {}
+                },
+                "after_identity": {
+                    "url": null
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "aws": {
+                "name": "aws",
+                "full_name": "registry.terraform.io/hashicorp/aws",
+                "version_constraint": "6.71.0",
+                "expressions": {
+                    "access_key": {
+                        "constant_value": "AKIAFAKE"
+                    },
+                    "region": {
+                        "constant_value": "us-east-1"
+                    },
+                    "secret_key": {
+                        "constant_value": "fake"
+                    },
+                    "skip_credentials_validation": {
+                        "constant_value": true
+                    },
+                    "skip_metadata_api_check": {
+                        "constant_value": true
+                    },
+                    "skip_requesting_account_id": {
+                        "constant_value": true
+                    }
+                }
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_db_instance.db",
+                    "mode": "managed",
+                    "type": "aws_db_instance",
+                    "name": "db",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "allocated_storage": {
+                            "constant_value": 20
+                        },
+                        "engine": {
+                            "constant_value": "mysql"
+                        },
+                        "identifier": {
+                            "constant_value": "checkov-db"
+                        },
+                        "instance_class": {
+                            "constant_value": "db.t3.micro"
+                        },
+                        "password": {
+                            "constant_value": "SuperSecret123!"
+                        },
+                        "publicly_accessible": {
+                            "constant_value": true
+                        },
+                        "skip_final_snapshot": {
+                            "constant_value": true
+                        },
+                        "storage_encrypted": {
+                            "constant_value": false
+                        },
+                        "username": {
+                            "constant_value": "admin"
+                        }
+                    },
+                    "schema_version": 2
+                },
+                {
+                    "address": "aws_dynamodb_table.table",
+                    "mode": "managed",
+                    "type": "aws_dynamodb_table",
+                    "name": "table",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "attribute": [
+                            {
+                                "name": {
+                                    "constant_value": "id"
+                                },
+                                "type": {
+                                    "constant_value": "S"
+                                }
+                            }
+                        ],
+                        "billing_mode": {
+                            "constant_value": "PAY_PER_REQUEST"
+                        },
+                        "hash_key": {
+                            "constant_value": "id"
+                        },
+                        "name": {
+                            "constant_value": "checkov-table"
+                        },
+                        "point_in_time_recovery": [
+                            {
+                                "enabled": {
+                                    "constant_value": true
+                                }
+                            }
+                        ]
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_iam_policy.adminPolicy",
+                    "mode": "managed",
+                    "type": "aws_iam_policy",
+                    "name": "adminPolicy",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "admin-policy"
+                        },
+                        "policy": {}
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_iam_role.lambdaRole",
+                    "mode": "managed",
+                    "type": "aws_iam_role",
+                    "name": "lambdaRole",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "assume_role_policy": {},
+                        "name": {
+                            "constant_value": "checkov-lambda-role"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_instance.instance",
+                    "mode": "managed",
+                    "type": "aws_instance",
+                    "name": "instance",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "ami": {
+                            "constant_value": "ami-12345678"
+                        },
+                        "associate_public_ip_address": {
+                            "constant_value": true
+                        },
+                        "instance_type": {
+                            "constant_value": "t3.micro"
+                        },
+                        "metadata_options": [
+                            {
+                                "http_endpoint": {
+                                    "constant_value": "enabled"
+                                },
+                                "http_tokens": {
+                                    "constant_value": "optional"
+                                }
+                            }
+                        ],
+                        "root_block_device": [
+                            {
+                                "encrypted": {
+                                    "constant_value": false
+                                },
+                                "volume_size": {
+                                    "constant_value": 8
+                                }
+                            }
+                        ],
+                        "tags": {
+                            "constant_value": {
+                                "Name": "checkov-instance"
+                            }
+                        }
+                    },
+                    "schema_version": 2
+                },
+                {
+                    "address": "aws_kms_key.plainKey",
+                    "mode": "managed",
+                    "type": "aws_kms_key",
+                    "name": "plainKey",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "description": {
+                            "constant_value": "key without rotation"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_kms_key.rotatedKey",
+                    "mode": "managed",
+                    "type": "aws_kms_key",
+                    "name": "rotatedKey",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "deletion_window_in_days": {
+                            "constant_value": 7
+                        },
+                        "description": {
+                            "constant_value": "key with rotation"
+                        },
+                        "enable_key_rotation": {
+                            "constant_value": true
+                        },
+                        "policy": {}
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_lambda_function.fn",
+                    "mode": "managed",
+                    "type": "aws_lambda_function",
+                    "name": "fn",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "environment": [
+                            {
+                                "variables": {
+                                    "constant_value": {
+                                        "STAGE": "dev"
+                                    }
+                                }
+                            }
+                        ],
+                        "filename": {
+                            "constant_value": "app.zip"
+                        },
+                        "function_name": {
+                            "constant_value": "checkov-fn"
+                        },
+                        "handler": {
+                            "constant_value": "index.handler"
+                        },
+                        "role": {
+                            "references": [
+                                "aws_iam_role.lambdaRole.arn",
+                                "aws_iam_role.lambdaRole"
+                            ]
+                        },
+                        "runtime": {
+                            "constant_value": "python3.12"
+                        },
+                        "tracing_config": [
+                            {
+                                "mode": {
+                                    "constant_value": "Active"
+                                }
+                            }
+                        ]
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket.insecureBucket",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "insecureBucket",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "constant_value": "checkov-insecure-bucket"
+                        },
+                        "tags": {
+                            "constant_value": {
+                                "Environment": "dev"
+                            }
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket.secureBucket",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket",
+                    "name": "secureBucket",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "constant_value": "checkov-secure-bucket"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket_logging.secureLogging",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_logging",
+                    "name": "secureLogging",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "references": [
+                                "aws_s3_bucket.secureBucket.id",
+                                "aws_s3_bucket.secureBucket"
+                            ]
+                        },
+                        "target_bucket": {
+                            "references": [
+                                "aws_s3_bucket.insecureBucket.id",
+                                "aws_s3_bucket.insecureBucket"
+                            ]
+                        },
+                        "target_prefix": {
+                            "constant_value": "logs/"
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket_public_access_block.securePab",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_public_access_block",
+                    "name": "securePab",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "block_public_acls": {
+                            "constant_value": true
+                        },
+                        "block_public_policy": {
+                            "constant_value": true
+                        },
+                        "bucket": {
+                            "references": [
+                                "aws_s3_bucket.secureBucket.id",
+                                "aws_s3_bucket.secureBucket"
+                            ]
+                        },
+                        "ignore_public_acls": {
+                            "constant_value": true
+                        },
+                        "restrict_public_buckets": {
+                            "constant_value": true
+                        }
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket_server_side_encryption_configuration.secureEncryption",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_server_side_encryption_configuration",
+                    "name": "secureEncryption",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "references": [
+                                "aws_s3_bucket.secureBucket.id",
+                                "aws_s3_bucket.secureBucket"
+                            ]
+                        },
+                        "rule": [
+                            {
+                                "apply_server_side_encryption_by_default": [
+                                    {
+                                        "kms_master_key_id": {
+                                            "references": [
+                                                "aws_kms_key.rotatedKey.arn",
+                                                "aws_kms_key.rotatedKey"
+                                            ]
+                                        },
+                                        "sse_algorithm": {
+                                            "constant_value": "aws:kms"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_s3_bucket_versioning.secureVersioning",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_versioning",
+                    "name": "secureVersioning",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "bucket": {
+                            "references": [
+                                "aws_s3_bucket.secureBucket.id",
+                                "aws_s3_bucket.secureBucket"
+                            ]
+                        },
+                        "versioning_configuration": [
+                            {
+                                "status": {
+                                    "constant_value": "Enabled"
+                                }
+                            }
+                        ]
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "aws_security_group.openSg",
+                    "mode": "managed",
+                    "type": "aws_security_group",
+                    "name": "openSg",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "description": {
+                            "constant_value": "open ssh"
+                        },
+                        "ingress": {
+                            "constant_value": [
+                                {
+                                    "cidr_blocks": [
+                                        "0.0.0.0/0"
+                                    ],
+                                    "description": "ssh from anywhere",
+                                    "from_port": 22,
+                                    "ipv6_cidr_blocks": null,
+                                    "prefix_list_ids": null,
+                                    "protocol": "tcp",
+                                    "security_groups": null,
+                                    "self": null,
+                                    "to_port": 22
+                                }
+                            ]
+                        },
+                        "name": {
+                            "constant_value": "open-sg"
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "aws_sqs_queue.queue",
+                    "mode": "managed",
+                    "type": "aws_sqs_queue",
+                    "name": "queue",
+                    "provider_config_key": "aws",
+                    "expressions": {
+                        "name": {
+                            "constant_value": "checkov-queue"
+                        }
+                    },
+                    "schema_version": 0
+                }
+            ]
+        }
+    },
+    "relevant_attributes": [
+        {
+            "resource": "aws_iam_role.lambdaRole",
+            "attribute": [
+                "arn"
+            ]
+        },
+        {
+            "resource": "aws_kms_key.rotatedKey",
+            "attribute": [
+                "arn"
+            ]
+        },
+        {
+            "resource": "aws_s3_bucket.secureBucket",
+            "attribute": [
+                "id"
+            ]
+        },
+        {
+            "resource": "aws_s3_bucket.insecureBucket",
+            "attribute": [
+                "id"
+            ]
+        }
+    ],
+    "timestamp": "2026-11-06T03:25:41Z",
+    "applyable": true,
+    "complete": true,
+    "errored": false
+}
