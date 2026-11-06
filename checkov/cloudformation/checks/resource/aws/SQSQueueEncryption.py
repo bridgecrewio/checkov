@@ -1,6 +1,6 @@
 from typing import Any
 
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.consts import ANY_VALUE
 
@@ -18,6 +18,19 @@ class SQSQueueEncryption(BaseResourceValueCheck):
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE
+
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        # SQS-managed SSE is a valid alternative to a customer KMS key, so a queue
+        # that enables it should pass even when KmsMasterKeyId is absent.
+        properties = conf.get("Properties")
+        if isinstance(properties, dict):
+            sqs_managed_sse = properties.get("SqsManagedSseEnabled")
+            # The parser yields a real bool for `true`/`false`, but a quoted value
+            # like "false" comes through as a (truthy) string, so check both forms.
+            if sqs_managed_sse is True or (isinstance(sqs_managed_sse, str) and sqs_managed_sse.lower() == "true"):
+                return CheckResult.PASSED
+
+        return super().scan_resource_conf(conf)
 
 
 check = SQSQueueEncryption()
