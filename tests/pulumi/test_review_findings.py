@@ -308,6 +308,8 @@ def test_secret_outputs_and_credentials_are_masked(tmp_path: Path, indent: int |
                     "azure:clientSecret": "plain-client-secret",
                     "azure:clientCertificate": "plain-certificate",
                     "kubernetes:kubeconfig": "plain-kubeconfig",
+                    "aws:secretKey": "73914625",
+                    "aws:skipMetadataApiCheck": "true",
                     "aws:region": "us-east-1",
                 },
             ),
@@ -321,8 +323,9 @@ def test_secret_outputs_and_credentials_are_masked(tmp_path: Path, indent: int |
     assert resources
     text = "".join(line for _, line in file_lines or [])
     assert "output-secret-value" not in text
-    for value in ("plain-client-secret", "plain-certificate", "plain-kubeconfig"):
+    for value in ("plain-client-secret", "plain-certificate", "plain-kubeconfig", "73914625"):
         assert value not in text
+    assert '"aws:skipMetadataApiCheck": "true"' in text
     # the line numbers and other values stay the same
     assert len(file_lines or []) == len(file_path.read_text().splitlines())
     assert "us-east-1" in text

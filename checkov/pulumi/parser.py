@@ -17,7 +17,7 @@ MASK = "*" * GENERIC_OBFUSCATION_LENGTH
 # the plaintext of a secret value, ex. {"<sig key>": "<secret sig>", "plaintext": "\"password\""}
 # provider config, which is shown in code blocks, the other values can contain credentials, ex. 'azure:clientSecret'
 NON_SENSITIVE_CONFIG = {"environment", "location", "profile", "project", "region", "zone"}
-NON_SENSITIVE_VALUE = re.compile(r"^(true|false|-?\d+(\.\d+)?)$", re.IGNORECASE)
+BOOLEAN_VALUE = re.compile(r"^(true|false)$", re.IGNORECASE)
 SECRET_PLAINTEXT = re.compile(r'"plaintext"\s*:\s*"(?:[^"\\]|\\.)*"')
 
 # operations, which don't result in a resource managed by the stack
@@ -192,8 +192,10 @@ def _is_secret(value: Any) -> bool:
 def _is_sensitive_config(key: str, value: Any) -> bool:
     if isinstance(value, (dict, list)):
         return True
-    if not isinstance(value, str) or NON_SENSITIVE_VALUE.match(value):
-        # Pulumi writes the config as strings, booleans and numbers aren't credentials
+    if isinstance(value, bool) or (isinstance(value, str) and BOOLEAN_VALUE.match(value)):
+        # Pulumi writes the config as strings, booleans aren't credentials
+        return False
+    if not isinstance(value, (str, int, float)):
         return False
     return key.split(":", 1)[-1] not in NON_SENSITIVE_CONFIG
 
