@@ -15,8 +15,9 @@ from checkov.pulumi.translator import OUTPUT_SIG, PROVIDER_TYPE_PREFIX, SECRET_S
 PULUMI_URN_PREFIX = "urn:pulumi:"
 MASK = "*" * GENERIC_OBFUSCATION_LENGTH
 # the plaintext of a secret value, ex. {"<sig key>": "<secret sig>", "plaintext": "\"password\""}
-# provider config keys with credentials, ex. 'aws:secretKey', 'azure:clientSecret', 'gcp:accessToken'
-CREDENTIAL_KEY = re.compile(r"(secret|password|token|key|credentials)$", re.IGNORECASE)
+# provider config, which is shown in code blocks, the other values can contain credentials, ex. 'azure:clientSecret'
+NON_SENSITIVE_CONFIG = {"environment", "location", "profile", "project", "region", "zone"}
+NON_SENSITIVE_VALUE = re.compile(r"^(true|false|-?\d+(\.\d+)?)$", re.IGNORECASE)
 SECRET_PLAINTEXT = re.compile(r'"plaintext"\s*:\s*"(?:[^"\\]|\\.)*"')
 
 # operations, which don't result in a resource managed by the stack
@@ -188,6 +189,15 @@ def _is_secret(value: Any) -> bool:
     return sig == SECRET_SIG or (sig == OUTPUT_SIG and bool(value.get("secret")))
 
 
+def _is_sensitive_config(key: str, value: Any) -> bool:
+    if isinstance(value, (dict, list)):
+        return True
+    if not isinstance(value, str) or NON_SENSITIVE_VALUE.match(value):
+        # Pulumi writes the config as strings, booleans and numbers aren't credentials
+        return False
+    return key.split(":", 1)[-1] not in NON_SENSITIVE_CONFIG
+
+
 def _secret_nodes(data: Any) -> list[Any]:
     """Secret values and credentials in the provider config, which is set without '--secret'"""
 
@@ -202,9 +212,7 @@ def _secret_nodes(data: Any) -> list[Any]:
             if isinstance(config, dict):
                 nodes.extend(
                     value for key, value in config.items()
-                    # Pulumi writes the config as strings, booleans and numbers aren't credentials
-                    if isinstance(key, str) and ":" in key and isinstance(value, (str, dict, list))
-                    and CREDENTIAL_KEY.search(key.split(":", 1)[1])
+                    if isinstance(key, str) and key not in LINE_FIELD_NAMES and _is_sensitive_config(key, value)
                 )
             stack.extend(current.values())
         elif isinstance(current, list):

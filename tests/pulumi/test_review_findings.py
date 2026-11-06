@@ -304,7 +304,12 @@ def test_secret_outputs_and_credentials_are_masked(tmp_path: Path, indent: int |
                     "fn",
                     {"environment": {**output_sig, "secret": True, "value": {"variables": {"TOKEN": "output-secret-value"}}}},
                 ),
-                config={"azure:clientSecret": "plain-client-secret", "aws:region": "us-east-1"},
+                config={
+                    "azure:clientSecret": "plain-client-secret",
+                    "azure:clientCertificate": "plain-certificate",
+                    "kubernetes:kubeconfig": "plain-kubeconfig",
+                    "aws:region": "us-east-1",
+                },
             ),
             indent=indent,
         )
@@ -316,7 +321,8 @@ def test_secret_outputs_and_credentials_are_masked(tmp_path: Path, indent: int |
     assert resources
     text = "".join(line for _, line in file_lines or [])
     assert "output-secret-value" not in text
-    assert "plain-client-secret" not in text
+    for value in ("plain-client-secret", "plain-certificate", "plain-kubeconfig"):
+        assert value not in text
     # the line numbers and other values stay the same
     assert len(file_lines or []) == len(file_path.read_text().splitlines())
     assert "us-east-1" in text
