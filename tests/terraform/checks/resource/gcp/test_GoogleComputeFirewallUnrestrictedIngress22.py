@@ -1,6 +1,7 @@
 import unittest
 from pathlib import Path
 
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngress22 import check
 from checkov.terraform.runner import Runner
@@ -45,6 +46,26 @@ class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_disabled_and_missing_port_list(self):
+        open_ssh = {
+            "allow": [{"protocol": ["tcp"], "ports": [["22"]]}],
+            "source_ranges": [["0.0.0.0/0"]],
+        }
+        disabled = dict(open_ssh, disabled=[True])
+        self.assertEqual(CheckResult.PASSED, check.scan_resource_conf(disabled))
+        self.assertEqual(
+            CheckResult.FAILED,
+            check.scan_resource_conf({"allow": [{"protocol": ["tcp"]}], "source_ranges": [["0.0.0.0/0"]]}),
+        )
+        self.assertEqual(
+            CheckResult.PASSED,
+            check.scan_resource_conf({"allow": [{"protocol": ["udp"]}], "source_ranges": [["0.0.0.0/0"]]}),
+        )
+        self.assertEqual(
+            CheckResult.PASSED,
+            check.scan_resource_conf({"allow": [{"protocol": ["tcp"]}], "source_ranges": [["10.0.0.0/8"]]}),
+        )
 
 
 if __name__ == "__main__":
