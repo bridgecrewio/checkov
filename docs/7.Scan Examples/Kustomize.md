@@ -20,7 +20,7 @@ For example, The following directory structure will generate 3 sets of checkov v
 
 ## Dependencies
 
-You will need a working version of the standalone "kustomize" binary in your environment. If not available, Checkov will silently skip the Kustomize framework so as to not break existing CI pipelines which may be pulling Checkov latest with each run.
+You will need either `kubectl` with built-in Kustomize support (version 1.14 or newer) or a working standalone `kustomize` binary. By default, Checkov preserves its existing automatic selection behavior: it uses `kubectl kustomize` when a supported `kubectl` is present and otherwise tries `kustomize build`.
 
 This is the same behaviour as Helm, and any other frameworks that depend on external dependencies.
 
@@ -30,6 +30,30 @@ This is the same behaviour as Helm, and any other frameworks that depend on exte
 ```
 
 Installation options for Kustomize can be found here: [https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/](https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/)
+
+### Select the Kustomize implementation
+
+Use `--kustomize-command` when local and CI environments must render with the same implementation:
+
+```bash
+# Preserve the backward-compatible automatic selection (the default).
+checkov -d ./myapp --framework kustomize --kustomize-command auto
+
+# Require kubectl kustomize.
+checkov -d ./myapp --framework kustomize --kustomize-command kubectl
+
+# Require the standalone kustomize executable.
+checkov -d ./myapp --framework kustomize --kustomize-command kustomize
+```
+
+The setting is also available as `CKV_KUSTOMIZE_COMMAND` or as `kustomize-command` in a Checkov configuration file. Normal Checkov precedence applies: a command-line value overrides the environment, which overrides the configuration file.
+
+Explicit selection never falls back to the other implementation. If the selected executable is missing or unusable, Checkov exits with an error explaining which dependency is required. This prevents an explicitly pinned local or CI scan from silently using a different renderer. The setting accepts only `auto`, `kubectl`, or `kustomize`; it does not execute arbitrary shell commands.
+
+A missing or unusable explicitly selected renderer is an invalid invocation
+and normally exits with code 2. Checkov's existing `--no-fail-on-crash`
+behavior changes that shell exit to 0 while retaining the diagnostic on
+standard error.
 
 ## Results
 
