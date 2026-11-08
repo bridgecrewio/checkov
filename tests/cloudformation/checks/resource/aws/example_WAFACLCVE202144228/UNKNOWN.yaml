@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Conditions:
+  ExtraProtection: !Equals [!Ref 'AWS::Region', us-east-1]
+Resources:
+  ConditionalRules:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+      Rules: !If
+        - ExtraProtection
+        - - Name: rule-1
+            Priority: 1
+            Statement:
+              ManagedRuleGroupStatement:
+                VendorName: AWS
+                Name: AWSManagedRulesKnownBadInputsRuleSet
+            OverrideAction:
+              None: { }
+            VisibilityConfig:
+              CloudWatchMetricsEnabled: false
+              MetricName: AWSManagedRulesKnownBadInputsRuleSet
+              SampledRequestsEnabled: false
+        - []
