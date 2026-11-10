@@ -83,6 +83,7 @@ ENCRYPTION_BY_RESOURCE_TYPE: dict[str, GenericResourceEncryption] = {
         {
             "BucketEncryption.ServerSideEncryptionConfiguration.ServerSideEncryptionByDefault.SSEAlgorithm": [
                 EncryptionTypes.AWS_KMS_VALUE.value,
+                EncryptionTypes.AWS_KMS_DSSE_VALUE.value,
                 EncryptionTypes.AES256.value,
             ],
             "server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.KMSMasterKeyID": get_empty_list_str(),

@@ -163,3 +163,31 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "bad_sse_3" {
     }
   }
 }
+
+resource "aws_s3_bucket" "bucket_good_dsse_inline" {
+  bucket = "bucket_good_dsse_inline"
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.mykey.arn
+        sse_algorithm     = "aws:kms:dsse"
+      }
+    }
+  }
+}
+
+resource "aws_s3_bucket" "bucket_good_dsse_sse" {
+  bucket = "bucket_good_dsse_sse"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_dsse" {
+  bucket = aws_s3_bucket.bucket_good_dsse_sse.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.mykey.arn
+      sse_algorithm     = "aws:kms:dsse"
+    }
+  }
+}

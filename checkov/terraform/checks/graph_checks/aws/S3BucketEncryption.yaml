@@ -11,6 +11,7 @@ definition:
       operator: within
       value:
         - "aws:kms"
+        - "aws:kms:dsse"
         - "AES256"
     - and:
       - cond_type: filter
@@ -48,4 +49,5 @@ definition:
         operator: within
         value:
           - "aws:kms"
+          - "aws:kms:dsse"
           - "AES256"
