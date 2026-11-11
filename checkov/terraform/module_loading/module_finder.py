@@ -63,7 +63,7 @@ def find_modules(path: str, loaded_files_cache: Optional[Dict[str, Any]] = None,
     excluded_paths_regex = re.compile('|'.join(f"({excluded_paths})")) if excluded_paths else None
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
-            if not file_name.endswith(".tf"):
+            if not (file_name.endswith(".tf") or file_name.endswith(".tofu")):
                 continue
             if root.startswith(os.path.join(path, ".terraform", "modules")):
                 # don't scan the modules folder used by Terraform
