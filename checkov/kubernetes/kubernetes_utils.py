@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 EXCLUDED_FILE_NAMES = {"package.json", "package-lock.json"}
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
-SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet", "Job", "ReplicaSet", "ReplicationController", "StatefulSet"}
+SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet", "Job", "ReplicaSet", "ReplicationController", "StatefulSet", "Rollout"}
 SKIP_ANNOTATION_PREFIXES = ("checkov.io/skip", "bridgecrew.io/skip", "cortex.io/skip")
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
