@@ -36,14 +36,8 @@ resource "aws_elastic_beanstalk_environment" "fail3" {
   tags                   = local.tags
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
-    name      = "HealthStreamingEnabled"
-    value     = "False"
-  }
-
-  setting {
-    namespace = "guff"
     name      = "SystemType"
-    value     = "basic"
+    value     = ""
   }
 }
 
@@ -58,9 +52,8 @@ resource "aws_elastic_beanstalk_environment" "fail4" {
   tags                   = local.tags
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
-    name      = "HealthStreamingEnabled"
-    resource  = ""
-    value     = ""
+    name      = ""
+    value     = "enhanced"
   }
 }
 
@@ -76,24 +69,8 @@ resource "aws_elastic_beanstalk_environment" "pass" {
   tags                   = local.tags
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
-    name      = "HealthStreamingEnabled"
-    value     = "true"
-  }
-}
-
-resource "aws_elastic_beanstalk_environment" "pass2" {
-  name                   = "beany"
-  application            = var.elastic_beanstalk_application_name
-  description            = var.description
-  tier                   = var.tier
-  solution_stack_name    = var.solution_stack_name
-  wait_for_ready_timeout = var.wait_for_ready_timeout
-  version_label          = var.version_label
-  tags                   = local.tags
-  setting {
-    namespace = "aws:elasticbeanstalk:healthreporting:system"
-    name      = "HealthStreamingEnabled"
-    value     = true
+    name      = "SystemType"
+    value     = "enhanced"
   }
 }
 
