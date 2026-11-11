@@ -3,3 +3,4 @@ pass:
   - "RoleBinding.my-namespace.my-role-binding"
 fail:
   - "ClusterRoleBinding.default.read-secrets-global"
+  - "ClusterRoleBinding.default.mixed-secrets-global"
