@@ -248,21 +248,33 @@ def _mask_spans(file_lines: list[tuple[int, str]], nodes: list[Any]) -> list[tup
     """Replaces the text of the nodes, the line numbers stay the same"""
 
     lines = [line for _, line in file_lines]
+    masked = list(lines)
     spans = sorted(
         (node.start_mark.line, node.start_mark.column, node.end_mark.line, node.end_mark.column) for node in nodes
     )
-    # reversed, so the columns of earlier spans in the same line stay valid
-    for start_line, start_col, end_line, end_col in reversed(_without_nested(spans)):
-        if start_line == end_line:
-            line = lines[start_line]
-            lines[start_line] = f'{line[:start_col]}"{MASK}"{line[end_col:]}'
-        else:
-            first, last = lines[start_line], lines[end_line]
-            lines[start_line] = f'{first[:start_col]}"{MASK}"\n'
+    # each masked line is built once, single line JSON can contain thousands of spans in the same line
+    parts: list[str] = []  # the masked text of the current line
+    current = -1  # the current line
+    col = 0  # the part of the current line, which is already in parts
+    for start_line, start_col, end_line, end_col in _without_nested(spans):
+        if start_line != current:
+            if current >= 0:
+                parts.append(lines[current][col:])
+                masked[current] = "".join(parts)
+            parts, current, col = [], start_line, 0
+        parts.append(lines[start_line][col:start_col])
+        parts.append(f'"{MASK}"')
+        if end_line != start_line:
+            parts.append("\n")
+            masked[start_line] = "".join(parts)
             for idx in range(start_line + 1, end_line):
-                lines[idx] = "\n"
-            lines[end_line] = last[end_col:]
-    return [(idx, line) for (idx, _), line in zip(file_lines, lines)]  # noqa: B905  # same length
+                masked[idx] = "\n"
+            parts, current = [], end_line
+        col = end_col
+    if current >= 0:
+        parts.append(lines[current][col:])
+        masked[current] = "".join(parts)
+    return [(idx, line) for (idx, _), line in zip(file_lines, masked)]  # noqa: B905  # same length
 
 
 def _without_nested(spans: list[tuple[int, int, int, int]]) -> list[tuple[int, int, int, int]]:
