@@ -31,6 +31,17 @@ Use the `--hard-fail-on` option to pass one or more check IDs and / or severity 
 
 For hard fails, a a failed check *matches* the threshold if its severity is greater than or equal to the hard fail severity. If you specify more than one severity for hard fail, then the lowest severity will be used as the threshold.
 
+### Severity filtering without an API key
+
+When you use severity levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, etc.) with `--hard-fail-on`, `--soft-fail-on`, `--check`, or `--skip-check`, Checkov typically needs Bridgecrew/Prisma Cloud platform metadata to determine check severities. Without providing a Bridgecrew/Prisma Cloud API key, those severity-based filters are generally ineffective or ignored rather than evaluated against estimated default severities.
+
+**Functional impact:**
+- Severity-based filtering may not work as expected without an API key
+- Checkov can warn that platform severity metadata is unavailable
+- Results may differ from what you see in the Prisma Cloud platform until platform metadata is available
+
+**To use platform-defined severities:** Provide your API key via `--bc-api-key <key>` or the `BC_API_KEY` environment variable. This allows Checkov to fetch the platform metadata used for severity-based filtering and aligns results with Prisma Cloud severity assignments.
+
 ## Combining options
 
 You can combine the use of the three flags described above. In this case, Checkov will evaluate each failed check, applying the following logic in order of precedence:
