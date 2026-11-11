@@ -73,8 +73,8 @@ class TestJunitReport(unittest.TestCase):
                 "".join(
                     [
                         '<?xml version="1.0" ?>\n',
-                        '<testsuites disabled="0" errors="0" failures="1" tests="2" time="0.0">\n',
-                        '\t<testsuite disabled="0" errors="0" failures="1" name="terraform scan" skipped="1" tests="2" time="0">\n',
+                        '<testsuites disabled="0" errors="0" failures="1" tests="3" time="0.0">\n',
+                        '\t<testsuite disabled="0" errors="0" failures="1" name="terraform scan" skipped="2" tests="3" time="0">\n',
                         "\t\t<properties>\n",
                         '\t\t\t<property name="file" value="fixtures/main.tf"/>\n',
                         '\t\t\t<property name="framework" value="[\'terraform\']"/>\n',
@@ -96,6 +96,9 @@ class TestJunitReport(unittest.TestCase):
                         "\t\t</testcase>\n",
                         '\t\t<testcase name="[NONE][CKV_AWS_19] Ensure all data stored in the S3 bucket is securely encrypted at rest" classname="/main.tf.aws_s3_bucket.destination" file="/main.tf">\n',
                         '\t\t\t<skipped type="skipped" message=" no encryption needed"/>\n',
+                        "\t\t</testcase>\n",
+                        '\t\t<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/main.tf.aws_s3_bucket.destination" file="/main.tf">\n',
+                        '\t\t\t<skipped type="skipped" message="Check result unknown: Ensure all data stored in the S3 bucket have versioning enabled"/>\n',
                         "\t\t</testcase>\n",
                         "\t</testsuite>\n",
                         "</testsuites>\n",
