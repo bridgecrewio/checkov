@@ -96,6 +96,8 @@ class Record:
         self.details: List[str] = details or []
         self.check_len = check_len
         self.definition_context_file_path = definition_context_file_path
+        # Terraform module call chain of the entity (set only in deterministic graph mode)
+        self.module_chain: tuple[tuple[str, str, str], ...] = ()
 
     @staticmethod
     @lru_cache(maxsize=None)
@@ -238,7 +240,11 @@ class Record:
         return self.bc_check_id if self.bc_check_id and use_bc_ids else self.check_id
 
     def get_unique_string(self) -> str:
-        return f"{self.check_id}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
+        unique = f"{self.check_id}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
+        if self.module_chain:
+            # deterministic graph mode: keep instances of one module from different callers apart
+            unique = f"{unique}.{self.module_chain}"
+        return unique
 
     @classmethod
     def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:

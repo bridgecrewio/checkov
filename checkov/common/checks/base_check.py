@@ -6,7 +6,9 @@ from abc import abstractmethod, ABC
 from collections.abc import Iterable
 from typing import List, Dict, Any, Optional
 
+from checkov.common.graph.graph_builder.deterministic import isolate_check_config_enabled
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories, CheckFailLevel
@@ -65,6 +67,9 @@ class BaseCheck(ABC):
             try:
                 self.evaluated_keys = []
                 self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
+                if isolate_check_config_enabled():
+                    # for IaC graphs entity_configuration is the graph vertex's own config; checks must not write to it
+                    entity_configuration = pickle_deepcopy(entity_configuration)
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
                 self.logger.debug(

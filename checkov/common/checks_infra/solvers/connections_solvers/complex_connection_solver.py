@@ -11,6 +11,7 @@ from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver imp
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, module_chain_key
 
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
@@ -34,8 +35,13 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         super().__init__(list(resource_types), list(connected_resources_types))
 
     @staticmethod
-    def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, Optional[Any]]:
-        return check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH], check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+    def get_check_identifier(check: Dict[str, Any]) -> Tuple[Any, ...]:
+        identifier = (check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH],
+                      check.get(CustomAttributes.TF_RESOURCE_ADDRESS))
+        if deterministic_graph_enabled():
+            # two instances of one module called from different root modules share id/file/address
+            return identifier + (str(module_chain_key(check.get(CustomAttributes.SOURCE_MODULE_OBJECT))),)
+        return identifier
 
     @staticmethod
     def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

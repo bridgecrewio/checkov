@@ -282,6 +282,27 @@ class Checkov:
             if self.config.support:
                 bc_integration.support_flag_enabled = True
 
+            if self.config.deterministic_graph:
+                os.environ["CHECKOV_DETERMINISTIC_GRAPH"] = "true"
+
+            if self.config.export_graph or self.config.import_graph:
+                os.environ["CHECKOV_DETERMINISTIC_GRAPH"] = "true"
+                os.environ["CHECKOV_INCREMENTAL_GRAPH"] = "true"
+                os.environ["CHECKOV_ISOLATE_CHECK_CONFIG"] = "true"
+                os.environ["RAW_TF_IN_GRAPH"] = "true"
+                if self.config.export_graph:
+                    os.environ["CHECKOV_EXPORT_GRAPH"] = self.config.export_graph
+                if self.config.import_graph:
+                    os.environ["CHECKOV_IMPORT_GRAPH"] = self.config.import_graph
+
+            if self.config.diff_baseline_out or self.config.diff_baseline or self.config.diff_full_scan:
+                from checkov.terraform.diff_scan.cli import run_diff_scan
+                return run_diff_scan(self.config)
+
+            if self.config.incremental_metadata_out or self.config.incremental_baseline:
+                from checkov.incremental.cli import run_incremental
+                return run_incremental(self.config)
+
             if self.config.bc_api_key and not self.config.include_all_checkov_policies:
                 if self.config.skip_download and not self.config.external_checks_dir:
                     print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
