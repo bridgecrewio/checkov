@@ -18,7 +18,9 @@ class GoogleComputeSSLPolicy(BaseResourceCheck):
         """
         if 'profile' in conf.keys():
             self.evaluated_keys = ['profile']
-            if conf['profile'][0] == 'RESTRICTED':
+            if conf['profile'][0] in ('RESTRICTED', 'FIPS_202205'):
+                # FIPS_202205 only allows a subset of the MODERN cipher suites and GCP requires
+                # min_tls_version = TLS_1_2 for it, so no additional min_tls_version check is needed
                 return CheckResult.PASSED
             elif conf['profile'][0] == 'MODERN':
                 if 'min_tls_version' in conf.keys():
