@@ -252,7 +252,7 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_SynapseLogMonitoringEnabledForSQLPool(self):
         self.go("SynapseLogMonitoringEnabledForSQLPool")
-        
+
     def test_SynapseSQLPoolHasSecurityAlertPolicy(self):
         self.go("SynapseSQLPoolHasSecurityAlertPolicy")
 
@@ -391,6 +391,12 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPNetworkDoesNotUseDefaultFirewall(self):
         self.go("GCPNetworkDoesNotUseDefaultFirewall")
 
+    def test_GCPNetworkDoesNotUseDefaultFirewallCrossModule(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewallCrossModule", "GCPNetworkDoesNotUseDefaultFirewall")
+
+    def test_GCPNetworkDoesNotUseDefaultFirewallIndependentProjects(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewallIndependentProjects", "GCPNetworkDoesNotUseDefaultFirewall")
+
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
@@ -428,7 +434,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
 
     def test_AzureContainerInstanceconfigManagedIdentity(self):
-            self.go("AzureContainerInstanceconfigManagedIdentity")
+        self.go("AzureContainerInstanceconfigManagedIdentity")
 
     def test_AzureAKSclusterAzureCNIEnabled(self):
         self.go("AzureAKSclusterAzureCNIEnabled")
@@ -446,40 +452,40 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzureStorageAccConfigWithPrivateEndpoint")
 
     def test_OCI_K8EngineClusterBootVolConfigInTransitEncryption(self):
-            self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
+        self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
 
     def test_OCI_K8EngineClusterPodSecPolicyEnforced(self):
-            self.go("OCI_K8EngineClusterPodSecPolicyEnforced")
+        self.go("OCI_K8EngineClusterPodSecPolicyEnforced")
 
     def test_OCI_KubernetesEngineClusterEndpointConfigWithNSG(self):
-            self.go("OCI_KubernetesEngineClusterEndpointConfigWithNSG")
+        self.go("OCI_KubernetesEngineClusterEndpointConfigWithNSG")
 
     def test_OCI_NFSaccessRestrictedToRootUsers(self):
-            self.go("OCI_NFSaccessRestrictedToRootUsers")
+        self.go("OCI_NFSaccessRestrictedToRootUsers")
 
     def test_OCI_NSGNotAllowRDP(self):
-            self.go("OCI_NSGNotAllowRDP")
+        self.go("OCI_NSGNotAllowRDP")
 
     def test_AzureSQLserverNotOverlyPermissive(self):
-            self.go("AzureSQLserverNotOverlyPermissive")
+        self.go("AzureSQLserverNotOverlyPermissive")
 
     def test_AzureRecoveryServicesvaultConfigManagedIdentity(self):
-            self.go("AzureRecoveryServicesvaultConfigManagedIdentity")
+        self.go("AzureRecoveryServicesvaultConfigManagedIdentity")
 
     def test_AzureAutomationAccConfigManagedIdentity(self):
-            self.go("AzureAutomationAccConfigManagedIdentity")
+        self.go("AzureAutomationAccConfigManagedIdentity")
 
     def test_AzureMariaDBserverUsingTLS_1_2(self):
-            self.go("AzureMariaDBserverUsingTLS_1_2")
-   
+        self.go("AzureMariaDBserverUsingTLS_1_2")
+
     def test_AzureMLWorkspaceWithPublicStorageAccount(self):
-            self.go("AzureMLWorkspaceHBIPublicNetwork")
+        self.go("AzureMLWorkspaceHBIPublicNetwork")
 
     def test_AzureMLWorkspacePublicNetwork(self):
-            self.go("AzureMLWorkspacePublicNetwork")
+        self.go("AzureMLWorkspacePublicNetwork")
 
     def test_AzureStorageAccountEnableSoftDelete(self):
-            self.go("AzureStorageAccountEnableSoftDelete")
+        self.go("AzureStorageAccountEnableSoftDelete")
 
     def test_AWSdisableS3ACL(self):
         self.go("AWSdisableS3ACL")
