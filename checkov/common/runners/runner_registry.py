@@ -272,13 +272,16 @@ class RunnerRegistry:
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
+        if repo_root_for_plan_enrichment:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
                 external_modules_download_path=self.runner_filter.external_modules_download_path,
             )
-            scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
+            if not self.runner_filter.deep_analysis:
+                # deep analysis reports resources against the plan file via the merged graph,
+                # so the file path, line range and code block of the records stay as they are
+                scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         integration_feature_registry.run_post_runner(scan_report)
         self.scan_reports.append(scan_report)
