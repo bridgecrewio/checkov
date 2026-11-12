@@ -32,11 +32,16 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if not isinstance(rules, list):
             return CheckResult.UNKNOWN
 
+        had_unresolvable_port = False
         for rule in rules:
             if rule.__contains__('FromPort') and rule.__contains__('ToPort'):
                 if (isinstance(rule['FromPort'], int) and isinstance(rule['ToPort'], int)) or \
                         isinstance(rule['FromPort'], str) and isinstance(rule['ToPort'], str):
-                    if self.range(rule):
+                    in_range = self.range(rule)
+                    if in_range is None:
+                        had_unresolvable_port = True
+                        continue
+                    if in_range:
                         if 'CidrIp' in rule.keys():
                             cidr = rule['CidrIp']
                             if cidr == '0.0.0.0/0':  # nosec  # nosec
@@ -44,9 +49,12 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                         elif 'CidrIpv6' in rule.keys() and \
                                 rule['CidrIpv6'] in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0']:
                             return CheckResult.FAILED
+        if had_unresolvable_port:
+            return CheckResult.UNKNOWN
         return CheckResult.PASSED
 
-    def range(self, rule) -> bool:
-        if int(rule['FromPort']) <= int(self.port) <= int(rule['ToPort']):
-            return True
-        return False
+    def range(self, rule):
+        try:
+            return int(rule['FromPort']) <= int(self.port) <= int(rule['ToPort'])
+        except (ValueError, TypeError):
+            return None
