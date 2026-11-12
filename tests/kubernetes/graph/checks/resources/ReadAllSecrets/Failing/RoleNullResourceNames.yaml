@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: null-secret-reader
+  namespace: my-namespace
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: null
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: null-secrets-binding
+  namespace: my-namespace
+subjects:
+- kind: ServiceAccount
+  name: my-service-account
+roleRef:
+  kind: Role
+  name: null-secret-reader
+  apiGroup: rbac.authorization.k8s.io
