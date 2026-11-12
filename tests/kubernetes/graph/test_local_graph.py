@@ -10,6 +10,7 @@ from checkov.kubernetes.kubernetes_utils import PARENT_RESOURCE_KEY_NAME, PARENT
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.CiliumNetworkPolicyEdgeBuilder import CiliumNetworkPolicyEdgeBuilder
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -211,3 +212,58 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(1, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
+
+
+class TestCiliumNetworkPolicyEdgeBuilder(TestGraph):
+    def test_CiliumNetworkPolicyEdgeBuilder_on_templates_with_cilium_policies(self) -> None:
+        relative_file_path = "resources/Keyword/cilium-network-policy-attached.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = [CiliumNetworkPolicyEdgeBuilder]
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+
+        self.assertEqual(30, len(local_graph.vertices))
+        actual_edges = {
+            (local_graph.vertices[edge.origin].id, local_graph.vertices[edge.dest].id)
+            for edge in local_graph.edges
+        }
+        expected_edges = {
+            # exact endpointSelector connects to the matching pod in the same namespace
+            ("CiliumNetworkPolicy.shop.p-exact", "Pod.shop.pod-exact"),
+            # matchLabels AND matchExpressions: both must match
+            ("CiliumNetworkPolicy.shop.p-and", "Pod.shop.pod-and-ok"),
+            # NotIn matches when the label exists with another value
+            ("CiliumNetworkPolicy.cache-ns.p-notin", "Pod.cache-ns.pod-cache-ok"),
+            # a cluster-wide policy selects matching pods in any namespace
+            ("CiliumClusterwideNetworkPolicy.default.p-ccnp", "Pod.anywhere.pod-ccnp"),
+            # a cluster-wide policy can target a namespace via Cilium's virtual namespace label
+            ("CiliumClusterwideNetworkPolicy.default.p-ccnp-ns", "Pod.finance.pod-finance"),
+            # the virtual service account label resolves from the pod spec
+            ("CiliumNetworkPolicy.shop.p-sa", "Pod.shop.pod-sa"),
+            # a valid NotIn requirement still matches a pod that lacks the ordinary label
+            ("CiliumNetworkPolicy.misc.p-notin2", "Pod.misc.pod-nolabels"),
+        }
+        # notably absent:
+        # - p-and -> pod-and-bad (env=dev fails the In expression despite matching labels)
+        # - p-notin -> pod-cache-bad (tier=cache is excluded by the NotIn expression)
+        # - p-wrongns -> pod-wrongns (label match but different namespace)
+        # - p-ccnp-ns -> pod-finance-other (namespace shop not in [finance])
+        # - p-badop -> anything (unknown operator fails closed)
+        # - p-unspec-dne/p-unspec-notin -> anything (non-k8s label sources like
+        #   reserved:host or any:app fail closed for every operator, they are not
+        #   treated as missing ordinary labels)
+        # - p-badml (matchLabels as a list), p-badme (matchExpressions as a dict),
+        #   p-badmlv (non-string matchLabels value), p-numeric (non-string In value)
+        #   -> anything (malformed forms fail closed)
+        # - p-sa -> other shop pods (their service account resolves to "default")
+        # - p-cluster-dne/p-nslabels-notin -> anything (the Cilium-derived cluster
+        #   and namespace-label families cannot be resolved from a pod manifest,
+        #   so they fail closed for every operator instead of matching as
+        #   "ordinary missing label")
+        # - p-emptykey (empty key), p-exists-vals (values on an Exists
+        #   requirement) -> anything (invalid key/value forms fail closed)
+        self.assertSetEqual(expected_edges, actual_edges)
