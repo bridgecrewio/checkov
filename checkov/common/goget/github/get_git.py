@@ -20,6 +20,32 @@ TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')  # technically should be with
 BRANCH_PATTERN = re.compile(r'\?(ref=heads/)(?P<branch>(.*))')
 
 
+def split_git_ref(url: str) -> tuple[str, str | None]:
+    """Split the 'ref' query parameter off a go-getter style git URL.
+
+    Returns the URL without the 'ref' and 'depth' query parameters and the value of 'ref' (None if not set).
+    'depth' is dropped, because the clone is already shallow wherever possible, and git can't clone
+    a URL that still carries go-getter query parameters.
+    Other query parameters are kept as they are.
+    """
+    base, sep, query = url.partition("?")
+    if not sep:
+        return url, None
+
+    ref = None
+    params = []
+    for param in query.split("&"):
+        key, _, value = param.partition("=")
+        if key == "ref":
+            ref = value
+        elif key != "depth" and param:
+            params.append(param)
+
+    if params:
+        base = f"{base}?{'&'.join(params)}"
+    return base, ref
+
+
 class GitGetter(BaseGetter):
     def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
         self.logger = logging.getLogger(__name__)
@@ -29,32 +55,34 @@ class GitGetter(BaseGetter):
         self.commit_id: str | None = None
         self.branch = ''
 
-        if "?ref" in url:
+        if "?" in url:
             url = self.extract_git_ref(url=url)
 
         super().__init__(url)
 
     def extract_git_ref(self, url: str) -> str:
-        search_branch = re.search(BRANCH_PATTERN, url)
+        url, ref = split_git_ref(url)
+        if ref is None:
+            return url
+        ref_query = f"?ref={ref}"
+
+        search_branch = re.search(BRANCH_PATTERN, ref_query)
         if search_branch:
             self.branch = search_branch.group("branch")
             # remove heads/ from ref= to get actual branch name
             # self.branch = re.sub('heads.*/', '', url)
-            url = re.sub(BRANCH_PATTERN, '', url)
             return url
 
-        search_commit_id = re.search(COMMIT_ID_PATTERN, url)
+        search_commit_id = re.search(COMMIT_ID_PATTERN, ref_query)
         if search_commit_id:
             self.commit_id = search_commit_id.group("commit_id")
-            url = re.sub(COMMIT_ID_PATTERN, '', url)
             return url
 
-        search_tag = re.search(TAG_PATTERN, url)
+        search_tag = re.search(TAG_PATTERN, ref_query)
         if search_tag:
             self.tag = search_tag.group("tag")
             # remove tag/ or tags/ from ref= to get actual branch name
             self.tag = re.sub('tag.*/', '', self.tag)
-            url = re.sub(TAG_PATTERN, '', url)
             return url
 
         self.logger.info("Module URL has an unknown ref")
