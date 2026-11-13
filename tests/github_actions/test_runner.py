@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -6,6 +7,23 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.github_actions.checks.registry import registry
+
+# Minimal workflow from #7786: workflow_dispatch with an input fails CKV_GHA_7
+WORKFLOW_YAML = """name: ci
+on:
+  workflow_dispatch:
+    inputs:
+      foo:
+        description: an input
+        required: false
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ github.event.inputs.foo }}"
+"""
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -25,9 +43,51 @@ class TestRunnerValid(unittest.TestCase):
 
         # then
         self.assertEqual(len(report.failed_checks), 9)
-        self.assertEqual(len(report.parsing_errors), 0)
+        # the resources dir intentionally holds 3 schema-invalid workflows
+        # (bad_format, empty_jobs, nested_jobs), which are reported as
+        # parsing errors instead of dropped silently
+        self.assertEqual(len(report.parsing_errors), 3)
         self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
+
+    def test_runner_scans_workflow_with_cache_mode(self):
+        # regression test for #7786: a workflow using the cache-mode key
+        # must be scanned instead of silently skipped
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workflow_dir = Path(tmp_dir) / ".github" / "workflows"
+            workflow_dir.mkdir(parents=True)
+            workflow_file = workflow_dir / "ci.yml"
+            workflow_file.write_text(WORKFLOW_YAML.replace("name: ci", "name: ci\ncache-mode: read"))
+
+            # when
+            report = Runner().run(
+                root_folder=tmp_dir, runner_filter=RunnerFilter(framework=["github_actions"])
+            )
+
+        # then
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.passed_checks), 11)
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, "CKV_GHA_7")
+
+    def test_runner_reports_schema_invalid_workflow(self):
+        # a workflow file that fails schema validation is reported as a
+        # parsing error instead of dropped silently
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workflow_dir = Path(tmp_dir) / ".github" / "workflows"
+            workflow_dir.mkdir(parents=True)
+            workflow_file = workflow_dir / "ci.yml"
+            workflow_file.write_text(WORKFLOW_YAML.replace("name: ci", "name: ci\ncache-mode: bogus"))
+
+            # when
+            report = Runner().run(
+                root_folder=tmp_dir, runner_filter=RunnerFilter(framework=["github_actions"])
+            )
+
+        # then
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(report.parsing_errors, [str(workflow_file)])
 
     def test_runner_multi_file(self):
         # given
@@ -42,7 +102,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 0)
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
-        self.assertEqual(len(report.parsing_errors), 0)
+        # the first document has an empty jobs mapping, so the file fails
+        # schema validation and is reported as a parsing error instead of
+        # dropped silently
+        self.assertEqual(len(report.parsing_errors), 1)
 
     def test_runner_honors_enforcement_rules(self):
         # given
@@ -61,7 +124,9 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 0)
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
-        self.assertEqual(len(report.parsing_errors), 0)
+        # the resources dir intentionally holds 3 schema-invalid workflows,
+        # which are reported as parsing errors instead of dropped silently
+        self.assertEqual(len(report.parsing_errors), 3)
 
     def test_runner_on_suspectcurl(self):
         # given
@@ -264,7 +329,9 @@ class TestRunnerValid(unittest.TestCase):
         assert len(report.failed_checks) == 0
         assert len(report.passed_checks) == 0
         assert len(report.skipped_checks) == 0
-        assert len(report.parsing_errors) == 0
+        # empty_jobs.yaml is schema-invalid, so it is reported as a parsing
+        # error instead of dropped silently
+        assert len(report.parsing_errors) == 1
 
     def test_runner_on_permissions(self):
         # given
