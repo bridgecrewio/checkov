@@ -110,6 +110,42 @@ class TestPlanFileParser(unittest.TestCase):
         self.assertIsNone(resource_attributes['container_properties'][0])
         self.assertTrue(resource_attributes['eks_properties'])
 
+    def test_same_name_data_and_resource_get_their_own_configuration(self):
+        # a managed resource and a data source may legally share type and name in the same module
+        # (resource "aws_ami" "x" vs data "aws_ami" "x"); each must be matched to its own
+        # configuration block regardless of the order they appear in the plan JSON
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        for plan_dir in (
+            "plan_same_name_data_and_resource_data_first",
+            "plan_same_name_data_and_resource_managed_first",
+        ):
+            with self.subTest(plan=plan_dir):
+                plan_path = current_dir + f"/resources/{plan_dir}/tfplan.json"
+                tf_definition, _ = parse_tf_plan(plan_path, {})
+
+                resource_block = tf_definition['resource'][0]['aws_ami']['x']
+                data_block = tf_definition['data'][0]['aws_ami']['x']
+
+                resource_refs = {ref for refs in resource_block['references_'] for ref in refs}
+                data_refs = {ref for refs in data_block['references_'] for ref in refs}
+
+                self.assertIn("aws_s3_bucket.logs", resource_refs)
+                self.assertIn("aws_ebs_snapshot.base", resource_refs)
+                self.assertNotIn("aws_subnet.selected", resource_refs)
+                self.assertIn("aws_subnet.selected", data_refs)
+                self.assertNotIn("aws_s3_bucket.logs", data_refs)
+
+    def test_configuration_block_without_mode_still_matches(self):
+        # older/slimmed plan JSON may lack the "mode" key under configuration; those blocks
+        # must keep matching planned resources the same way as before (legacy fallback)
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        plan_path = current_dir + "/resources/plan_same_name_conf_without_mode/tfplan.json"
+        tf_definition, _ = parse_tf_plan(plan_path, {})
+
+        resource_block = tf_definition['resource'][0]['aws_ami']['x']
+        resource_refs = {ref for refs in resource_block['references_'] for ref in refs}
+        self.assertIn("aws_s3_bucket.logs", resource_refs)
+
     def test_module_with_connected_resources(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_module_with_connected_resources/tfplan.json"
