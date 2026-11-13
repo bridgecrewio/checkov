@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys load balancer listeners with TLS 1.3-only post-quantum and FIPS security policies
+Parameters:
+  Subnets:
+    Description: Choose a minimum of 2 subnets the load balancers should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Type: application
+      Subnets: !Ref Subnets
+
+  ListenerHTTPSPASSEDResPQ:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-Res-PQ-2025-09
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Type: network
+      Subnets: !Ref Subnets
+
+  ListenerTLSPASSEDPQ:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-3-PQ-2025-09
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSPASSEDFIPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-3-FIPS-2023-04
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSPASSEDFIPSPQ:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-3-FIPS-PQ-2025-09
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
