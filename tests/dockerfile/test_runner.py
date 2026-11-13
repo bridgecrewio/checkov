@@ -221,6 +221,18 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
 
+    def test_runner_multi_skip_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = Path(__file__).parent / "resources/multi_skip"
+
+        runner = Runner()
+        report = runner.run(root_folder=str(valid_dir_path), external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['dockerfile']))
+
+        expected_skipped_checks = [record.check_id for record in report.skipped_checks]
+        self.assertCountEqual(["CKV_DOCKER_2", "CKV_DOCKER_3"], expected_skipped_checks)
+        self.assertCountEqual(["CKV_DOCKER_5"], [record.check_id for record in report.failed_checks])
+
     def test_runner_skip_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
