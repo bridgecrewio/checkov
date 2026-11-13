@@ -262,3 +262,70 @@ data "aws_iam_policy_document" "pass-gh-org" {
     }
   }
 }
+# fail for a multi-value condition whose second value is the bare wildcard.
+# IAM ORs the values of one condition key, so the tight first value does not
+# constrain anything - the "*" admits every subject.
+data "aws_iam_policy_document" "fail-multivalue-wildcard" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringLike"
+      values   = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# fail for a multi-value condition whose second value is an abusable claim.
+# The same "workflow:..." value FAILS on its own (see fail-abusable); pairing
+# it with a tight value must not hide it.
+data "aws_iam_policy_document" "fail-multivalue-abusable" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringLike"
+      values   = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "workflow:github-actions:*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+# pass for a multi-value condition where every value is pinned (branch + tag)
+data "aws_iam_policy_document" "pass-multivalue-pinned" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    action = [
+      "sts:AssumeRoleWithWebIdentity"
+    ]
+    principals {
+      identifiers = ["arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"]
+      type        = "Federated"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:myOrg/myRepo:ref:refs/heads/MyBranch", "repo:myOrg/myRepo:ref:refs/tags/v1.0.0"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
