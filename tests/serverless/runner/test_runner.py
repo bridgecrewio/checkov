@@ -1,15 +1,18 @@
 import dis
 import inspect
 import os
+import tempfile
 import unittest
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
+from unittest import mock
 
 from checkov.cloudformation.checks.resource.aws import *  # noqa - prevent circular import
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.checks.function.base_function_check import BaseFunctionCheck
 from checkov.serverless.runner import Runner
@@ -143,6 +146,41 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             # no need to join with a '/' because the CFN runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
+
+    def test_unparsable_file_is_reported_as_parsing_error(self):
+        # a single '=' is a valid YAML value, but the loader can't construct it,
+        # so the file used to be skipped without any indication in the report
+        invalid_template = (
+            "provider:\n"
+            "  name: aws\n"
+            "  tags:\n"
+            "    test: =\n"
+            "functions:\n"
+            "  hello:\n"
+            "    handler: handler.hello\n"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            scan_file_path = os.path.join(tmp_dir, "serverless.yml")
+            with open(scan_file_path, "w") as f:
+                f.write(invalid_template)
+
+            report = Runner().run(
+                root_folder=None, files=[scan_file_path], external_checks_dir=None,
+                runner_filter=RunnerFilter(framework=['serverless'])
+            )
+
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+        self.assertEqual(report.get_summary()["parsing_errors"], 1)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        # the file is now part of the report, so 'CKV_PARSE_ERROR_FAIL' can act on it
+        exit_code_thresholds = {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None,
+                                'hard_fail_checks': [], 'hard_fail_threshold': None}
+        self.assertEqual(report.get_exit_code(exit_code_thresholds), 0)
+        with mock.patch.dict(os.environ, {PARSE_ERROR_FAIL_FLAG: "true"}):
+            self.assertEqual(report.get_exit_code(exit_code_thresholds), 1)
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "terraform"]

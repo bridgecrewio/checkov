@@ -108,7 +108,9 @@ class Runner(BaseRunner[_ServerlessDefinitions, _ServerlessContext, ServerlessGr
             if self.root_folder:
                 files_list = get_scannable_file_paths(self.root_folder, runner_filter.excluded_paths)
 
-            definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
+            parsing_errors: dict[str, str] = {}
+            definitions, definitions_raw = get_files_definitions(files_list, filepath_fn, parsing_errors)
+            report.add_parsing_errors(parsing_errors.keys())
 
             # Filter out empty files that have not been parsed successfully
             self.definitions = {k: v for k, v in definitions.items() if v}

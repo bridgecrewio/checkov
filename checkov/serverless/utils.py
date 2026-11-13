@@ -73,12 +73,15 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 
 def get_files_definitions(
-        files: list[str], filepath_fn: Callable[[str], str] | None = None
+        files: list[str], filepath_fn: Callable[[str], str] | None = None,
+        out_parsing_errors: dict[str, str] | None = None
 ) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     results = parallel_runner.run_function(_parallel_parse, files)
     definitions = {}
     definitions_raw = {}
-    for file, result in results:
+    for file, result, file_parsing_errors in results:
+        if file_parsing_errors and out_parsing_errors is not None:
+            out_parsing_errors.update(file_parsing_errors)
         if result:
             path = filepath_fn(file) if filepath_fn else file
             definitions[path], definitions_raw[path] = result
@@ -86,9 +89,14 @@ def get_files_definitions(
     return definitions, definitions_raw
 
 
-def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
+def _parallel_parse(
+    f: str,
+) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None, dict[str, str]]:
     """Thin wrapper to return filename with parsed content"""
-    return f, parse(f)
+    # the parsing errors are collected per file and merged by the caller,
+    # because the parsing itself may run in a separate process
+    parsing_errors: dict[str, str] = {}
+    return f, parse(f, out_parsing_errors=parsing_errors), parsing_errors
 
 
 def get_resource_tags(entity: EntityDetails, registry: ServerlessRegistry = sls_registry) -> Optional[dict[str, str]]:
