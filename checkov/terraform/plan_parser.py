@@ -516,7 +516,12 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
             (
                 x
                 for x in template.get("configuration", {}).get("root_module", {}).get("resources", [])
-                if x["type"] == resource["type"] and x["name"] == resource["name"]
+                if x["type"] == resource["type"]
+                and x["name"] == resource["name"]
+                # a managed resource and a data source can legally share type and name in the same module
+                # (e.g. `resource "aws_ami" "x"` and `data "aws_ami" "x"`); default to the resource's own
+                # mode so plan JSON without a mode key keeps matching the same way as before
+                and x.get("mode", resource.get("mode", "managed")) == resource.get("mode", "managed")
             ),
             None,
         )
