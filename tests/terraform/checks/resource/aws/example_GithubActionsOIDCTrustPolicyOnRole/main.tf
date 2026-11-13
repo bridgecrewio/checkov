@@ -227,6 +227,29 @@ resource "aws_iam_role" "fail-misused-repo" {
   })
 }
 
+# pass_immutable -- GitHub immutable OIDC subject (owner@id/repo@id numeric suffixes) -> PASS
+resource "aws_iam_role" "pass_immutable" {
+  name = "pass_immutable"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::123456123456:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:sub" = "repo:octo-org@123456/octo-repo@456789:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # pass-org-only -- "repo:myOrg/*" (any repo in org, any branch). Considered SAFE
 # by CKV_AWS_358's design (see test_GithubActionsOIDCTrustPolicy.py's
 # "pass-org-only"). Mirrored here to preserve parity.
