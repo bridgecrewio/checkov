@@ -19,6 +19,7 @@ class TestAPIManagementMinTLS12(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.ApiManagement/service.pass",
+            "Microsoft.ApiManagement/service.pass_string_false",
         }
 
         failing_resources = {
@@ -27,6 +28,7 @@ class TestAPIManagementMinTLS12(unittest.TestCase):
             "Microsoft.ApiManagement/service.fail3",
             "Microsoft.ApiManagement/service.fail4",
             "Microsoft.ApiManagement/service.fail5",
+            "Microsoft.ApiManagement/service.fail_string_true",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
