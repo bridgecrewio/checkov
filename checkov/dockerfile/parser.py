@@ -4,6 +4,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import TYPE_CHECKING
 import io
+import re
 
 from dockerfile_parse import DockerfileParser
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
@@ -44,23 +45,43 @@ def collect_skipped_checks(parse_result: dict[str, list[_Instruction]]) -> list[
     return skipped_checks
 
 
+_HEREDOC_START_PATTERN = re.compile(r"^RUN\s+<<-?\s*[\"']?(\w+)[\"']?")
+_HEREDOC_DELIMITER_PATTERN = re.compile(r"<<-?\s*[\"']?(\w+)[\"']?")
+
+
 def convert_multiline_commands(dockerfile_content: str) -> str:
+    """Fold heredoc bodies (``RUN <<DELIM`` ... ``DELIM``) into a single RUN line.
+
+    ``dockerfile_parse`` does not understand heredocs, so without this folding
+    the heredoc body lines are parsed as Docker instructions and surface as
+    unsupported-instruction warnings.  Any delimiter word is supported
+    (``<<EOF``, ``<<EOT``, ``<<-EOT``, quoted delimiters, ...), including
+    multiple heredocs on a single RUN line.
+    """
     lines = dockerfile_content.splitlines()
-    converted_lines = []
-    in_multiline = False
-    multiline_command: list[str] = []
+    converted_lines: list[str] = []
+    heredoc_delimiters: list[str] = []
+    heredoc_body: list[str] = []
 
     for line in lines:
-        if line.strip().startswith('RUN <<EOF'):
-            in_multiline = True
+        stripped_line = line.strip()
+
+        if heredoc_delimiters:
+            if stripped_line == heredoc_delimiters[0]:
+                heredoc_delimiters.pop(0)
+                if not heredoc_delimiters:
+                    converted_lines.append(f"RUN {' && '.join(heredoc_body)}")
+                    heredoc_body = []
+            else:
+                heredoc_body.append(stripped_line)
             continue
-        elif in_multiline and line.strip() == 'EOF':
-            in_multiline = False
-            converted_lines.append(f"RUN {' && '.join(multiline_command)}")
-            multiline_command = []
-        elif in_multiline:
-            multiline_command.append(line.strip())
-        else:
-            converted_lines.append(line)
+
+        if _HEREDOC_START_PATTERN.match(stripped_line):
+            heredoc_delimiters = _HEREDOC_DELIMITER_PATTERN.findall(stripped_line)
+            continue
+
+        converted_lines.append(line)
 
     return '\n'.join(converted_lines)
+
+
