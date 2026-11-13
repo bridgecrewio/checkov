@@ -20,7 +20,24 @@ For example, The following directory structure will generate 3 sets of checkov v
 
 ## Dependencies
 
-You will need a working version of the standalone "kustomize" binary in your environment. If not available, Checkov will silently skip the Kustomize framework so as to not break existing CI pipelines which may be pulling Checkov latest with each run.
+Checkov needs either the standalone `kustomize` binary or `kubectl` with its Kustomize support available. By default, Checkov prefers `kubectl kustomize` when a supported `kubectl` is installed, then falls back to the standalone `kustomize` binary. If neither is available, Checkov skips the Kustomize framework so existing CI pipelines are not broken.
+
+To select the renderer explicitly, set `CHECKOV_KUSTOMIZE_COMMAND` to `kubectl kustomize` or `kustomize`. This is useful when both tools are installed but you want local and CI scans to use the same Kustomize version.
+
+```bash
+# Use the Kustomize version bundled with kubectl
+CHECKOV_KUSTOMIZE_COMMAND="kubectl kustomize" checkov -d ./myapp --framework kustomize
+
+# Use the standalone Kustomize binary
+CHECKOV_KUSTOMIZE_COMMAND=kustomize checkov -d ./myapp --framework kustomize
+```
+
+In PowerShell, set the variable for the current session before running Checkov:
+
+```powershell
+$env:CHECKOV_KUSTOMIZE_COMMAND = "kubectl kustomize"
+checkov -d ./myapp --framework kustomize
+```
 
 This is the same behaviour as Helm, and any other frameworks that depend on external dependencies.
 
