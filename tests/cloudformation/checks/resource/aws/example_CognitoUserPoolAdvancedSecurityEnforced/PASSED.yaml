@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: User pool with advanced security enforced
+Resources:
+  Pass:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: pass-pool
+      UserPoolAddOns:
+        AdvancedSecurityMode: ENFORCED
