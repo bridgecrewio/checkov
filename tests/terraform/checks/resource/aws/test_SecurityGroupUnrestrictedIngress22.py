@@ -32,7 +32,9 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
             "aws_security_group_rule.pass4",
             "aws_vpc_security_group_ingress_rule.pass",
             "aws_security_group.pass_self",
-            "aws_security_group.pass_self2"
+            "aws_security_group.pass_self2",
+            "aws_vpc_security_group_ingress_rule.pass_all_traffic_private",
+            "aws_vpc_security_group_ingress_rule.pass_all_traffic_sg",
         }
 
         failing_resources = {
@@ -44,7 +46,10 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
             "aws_security_group_rule.fail",
             "aws_vpc_security_group_ingress_rule.fail",
             "aws_vpc_security_group_ingress_rule.fail2",
-            "aws_security_group.not_self"
+            "aws_security_group.not_self",
+            "aws_security_group.fail_self_then_open",
+            "aws_vpc_security_group_ingress_rule.fail_all_traffic",
+            "aws_vpc_security_group_ingress_rule.fail_ipv6_string",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

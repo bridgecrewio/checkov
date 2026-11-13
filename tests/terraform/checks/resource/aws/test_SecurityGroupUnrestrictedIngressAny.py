@@ -20,14 +20,17 @@ class TestSecurityGroupUnrestrictedIngressAny(unittest.TestCase):
         passing_resources = {
             "aws_security_group.pass",
             "aws_security_group_rule.pass",
-            "aws_vpc_security_group_ingress_rule.pass"
+            "aws_vpc_security_group_ingress_rule.pass",
+            "aws_vpc_security_group_ingress_rule.pass_all_traffic_sg",
         }
 
         failing_resources = {
             "aws_security_group.fail",
             "aws_security_group_rule.fail",
             "aws_vpc_security_group_ingress_rule.fail",
-            "aws_security_group_rule.fail2"
+            "aws_security_group_rule.fail2",
+            "aws_vpc_security_group_ingress_rule.fail_all_traffic",
+            "aws_vpc_security_group_ingress_rule.fail_all_traffic_ipv6",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
