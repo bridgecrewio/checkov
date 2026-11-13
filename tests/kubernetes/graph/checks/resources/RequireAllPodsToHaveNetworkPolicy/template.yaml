@@ -121,3 +121,32 @@ policyTypes: []
 spec: 
 kind: NetworkPolicy
 apiVersion: extensions/achia
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cilium-covered-deployment
+  labels:
+    app: cilium-covered
+spec:
+  selector:
+    matchLabels:
+      app: cilium-covered
+  template:
+    metadata:
+      labels:
+        app: cilium-covered
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.27
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cilium-test-policy
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels:
+      app: cilium-covered

@@ -1,4 +1,5 @@
 pass:
   - 'Pod.default.internal-proxy-deployment.app-internal-proxy'
+  - 'Pod.default.cilium-covered-deployment.app-cilium-covered'
 fail:
   - 'Pod.default.external-proxy-deployment.app-external-proxy'

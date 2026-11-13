@@ -16,6 +16,7 @@ from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.CiliumNetworkPolicyEdgeBuilder import CiliumNetworkPolicyEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
 
 
@@ -23,7 +24,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
         self.definitions = definitions
         self.edge_builders: list[type[K8SEdgeBuilder] | ServiceAccountEdgeBuilder] = \
-            [LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder, ServiceAccountEdgeBuilder()]
+            [LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder, CiliumNetworkPolicyEdgeBuilder, ServiceAccountEdgeBuilder()]
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
