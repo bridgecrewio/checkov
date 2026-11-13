@@ -1,4 +1,4 @@
-from checkov.common.util.type_forcers import force_int
+from checkov.common.util.type_forcers import convert_str_to_bool, force_int
 
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -10,6 +10,10 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
         self.port = port
 
     def scan_resource_conf(self, conf):
+        disabled = conf.get('disabled')
+        if disabled and convert_str_to_bool(disabled[0]) is True:
+            self.evaluated_keys = ['disabled']
+            return CheckResult.PASSED
         if 'allow' in conf:
             allow_blocks = conf['allow']
             self.evaluated_keys = ['allow']
