@@ -1,0 +1,87 @@
+{
+    "config": {
+        "aws:region": "us-east-1"
+    },
+    "steps": [
+        {
+            "op": "same",
+            "urn": "urn:pulumi:dev::project::my:index:Component::component",
+            "newState": {
+                "urn": "urn:pulumi:dev::project::my:index:Component::component",
+                "custom": false,
+                "type": "my:index:Component"
+            }
+        },
+        {
+            "op": "same",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::unchanged",
+            "newState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::unchanged",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "bucket": "unchanged",
+                    "acl": null
+                }
+            }
+        },
+        {
+            "op": "create-replacement",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+            "newState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "bucket": "replaced-new"
+                }
+            }
+        },
+        {
+            "op": "replace",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+            "newState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "bucket": "replaced-new"
+                }
+            }
+        },
+        {
+            "op": "delete-replaced",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+            "oldState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::replaced",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "bucket": "replaced-old"
+                }
+            }
+        },
+        {
+            "op": "delete",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::deleted",
+            "oldState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::deleted",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "bucket": "deleted"
+                }
+            }
+        },
+        {
+            "op": "read",
+            "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::external",
+            "newState": {
+                "urn": "urn:pulumi:dev::project::aws:s3/bucket:Bucket::external",
+                "custom": true,
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {}
+            }
+        }
+    ]
+}

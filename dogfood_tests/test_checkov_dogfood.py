@@ -52,6 +52,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.KUBERNETES,
         CheckType.KUSTOMIZE,
         CheckType.OPENAPI,
+        CheckType.PULUMI,
         CheckType.SAST,
         CheckType.SAST_JAVA,
         CheckType.SAST_PYTHON,
@@ -166,6 +167,14 @@ def test_terraform_framework(caplog: LogCaptureFixture) -> None:
     ]
 
     run_framework_test(caplog=caplog, framework=CheckType.TERRAFORM, excluded_paths=excluded_paths)
+
+
+def test_pulumi_framework(caplog: LogCaptureFixture) -> None:
+    excluded_paths = [
+        "pulumi/resources/malformed_events.jsonl$",
+    ]
+
+    run_framework_test(caplog=caplog, framework=CheckType.PULUMI, excluded_paths=excluded_paths)
 
 
 def test_terraform_json_framework(caplog: LogCaptureFixture) -> None:

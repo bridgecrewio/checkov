@@ -1,0 +1,767 @@
+{
+    "version": 3,
+    "deployment": {
+        "manifest": {
+            "time": "2026-11-06T00:00:00Z",
+            "magic": "",
+            "version": ""
+        },
+        "resources": [
+            {
+                "urn": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "custom": false,
+                "type": "pulumi:pulumi:Stack"
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0",
+                "custom": true,
+                "id": "11111111-2222-3333-4444-555555555555",
+                "type": "pulumi:providers:aws",
+                "inputs": {
+                    "region": "us-east-1",
+                    "skipCredentialsValidation": "true",
+                    "version": "7.53.0"
+                },
+                "outputs": {
+                    "region": "us-east-1",
+                    "version": "7.53.0"
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:kms/key:Key::rotatedKey",
+                "custom": true,
+                "id": "rotatedKey-id",
+                "type": "aws:kms/key:Key",
+                "inputs": {
+                    "__defaults": [
+                        "customerMasterKeySpec",
+                        "isEnabled",
+                        "keyUsage"
+                    ],
+                    "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                    "deletionWindowInDays": 7,
+                    "description": "key with rotation",
+                    "enableKeyRotation": true,
+                    "isEnabled": true,
+                    "keyUsage": "ENCRYPT_DECRYPT",
+                    "policy": "{\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Resource\":\"*\",\"Sid\":\"root\"}],\"Version\":\"2012-10-17\"}",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [
+                        "customerMasterKeySpec",
+                        "isEnabled",
+                        "keyUsage"
+                    ],
+                    "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                    "deletionWindowInDays": 7,
+                    "description": "key with rotation",
+                    "enableKeyRotation": true,
+                    "isEnabled": true,
+                    "keyUsage": "ENCRYPT_DECRYPT",
+                    "policy": "{\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::123456789012:root\"},\"Resource\":\"*\",\"Sid\":\"root\"}],\"Version\":\"2012-10-17\"}",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "deletionWindowInDays": [],
+                    "description": [],
+                    "enableKeyRotation": [],
+                    "policy": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::insecureBucket",
+                "custom": true,
+                "id": "insecureBucket-id",
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "__defaults": [],
+                    "bucket": "checkov-insecure-bucket",
+                    "region": "us-east-1",
+                    "tags": {
+                        "Environment": "dev"
+                    },
+                    "tagsAll": {
+                        "Environment": "dev"
+                    }
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "bucket": "checkov-insecure-bucket",
+                    "region": "us-east-1",
+                    "tags": {
+                        "Environment": "dev"
+                    },
+                    "tagsAll": {
+                        "Environment": "dev"
+                    }
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "bucket": [],
+                    "tags": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:ec2/securityGroup:SecurityGroup::openSg",
+                "custom": true,
+                "id": "openSg-id",
+                "type": "aws:ec2/securityGroup:SecurityGroup",
+                "inputs": {
+                    "__defaults": [],
+                    "description": "open ssh",
+                    "ingress": [
+                        {
+                            "__defaults": [],
+                            "cidrBlocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "ssh from anywhere",
+                            "fromPort": 22,
+                            "protocol": "tcp",
+                            "toPort": 22
+                        }
+                    ],
+                    "name": "open-sg",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "description": "open ssh",
+                    "ingress": [
+                        {
+                            "__defaults": [],
+                            "cidrBlocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "ssh from anywhere",
+                            "fromPort": 22,
+                            "protocol": "tcp",
+                            "toPort": 22
+                        }
+                    ],
+                    "name": "open-sg",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "description": [],
+                    "ingress": [],
+                    "name": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket",
+                "custom": true,
+                "id": "secureBucket-id",
+                "type": "aws:s3/bucket:Bucket",
+                "inputs": {
+                    "__defaults": [],
+                    "bucket": "checkov-secure-bucket",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "bucket": "checkov-secure-bucket",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "bucket": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:kms/key:Key::plainKey",
+                "custom": true,
+                "id": "plainKey-id",
+                "type": "aws:kms/key:Key",
+                "inputs": {
+                    "__defaults": [
+                        "customerMasterKeySpec",
+                        "isEnabled",
+                        "keyUsage"
+                    ],
+                    "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                    "description": "key without rotation",
+                    "isEnabled": true,
+                    "keyUsage": "ENCRYPT_DECRYPT",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [
+                        "customerMasterKeySpec",
+                        "isEnabled",
+                        "keyUsage"
+                    ],
+                    "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+                    "description": "key without rotation",
+                    "isEnabled": true,
+                    "keyUsage": "ENCRYPT_DECRYPT",
+                    "region": "us-east-1",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "description": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:iam/policy:Policy::adminPolicy",
+                "custom": true,
+                "id": "adminPolicy-id",
+                "type": "aws:iam/policy:Policy",
+                "inputs": {
+                    "__defaults": [
+                        "path"
+                    ],
+                    "name": "admin-policy",
+                    "path": "/",
+                    "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [
+                        "path"
+                    ],
+                    "name": "admin-policy",
+                    "path": "/",
+                    "policy": "{\"Statement\":[{\"Action\":\"*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "name": [],
+                    "policy": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:ec2/instance:Instance::instance",
+                "custom": true,
+                "id": "instance-id",
+                "type": "aws:ec2/instance:Instance",
+                "inputs": {
+                    "__defaults": [
+                        "sourceDestCheck"
+                    ],
+                    "ami": "ami-12345678",
+                    "associatePublicIpAddress": true,
+                    "instanceType": "t3.micro",
+                    "metadataOptions": {
+                        "__defaults": [
+                            "httpProtocolIpv6"
+                        ],
+                        "httpEndpoint": "enabled",
+                        "httpProtocolIpv6": "disabled",
+                        "httpTokens": "optional"
+                    },
+                    "region": "us-east-1",
+                    "rootBlockDevice": {
+                        "__defaults": [
+                            "deleteOnTermination"
+                        ],
+                        "deleteOnTermination": true,
+                        "encrypted": false,
+                        "volumeSize": 8
+                    },
+                    "sourceDestCheck": true,
+                    "tags": {
+                        "Name": "checkov-instance"
+                    },
+                    "tagsAll": {
+                        "Name": "checkov-instance"
+                    }
+                },
+                "outputs": {
+                    "__defaults": [
+                        "sourceDestCheck"
+                    ],
+                    "ami": "ami-12345678",
+                    "associatePublicIpAddress": true,
+                    "instanceType": "t3.micro",
+                    "metadataOptions": {
+                        "__defaults": [
+                            "httpProtocolIpv6"
+                        ],
+                        "httpEndpoint": "enabled",
+                        "httpProtocolIpv6": "disabled",
+                        "httpTokens": "optional"
+                    },
+                    "region": "us-east-1",
+                    "rootBlockDevice": {
+                        "__defaults": [
+                            "deleteOnTermination"
+                        ],
+                        "deleteOnTermination": true,
+                        "encrypted": false,
+                        "volumeSize": 8
+                    },
+                    "sourceDestCheck": true,
+                    "tags": {
+                        "Name": "checkov-instance"
+                    },
+                    "tagsAll": {
+                        "Name": "checkov-instance"
+                    }
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "ami": [],
+                    "associatePublicIpAddress": [],
+                    "instanceType": [],
+                    "metadataOptions": [],
+                    "rootBlockDevice": [],
+                    "tags": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:rds/instance:Instance::db",
+                "custom": true,
+                "id": "db-id",
+                "type": "aws:rds/instance:Instance",
+                "inputs": {
+                    "__defaults": [
+                        "autoMinorVersionUpgrade",
+                        "deleteAutomatedBackups"
+                    ],
+                    "allocatedStorage": 20,
+                    "autoMinorVersionUpgrade": true,
+                    "deleteAutomatedBackups": true,
+                    "engine": "mysql",
+                    "identifier": "checkov-db",
+                    "instanceClass": "db.t3.micro",
+                    "password": "[secret]",
+                    "publiclyAccessible": true,
+                    "region": "us-east-1",
+                    "skipFinalSnapshot": true,
+                    "storageEncrypted": false,
+                    "tagsAll": {},
+                    "username": "admin"
+                },
+                "outputs": {
+                    "__defaults": [
+                        "autoMinorVersionUpgrade",
+                        "deleteAutomatedBackups"
+                    ],
+                    "allocatedStorage": 20,
+                    "autoMinorVersionUpgrade": true,
+                    "deleteAutomatedBackups": true,
+                    "engine": "mysql",
+                    "identifier": "checkov-db",
+                    "instanceClass": "db.t3.micro",
+                    "password": "[secret]",
+                    "publiclyAccessible": true,
+                    "region": "us-east-1",
+                    "skipFinalSnapshot": true,
+                    "storageEncrypted": false,
+                    "tagsAll": {},
+                    "username": "admin"
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "allocatedStorage": [],
+                    "engine": [],
+                    "identifier": [],
+                    "instanceClass": [],
+                    "password": [],
+                    "publiclyAccessible": [],
+                    "skipFinalSnapshot": [],
+                    "storageEncrypted": [],
+                    "username": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:sqs/queue:Queue::queue",
+                "custom": true,
+                "id": "queue-id",
+                "type": "aws:sqs/queue:Queue",
+                "inputs": {
+                    "__defaults": [
+                        "maxMessageSize",
+                        "messageRetentionSeconds",
+                        "visibilityTimeoutSeconds"
+                    ],
+                    "maxMessageSize": 262144,
+                    "messageRetentionSeconds": 345600,
+                    "name": "checkov-queue",
+                    "region": "us-east-1",
+                    "tagsAll": {},
+                    "visibilityTimeoutSeconds": 30
+                },
+                "outputs": {
+                    "__defaults": [
+                        "maxMessageSize",
+                        "messageRetentionSeconds",
+                        "visibilityTimeoutSeconds"
+                    ],
+                    "maxMessageSize": 262144,
+                    "messageRetentionSeconds": 345600,
+                    "name": "checkov-queue",
+                    "region": "us-east-1",
+                    "tagsAll": {},
+                    "visibilityTimeoutSeconds": 30
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "name": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:dynamodb/table:Table::table",
+                "custom": true,
+                "id": "table-id",
+                "type": "aws:dynamodb/table:Table",
+                "inputs": {
+                    "__defaults": [
+                        "tableClass"
+                    ],
+                    "attributes": [
+                        {
+                            "__defaults": [],
+                            "name": "id",
+                            "type": "S"
+                        }
+                    ],
+                    "billingMode": "PAY_PER_REQUEST",
+                    "hashKey": "id",
+                    "name": "checkov-table",
+                    "pointInTimeRecovery": {
+                        "__defaults": [],
+                        "enabled": true
+                    },
+                    "region": "us-east-1",
+                    "tableClass": "STANDARD",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [
+                        "tableClass"
+                    ],
+                    "attributes": [
+                        {
+                            "__defaults": [],
+                            "name": "id",
+                            "type": "S"
+                        }
+                    ],
+                    "billingMode": "PAY_PER_REQUEST",
+                    "hashKey": "id",
+                    "name": "checkov-table",
+                    "pointInTimeRecovery": {
+                        "__defaults": [],
+                        "enabled": true
+                    },
+                    "region": "us-east-1",
+                    "tableClass": "STANDARD",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "attributes": [],
+                    "billingMode": [],
+                    "hashKey": [],
+                    "name": [],
+                    "pointInTimeRecovery": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:iam/role:Role::lambdaRole",
+                "custom": true,
+                "id": "lambdaRole-id",
+                "type": "aws:iam/role:Role",
+                "inputs": {
+                    "__defaults": [
+                        "maxSessionDuration",
+                        "path"
+                    ],
+                    "assumeRolePolicy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                    "maxSessionDuration": 3600,
+                    "name": "checkov-lambda-role",
+                    "path": "/",
+                    "tagsAll": {}
+                },
+                "outputs": {
+                    "__defaults": [
+                        "maxSessionDuration",
+                        "path"
+                    ],
+                    "assumeRolePolicy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                    "maxSessionDuration": 3600,
+                    "name": "checkov-lambda-role",
+                    "path": "/",
+                    "tagsAll": {}
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "assumeRolePolicy": [],
+                    "name": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucketServerSideEncryptionConfiguration:BucketServerSideEncryptionConfiguration::secureEncryption",
+                "custom": true,
+                "id": "secureEncryption-id",
+                "type": "aws:s3/bucketServerSideEncryptionConfiguration:BucketServerSideEncryptionConfiguration",
+                "inputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "rules": [
+                        {
+                            "__defaults": [],
+                            "applyServerSideEncryptionByDefault": {
+                                "__defaults": [],
+                                "kmsMasterKeyId": "existing-id",
+                                "sseAlgorithm": "aws:kms"
+                            }
+                        }
+                    ]
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "rules": [
+                        {
+                            "__defaults": [],
+                            "applyServerSideEncryptionByDefault": {
+                                "__defaults": [],
+                                "kmsMasterKeyId": "existing-id",
+                                "sseAlgorithm": "aws:kms"
+                            }
+                        }
+                    ]
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "dependencies": [
+                    "urn:pulumi:export::checkov-aws::aws:kms/key:Key::rotatedKey",
+                    "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                ],
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "bucket": [
+                        "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                    ],
+                    "rules": [
+                        "urn:pulumi:export::checkov-aws::aws:kms/key:Key::rotatedKey"
+                    ]
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucketLogging:BucketLogging::secureLogging",
+                "custom": true,
+                "id": "secureLogging-id",
+                "type": "aws:s3/bucketLogging:BucketLogging",
+                "inputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "targetBucket": "existing-id",
+                    "targetPrefix": "logs/"
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "targetBucket": "existing-id",
+                    "targetPrefix": "logs/"
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "dependencies": [
+                    "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::insecureBucket",
+                    "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                ],
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "bucket": [
+                        "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                    ],
+                    "targetBucket": [
+                        "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::insecureBucket"
+                    ],
+                    "targetPrefix": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock::securePab",
+                "custom": true,
+                "id": "securePab-id",
+                "type": "aws:s3/bucketPublicAccessBlock:BucketPublicAccessBlock",
+                "inputs": {
+                    "__defaults": [],
+                    "blockPublicAcls": true,
+                    "blockPublicPolicy": true,
+                    "bucket": "existing-id",
+                    "ignorePublicAcls": true,
+                    "region": "us-east-1",
+                    "restrictPublicBuckets": true
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "blockPublicAcls": true,
+                    "blockPublicPolicy": true,
+                    "bucket": "existing-id",
+                    "ignorePublicAcls": true,
+                    "region": "us-east-1",
+                    "restrictPublicBuckets": true
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "dependencies": [
+                    "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                ],
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "blockPublicAcls": [],
+                    "blockPublicPolicy": [],
+                    "bucket": [
+                        "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                    ],
+                    "ignorePublicAcls": [],
+                    "restrictPublicBuckets": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:s3/bucketVersioning:BucketVersioning::secureVersioning",
+                "custom": true,
+                "id": "secureVersioning-id",
+                "type": "aws:s3/bucketVersioning:BucketVersioning",
+                "inputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "versioningConfiguration": {
+                        "__defaults": [],
+                        "status": "Enabled"
+                    }
+                },
+                "outputs": {
+                    "__defaults": [],
+                    "bucket": "existing-id",
+                    "region": "us-east-1",
+                    "versioningConfiguration": {
+                        "__defaults": [],
+                        "status": "Enabled"
+                    }
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "dependencies": [
+                    "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                ],
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "bucket": [
+                        "urn:pulumi:export::checkov-aws::aws:s3/bucket:Bucket::secureBucket"
+                    ],
+                    "versioningConfiguration": []
+                }
+            },
+            {
+                "urn": "urn:pulumi:export::checkov-aws::aws:lambda/function:Function::fn",
+                "custom": true,
+                "id": "fn-id",
+                "type": "aws:lambda/function:Function",
+                "inputs": {
+                    "__defaults": [
+                        "memorySize",
+                        "packageType",
+                        "reservedConcurrentExecutions",
+                        "timeout"
+                    ],
+                    "code": {
+                        "4dabf18193072939515e22adb298388d": "0def7320c3a5731c473e5ecbe6d01bc7",
+                        "hash": "3d6e0e29f176768bbd23de8f277249ce533d400d30af51c6ca24e1e5f396d791",
+                        "path": "./app"
+                    },
+                    "environment": {
+                        "__defaults": [],
+                        "variables": {
+                            "STAGE": "dev"
+                        }
+                    },
+                    "handler": "index.handler",
+                    "memorySize": 128,
+                    "name": "checkov-fn",
+                    "packageType": "Zip",
+                    "region": "us-east-1",
+                    "reservedConcurrentExecutions": -1,
+                    "role": "existing-id",
+                    "runtime": "python3.12",
+                    "tagsAll": {},
+                    "timeout": 3,
+                    "tracingConfig": {
+                        "__defaults": [],
+                        "mode": "Active"
+                    }
+                },
+                "outputs": {
+                    "__defaults": [
+                        "memorySize",
+                        "packageType",
+                        "reservedConcurrentExecutions",
+                        "timeout"
+                    ],
+                    "code": {
+                        "4dabf18193072939515e22adb298388d": "0def7320c3a5731c473e5ecbe6d01bc7",
+                        "hash": "3d6e0e29f176768bbd23de8f277249ce533d400d30af51c6ca24e1e5f396d791",
+                        "path": "./app"
+                    },
+                    "environment": {
+                        "__defaults": [],
+                        "variables": {
+                            "STAGE": "dev"
+                        }
+                    },
+                    "handler": "index.handler",
+                    "memorySize": 128,
+                    "name": "checkov-fn",
+                    "packageType": "Zip",
+                    "region": "us-east-1",
+                    "reservedConcurrentExecutions": -1,
+                    "role": "existing-id",
+                    "runtime": "python3.12",
+                    "tagsAll": {},
+                    "timeout": 3,
+                    "tracingConfig": {
+                        "__defaults": [],
+                        "mode": "Active"
+                    }
+                },
+                "parent": "urn:pulumi:export::checkov-aws::pulumi:pulumi:Stack::checkov-aws-export",
+                "dependencies": [
+                    "urn:pulumi:export::checkov-aws::aws:iam/role:Role::lambdaRole"
+                ],
+                "provider": "urn:pulumi:export::checkov-aws::pulumi:providers:aws::default_7_53_0::11111111-2222-3333-4444-555555555555",
+                "propertyDependencies": {
+                    "code": [],
+                    "environment": [],
+                    "handler": [],
+                    "name": [],
+                    "role": [
+                        "urn:pulumi:export::checkov-aws::aws:iam/role:Role::lambdaRole"
+                    ],
+                    "runtime": [],
+                    "tracingConfig": []
+                }
+            }
+        ],
+        "metadata": {}
+    }
+}

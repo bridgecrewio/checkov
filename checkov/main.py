@@ -74,6 +74,7 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
+from checkov.pulumi.runner import Runner as pulumi_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.sast.report_types import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
@@ -131,6 +132,7 @@ DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     azure_pipelines_runner(),
     ansible_runner(),
     TerraformJsonRunner(),
+    pulumi_runner(),
     sast_runner(),
     CdkRunner(),
 ]
