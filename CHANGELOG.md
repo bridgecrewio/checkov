@@ -14,6 +14,10 @@
 
 - **bicep:** resolve references within the declaring file - [#7794](https://github.com/bridgecrewio/checkov/pull/7794)
 
+### Bug Fix
+
+- **terraform:** treat disabled GCP firewall rules as passing, and flag TCP or all-protocol rules that omit a port list and allow 0.0.0.0/0
+
 ## [3.4.3](https://github.com/bridgecrewio/checkov/compare/3.4.2...3.4.3) - 2026-11-02
 
 ### Bug Fix

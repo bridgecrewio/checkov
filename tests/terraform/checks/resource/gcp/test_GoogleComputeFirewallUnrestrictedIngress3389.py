@@ -45,6 +45,31 @@ class TestGoogleComputeFirewallUnrestrictedIngress3389(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    def test_disabled_open_rule_passes(self):
+        resource_conf = {'disabled': [True],
+                         'allow': [{'protocol': ['tcp'], 'ports': [[str(PORT)]]}],
+                         'source_ranges': [['0.0.0.0/0']]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_tcp_without_ports_fails(self):
+        resource_conf = {'allow': [{'protocol': ['tcp']}],
+                         'source_ranges': [['0.0.0.0/0']]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.FAILED, scan_result)
+
+    def test_udp_without_ports_passes(self):
+        resource_conf = {'allow': [{'protocol': ['udp']}],
+                         'source_ranges': [['0.0.0.0/0']]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
+    def test_tcp_without_ports_private_source_passes(self):
+        resource_conf = {'allow': [{'protocol': ['all']}],
+                         'source_ranges': [['10.0.0.0/8']]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        self.assertEqual(CheckResult.PASSED, scan_result)
+
 
 if __name__ == '__main__':
     unittest.main()
