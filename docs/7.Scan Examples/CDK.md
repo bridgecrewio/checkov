@@ -32,31 +32,17 @@ class BucketApp(Stack):
         # RESOURCES
         #
 
-        pipeline_artifact_bucket = aws_s3.CfnBucket(
-            self,
-            "PipelineArtifactBucket",
-            access_control="Private",
-            bucket_encryption=aws_s3.CfnBucket.BucketEncryptionProperty(
-                server_side_encryption_configuration=[
-                    aws_s3.CfnBucket.ServerSideEncryptionRuleProperty(
-                        server_side_encryption_by_default=aws_s3.CfnBucket.ServerSideEncryptionByDefaultProperty(
-                            sse_algorithm="AES256"
-                        )
-                    )
-                ]
-            ),
-            public_access_block_configuration=aws_s3.BlockPublicAccess.BLOCK_ALL
-        )
-        pipeline_artifact_bucket.cfn_options.metadata = {
-          'checkov': {
+        bucket = aws_s3.Bucket(self, "MyBucket", versioned=True)
+        cfn_bucket = bucket.node.default_child
+
+        cfn_bucket.add_metadata('checkov', {
             'skip': [
-              {
-                'id': 'CKV_AWS_18',
-                'comment': 'No need to ensure the S3 bucket has access logging enabled'
-              }
+                {
+                    'id': 'CKV_AWS_18',
+                    'comment': 'No need to ensure the S3 bucket has access logging enabled'
+                }
             ]
-          }
-        }
+        })
 
 ```
 typescript CDK example
@@ -66,18 +52,17 @@ const bucket = new aws_s3.Bucket(this, 'MyBucket', {
 });
 const cfnBucket = bucket.node.defaultChild as aws_s3.CfnBucket;
 
-cfnBucket.cfnOptions.metadata = {
-  'checkov': {
-    'skip': [
-      {
-        'id': 'CKV_AWS_18',
-        'comment': 'No need to ensure the S3 bucket has access logging enabled'
-      }
-    ]
-  }
-}
+cfnBucket.addMetadata('checkov', {
+  'skip': [
+    {
+      'id': 'CKV_AWS_18',
+      'comment': 'No need to ensure the S3 bucket has access logging enabled'
+    }
+  ]
+});
 ```
-The metadata secution contain 1 skip for CKV_AWS_18
+
+The metadata section contains 1 skip for CKV_AWS_18
 Run the `cdk synth` command to generate a CloudFormation template and scan it
 ```json
 {
@@ -92,6 +77,7 @@ Run the `cdk synth` command to generate a CloudFormation template and scan it
       "UpdateReplacePolicy": "Retain",
       "DeletionPolicy": "Retain",
       "Metadata": {
+        "aws:cdk:path": "AppStack/MyBucket/Resource",
         "checkov": {
           "skip": [
             {
@@ -354,18 +340,18 @@ $ checkov -f cdk.out/AppStack.template.json
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By Prisma Cloud | version: 2.0.727
+By Prisma Cloud | version: 3.3.29
 
 cloudformation scan results:
 
-Passed checks: 3, Failed checks: 5, Skipped checks: 1
+Passed checks: 4, Failed checks: 4, Skipped checks: 1
 
 ...
 
 Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
-        Suppress comment: Ensure the S3 bucket has access logging enabled
-        File: /cfn.json:3-22
+        Suppress comment: No need to ensure the S3 bucket has access logging enabled
+        File: /cdk.out/AppStack.template.json:3-23
         Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
 
 ```
