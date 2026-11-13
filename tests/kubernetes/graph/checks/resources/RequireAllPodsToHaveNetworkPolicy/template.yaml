@@ -108,6 +108,237 @@ spec:
         - protocol: TCP
           port: 5978
 ---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tier-api
+  namespace: default
+  labels:
+    tier: api
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tier-worker
+  namespace: default
+  labels:
+    tier: worker
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tier-in-worker
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: tier
+        operator: In
+        values:
+          - worker
+  policyTypes:
+    - Ingress
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-dev
+  namespace: default
+  labels:
+    app: env-check
+    env: dev
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-prod
+  namespace: default
+  labels:
+    app: env-check
+    env: prod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: env-missing
+  namespace: default
+  labels:
+    app: env-check
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: env-not-in-dev
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: env-check
+    matchExpressions:
+      - key: env
+        operator: NotIn
+        values:
+          - dev
+  policyTypes:
+    - Ingress
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: team-payments
+  namespace: default
+  labels:
+    team: payments
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: team-exists
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - key: team
+        operator: Exists
+  policyTypes:
+    - Ingress
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: legacy
+  namespace: default
+  labels:
+    app: legacy-check
+    legacy: "true"
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: modern
+  namespace: default
+  labels:
+    app: legacy-check
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: legacy-does-not-exist
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: legacy-check
+    matchExpressions:
+      - key: legacy
+        operator: DoesNotExist
+  policyTypes:
+    - Ingress
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: invalid-expressions
+  namespace: default
+  labels:
+    app: invalid-expressions
+    tier: frontend
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unknown-operator
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: invalid-expressions
+    matchExpressions:
+      - key: tier
+        operator: Equals
+        values:
+          - frontend
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: not-in-without-values
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: invalid-expressions
+    matchExpressions:
+      - key: tier
+        operator: NotIn
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: exists-with-values
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: invalid-expressions
+    matchExpressions:
+      - key: tier
+        operator: Exists
+        values:
+          - frontend
+  policyTypes:
+    - Ingress
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: no-labels
+  namespace: default
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+---
 metadata:
   annotations: {}
   labels:
