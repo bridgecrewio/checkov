@@ -131,6 +131,21 @@ class TestRunnerValid(unittest.TestCase):
 
         report.print_console()
 
+    def test_runner_tf_multi_skip_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/terraform_multi_skip"
+
+        report = Runner().run(
+            root_folder=valid_dir_path,
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=['secrets'])
+        )
+
+        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(report.skipped_checks[0].check_id, 'CKV_SECRET_6')
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(report.parsing_errors, [])
+
     def test_runner_specific_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/cfn"
@@ -241,10 +256,11 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets']))
+        # the terraform_multi_skip fixture adds one suppressed finding (comma-separated skip ids)
         self.assertEqual(9, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
-        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(len(report.skipped_checks), 2)
 
     def test_runner_bc_ids(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
