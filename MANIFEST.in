@@ -1,0 +1,13 @@
+# The graph-check YAML sources are transformed to JSON by setup.py's
+# PreBuildCommand during build_py, so they must be present in the sdist:
+# any install built from the sdist (pip --no-binary, distro packages,
+# Homebrew, air-gapped mirrors) builds its wheel from the sdist contents.
+# Without these, such installs silently run zero graph checks.
+recursive-include checkov/ansible/checks/graph_checks *.yaml
+recursive-include checkov/arm/checks/graph_checks *.yaml
+recursive-include checkov/bicep/checks/graph_checks *.yaml
+recursive-include checkov/cloudformation/checks/graph_checks *.yaml
+recursive-include checkov/dockerfile/checks/graph_checks *.yaml
+recursive-include checkov/github_actions/checks/graph_checks *.yaml
+recursive-include checkov/kubernetes/checks/graph_checks *.yaml
+recursive-include checkov/terraform/checks/graph_checks *.yaml
