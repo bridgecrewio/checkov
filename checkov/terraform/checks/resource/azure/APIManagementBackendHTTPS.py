@@ -18,11 +18,14 @@ class APIManagementBackendHTTPS(BaseResourceCheck):
         self.evaluated_keys = ["url"]
         url = conf.get("url")
         if url and isinstance(url, list):
-            if "https" in url[0]:
+            url_value = url[0]
+            if not isinstance(url_value, str):
+                return CheckResult.UNKNOWN
+            if url_value.startswith("https://"):
                 return CheckResult.PASSED
-
-            return CheckResult.FAILED
-
+            if url_value.startswith("http://"):
+                return CheckResult.FAILED
+            return CheckResult.UNKNOWN
         return CheckResult.UNKNOWN
 
 
