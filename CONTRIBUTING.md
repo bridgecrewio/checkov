@@ -62,7 +62,7 @@ Continuous integration will run these tests either as pre-submits on PRs and pos
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
 
 To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
-If you are using conda, create a new environment with Python 3.10.14 version:
+If you are using conda, create a new environment with Python 3.10.17 version:
 ```sh
 conda create -n python310 python=3.10.17
 conda activate python310
@@ -120,7 +120,7 @@ library as part of your PR. If you'd rather send us a short blurb on slack that'
 
 ## Creating a pull-request
 
-If a trivial fix such as a broken link, typo or grammar mistake, review the entire document for other potential mistakes. 
+If you have found a trivial fix such as a broken link, typo or grammar mistake, review the entire document for other potential mistakes. 
 Try not to open multiple PRs for small fixes in the same document.
 Reference any issues related to your PR, or issues that PR may solve.
 Comment on your own PR where you believe something may need further explanation.
