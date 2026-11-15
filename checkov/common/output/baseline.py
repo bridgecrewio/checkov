@@ -85,11 +85,22 @@ class Baseline:
     def _is_check_in_baseline(self, check: Record) -> bool:
         failed_check_id = check.check_id
         failed_check_resource = check.resource
+        failed_check_file = self._normalize_file_path(check.file_path)
         for baseline_failed_check in self.failed_checks:
+            # A baseline entry only covers its own file, otherwise a resource with the same address in another
+            # file (e.g. aws_s3_bucket.this) would be suppressed too. Entries without a file keep matching any file.
+            baseline_file = baseline_failed_check.get("file")
+            if baseline_file is not None and self._normalize_file_path(baseline_file) != failed_check_file:
+                continue
             for finding in baseline_failed_check["findings"]:
                 if finding["resource"] == failed_check_resource and failed_check_id in finding["check_ids"]:
                     return True
         return False
+
+    @staticmethod
+    def _normalize_file_path(file_path: str) -> str:
+        # baselines may be created and used on different operating systems
+        return file_path.replace("\\", "/")
 
     def from_json(self, file_path: str) -> None:
         self.path = file_path
