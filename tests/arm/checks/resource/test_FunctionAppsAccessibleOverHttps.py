@@ -28,6 +28,7 @@ class TestFunctionAppsAccessibleOverHttps(unittest.TestCase):
             "Microsoft.Web/sites.sites_fail",
             "Microsoft.Web/sites/slots.sites_fail1",
             "Microsoft.Web/sites.sites_fail1",
+            "Microsoft.Web/sites.sites_fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -37,6 +38,8 @@ class TestFunctionAppsAccessibleOverHttps(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+        # 'sites_config_unknown' has no properties and can't be evaluated, so it is neither passed nor failed
+        self.assertEqual(summary["resource_count"], len(passing_resources) + len(failing_resources) + 1)
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
