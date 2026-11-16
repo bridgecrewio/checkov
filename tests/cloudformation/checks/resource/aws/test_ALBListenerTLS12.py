@@ -23,7 +23,11 @@ class TestALBListenerTLS12(unittest.TestCase):
             'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSED2',
             'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSED3',
             'AWS::ElasticLoadBalancingV2::Listener.ListenerTCPPASSED4',
-            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSPASS13'
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSPASS13',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSPASSEDResPQ',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSEDPQ',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSEDFIPS',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSEDFIPSPQ'
         }
 
         failing_resources = {
