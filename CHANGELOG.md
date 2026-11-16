@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.3...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.5...HEAD)
+
+## [3.4.5](https://github.com/bridgecrewio/checkov/compare/3.4.4...3.4.5) - 2026-11-12
+
+### Bug Fix
+
+- **general:** harden request error logging - [#7795](https://github.com/bridgecrewio/checkov/pull/7795)
+
+## [3.4.4](https://github.com/bridgecrewio/checkov/compare/3.4.3...3.4.4) - 2026-11-11
+
+### Bug Fix
+
+- **bicep:** resolve references within the declaring file - [#7794](https://github.com/bridgecrewio/checkov/pull/7794)
 
 ## [3.4.3](https://github.com/bridgecrewio/checkov/compare/3.4.2...3.4.3) - 2026-11-02
 

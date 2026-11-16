@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 from aioresponses import aioresponses
 import aiohttp
 
-from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper, valid_url
+from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper, valid_url, redact_headers
 
 
 def get_report_url() -> str:
@@ -80,6 +80,50 @@ def test_request_wrapper_all_fail_with_http_error_should_call_raise_for_status(m
         assert False, "\'request_wrapper\' is expected to fail in this scenario"
     except requests.exceptions.HTTPError:
         responses.assert_call_count(mock_url, 5)
+
+
+SENSITIVE_HEADERS = {
+    "Authorization": "test-token-value-1",
+    "x-redlock-auth": "test-token-value-2",
+    "Accept": "application/json",
+}
+
+
+@pytest.mark.parametrize(
+    "body,status",
+    [
+        (requests.exceptions.ConnectionError(), 200),
+        ({"error": "mocked client error"}, 403),
+    ],
+    ids=["connection_error", "http_error"],
+)
+@responses.activate
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "2", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+def test_request_wrapper_error_logging(mock_bc_integration, caplog, body, status):
+    mock_url = mock_bc_integration.api_url + "/api/v1/some-endpoint"
+    if isinstance(body, Exception):
+        responses.add(method=responses.GET, url=mock_url, body=body)
+    else:
+        responses.add(method=responses.GET, url=mock_url, json=body, status=status)
+
+    headers = dict(SENSITIVE_HEADERS)
+    with pytest.raises(requests.exceptions.RequestException):
+        request_wrapper("GET", mock_url, headers, should_call_raise_for_status=True)
+
+    assert "test-token-value-1" not in caplog.text
+    assert "test-token-value-2" not in caplog.text
+    assert "application/json" in caplog.text
+    assert headers["Authorization"] == "test-token-value-1"
+    assert headers["x-redlock-auth"] == "test-token-value-2"
+
+
+def test_redact_headers():
+    redacted = redact_headers({**SENSITIVE_HEADERS, "authorization": "lower", "Cookie": "c"})
+    assert redacted["Authorization"] == "***"
+    assert redacted["authorization"] == "***"
+    assert redacted["x-redlock-auth"] == "***"
+    assert redacted["Cookie"] == "***"
+    assert redacted["Accept"] == "application/json"
 
 
 @responses.activate
