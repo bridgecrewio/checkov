@@ -19,11 +19,13 @@ class TestStorageAccountDisablePublicAccess(unittest.TestCase):
 
         passing_resources = {
             "azurerm_storage_account.pass",
-
+            "azurerm_storage_account.pass_network_access_disabled",
+            "azurerm_storage_account.pass_network_access_perimeter",
         }
         failing_resources = {
             "azurerm_storage_account.fail",
             "azurerm_storage_account.fail2",
+            "azurerm_storage_account.fail_network_access_enabled",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
