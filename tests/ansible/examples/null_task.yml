@@ -1,0 +1,20 @@
+- name: Check that you can connect (GET) to a page
+  uri:
+    url: https://www.example.com
+  register: out
+  ignore_errors: true
+
+- #name: old task, commented out
+  #shell: something
+  #when: x
+
+- name: Download foo.conf
+  become: true
+  ansible.builtin.get_url:
+    url: https://example.com/path/file.conf
+    dest: /etc/foo.conf
+    validate_certs: false
+  when: out.rc == 0
+
+- debug:
+    var: out

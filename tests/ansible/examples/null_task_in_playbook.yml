@@ -1,0 +1,19 @@
+- name: Verify tests
+  hosts: all
+  tasks:
+    - #name: old task, commented out
+      #shell: something
+
+    - name: Download foo.conf
+      ansible.builtin.get_url:
+        url: https://example.com/path/file.conf
+        validate_certs: false
+
+    - name: Install httpd
+      block:
+        - #name: old block task
+          #shell: something
+
+        - name: Check that you can connect (GET) to a page
+          uri:
+            url: https://www.example.com
