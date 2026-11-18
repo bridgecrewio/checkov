@@ -59,6 +59,16 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[1].metadata.selector.match_labels is None
         assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'
 
+    def test_build_graph_skips_non_dict_resources(self) -> None:
+        file = os.path.join(TEST_DIRNAME, 'resources', 'nested_resource.yaml')
+        definitions = {}
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=False)
+        (definitions[file], definitions_raw) = parse(file)
+        definitions[file].append("not-a-resource")
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(2, len(local_graph.vertices))
+
     def test_LabelSelectorEdgeBuilder_on_template_with_matched_label_and_selector(self) -> None:
         relative_file_path = "resources/LabelSelector/label_selector_match.yaml"
         definitions = {}

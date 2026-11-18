@@ -175,7 +175,9 @@ class K8sKustomizeRunner(K8sRunner):
                 logging.error(f"Couldn't get resource ID for {entity_conf}")
                 continue
 
-            entity_context = self.context[k8_file][resource_id]
+            entity_context = self.context.get(k8_file, {}).get(resource_id)
+            if not entity_context:
+                continue
 
             if file_abs_path not in kustomize_file_mappings:
                 logging.warning(f"couldn't find {file_abs_path} path in kustomizeFileMappings")
@@ -349,6 +351,8 @@ class K8sKustomizeRunner(K8sRunner):
                 entity_file_abs_path: str = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id: str = entity[CustomAttributes.ID]
                 entity_context = super().get_entity_context(entity=entity, entity_file_path=entity_file_path)
+                if not entity_context:
+                    continue
 
                 if entity_file_abs_path in kustomize_file_mappings:
                     realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[entity_file_abs_path]]

@@ -138,7 +138,8 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def _extract_nested_resources(file_conf: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         all_resources: "list[dict[str, Any]]" = []
         for conf in file_conf:
-            KubernetesLocalGraph._extract_nested_resources_recursive(conf, all_resources)
+            if isinstance(conf, dict):
+                KubernetesLocalGraph._extract_nested_resources_recursive(conf, all_resources)
         return all_resources
 
     @staticmethod

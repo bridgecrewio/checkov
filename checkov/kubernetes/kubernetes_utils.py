@@ -141,7 +141,7 @@ def build_definitions_context(
             if resource.get("kind") == "List":
                 # this could be inefficient, if more than one 'List' object exists in the same file
                 resources = resources[:]
-                resources.extend(item for item in resource.get("items", []) if item)
+                resources.extend(item for item in resource.get("items") or [] if item)
                 resources.remove(resource)
 
         # iterate on the resources
