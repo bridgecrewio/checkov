@@ -23,6 +23,8 @@ class AppServiceDotnetFrameworkVersion(BaseResourceCheck):
             site_config = conf.get('site_config')[0]
             if site_config.get('dotnet_framework_version') and isinstance(site_config.get('dotnet_framework_version'), list):
                 version = site_config.get('dotnet_framework_version')[0]
+                if not isinstance(version, str):
+                    return CheckResult.UNKNOWN
                 if version in supported_versions:
                     return CheckResult.PASSED
                 self.evaluated_keys = ['site_config/[0]/dotnet_framework_version']
@@ -31,6 +33,8 @@ class AppServiceDotnetFrameworkVersion(BaseResourceCheck):
                 stack = site_config.get('application_stack')[0]
                 if stack.get('dotnet_version') and isinstance(stack.get('dotnet_version'), list):
                     version = stack.get('dotnet_version')[0]
+                    if not isinstance(version, str):
+                        return CheckResult.UNKNOWN
                     if version in supported_versions:
                         return CheckResult.PASSED
                     self.evaluated_keys = ['site_config/[0]/application_stack/[0]/dotnet_version']
