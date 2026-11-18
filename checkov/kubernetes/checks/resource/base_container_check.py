@@ -17,6 +17,7 @@ class BaseK8sContainerCheck(BaseK8Check):
         "ReplicaSet",
         "ReplicationController",
         "StatefulSet",
+        "Rollout",  # Argo Rollouts, same spec.template shape as a Deployment
     )
     SUPPORTED_ENTITIES = (
         "CronJob",

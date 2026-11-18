@@ -1,0 +1,11 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: workload-ref
+  namespace: web
+spec:
+  replicas: 3
+  workloadRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: insecure

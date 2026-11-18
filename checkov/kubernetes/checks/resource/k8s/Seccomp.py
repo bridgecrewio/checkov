@@ -4,7 +4,7 @@ from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.data_structures_utils import find_in_dict
-from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
+from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check, is_rollout_without_template
 from checkov.common.util.type_forcers import force_list
 
 
@@ -18,11 +18,14 @@ class Seccomp(BaseK8Check):
         # Location: CronJob.spec.jobTemplate.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: *.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: *.spec.securityContext.seccompProfile.type
-        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob')
+        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'Rollout', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
+        if is_rollout_without_template(conf):
+            return CheckResult.UNKNOWN
+
         metadata = {}
 
         if conf['kind'] == 'Pod':
@@ -47,7 +50,7 @@ class Seccomp(BaseK8Check):
                     if passed_containers == num_containers:
                         return CheckResult.PASSED
 
-        if conf['kind'] in ['Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'ReplicaSet']:
+        if conf['kind'] in ['Deployment', 'StatefulSet', 'Rollout', 'DaemonSet', 'Job', 'ReplicaSet']:
             security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
             if security_profile:
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
