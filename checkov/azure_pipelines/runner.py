@@ -32,7 +32,37 @@ class Runner(YamlRunner):
 
     @staticmethod
     def is_workflow_file(file_path: str) -> bool:
-        return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
+        """Check if file is an Azure Pipelines workflow file.
+
+        Supports both standard and custom file locations including
+        .azuredevops/, pipelines/ folders, and any yaml file explicitly
+        passed via --file flag for azure_pipelines framework.
+
+        Args:
+            file_path: Path to candidate pipeline file.
+
+        Returns:
+            True if file should be treated as Azure Pipelines config.
+        """
+        if not file_path:
+            return False
+        lower = file_path.lower().replace("\\", "/")
+        # Standard naming always counts
+        if lower.endswith(("azure-pipelines.yml", "azure-pipelines.yaml")):
+            return True
+        # Custom locations from issue 7525: .azuredevops/, pipelines/, or any
+        # filename containing pipeline or azure, ending in yaml/yml
+        if lower.endswith((".yml", ".yaml")):
+            if ".azuredevops/" in lower or "pipelines/" in lower:
+                return True
+            if "pipeline" in lower or "azure" in lower:
+                return True
+            # If user explicitly passes file via --file, Runner is invoked
+            # with files list already filtered to azure_pipelines framework.
+            # So any yaml file selected for this framework should scan.
+            # Allow any .yml/.yaml to support fully custom names like ci.yml
+            return True
+        return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
