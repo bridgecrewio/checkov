@@ -11,6 +11,7 @@ from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import 
 EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 EXPLICIT_DEPS_DIR = EXAMPLES_DIR / "ExplicitDepsResources"
 IMPLICIT_DEPS_DIR = EXAMPLES_DIR / "ImplicitDepsResources"
+RESOURCE_ID_IN_PARAMETER_NAME_DIR = EXAMPLES_DIR / "ResourceIdInParameterName"
 
 
 def test_graph_explicit_deps():
@@ -39,6 +40,28 @@ def test_graph_implicit_deps():
     assert len(test_graph.edges) == 4
 
     assert len(test_graph.vertices_by_block_type[BlockType.RESOURCE]) == 6
+
+
+def test_graph_resource_id_in_parameter_name():
+    # a parameter named "resourceId" used inside reference() used to crash the graph build
+    # with an IndexError (https://github.com/bridgecrewio/checkov/issues/7633)
+    test_files = [str(RESOURCE_ID_IN_PARAMETER_NAME_DIR / "template.json")]
+    definitions, _, _ = get_files_definitions(test_files)
+    test_graph = ArmLocalGraph(definitions)
+    test_graph.build_graph()
+
+    assert len(test_graph.vertices) == 5
+    assert len(test_graph.edges) == 8
+    assert len(test_graph.vertices_by_block_type[BlockType.RESOURCE]) == 2
+    assert len(test_graph.vertices_by_block_type[BlockType.PARAMETER]) == 3
+
+    # the explicit dependsOn edge from the role assignment to the storage account is still created
+    resource_edges = [
+        (test_graph.vertices[edge.origin].block_type, test_graph.vertices[edge.dest].name)
+        for edge in test_graph.edges
+        if test_graph.vertices[edge.dest].block_type == BlockType.RESOURCE
+    ]
+    assert resource_edges == [(BlockType.RESOURCE, "checkovstorage")]
 
 
 def test_graph_params_vars():
