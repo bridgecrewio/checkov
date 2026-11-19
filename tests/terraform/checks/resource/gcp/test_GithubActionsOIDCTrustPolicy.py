@@ -18,6 +18,7 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             "google_iam_workload_identity_pool_provider.pass2",
             "google_iam_workload_identity_pool_provider.pass3",
             "google_iam_workload_identity_pool_provider.pass_org_only",
+            "google_iam_workload_identity_pool_provider.pass_immutable",
         }
         failing_resources = {
             "google_iam_workload_identity_pool_provider.fail1",
