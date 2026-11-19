@@ -3,6 +3,8 @@ from checkov.common.util.type_forcers import force_int
 from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+OPEN_CIDR_BLOCKS = ("0.0.0.0/0", "::/0", "0000:0000:0000:0000:0000:0000:0000:0000/0")  # nosec
+
 
 class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
     def __init__(self, name, id, categories, supported_resources, port):
@@ -22,7 +24,10 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
                         source_ranges_list = conf.get('source_ranges', [])
                         if source_ranges_list:
                             source_ranges = source_ranges_list[0]
-                            if source_ranges and "0.0.0.0/0" in source_ranges:  # nosec
+                            if isinstance(source_ranges, str):
+                                # resources rendered from for_each hold a single range as a plain string
+                                source_ranges = [source_ranges]
+                            if source_ranges and any(ip in OPEN_CIDR_BLOCKS for ip in source_ranges):  # nosec
                                 self.evaluated_keys = [f'allow/[{allow_blocks.index(block)}]/ports', 'source_ranges']
                                 return CheckResult.FAILED
         return CheckResult.PASSED

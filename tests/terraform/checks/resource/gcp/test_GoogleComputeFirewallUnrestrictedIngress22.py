@@ -19,6 +19,7 @@ class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
 
         passing_resources = {
             "google_compute_firewall.restricted",
+            "google_compute_firewall.restricted_ipv6",
             "google_compute_firewall.allow_null",
             "google_compute_firewall.allow_different_int",
             "google_compute_firewall.firewall_demo[\"firewall-02\"]",
@@ -31,6 +32,8 @@ class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
             "google_compute_firewall.allow_multiple",
             "google_compute_firewall.allow_ssh_int",
             "google_compute_firewall.allow_all",
+            "google_compute_firewall.allow_ssh_ipv6",
+            "google_compute_firewall.allow_ssh_ipv4_and_ipv6",
             "google_compute_firewall.firewall_demo[\"firewall-01\"]",
         }
 
@@ -41,7 +44,7 @@ class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failed_check_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 12)  # 1 unknown
+        self.assertEqual(summary["resource_count"], 15)  # 1 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
