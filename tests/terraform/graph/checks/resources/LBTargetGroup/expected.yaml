@@ -3,6 +3,10 @@ pass:
   - "aws_alb_target_group.pass"
   - "aws_lb_target_group.public_fargate_target_group"
   - "aws_alb_target_group.public_fargate_target_group"
+  - "aws_lb_target_group.count_https[0]"
+  - "aws_lb_target_group.count_https_splat[0]"
 fail:
   - "aws_lb_target_group.fail"
   - "aws_alb_target_group.fail"
+  - "aws_lb_target_group.count_http[0]"
+  - "aws_lb_target_group.count_http[1]"
