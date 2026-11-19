@@ -434,3 +434,37 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_module_output_edge_with_same_source_siblings(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_source_module_edge'))
+        hcl_config_parser = TFParser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        # The 'ref' edge of module "c" must connect to module "b"'s output,
+        # not to the same-source sibling module "a"'s output.
+        ref_edges = [
+            e for e in local_graph.edges
+            if e.label == "ref" and local_graph.vertices[e.origin].block_type == BlockType.MODULE
+        ]
+        self.assertEqual(1, len(ref_edges))
+        output_vertex = local_graph.vertices[ref_edges[0].dest]
+        self.assertEqual(BlockType.OUTPUT, output_vertex.block_type)
+        self.assertEqual("b", output_vertex.source_module_object.name)
+
+        # The key assertion: var.default_action must have been resolved to "Deny".
+        # Without the fix, the wrong output edge corrupts variable resolution and
+        # leaves "var.default_action" unresolved in module "c".
+        sa_vertices = [
+            v for v in local_graph.vertices
+            if v.block_type == BlockType.RESOURCE and v.name == "azurerm_storage_account.sa"
+        ]
+        self.assertEqual(1, len(sa_vertices))
+        network_rules = sa_vertices[0].config.get("azurerm_storage_account", {}).get("sa", {}).get("network_rules", {})
+        if isinstance(network_rules, list):
+            network_rules = network_rules[0]
+        default_action = network_rules.get("default_action", [None])
+        if isinstance(default_action, list):
+            default_action = default_action[0]
+        self.assertEqual("Deny", default_action)
