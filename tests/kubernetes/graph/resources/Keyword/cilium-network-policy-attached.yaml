@@ -1,0 +1,346 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-exact
+  namespace: shop
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web-exact
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-and
+  namespace: shop
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web-and
+    matchExpressions:
+      - key: env
+        operator: In
+        values: ["prod"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-notin
+  namespace: cache-ns
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: tier
+        operator: NotIn
+        values: ["cache"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-wrongns
+  namespace: other
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web-wrongns
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: p-ccnp
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web-ccnp
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: p-ccnp-ns
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: k8s:io.kubernetes.pod.namespace
+        operator: In
+        values: ["finance"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-badop
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: env
+        operator: Matches
+        values: ["prod"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-exact
+  namespace: shop
+  labels:
+    app: web-exact
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-and-ok
+  namespace: shop
+  labels:
+    app: web-and
+    env: prod
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-and-bad
+  namespace: shop
+  labels:
+    app: web-and
+    env: dev
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-cache-ok
+  namespace: cache-ns
+  labels:
+    tier: frontend
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-cache-bad
+  namespace: cache-ns
+  labels:
+    tier: cache
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-wrongns
+  namespace: shop
+  labels:
+    app: web-wrongns
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-ccnp
+  namespace: anywhere
+  labels:
+    app: web-ccnp
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-finance
+  namespace: finance
+  labels:
+    app: web-finance
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-finance-other
+  namespace: shop
+  labels:
+    app: web-finance
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-unspec-dne
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: reserved:host
+        operator: DoesNotExist
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-unspec-notin
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: any:app
+        operator: NotIn
+        values: ["web"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-badml
+  namespace: shop
+spec:
+  endpointSelector:
+    matchLabels: []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-badmlv
+  namespace: shop
+spec:
+  endpointSelector:
+    matchLabels:
+      app: web-exact
+      replicas: 3
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-badme
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions: {}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-numeric
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: env
+        operator: In
+        values: [1]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-sa
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: io.cilium.k8s.policy.serviceaccount
+        operator: In
+        values: ["web-sa"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-notin2
+  namespace: misc
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: tier
+        operator: NotIn
+        values: ["cache"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-sa
+  namespace: shop
+  labels:
+    app: web-sa
+spec:
+  serviceAccountName: web-sa
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-nolabels
+  namespace: misc
+  labels:
+    app: x
+spec:
+  containers:
+    - name: c
+      image: nginx:1.27
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-cluster-dne
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: io.cilium.k8s.policy.cluster
+        operator: DoesNotExist
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-nslabels-notin
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: io.cilium.k8s.namespace.labels.team
+        operator: NotIn
+        values: ["prod"]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-emptykey
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: ""
+        operator: DoesNotExist
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: p-exists-vals
+  namespace: shop
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app
+        operator: Exists
+        values: {}
