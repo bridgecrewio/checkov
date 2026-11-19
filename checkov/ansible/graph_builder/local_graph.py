@@ -30,6 +30,8 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             file_path = str(file_path)
 
             for code_block in definition:
+                if not isinstance(code_block, dict):
+                    continue
                 if ResourceType.TASKS in code_block:
                     tasks = code_block[ResourceType.TASKS]
                     if tasks:  # Check if tasks is not None and not empty

@@ -140,6 +140,8 @@ def build_definitions_context(
             continue
 
         for code_block in definition:
+            if not isinstance(code_block, dict):
+                continue
             if ResourceType.TASKS in code_block:
                 tasks = code_block[ResourceType.TASKS]
                 if tasks:  # Check if tasks is not empty

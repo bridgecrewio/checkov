@@ -148,6 +148,49 @@ class TestRunnerValid(unittest.TestCase):
         except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
+    def test_nested_pod_without_parent_context(self):
+        scan_dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nested_pod_without_parent_context")
+
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=scan_dir_path, runner_filter=RunnerFilter(framework=['kubernetes'])
+        )
+
+        failed = {(record.check_id, record.resource) for record in report.failed_checks}
+        self.assertIn(("CKV_K8S_14", "Deployment.default.web"), failed)
+        self.assertIn(("CKV2_K8S_6", "Pod.default.app-scale-test"), failed)
+
+    def test_list_item_without_context(self):
+        scan_dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "list_item_without_context")
+
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=scan_dir_path, runner_filter=RunnerFilter(framework=['kubernetes'])
+        )
+
+        failed = {(record.check_id, record.resource) for record in report.failed_checks}
+        self.assertIn(("CKV_K8S_14", "Deployment.default.web"), failed)
+        self.assertIn(("CKV2_K8S_6", "Pod.default.lab-pod"), failed)
+
+    def test_list_with_non_dict_items(self):
+        scan_dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "list_with_non_dict_items")
+
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=scan_dir_path, runner_filter=RunnerFilter(framework=['kubernetes'])
+        )
+
+        failed = {(record.check_id, record.resource) for record in report.failed_checks}
+        self.assertIn(("CKV_K8S_14", "Deployment.default.web"), failed)
+        self.assertEqual({"/deployment.yaml"}, {record.file_path for record in report.failed_checks})
+
+    def test_list_without_items(self):
+        scan_dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "list_without_items")
+
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=scan_dir_path, runner_filter=RunnerFilter(framework=['kubernetes'])
+        )
+
+        failed = {(record.check_id, record.resource) for record in report.failed_checks}
+        self.assertIn(("CKV_K8S_14", "Deployment.default.web"), failed)
+
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "serverless", "terraform", "kustomize"]
         check_imports = []
