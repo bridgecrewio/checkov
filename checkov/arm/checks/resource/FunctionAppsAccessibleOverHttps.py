@@ -19,17 +19,22 @@ class FunctionAppsAccessibleOverHttps(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        if "properties" in conf:
-            if self.entity_type == "Microsoft.Web/sites" or self.entity_type == "Microsoft.Web/sites/slots":
-                if "httpsOnly" not in conf["properties"]:
-                    return CheckResult.FAILED
+        properties = conf.get("properties")
+        is_site = self.entity_type in ("Microsoft.Web/sites", "Microsoft.Web/sites/slots")
 
-                https_only = conf["properties"]["httpsOnly"]
-                if not https_only:
-                    return CheckResult.FAILED
+        if not isinstance(properties, dict):
+            # a site or slot without properties has no httpsOnly, so it is not restricted to HTTPS
+            if is_site:
+                return CheckResult.FAILED
+            # a sites/config resource without properties (e.g. a conditional Bicep resource) can't be evaluated
+            return CheckResult.UNKNOWN
 
-        if "httpSettings" in conf["properties"]:
-            auth_settings_v2 = conf["properties"]["httpSettings"]
+        if is_site:
+            if not properties.get("httpsOnly"):
+                return CheckResult.FAILED
+
+        if "httpSettings" in properties:
+            auth_settings_v2 = properties["httpSettings"]
 
             # default=true for require_https
             if 'requireHttps' not in auth_settings_v2:
