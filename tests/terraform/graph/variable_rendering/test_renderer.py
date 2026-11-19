@@ -517,3 +517,23 @@ class TestRenderer(TestCase):
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         self.assertDictEqual(resources_vertex[0].config['aws_instance']['this["vm1"]'].get('tags')[0],
                              {'Environment': 'prod', 'Department': 'Testing', 'Name': 'vm1'})
+
+    def test_foreach_module_merge_tags(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "foreach_module_merge_tags")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        self.assertListEqual(
+            resources_vertex[0].config['azurerm_windows_virtual_machine']['vm']['tags'],
+            [{'team': 'platform', 'os': 'Windows', 'Role': 'testing'}],
+        )
+
+    def test_foreach_module_each_value_tags_merge(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "foreach_module_each_value_tags_merge")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        self.assertListEqual(
+            resources_vertex[0].config['azurerm_windows_virtual_machine']['vm']['tags'],
+            [{'team': 'platform', 'env': 'non-prod', 'Role': 'testing', 'os': 'Windows'}],
+        )

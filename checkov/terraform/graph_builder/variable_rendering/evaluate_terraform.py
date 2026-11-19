@@ -111,7 +111,7 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
                     return input_str
 
 
-def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
+def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: Any, keep_origin: bool = True) -> Any:
     if original_str is None or type(original_str) not in (str, list):
         return original_str
 
@@ -125,7 +125,11 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
     if str_to_replace not in original_str:
         return original_str if keep_origin else str_to_replace
 
-    string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
+    string_without_interpolation = remove_interpolation(
+        original_str,
+        str_to_replace,
+        escape_unrendered=isinstance(replaced_value, str),
+    )
     if (isinstance(replaced_value, (list, dict)) and not str_to_replace.startswith('"')):
         # In cases we are rendering a variable of list/dict, it might result in mistakenly transforming them to str.
         # By adding the wrap with `"` we make sure that we replace them as well and thus preserve the original type.

@@ -262,7 +262,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
     def update_evaluated_value(
         self,
         changed_attribute_key: str,
-        changed_attribute_value: Union[str, List[str]],
+        changed_attribute_value: Any,
         vertex: int,
         change_origin_id: int,
         attribute_at_dest: Optional[Union[str, List[str]]] = None,
@@ -270,15 +270,36 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
         """
-        str_to_evaluate = (
-            str(changed_attribute_value)
-            if self.attributes_no_eval(changed_attribute_key, vertex)
-            else f'"{str(changed_attribute_value)}"'
+        vertex_attributes = self.local_graph.vertices[vertex].attributes
+        variable_type = vertex_attributes.get("type")
+        if isinstance(variable_type, list) and len(variable_type) == 1:
+            variable_type = variable_type[0]
+        is_map_default = (
+            self.local_graph.vertices[vertex].block_type == BlockType.VARIABLE
+            and changed_attribute_key == "default"
+            and isinstance(self.get_default_placeholder_value(variable_type), dict)
         )
-        str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
-        evaluated_attribute_value = (
-            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluator.evaluate_terraform(str_to_evaluate)
-        )
+        if is_map_default and isinstance(changed_attribute_value, dict):
+            evaluated_attribute_value = pickle_deepcopy(changed_attribute_value)
+        elif (
+            is_map_default
+            and isinstance(changed_attribute_value, list)
+            and len(changed_attribute_value) == 1
+            and isinstance(changed_attribute_value[0], dict)
+        ):
+            evaluated_attribute_value = pickle_deepcopy(changed_attribute_value[0])
+        else:
+            str_to_evaluate = (
+                str(changed_attribute_value)
+                if self.attributes_no_eval(changed_attribute_key, vertex)
+                else f'"{str(changed_attribute_value)}"'
+            )
+            str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
+            evaluated_attribute_value = (
+                str_to_evaluate
+                if self.attributes_no_eval(changed_attribute_key, vertex)
+                else evaluator.evaluate_terraform(str_to_evaluate)
+            )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
         )
