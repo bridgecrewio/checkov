@@ -1,0 +1,46 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ami.x",
+          "mode": "managed",
+          "type": "aws_ami",
+          "name": "x",
+          "values": {
+            "id": "ami-managed",
+            "name": "my-ami"
+          }
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ami.x",
+          "type": "aws_ami",
+          "name": "x",
+          "expressions": {
+            "name": {
+              "references": [
+                "aws_s3_bucket.logs.id",
+                "aws_s3_bucket.logs"
+              ]
+            },
+            "ebs_block_device": {
+              "references": [
+                "aws_ebs_snapshot.base.id",
+                "aws_ebs_snapshot.base"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": []
+}
