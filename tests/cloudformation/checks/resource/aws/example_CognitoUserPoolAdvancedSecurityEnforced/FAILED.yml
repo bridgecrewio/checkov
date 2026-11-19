@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: User pools without advanced security enforced
+Resources:
+  FailAudit:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: fail-audit-pool
+      UserPoolAddOns:
+        AdvancedSecurityMode: AUDIT
+  FailOff:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: fail-off-pool
+      UserPoolAddOns:
+        AdvancedSecurityMode: OFF
+  FailMissing:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: fail-missing-pool
