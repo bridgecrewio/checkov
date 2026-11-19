@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-jsonpath-ng==1.6.1",
-        "pycep-parser==0.5.1",
+        "pycep-parser==0.6.1",
         "tabulate<0.10.0,>=0.9.0",
         "colorama<0.5.0,>=0.4.3",
         "termcolor>=1.1.0,<2.4.0",
