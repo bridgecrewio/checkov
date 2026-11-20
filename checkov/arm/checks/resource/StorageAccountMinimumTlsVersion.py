@@ -9,7 +9,7 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 class StorageAccountMinimumTlsVersion(BaseResourceCheck):
     def __init__(self) -> None:
         """
-            Looks for min_tls_version configuration at azurerm_storage_account to be set to TLS1_2
+            Looks for min_tls_version configuration at azurerm_storage_account to be set to TLS1_2 or TLS1_3
             https://www.terraform.io/docs/providers/azurerm/r/storage_account.html#min_tls_version
             :param conf: azurerm_storage_account configuration
             :return: <CheckResult>
@@ -24,7 +24,7 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "properties" in conf and \
             "minimumTlsVersion" in conf["properties"] and \
-                conf["properties"]["minimumTlsVersion"] in ['TLS1_2']:
+                conf["properties"]["minimumTlsVersion"] in ['TLS1_2', 'TLS1_3']:
             return CheckResult.PASSED
         return CheckResult.FAILED
 
