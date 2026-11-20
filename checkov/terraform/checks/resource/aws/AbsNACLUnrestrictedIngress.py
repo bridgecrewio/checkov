@@ -74,7 +74,7 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if from_port and to_port and from_port <= self.port <= to_port:
+                    if from_port is not None and to_port is not None and from_port <= self.port <= to_port:
                         return False
         if rule.get('ipv6_cidr_block'):
             if rule.get('ipv6_cidr_block') == ["::/0"]:
@@ -82,7 +82,7 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                     protocol = rule.get('protocol')
                     if protocol and str(protocol[0]) == "-1":
                         return False
-                    if from_port and to_port and from_port <= self.port <= to_port:
+                    if from_port is not None and to_port is not None and from_port <= self.port <= to_port:
                         return False
         return True
 
@@ -99,13 +99,13 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                 protocol = rule.get('protocol')
                 if protocol and str(protocol[0]) == "-1":
                     return True
-                if from_port and to_port and from_port <= self.port <= to_port:
+                if from_port is not None and to_port is not None and from_port <= self.port <= to_port:
                     return True
         if rule.get('ipv6_cidr_block') == ["::/0"]:
             if rule.get('action') == ["deny"] or rule.get('rule_action') == ["deny"]:
                 protocol = rule.get('protocol')
                 if protocol and str(protocol[0]) == "-1":
                     return True
-                if from_port and to_port and from_port <= self.port <= to_port:
+                if from_port is not None and to_port is not None and from_port <= self.port <= to_port:
                     return True
         return False

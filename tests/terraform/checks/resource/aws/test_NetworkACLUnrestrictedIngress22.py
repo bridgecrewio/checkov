@@ -23,7 +23,8 @@ class TestNetworkACLUnrestrictedIngress22(unittest.TestCase):
             "aws_network_acl.pass3",
             "aws_network_acl_rule.pass",
             "aws_network_acl_rule.pass2",
-            "aws_network_acl_rule.pass3"
+            "aws_network_acl_rule.pass3",
+            "aws_network_acl.pass_full_tcp_range_denied",
         }
         failing_resources = {
             "aws_network_acl.fail",
@@ -33,6 +34,8 @@ class TestNetworkACLUnrestrictedIngress22(unittest.TestCase):
             "aws_network_acl_rule.fail",
             "aws_network_acl_rule.fail2",
             "aws_network_acl_rule.public_ingress",
+            "aws_network_acl.fail_full_tcp_range",
+            "aws_network_acl_rule.fail_full_tcp_range",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
