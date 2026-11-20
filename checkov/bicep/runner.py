@@ -233,6 +233,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_BicepDefinitions, _BicepCon
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
+                if entity.get("existing_") is True:
+                    # the existing keyword only references an already deployed resource
+                    continue
+
                 entity_file_path = Path(entity[CustomAttributes.FILE_PATH])
 
                 clean_check_result: _CheckResult = {
@@ -243,13 +247,20 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_BicepDefinitions, _BicepCon
                 file_code_lines = self.definitions_raw[entity_file_path]
                 start_line = entity["__start_line__"]
                 end_line = cast("int", entity["__end_line__"])
+                code_block = file_code_lines[start_line - 1 : end_line]
+
+                suppressions = collect_suppressions_for_report(code_lines=code_block)
+                if check.id in suppressions:
+                    clean_check_result = suppressions[check.id]
+                elif check.bc_id and check.bc_id in suppressions:
+                    clean_check_result = suppressions[check.bc_id]
 
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
                     check_name=check.name,
                     check_result=clean_check_result,
-                    code_block=file_code_lines[start_line - 1 : end_line],
+                    code_block=code_block,
                     file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
                     file_line_range=[start_line, end_line],
                     resource=entity[CustomAttributes.ID],

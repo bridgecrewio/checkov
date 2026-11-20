@@ -13,6 +13,7 @@ from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.checks.param.registry import registry as param_registry
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+GRAPH_CHECK_EXAMPLES_DIR = Path(__file__).parent / "graph_check_examples"
 
 
 @pytest.fixture(autouse=True)
@@ -214,3 +215,64 @@ def test_runner_loop_resource():
     assert summary["failed"] == 0
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_graph_checks_ignore_existing_resource(graph_connector):
+    # given
+    test_file = GRAPH_CHECK_EXAMPLES_DIR / "existing_sql_server.bicep"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="",
+        files=[str(test_file)],
+        runner_filter=RunnerFilter(checks=["CKV_AZURE_25"]),
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    # the existing server and database are only references and must not get results
+    assert report.passed_checks[0].resource == "Microsoft.Sql/servers/databases.database"
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector
+    ]
+)
+def test_runner_graph_check_inline_suppression(graph_connector):
+    # given
+    test_file = GRAPH_CHECK_EXAMPLES_DIR / "sql_suppressed.bicep"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="",
+        files=[str(test_file)],
+        runner_filter=RunnerFilter(checks=["CKV_AZURE_25"]),
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 1
+    assert summary["skipped"] == 1
+    assert summary["parsing_errors"] == 0
+
+    assert report.skipped_checks[0].resource == "Microsoft.Sql/servers/databases.suppressedDatabase"
+    assert report.skipped_checks[0].check_result["suppress_comment"].strip() == "threat detection is configured on the server"
+    assert report.failed_checks[0].resource == "Microsoft.Sql/servers/databases.database"
