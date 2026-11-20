@@ -56,7 +56,8 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
             if self.config and self.config.framework and "all" not in self.config.framework:
                 registries = self.config.framework
-                if CheckType.TERRAFORM_PLAN in registries and CheckType.TERRAFORM not in registries:
+                uses_terraform_checks = CheckType.TERRAFORM_PLAN in registries or CheckType.PULUMI in registries
+                if uses_terraform_checks and CheckType.TERRAFORM not in registries:
                     registries.append(CheckType.TERRAFORM)
             else:
                 registries = (CheckType.TERRAFORM, CheckType.CLOUDFORMATION, CheckType.KUBERNETES, CheckType.BICEP, CheckType.TERRAFORM_PLAN)

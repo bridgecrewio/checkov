@@ -1,0 +1,1961 @@
+{
+    "format_version": "1.2",
+    "terraform_version": "1.15.5",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_compute_firewall.firewall",
+                    "mode": "managed",
+                    "type": "google_compute_firewall",
+                    "name": "firewall",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 1,
+                    "values": {
+                        "allow": [
+                            {
+                                "ports": [
+                                    "22",
+                                    "3389"
+                                ],
+                                "protocol": "tcp"
+                            }
+                        ],
+                        "deletion_policy": "DELETE",
+                        "deny": [],
+                        "description": null,
+                        "disabled": null,
+                        "log_config": [],
+                        "name": "checkov-open-firewall",
+                        "network": "default",
+                        "params": [],
+                        "priority": 1000,
+                        "project": "fake-project",
+                        "source_ranges": [
+                            "0.0.0.0/0"
+                        ],
+                        "source_service_accounts": null,
+                        "source_tags": null,
+                        "target_service_accounts": null,
+                        "target_tags": null,
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "allow": [
+                            {
+                                "ports": [
+                                    false,
+                                    false
+                                ]
+                            }
+                        ],
+                        "deny": [],
+                        "destination_ranges": [],
+                        "log_config": [],
+                        "params": [],
+                        "source_ranges": [
+                            false
+                        ]
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "name": null,
+                        "project": null
+                    }
+                },
+                {
+                    "address": "google_compute_instance.vm",
+                    "mode": "managed",
+                    "type": "google_compute_instance",
+                    "name": "vm",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 6,
+                    "values": {
+                        "advanced_machine_features": [],
+                        "allow_stopping_for_update": null,
+                        "attached_disk": [],
+                        "boot_disk": [
+                            {
+                                "auto_delete": true,
+                                "disk_encryption_key_raw": null,
+                                "disk_encryption_key_rsa": null,
+                                "disk_encryption_service_account": null,
+                                "force_attach": null,
+                                "initialize_params": [
+                                    {
+                                        "enable_confidential_compute": null,
+                                        "image": "debian-cloud/debian-12",
+                                        "replica_zones": null,
+                                        "resource_manager_tags": null,
+                                        "source_image_encryption_key": [],
+                                        "source_snapshot_encryption_key": [],
+                                        "storage_pool": null
+                                    }
+                                ],
+                                "interface": null,
+                                "mode": "READ_WRITE"
+                            }
+                        ],
+                        "can_ip_forward": true,
+                        "deletion_policy": "DELETE",
+                        "deletion_protection": false,
+                        "description": null,
+                        "desired_status": null,
+                        "effective_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "enable_display": null,
+                        "hostname": null,
+                        "instance_encryption_key": [],
+                        "key_revocation_action_type": null,
+                        "labels": null,
+                        "machine_type": "e2-micro",
+                        "metadata": {
+                            "serial-port-enable": "true"
+                        },
+                        "metadata_startup_script": null,
+                        "name": "checkov-vm",
+                        "network_interface": [
+                            {
+                                "access_config": [
+                                    {
+                                        "public_ptr_domain_name": null
+                                    }
+                                ],
+                                "alias_ip_range": [],
+                                "enable_vpc_scoped_dns": null,
+                                "ipv6_access_config": [],
+                                "network": "default",
+                                "nic_type": null,
+                                "queue_count": null,
+                                "service_class_id": null,
+                                "vlan": null
+                            }
+                        ],
+                        "network_performance_config": [],
+                        "params": [],
+                        "project": "fake-project",
+                        "resource_policies": null,
+                        "scratch_disk": [],
+                        "service_account": [
+                            {
+                                "email": "123456789-compute@developer.gserviceaccount.com",
+                                "scopes": [
+                                    "https://www.googleapis.com/auth/cloud-platform"
+                                ]
+                            }
+                        ],
+                        "shielded_instance_config": [],
+                        "tags": null,
+                        "terraform_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "timeouts": null,
+                        "workload_identity_config": [],
+                        "zone": "us-central1-a"
+                    },
+                    "sensitive_values": {
+                        "advanced_machine_features": [],
+                        "attached_disk": [],
+                        "boot_disk": [
+                            {
+                                "disk_encryption_key_raw": true,
+                                "disk_encryption_key_rsa": true,
+                                "guest_os_features": [],
+                                "initialize_params": [
+                                    {
+                                        "labels": {},
+                                        "resource_policies": [],
+                                        "source_image_encryption_key": [],
+                                        "source_snapshot_encryption_key": []
+                                    }
+                                ]
+                            }
+                        ],
+                        "confidential_instance_config": [],
+                        "effective_labels": {},
+                        "guest_accelerator": [],
+                        "instance_encryption_key": [],
+                        "metadata": {},
+                        "network_interface": [
+                            {
+                                "access_config": [
+                                    {}
+                                ],
+                                "alias_ip_range": [],
+                                "ipv6_access_config": []
+                            }
+                        ],
+                        "network_performance_config": [],
+                        "params": [],
+                        "reservation_affinity": [],
+                        "scheduling": [],
+                        "scratch_disk": [],
+                        "service_account": [
+                            {
+                                "scopes": [
+                                    false
+                                ]
+                            }
+                        ],
+                        "shielded_instance_config": [],
+                        "terraform_labels": {},
+                        "workload_identity_config": []
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "name": null,
+                        "project": null,
+                        "zone": null
+                    }
+                },
+                {
+                    "address": "google_container_cluster.cluster",
+                    "mode": "managed",
+                    "type": "google_container_cluster",
+                    "name": "cluster",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 2,
+                    "values": {
+                        "allow_net_admin": null,
+                        "binary_authorization": [],
+                        "dataplane_optimization_mode": null,
+                        "deletion_policy": "DELETE",
+                        "deletion_protection": false,
+                        "description": null,
+                        "desired_emulated_version": null,
+                        "disable_l4_lb_firewall_reconciliation": false,
+                        "dns_config": [],
+                        "effective_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "enable_autopilot": null,
+                        "enable_cilium_clusterwide_network_policy": false,
+                        "enable_fqdn_network_policy": false,
+                        "enable_k8s_beta_apis": [],
+                        "enable_kubernetes_alpha": false,
+                        "enable_legacy_abac": true,
+                        "enable_multi_networking": false,
+                        "enable_shielded_nodes": true,
+                        "enable_tpu": null,
+                        "fleet": [],
+                        "ignore_node_count_changes": null,
+                        "in_transit_encryption_config": null,
+                        "initial_node_count": 1,
+                        "location": "us-central1",
+                        "maintenance_policy": [],
+                        "master_auth": [
+                            {
+                                "client_certificate_config": [
+                                    {
+                                        "issue_client_certificate": true
+                                    }
+                                ]
+                            }
+                        ],
+                        "min_master_version": "1.33",
+                        "name": "checkov-gke",
+                        "network": "default",
+                        "network_performance_config": [],
+                        "network_policy": [],
+                        "private_cluster_config": [],
+                        "remove_default_node_pool": null,
+                        "resource_labels": null,
+                        "resource_usage_export_config": [],
+                        "rollback_safe_upgrade": [],
+                        "secret_manager_config": [],
+                        "secret_sync_config": [],
+                        "skip_node_pool_refresh": null,
+                        "terraform_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "timeouts": null,
+                        "user_managed_keys_config": []
+                    },
+                    "sensitive_values": {
+                        "addons_config": [],
+                        "anonymous_authentication_config": [],
+                        "authenticator_groups_config": [],
+                        "autopilot_cluster_policy_config": [],
+                        "autopilot_privileged_admission": [],
+                        "binary_authorization": [],
+                        "cluster_autoscaling": [],
+                        "confidential_nodes": [],
+                        "control_plane_endpoints_config": [],
+                        "cost_management_config": [],
+                        "database_encryption": [],
+                        "default_snat_status": [],
+                        "dns_config": [],
+                        "effective_labels": {},
+                        "enable_k8s_beta_apis": [],
+                        "enterprise_config": [],
+                        "fleet": [],
+                        "gateway_api_config": [],
+                        "gke_auto_upgrade_config": [],
+                        "identity_service_config": [],
+                        "ip_allocation_policy": [],
+                        "logging_config": [],
+                        "maintenance_policy": [],
+                        "managed_opentelemetry_config": [],
+                        "master_auth": [
+                            {
+                                "client_certificate_config": [
+                                    {}
+                                ],
+                                "client_key": true
+                            }
+                        ],
+                        "master_authorized_networks_config": [],
+                        "mesh_certificates": [],
+                        "monitoring_config": [],
+                        "network_performance_config": [],
+                        "network_policy": [],
+                        "node_config": [],
+                        "node_creation_config": [],
+                        "node_locations": [],
+                        "node_pool": [],
+                        "node_pool_auto_config": [],
+                        "node_pool_defaults": [],
+                        "notification_config": [],
+                        "pod_autoscaling": [],
+                        "private_cluster_config": [],
+                        "rbac_binding_config": [],
+                        "release_channel": [],
+                        "resource_usage_export_config": [],
+                        "rollback_safe_upgrade": [],
+                        "schedule_upgrade_config": [],
+                        "secret_manager_config": [],
+                        "secret_sync_config": [],
+                        "security_posture_config": [],
+                        "service_external_ips_config": [],
+                        "terraform_labels": {},
+                        "user_managed_keys_config": [],
+                        "vertical_pod_autoscaling": [],
+                        "workload_identity_config": []
+                    }
+                },
+                {
+                    "address": "google_kms_crypto_key.key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key",
+                    "name": "key",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 1,
+                    "values": {
+                        "deletion_policy": "DELETE",
+                        "effective_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "key_ring": "projects/fake-project/locations/global/keyRings/checkov",
+                        "labels": null,
+                        "name": "checkov-key",
+                        "purpose": "ENCRYPT_DECRYPT",
+                        "rotation_period": "100000s",
+                        "skip_initial_version_creation": null,
+                        "terraform_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "effective_labels": {},
+                        "primary": [],
+                        "terraform_labels": {},
+                        "version_template": []
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "key_ring": null,
+                        "name": null
+                    }
+                },
+                {
+                    "address": "google_sql_database_instance.sqlInstance",
+                    "mode": "managed",
+                    "type": "google_sql_database_instance",
+                    "name": "sqlInstance",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "backupdr_backup": null,
+                        "clone": [],
+                        "database_version": "POSTGRES_15",
+                        "deletion_policy": "DELETE",
+                        "deletion_protection": false,
+                        "final_backup_description": null,
+                        "include_replicas_for_major_version_upgrade": null,
+                        "name": "checkov-sql",
+                        "point_in_time_restore_context": [],
+                        "project": "fake-project",
+                        "region": "us-central1",
+                        "restore_backup_context": [],
+                        "root_password": null,
+                        "root_password_wo": null,
+                        "root_password_wo_version": null,
+                        "settings": [
+                            {
+                                "activation_policy": "ALWAYS",
+                                "active_directory_config": [],
+                                "advanced_machine_features": [],
+                                "auto_upgrade_enabled": null,
+                                "availability_type": "ZONAL",
+                                "collation": null,
+                                "database_flags": [
+                                    {
+                                        "name": "log_checkpoints",
+                                        "value": "off"
+                                    }
+                                ],
+                                "deletion_protection_enabled": null,
+                                "deny_maintenance_period": [],
+                                "disk_autoresize": true,
+                                "disk_autoresize_limit": 0,
+                                "enable_dataplex_integration": null,
+                                "enable_google_ml_integration": null,
+                                "entraid_config": [],
+                                "final_backup_config": [],
+                                "ip_configuration": [
+                                    {
+                                        "allocated_ip_range": null,
+                                        "authorized_networks": [
+                                            {
+                                                "expiration_time": "",
+                                                "name": "all",
+                                                "value": "0.0.0.0/0"
+                                            }
+                                        ],
+                                        "custom_subject_alternative_names": null,
+                                        "enable_private_path_for_google_cloud_services": null,
+                                        "ipv4_enabled": true,
+                                        "private_network": null,
+                                        "psc_config": [],
+                                        "server_ca_pool": null,
+                                        "server_certificate_rotation_mode": null
+                                    }
+                                ],
+                                "maintenance_window": [],
+                                "password_validation_policy": [],
+                                "pricing_plan": "PER_USE",
+                                "retain_backups_on_delete": null,
+                                "sql_server_audit_config": [],
+                                "tier": "db-f1-micro",
+                                "time_zone": null
+                            }
+                        ],
+                        "switch_transaction_logs_to_cloud_storage_enabled": null,
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "available_maintenance_versions": [],
+                        "clone": [],
+                        "dns_names": [],
+                        "ip_address": [],
+                        "point_in_time_restore_context": [],
+                        "replica_configuration": [],
+                        "replica_names": [],
+                        "replication_cluster": [],
+                        "restore_backup_context": [],
+                        "root_password": true,
+                        "server_ca_cert": true,
+                        "settings": [
+                            {
+                                "active_directory_config": [],
+                                "advanced_machine_features": [],
+                                "backup_configuration": [],
+                                "connection_pool_config": [],
+                                "data_cache_config": [],
+                                "database_flags": [
+                                    {}
+                                ],
+                                "deny_maintenance_period": [],
+                                "entraid_config": [],
+                                "final_backup_config": [],
+                                "insights_config": [],
+                                "ip_configuration": [
+                                    {
+                                        "authorized_networks": [
+                                            {}
+                                        ],
+                                        "psc_config": []
+                                    }
+                                ],
+                                "location_preference": [],
+                                "maintenance_window": [],
+                                "password_validation_policy": [],
+                                "read_pool_auto_scale_config": [],
+                                "sql_server_audit_config": [],
+                                "user_labels": {}
+                            }
+                        ]
+                    }
+                },
+                {
+                    "address": "google_storage_bucket.insecureBucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "insecureBucket",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 4,
+                    "values": {
+                        "autoclass": [],
+                        "cors": [],
+                        "custom_placement_config": [],
+                        "default_event_based_hold": null,
+                        "deletion_policy": "DELETE",
+                        "effective_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "enable_object_retention": null,
+                        "encryption": [],
+                        "force_destroy": false,
+                        "hierarchical_namespace": [],
+                        "ip_filter": [],
+                        "labels": null,
+                        "lifecycle_rule": [],
+                        "location": "US",
+                        "logging": [],
+                        "name": "checkov-insecure-bucket",
+                        "requester_pays": null,
+                        "retention_policy": [],
+                        "storage_class": "STANDARD",
+                        "terraform_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "autoclass": [],
+                        "cors": [],
+                        "custom_placement_config": [],
+                        "effective_labels": {},
+                        "encryption": [],
+                        "hierarchical_namespace": [],
+                        "ip_filter": [],
+                        "lifecycle_rule": [],
+                        "logging": [],
+                        "retention_policy": [],
+                        "soft_delete_policy": [],
+                        "terraform_labels": {},
+                        "versioning": [],
+                        "website": []
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "name": null,
+                        "project": null
+                    }
+                },
+                {
+                    "address": "google_storage_bucket.secureBucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "secureBucket",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 4,
+                    "values": {
+                        "autoclass": [],
+                        "cors": [],
+                        "custom_placement_config": [],
+                        "default_event_based_hold": null,
+                        "deletion_policy": "DELETE",
+                        "effective_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "enable_object_retention": null,
+                        "encryption": [],
+                        "force_destroy": false,
+                        "hierarchical_namespace": [],
+                        "ip_filter": [],
+                        "labels": null,
+                        "lifecycle_rule": [],
+                        "location": "US",
+                        "logging": [
+                            {
+                                "log_bucket": "checkov-logs-bucket"
+                            }
+                        ],
+                        "name": "checkov-secure-bucket",
+                        "public_access_prevention": "enforced",
+                        "requester_pays": null,
+                        "retention_policy": [],
+                        "storage_class": "STANDARD",
+                        "terraform_labels": {
+                            "goog-terraform-provisioned": "true"
+                        },
+                        "timeouts": null,
+                        "uniform_bucket_level_access": true,
+                        "versioning": [
+                            {
+                                "enabled": true
+                            }
+                        ]
+                    },
+                    "sensitive_values": {
+                        "autoclass": [],
+                        "cors": [],
+                        "custom_placement_config": [],
+                        "effective_labels": {},
+                        "encryption": [],
+                        "hierarchical_namespace": [],
+                        "ip_filter": [],
+                        "lifecycle_rule": [],
+                        "logging": [
+                            {}
+                        ],
+                        "retention_policy": [],
+                        "soft_delete_policy": [],
+                        "terraform_labels": {},
+                        "versioning": [
+                            {}
+                        ],
+                        "website": []
+                    },
+                    "identity_schema_version": 1,
+                    "identity": {
+                        "name": null,
+                        "project": null
+                    }
+                },
+                {
+                    "address": "google_storage_bucket_iam_member.publicBinding",
+                    "mode": "managed",
+                    "type": "google_storage_bucket_iam_member",
+                    "name": "publicBinding",
+                    "provider_name": "registry.terraform.io/hashicorp/google",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "checkov-insecure-bucket",
+                        "condition": [],
+                        "member": "allUsers",
+                        "role": "roles/storage.objectViewer",
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "condition": []
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "google_compute_firewall.firewall",
+            "mode": "managed",
+            "type": "google_compute_firewall",
+            "name": "firewall",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "allow": [
+                        {
+                            "ports": [
+                                "22",
+                                "3389"
+                            ],
+                            "protocol": "tcp"
+                        }
+                    ],
+                    "deletion_policy": "DELETE",
+                    "deny": [],
+                    "description": null,
+                    "disabled": null,
+                    "log_config": [],
+                    "name": "checkov-open-firewall",
+                    "network": "default",
+                    "params": [],
+                    "priority": 1000,
+                    "project": "fake-project",
+                    "source_ranges": [
+                        "0.0.0.0/0"
+                    ],
+                    "source_service_accounts": null,
+                    "source_tags": null,
+                    "target_service_accounts": null,
+                    "target_tags": null,
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "allow": [
+                        {
+                            "ports": [
+                                false,
+                                false
+                            ]
+                        }
+                    ],
+                    "creation_timestamp": true,
+                    "deny": [],
+                    "destination_ranges": true,
+                    "direction": true,
+                    "enable_logging": true,
+                    "firewall_id": true,
+                    "id": true,
+                    "log_config": [],
+                    "params": [],
+                    "self_link": true,
+                    "source_ranges": [
+                        false
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "allow": [
+                        {
+                            "ports": [
+                                false,
+                                false
+                            ]
+                        }
+                    ],
+                    "deny": [],
+                    "destination_ranges": [],
+                    "log_config": [],
+                    "params": [],
+                    "source_ranges": [
+                        false
+                    ]
+                },
+                "after_identity": {
+                    "name": null,
+                    "project": null
+                }
+            }
+        },
+        {
+            "address": "google_compute_instance.vm",
+            "mode": "managed",
+            "type": "google_compute_instance",
+            "name": "vm",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "advanced_machine_features": [],
+                    "allow_stopping_for_update": null,
+                    "attached_disk": [],
+                    "boot_disk": [
+                        {
+                            "auto_delete": true,
+                            "disk_encryption_key_raw": null,
+                            "disk_encryption_key_rsa": null,
+                            "disk_encryption_service_account": null,
+                            "force_attach": null,
+                            "initialize_params": [
+                                {
+                                    "enable_confidential_compute": null,
+                                    "image": "debian-cloud/debian-12",
+                                    "replica_zones": null,
+                                    "resource_manager_tags": null,
+                                    "source_image_encryption_key": [],
+                                    "source_snapshot_encryption_key": [],
+                                    "storage_pool": null
+                                }
+                            ],
+                            "interface": null,
+                            "mode": "READ_WRITE"
+                        }
+                    ],
+                    "can_ip_forward": true,
+                    "deletion_policy": "DELETE",
+                    "deletion_protection": false,
+                    "description": null,
+                    "desired_status": null,
+                    "effective_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "enable_display": null,
+                    "hostname": null,
+                    "instance_encryption_key": [],
+                    "key_revocation_action_type": null,
+                    "labels": null,
+                    "machine_type": "e2-micro",
+                    "metadata": {
+                        "serial-port-enable": "true"
+                    },
+                    "metadata_startup_script": null,
+                    "name": "checkov-vm",
+                    "network_interface": [
+                        {
+                            "access_config": [
+                                {
+                                    "public_ptr_domain_name": null
+                                }
+                            ],
+                            "alias_ip_range": [],
+                            "enable_vpc_scoped_dns": null,
+                            "ipv6_access_config": [],
+                            "network": "default",
+                            "nic_type": null,
+                            "queue_count": null,
+                            "service_class_id": null,
+                            "vlan": null
+                        }
+                    ],
+                    "network_performance_config": [],
+                    "params": [],
+                    "project": "fake-project",
+                    "resource_policies": null,
+                    "scratch_disk": [],
+                    "service_account": [
+                        {
+                            "email": "123456789-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/cloud-platform"
+                            ]
+                        }
+                    ],
+                    "shielded_instance_config": [],
+                    "tags": null,
+                    "terraform_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "timeouts": null,
+                    "workload_identity_config": [],
+                    "zone": "us-central1-a"
+                },
+                "after_unknown": {
+                    "advanced_machine_features": [],
+                    "attached_disk": [],
+                    "boot_disk": [
+                        {
+                            "device_name": true,
+                            "disk_encryption_key_sha256": true,
+                            "guest_os_features": true,
+                            "initialize_params": [
+                                {
+                                    "architecture": true,
+                                    "labels": true,
+                                    "provisioned_iops": true,
+                                    "provisioned_throughput": true,
+                                    "resource_policies": true,
+                                    "size": true,
+                                    "snapshot": true,
+                                    "source_image_encryption_key": [],
+                                    "source_snapshot_encryption_key": [],
+                                    "type": true
+                                }
+                            ],
+                            "kms_key_self_link": true,
+                            "source": true
+                        }
+                    ],
+                    "confidential_instance_config": true,
+                    "cpu_platform": true,
+                    "creation_timestamp": true,
+                    "current_status": true,
+                    "effective_labels": {},
+                    "guest_accelerator": true,
+                    "id": true,
+                    "instance_encryption_key": [],
+                    "instance_id": true,
+                    "label_fingerprint": true,
+                    "metadata": {},
+                    "metadata_fingerprint": true,
+                    "min_cpu_platform": true,
+                    "network_interface": [
+                        {
+                            "access_config": [
+                                {
+                                    "nat_ip": true,
+                                    "network_tier": true
+                                }
+                            ],
+                            "alias_ip_range": [],
+                            "igmp_query": true,
+                            "internal_ipv6_prefix_length": true,
+                            "ipv6_access_config": [],
+                            "ipv6_access_type": true,
+                            "ipv6_address": true,
+                            "name": true,
+                            "network_attachment": true,
+                            "network_ip": true,
+                            "parent_nic_name": true,
+                            "stack_type": true,
+                            "subnetwork": true,
+                            "subnetwork_project": true
+                        }
+                    ],
+                    "network_performance_config": [],
+                    "params": [],
+                    "reservation_affinity": true,
+                    "scheduling": true,
+                    "scratch_disk": [],
+                    "self_link": true,
+                    "service_account": [
+                        {
+                            "scopes": [
+                                false
+                            ]
+                        }
+                    ],
+                    "shielded_instance_config": [],
+                    "tags_fingerprint": true,
+                    "terraform_labels": {},
+                    "workload_identity_config": []
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "advanced_machine_features": [],
+                    "attached_disk": [],
+                    "boot_disk": [
+                        {
+                            "disk_encryption_key_raw": true,
+                            "disk_encryption_key_rsa": true,
+                            "guest_os_features": [],
+                            "initialize_params": [
+                                {
+                                    "labels": {},
+                                    "resource_policies": [],
+                                    "source_image_encryption_key": [],
+                                    "source_snapshot_encryption_key": []
+                                }
+                            ]
+                        }
+                    ],
+                    "confidential_instance_config": [],
+                    "effective_labels": {},
+                    "guest_accelerator": [],
+                    "instance_encryption_key": [],
+                    "metadata": {},
+                    "network_interface": [
+                        {
+                            "access_config": [
+                                {}
+                            ],
+                            "alias_ip_range": [],
+                            "ipv6_access_config": []
+                        }
+                    ],
+                    "network_performance_config": [],
+                    "params": [],
+                    "reservation_affinity": [],
+                    "scheduling": [],
+                    "scratch_disk": [],
+                    "service_account": [
+                        {
+                            "scopes": [
+                                false
+                            ]
+                        }
+                    ],
+                    "shielded_instance_config": [],
+                    "terraform_labels": {},
+                    "workload_identity_config": []
+                },
+                "after_identity": {
+                    "name": null,
+                    "project": null,
+                    "zone": null
+                }
+            }
+        },
+        {
+            "address": "google_container_cluster.cluster",
+            "mode": "managed",
+            "type": "google_container_cluster",
+            "name": "cluster",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "allow_net_admin": null,
+                    "binary_authorization": [],
+                    "dataplane_optimization_mode": null,
+                    "deletion_policy": "DELETE",
+                    "deletion_protection": false,
+                    "description": null,
+                    "desired_emulated_version": null,
+                    "disable_l4_lb_firewall_reconciliation": false,
+                    "dns_config": [],
+                    "effective_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "enable_autopilot": null,
+                    "enable_cilium_clusterwide_network_policy": false,
+                    "enable_fqdn_network_policy": false,
+                    "enable_k8s_beta_apis": [],
+                    "enable_kubernetes_alpha": false,
+                    "enable_legacy_abac": true,
+                    "enable_multi_networking": false,
+                    "enable_shielded_nodes": true,
+                    "enable_tpu": null,
+                    "fleet": [],
+                    "ignore_node_count_changes": null,
+                    "in_transit_encryption_config": null,
+                    "initial_node_count": 1,
+                    "location": "us-central1",
+                    "maintenance_policy": [],
+                    "master_auth": [
+                        {
+                            "client_certificate_config": [
+                                {
+                                    "issue_client_certificate": true
+                                }
+                            ]
+                        }
+                    ],
+                    "min_master_version": "1.33",
+                    "name": "checkov-gke",
+                    "network": "default",
+                    "network_performance_config": [],
+                    "network_policy": [],
+                    "private_cluster_config": [],
+                    "remove_default_node_pool": null,
+                    "resource_labels": null,
+                    "resource_usage_export_config": [],
+                    "rollback_safe_upgrade": [],
+                    "secret_manager_config": [],
+                    "secret_sync_config": [],
+                    "skip_node_pool_refresh": null,
+                    "terraform_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "timeouts": null,
+                    "user_managed_keys_config": []
+                },
+                "after_unknown": {
+                    "addons_config": true,
+                    "anonymous_authentication_config": true,
+                    "authenticator_groups_config": true,
+                    "autopilot_cluster_policy_config": true,
+                    "autopilot_privileged_admission": true,
+                    "binary_authorization": [],
+                    "cluster_autoscaling": true,
+                    "cluster_ipv4_cidr": true,
+                    "confidential_nodes": true,
+                    "control_plane_endpoints_config": true,
+                    "cost_management_config": true,
+                    "database_encryption": true,
+                    "datapath_provider": true,
+                    "default_max_pods_per_node": true,
+                    "default_snat_status": true,
+                    "dns_config": [],
+                    "effective_labels": {},
+                    "emulated_version": true,
+                    "enable_intranode_visibility": true,
+                    "enable_k8s_beta_apis": [],
+                    "enable_l4_ilb_subsetting": true,
+                    "endpoint": true,
+                    "enterprise_config": true,
+                    "fleet": [],
+                    "gateway_api_config": true,
+                    "gke_auto_upgrade_config": true,
+                    "id": true,
+                    "identity_service_config": true,
+                    "ip_allocation_policy": true,
+                    "label_fingerprint": true,
+                    "logging_config": true,
+                    "logging_service": true,
+                    "maintenance_policy": [],
+                    "managed_opentelemetry_config": true,
+                    "master_auth": [
+                        {
+                            "client_certificate": true,
+                            "client_certificate_config": [
+                                {}
+                            ],
+                            "client_key": true,
+                            "cluster_ca_certificate": true
+                        }
+                    ],
+                    "master_authorized_networks_config": true,
+                    "master_version": true,
+                    "mesh_certificates": true,
+                    "monitoring_config": true,
+                    "monitoring_service": true,
+                    "network_performance_config": [],
+                    "network_policy": [],
+                    "networking_mode": true,
+                    "node_config": true,
+                    "node_creation_config": true,
+                    "node_locations": true,
+                    "node_pool": true,
+                    "node_pool_auto_config": true,
+                    "node_pool_defaults": true,
+                    "node_version": true,
+                    "notification_config": true,
+                    "operation": true,
+                    "pod_autoscaling": true,
+                    "private_cluster_config": [],
+                    "private_ipv6_google_access": true,
+                    "project": true,
+                    "rbac_binding_config": true,
+                    "release_channel": true,
+                    "resource_usage_export_config": [],
+                    "rollback_safe_upgrade": [],
+                    "schedule_upgrade_config": true,
+                    "secret_manager_config": [],
+                    "secret_sync_config": [],
+                    "security_posture_config": true,
+                    "self_link": true,
+                    "service_external_ips_config": true,
+                    "services_ipv4_cidr": true,
+                    "subnetwork": true,
+                    "terraform_labels": {},
+                    "tpu_ipv4_cidr_block": true,
+                    "user_managed_keys_config": [],
+                    "vertical_pod_autoscaling": true,
+                    "workload_identity_config": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "addons_config": [],
+                    "anonymous_authentication_config": [],
+                    "authenticator_groups_config": [],
+                    "autopilot_cluster_policy_config": [],
+                    "autopilot_privileged_admission": [],
+                    "binary_authorization": [],
+                    "cluster_autoscaling": [],
+                    "confidential_nodes": [],
+                    "control_plane_endpoints_config": [],
+                    "cost_management_config": [],
+                    "database_encryption": [],
+                    "default_snat_status": [],
+                    "dns_config": [],
+                    "effective_labels": {},
+                    "enable_k8s_beta_apis": [],
+                    "enterprise_config": [],
+                    "fleet": [],
+                    "gateway_api_config": [],
+                    "gke_auto_upgrade_config": [],
+                    "identity_service_config": [],
+                    "ip_allocation_policy": [],
+                    "logging_config": [],
+                    "maintenance_policy": [],
+                    "managed_opentelemetry_config": [],
+                    "master_auth": [
+                        {
+                            "client_certificate_config": [
+                                {}
+                            ],
+                            "client_key": true
+                        }
+                    ],
+                    "master_authorized_networks_config": [],
+                    "mesh_certificates": [],
+                    "monitoring_config": [],
+                    "network_performance_config": [],
+                    "network_policy": [],
+                    "node_config": [],
+                    "node_creation_config": [],
+                    "node_locations": [],
+                    "node_pool": [],
+                    "node_pool_auto_config": [],
+                    "node_pool_defaults": [],
+                    "notification_config": [],
+                    "pod_autoscaling": [],
+                    "private_cluster_config": [],
+                    "rbac_binding_config": [],
+                    "release_channel": [],
+                    "resource_usage_export_config": [],
+                    "rollback_safe_upgrade": [],
+                    "schedule_upgrade_config": [],
+                    "secret_manager_config": [],
+                    "secret_sync_config": [],
+                    "security_posture_config": [],
+                    "service_external_ips_config": [],
+                    "terraform_labels": {},
+                    "user_managed_keys_config": [],
+                    "vertical_pod_autoscaling": [],
+                    "workload_identity_config": []
+                }
+            }
+        },
+        {
+            "address": "google_kms_crypto_key.key",
+            "mode": "managed",
+            "type": "google_kms_crypto_key",
+            "name": "key",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "deletion_policy": "DELETE",
+                    "effective_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "key_ring": "projects/fake-project/locations/global/keyRings/checkov",
+                    "labels": null,
+                    "name": "checkov-key",
+                    "purpose": "ENCRYPT_DECRYPT",
+                    "rotation_period": "100000s",
+                    "skip_initial_version_creation": null,
+                    "terraform_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "crypto_key_backend": true,
+                    "destroy_scheduled_duration": true,
+                    "effective_labels": {},
+                    "id": true,
+                    "import_only": true,
+                    "primary": true,
+                    "terraform_labels": {},
+                    "version_template": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "effective_labels": {},
+                    "primary": [],
+                    "terraform_labels": {},
+                    "version_template": []
+                },
+                "after_identity": {
+                    "key_ring": null,
+                    "name": null
+                }
+            }
+        },
+        {
+            "address": "google_sql_database_instance.sqlInstance",
+            "mode": "managed",
+            "type": "google_sql_database_instance",
+            "name": "sqlInstance",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "backupdr_backup": null,
+                    "clone": [],
+                    "database_version": "POSTGRES_15",
+                    "deletion_policy": "DELETE",
+                    "deletion_protection": false,
+                    "final_backup_description": null,
+                    "include_replicas_for_major_version_upgrade": null,
+                    "name": "checkov-sql",
+                    "point_in_time_restore_context": [],
+                    "project": "fake-project",
+                    "region": "us-central1",
+                    "restore_backup_context": [],
+                    "root_password": null,
+                    "root_password_wo": null,
+                    "root_password_wo_version": null,
+                    "settings": [
+                        {
+                            "activation_policy": "ALWAYS",
+                            "active_directory_config": [],
+                            "advanced_machine_features": [],
+                            "auto_upgrade_enabled": null,
+                            "availability_type": "ZONAL",
+                            "collation": null,
+                            "database_flags": [
+                                {
+                                    "name": "log_checkpoints",
+                                    "value": "off"
+                                }
+                            ],
+                            "deletion_protection_enabled": null,
+                            "deny_maintenance_period": [],
+                            "disk_autoresize": true,
+                            "disk_autoresize_limit": 0,
+                            "enable_dataplex_integration": null,
+                            "enable_google_ml_integration": null,
+                            "entraid_config": [],
+                            "final_backup_config": [],
+                            "ip_configuration": [
+                                {
+                                    "allocated_ip_range": null,
+                                    "authorized_networks": [
+                                        {
+                                            "expiration_time": "",
+                                            "name": "all",
+                                            "value": "0.0.0.0/0"
+                                        }
+                                    ],
+                                    "custom_subject_alternative_names": null,
+                                    "enable_private_path_for_google_cloud_services": null,
+                                    "ipv4_enabled": true,
+                                    "private_network": null,
+                                    "psc_config": [],
+                                    "server_ca_pool": null,
+                                    "server_certificate_rotation_mode": null
+                                }
+                            ],
+                            "maintenance_window": [],
+                            "password_validation_policy": [],
+                            "pricing_plan": "PER_USE",
+                            "retain_backups_on_delete": null,
+                            "sql_server_audit_config": [],
+                            "tier": "db-f1-micro",
+                            "time_zone": null
+                        }
+                    ],
+                    "switch_transaction_logs_to_cloud_storage_enabled": null,
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "available_maintenance_versions": true,
+                    "clone": [],
+                    "connection_name": true,
+                    "dns_name": true,
+                    "dns_names": true,
+                    "encryption_confidential_mode": true,
+                    "encryption_key_name": true,
+                    "enforce_new_sql_network_architecture": true,
+                    "first_ip_address": true,
+                    "id": true,
+                    "instance_type": true,
+                    "ip_address": true,
+                    "maintenance_version": true,
+                    "master_instance_name": true,
+                    "node_count": true,
+                    "point_in_time_restore_context": [],
+                    "private_ip_address": true,
+                    "psc_service_attachment_link": true,
+                    "public_ip_address": true,
+                    "replica_configuration": true,
+                    "replica_names": true,
+                    "replication_cluster": true,
+                    "restore_backup_context": [],
+                    "self_link": true,
+                    "server_ca_cert": true,
+                    "service_account_email_address": true,
+                    "settings": [
+                        {
+                            "active_directory_config": [],
+                            "advanced_machine_features": [],
+                            "backup_configuration": true,
+                            "connection_pool_config": true,
+                            "connector_enforcement": true,
+                            "data_api_access": true,
+                            "data_cache_config": true,
+                            "data_disk_provisioned_iops": true,
+                            "data_disk_provisioned_throughput": true,
+                            "database_flags": [
+                                {}
+                            ],
+                            "deny_maintenance_period": [],
+                            "disk_size": true,
+                            "disk_type": true,
+                            "edition": true,
+                            "effective_availability_type": true,
+                            "entraid_config": [],
+                            "final_backup_config": [],
+                            "insights_config": true,
+                            "ip_configuration": [
+                                {
+                                    "authorized_networks": [
+                                        {}
+                                    ],
+                                    "psc_config": [],
+                                    "server_ca_mode": true,
+                                    "ssl_mode": true
+                                }
+                            ],
+                            "location_preference": true,
+                            "maintenance_window": [],
+                            "password_validation_policy": [],
+                            "read_pool_auto_scale_config": true,
+                            "replication_lag_max_seconds": true,
+                            "sql_server_audit_config": [],
+                            "user_labels": true,
+                            "version": true
+                        }
+                    ]
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "available_maintenance_versions": [],
+                    "clone": [],
+                    "dns_names": [],
+                    "ip_address": [],
+                    "point_in_time_restore_context": [],
+                    "replica_configuration": [],
+                    "replica_names": [],
+                    "replication_cluster": [],
+                    "restore_backup_context": [],
+                    "root_password": true,
+                    "server_ca_cert": true,
+                    "settings": [
+                        {
+                            "active_directory_config": [],
+                            "advanced_machine_features": [],
+                            "backup_configuration": [],
+                            "connection_pool_config": [],
+                            "data_cache_config": [],
+                            "database_flags": [
+                                {}
+                            ],
+                            "deny_maintenance_period": [],
+                            "entraid_config": [],
+                            "final_backup_config": [],
+                            "insights_config": [],
+                            "ip_configuration": [
+                                {
+                                    "authorized_networks": [
+                                        {}
+                                    ],
+                                    "psc_config": []
+                                }
+                            ],
+                            "location_preference": [],
+                            "maintenance_window": [],
+                            "password_validation_policy": [],
+                            "read_pool_auto_scale_config": [],
+                            "sql_server_audit_config": [],
+                            "user_labels": {}
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "address": "google_storage_bucket.insecureBucket",
+            "mode": "managed",
+            "type": "google_storage_bucket",
+            "name": "insecureBucket",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "default_event_based_hold": null,
+                    "deletion_policy": "DELETE",
+                    "effective_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "enable_object_retention": null,
+                    "encryption": [],
+                    "force_destroy": false,
+                    "hierarchical_namespace": [],
+                    "ip_filter": [],
+                    "labels": null,
+                    "lifecycle_rule": [],
+                    "location": "US",
+                    "logging": [],
+                    "name": "checkov-insecure-bucket",
+                    "requester_pays": null,
+                    "retention_policy": [],
+                    "storage_class": "STANDARD",
+                    "terraform_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "effective_labels": {},
+                    "encryption": [],
+                    "hierarchical_namespace": [],
+                    "id": true,
+                    "ip_filter": [],
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "project": true,
+                    "project_number": true,
+                    "public_access_prevention": true,
+                    "retention_policy": [],
+                    "rpo": true,
+                    "self_link": true,
+                    "soft_delete_policy": true,
+                    "terraform_labels": {},
+                    "time_created": true,
+                    "uniform_bucket_level_access": true,
+                    "updated": true,
+                    "url": true,
+                    "versioning": true,
+                    "website": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "effective_labels": {},
+                    "encryption": [],
+                    "hierarchical_namespace": [],
+                    "ip_filter": [],
+                    "lifecycle_rule": [],
+                    "logging": [],
+                    "retention_policy": [],
+                    "soft_delete_policy": [],
+                    "terraform_labels": {},
+                    "versioning": [],
+                    "website": []
+                },
+                "after_identity": {
+                    "name": null,
+                    "project": null
+                }
+            }
+        },
+        {
+            "address": "google_storage_bucket.secureBucket",
+            "mode": "managed",
+            "type": "google_storage_bucket",
+            "name": "secureBucket",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "default_event_based_hold": null,
+                    "deletion_policy": "DELETE",
+                    "effective_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "enable_object_retention": null,
+                    "encryption": [],
+                    "force_destroy": false,
+                    "hierarchical_namespace": [],
+                    "ip_filter": [],
+                    "labels": null,
+                    "lifecycle_rule": [],
+                    "location": "US",
+                    "logging": [
+                        {
+                            "log_bucket": "checkov-logs-bucket"
+                        }
+                    ],
+                    "name": "checkov-secure-bucket",
+                    "public_access_prevention": "enforced",
+                    "requester_pays": null,
+                    "retention_policy": [],
+                    "storage_class": "STANDARD",
+                    "terraform_labels": {
+                        "goog-terraform-provisioned": "true"
+                    },
+                    "timeouts": null,
+                    "uniform_bucket_level_access": true,
+                    "versioning": [
+                        {
+                            "enabled": true
+                        }
+                    ]
+                },
+                "after_unknown": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "effective_labels": {},
+                    "encryption": [],
+                    "hierarchical_namespace": [],
+                    "id": true,
+                    "ip_filter": [],
+                    "lifecycle_rule": [],
+                    "logging": [
+                        {
+                            "log_object_prefix": true
+                        }
+                    ],
+                    "project": true,
+                    "project_number": true,
+                    "retention_policy": [],
+                    "rpo": true,
+                    "self_link": true,
+                    "soft_delete_policy": true,
+                    "terraform_labels": {},
+                    "time_created": true,
+                    "updated": true,
+                    "url": true,
+                    "versioning": [
+                        {}
+                    ],
+                    "website": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "autoclass": [],
+                    "cors": [],
+                    "custom_placement_config": [],
+                    "effective_labels": {},
+                    "encryption": [],
+                    "hierarchical_namespace": [],
+                    "ip_filter": [],
+                    "lifecycle_rule": [],
+                    "logging": [
+                        {}
+                    ],
+                    "retention_policy": [],
+                    "soft_delete_policy": [],
+                    "terraform_labels": {},
+                    "versioning": [
+                        {}
+                    ],
+                    "website": []
+                },
+                "after_identity": {
+                    "name": null,
+                    "project": null
+                }
+            }
+        },
+        {
+            "address": "google_storage_bucket_iam_member.publicBinding",
+            "mode": "managed",
+            "type": "google_storage_bucket_iam_member",
+            "name": "publicBinding",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "change": {
+                "actions": [
+                    "create"
+                ],
+                "before": null,
+                "after": {
+                    "bucket": "checkov-insecure-bucket",
+                    "condition": [],
+                    "member": "allUsers",
+                    "role": "roles/storage.objectViewer",
+                    "timeouts": null
+                },
+                "after_unknown": {
+                    "condition": [],
+                    "etag": true,
+                    "id": true
+                },
+                "before_sensitive": false,
+                "after_sensitive": {
+                    "condition": []
+                }
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "google": {
+                "name": "google",
+                "full_name": "registry.terraform.io/hashicorp/google",
+                "version_constraint": "8.9.0",
+                "expressions": {
+                    "access_token": {
+                        "constant_value": "fake-token"
+                    },
+                    "project": {
+                        "constant_value": "fake-project"
+                    },
+                    "region": {
+                        "constant_value": "us-central1"
+                    }
+                }
+            }
+        },
+        "root_module": {
+            "resources": [
+                {
+                    "address": "google_compute_firewall.firewall",
+                    "mode": "managed",
+                    "type": "google_compute_firewall",
+                    "name": "firewall",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "allow": [
+                            {
+                                "ports": {
+                                    "constant_value": [
+                                        "22",
+                                        "3389"
+                                    ]
+                                },
+                                "protocol": {
+                                    "constant_value": "tcp"
+                                }
+                            }
+                        ],
+                        "name": {
+                            "constant_value": "checkov-open-firewall"
+                        },
+                        "network": {
+                            "constant_value": "default"
+                        },
+                        "source_ranges": {
+                            "constant_value": [
+                                "0.0.0.0/0"
+                            ]
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "google_compute_instance.vm",
+                    "mode": "managed",
+                    "type": "google_compute_instance",
+                    "name": "vm",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "boot_disk": [
+                            {
+                                "initialize_params": [
+                                    {
+                                        "image": {
+                                            "constant_value": "debian-cloud/debian-12"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "can_ip_forward": {
+                            "constant_value": true
+                        },
+                        "machine_type": {
+                            "constant_value": "e2-micro"
+                        },
+                        "metadata": {
+                            "constant_value": {
+                                "serial-port-enable": "true"
+                            }
+                        },
+                        "name": {
+                            "constant_value": "checkov-vm"
+                        },
+                        "network_interface": [
+                            {
+                                "access_config": [
+                                    {}
+                                ],
+                                "network": {
+                                    "constant_value": "default"
+                                }
+                            }
+                        ],
+                        "service_account": [
+                            {
+                                "email": {
+                                    "constant_value": "123456789-compute@developer.gserviceaccount.com"
+                                },
+                                "scopes": {
+                                    "constant_value": [
+                                        "cloud-platform"
+                                    ]
+                                }
+                            }
+                        ],
+                        "zone": {
+                            "constant_value": "us-central1-a"
+                        }
+                    },
+                    "schema_version": 6
+                },
+                {
+                    "address": "google_container_cluster.cluster",
+                    "mode": "managed",
+                    "type": "google_container_cluster",
+                    "name": "cluster",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "deletion_protection": {
+                            "constant_value": false
+                        },
+                        "enable_legacy_abac": {
+                            "constant_value": true
+                        },
+                        "initial_node_count": {
+                            "constant_value": 1
+                        },
+                        "location": {
+                            "constant_value": "us-central1"
+                        },
+                        "master_auth": [
+                            {
+                                "client_certificate_config": [
+                                    {
+                                        "issue_client_certificate": {
+                                            "constant_value": true
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "min_master_version": {
+                            "constant_value": "1.33"
+                        },
+                        "name": {
+                            "constant_value": "checkov-gke"
+                        }
+                    },
+                    "schema_version": 2
+                },
+                {
+                    "address": "google_kms_crypto_key.key",
+                    "mode": "managed",
+                    "type": "google_kms_crypto_key",
+                    "name": "key",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "key_ring": {
+                            "constant_value": "projects/fake-project/locations/global/keyRings/checkov"
+                        },
+                        "name": {
+                            "constant_value": "checkov-key"
+                        },
+                        "rotation_period": {
+                            "constant_value": "100000s"
+                        }
+                    },
+                    "schema_version": 1
+                },
+                {
+                    "address": "google_sql_database_instance.sqlInstance",
+                    "mode": "managed",
+                    "type": "google_sql_database_instance",
+                    "name": "sqlInstance",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "database_version": {
+                            "constant_value": "POSTGRES_15"
+                        },
+                        "deletion_protection": {
+                            "constant_value": false
+                        },
+                        "name": {
+                            "constant_value": "checkov-sql"
+                        },
+                        "region": {
+                            "constant_value": "us-central1"
+                        },
+                        "settings": [
+                            {
+                                "database_flags": [
+                                    {
+                                        "name": {
+                                            "constant_value": "log_checkpoints"
+                                        },
+                                        "value": {
+                                            "constant_value": "off"
+                                        }
+                                    }
+                                ],
+                                "ip_configuration": [
+                                    {
+                                        "authorized_networks": [
+                                            {
+                                                "name": {
+                                                    "constant_value": "all"
+                                                },
+                                                "value": {
+                                                    "constant_value": "0.0.0.0/0"
+                                                }
+                                            }
+                                        ],
+                                        "ipv4_enabled": {
+                                            "constant_value": true
+                                        }
+                                    }
+                                ],
+                                "tier": {
+                                    "constant_value": "db-f1-micro"
+                                }
+                            }
+                        ]
+                    },
+                    "schema_version": 0
+                },
+                {
+                    "address": "google_storage_bucket.insecureBucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "insecureBucket",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "location": {
+                            "constant_value": "US"
+                        },
+                        "name": {
+                            "constant_value": "checkov-insecure-bucket"
+                        }
+                    },
+                    "schema_version": 4
+                },
+                {
+                    "address": "google_storage_bucket.secureBucket",
+                    "mode": "managed",
+                    "type": "google_storage_bucket",
+                    "name": "secureBucket",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "location": {
+                            "constant_value": "US"
+                        },
+                        "logging": [
+                            {
+                                "log_bucket": {
+                                    "constant_value": "checkov-logs-bucket"
+                                }
+                            }
+                        ],
+                        "name": {
+                            "constant_value": "checkov-secure-bucket"
+                        },
+                        "public_access_prevention": {
+                            "constant_value": "enforced"
+                        },
+                        "uniform_bucket_level_access": {
+                            "constant_value": true
+                        },
+                        "versioning": [
+                            {
+                                "enabled": {
+                                    "constant_value": true
+                                }
+                            }
+                        ]
+                    },
+                    "schema_version": 4
+                },
+                {
+                    "address": "google_storage_bucket_iam_member.publicBinding",
+                    "mode": "managed",
+                    "type": "google_storage_bucket_iam_member",
+                    "name": "publicBinding",
+                    "provider_config_key": "google",
+                    "expressions": {
+                        "bucket": {
+                            "references": [
+                                "google_storage_bucket.insecureBucket.name",
+                                "google_storage_bucket.insecureBucket"
+                            ]
+                        },
+                        "member": {
+                            "constant_value": "allUsers"
+                        },
+                        "role": {
+                            "constant_value": "roles/storage.objectViewer"
+                        }
+                    },
+                    "schema_version": 0
+                }
+            ]
+        }
+    },
+    "relevant_attributes": [
+        {
+            "resource": "google_storage_bucket.insecureBucket",
+            "attribute": [
+                "name"
+            ]
+        }
+    ],
+    "timestamp": "2026-11-06T03:45:28Z",
+    "applyable": true,
+    "complete": true,
+    "errored": false
+}

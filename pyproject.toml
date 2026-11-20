@@ -39,6 +39,7 @@ forbidden_modules = [
     "checkov.kustomize",
     "checkov.openapi",
     "checkov.policies_3d",
+    "checkov.pulumi",
     "checkov.sast",
     "checkov.sca_image",
     "checkov.sca_package_2",
@@ -97,6 +98,7 @@ source_modules = [
     "checkov.terraform",
 ]
 forbidden_modules = [
+    "checkov.pulumi",
     "checkov.terraform_json",
 ]
 

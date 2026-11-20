@@ -141,6 +141,7 @@ setup(
         "checkov.dockerfile.checks.graph_checks": ["**/*.json"],
         "checkov.github_actions.checks.graph_checks": ["**/*.json"],
         "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
+        "checkov.pulumi.mappings": ["*.json"],
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
         "checkov.cdk.checks": [
             "python/*.yaml",

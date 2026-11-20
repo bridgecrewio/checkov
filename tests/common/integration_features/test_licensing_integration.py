@@ -62,6 +62,7 @@ class TestLicensingIntegration(unittest.TestCase):
             'kubernetes',
             'kustomize',
             'openapi',
+            'pulumi',
             'sca_package',
             'sca_image',
             'secrets',
