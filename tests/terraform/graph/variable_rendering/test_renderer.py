@@ -488,6 +488,25 @@ class TestRenderer(TestCase):
             assert not value_block_1 != value_block_2
 
 
+    def test_null_variable_default_removes_attribute(self):
+        # A variable with 'default = null' resolves to null, which in Terraform
+        # means the attribute is absent, so the renderer drops it instead of
+        # leaving the unresolved 'var.<name>' placeholder behind.
+        resource_path = Path(TEST_DIRNAME) / "test_resources/null_variable_default"
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        resource = next(vertex for vertex in local_graph.vertices
+                        if vertex.block_type == BlockType.RESOURCE and vertex.name == "aws_cloudwatch_log_group.pass")
+        assert "kms_key_id" not in resource.attributes
+        assert "kms_key_id" not in resource.config["aws_cloudwatch_log_group"]["pass"]
+        assert resource.attributes["retention_in_days"] == [1]
+
+        # control: a variable with a real default still renders normally
+        resource_with_key = next(vertex for vertex in local_graph.vertices
+                                 if vertex.block_type == BlockType.RESOURCE and vertex.name == "aws_cloudwatch_log_group.with_key")
+        assert resource_with_key.attributes["kms_key_id"] == ["key"]
+
     def test_foreach_with_tfvars(self):
         # given
         resources_dir = Path(TEST_DIRNAME) / "resources/foreach_examples/foreach_tfvars"

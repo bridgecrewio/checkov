@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional, cast
 from lark.tree import Tree
 
 from checkov.common.graph.graph_builder import Edge
+from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 from checkov.common.util.data_structures_utils import find_in_dict, pickle_deepcopy
@@ -30,6 +31,7 @@ from checkov.terraform.graph_builder.variable_rendering.vertex_reference import 
 import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
 
 if TYPE_CHECKING:
+    from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
@@ -150,6 +152,23 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 )
                 if evaluated_attribute_value is not None:
                     val_to_eval = self.replace_value(edge, val_to_eval, replaced_key, evaluated_attribute_value, True)
+                elif (
+                    not multiple_edges
+                    and self._is_sole_variable_reference(val_to_eval, replaced_key)
+                    and self._is_explicit_null_variable(dest_vertex_attributes)
+                    and self.local_graph.vertices[edge.origin].block_type == BlockType.RESOURCE
+                    and "." not in edge.label
+                ):
+                    # A variable with an explicit 'default = null' resolves to null, which in
+                    # Terraform means the attribute is absent, so drop the attribute instead of
+                    # leaving the unresolved 'var.<name>' placeholder behind for checks to read.
+                    self._remove_attribute_resolved_to_null(
+                        vertex=edge.origin,
+                        attribute_key=edge.label,
+                        change_origin_id=edge.dest,
+                        attribute_at_dest=key_path_in_dest_vertex,
+                    )
+                    return
                 if not multiple_edges and val_to_eval != origin_val:
                     self.update_evaluated_value(
                         changed_attribute_key=edge.label,
@@ -226,6 +245,75 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             return None
         match = TYPE_REGEX.match(var_type)
         return VAR_TYPE_DEFAULT_VALUES.get(match.group(2)) if match else None
+
+    @staticmethod
+    def _is_sole_variable_reference(value: Any, replaced_key: str) -> bool:
+        """Check if a value consists solely of one variable reference.
+
+        At edge-evaluation time the raw attribute is still list-wrapped and
+        interpolated (ex. ['${var.key}']), while the reference itself is the bare
+        'var.key' form, so both shapes are accepted. Exactly one list level is
+        unwrapped, which is the parser's scalar wrapping: a real list literal
+        such as [var.key] parses one level deeper and is deliberately not
+        treated as a sole reference, since a null element inside a list is not
+        the same as an absent attribute.
+        """
+        if isinstance(value, list) and len(value) == 1:
+            value = value[0]
+        if isinstance(value, str):
+            return value == replaced_key or value == f"${{{replaced_key}}}"
+        return False
+
+    @staticmethod
+    def _is_explicit_null_variable(vertex_attributes: Dict[str, Any]) -> bool:
+        """Check if a referenced vertex is a variable whose default is explicitly null.
+
+        A variable declared without any default has no 'default' key at all, while
+        'default = null' parses to a 'default' key holding None, so the key presence
+        tells the two cases apart.
+        """
+        if vertex_attributes.get(CustomAttributes.BLOCK_TYPE) not in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
+            return False
+        return "default" in vertex_attributes and vertex_attributes.get("default") is None
+
+    def _remove_attribute_resolved_to_null(
+        self,
+        vertex: int,
+        attribute_key: str,
+        change_origin_id: int,
+        attribute_at_dest: Optional[Union[str, List[str]]] = None,
+    ) -> None:
+        """Remove an attribute whose value resolved to a null variable default.
+
+        Terraform treats a null value as the attribute being absent, so the attribute
+        is dropped from the vertex attributes and from the rendered config, with a
+        breadcrumb recording the variable it came from.
+        """
+        origin_vertex = self.local_graph.vertices[vertex]
+        origin_vertex.attributes.pop(attribute_key, None)
+        dest_attribute = attribute_at_dest
+        if isinstance(dest_attribute, list):
+            dest_attribute = ".".join(dest_attribute)
+        origin_vertex.changed_attributes[attribute_key] = [BreadcrumbMetadata(change_origin_id, dest_attribute)]
+        self._remove_attribute_from_config(origin_vertex, attribute_key)
+
+    @staticmethod
+    def _remove_attribute_from_config(vertex: "TerraformBlock", attribute_key: str) -> None:
+        # update_vertex_config only writes back non-None values, so a removal has to
+        # delete the key from the rendered config explicitly. The navigation mirrors
+        # TerraformLocalGraph.update_vertex_config for resource blocks.
+        updated_config: Any = vertex.config
+        parts = vertex.name.split(".")
+        start = 0
+        end = 1
+        while end <= len(parts):
+            cur_key = ".".join(parts[start:end])
+            if isinstance(updated_config, dict) and cur_key in updated_config:
+                updated_config = updated_config[cur_key]
+                start = end
+            end += 1
+        if isinstance(updated_config, dict):
+            updated_config.pop(attribute_key, None)
 
     @staticmethod
     def find_path_from_referenced_vertices(
