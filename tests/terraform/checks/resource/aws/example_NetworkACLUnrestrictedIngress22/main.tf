@@ -405,3 +405,50 @@ resource "aws_network_acl_rule" "unknown2" {
   from_port      = 80
   to_port        = 80
 }
+# allows every TCP port from anywhere, so port 22 is reachable
+resource "aws_network_acl" "fail_full_tcp_range" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 65535
+  }
+}
+
+resource "aws_network_acl_rule" "fail_full_tcp_range" {
+  network_acl_id = aws_network_acl.pass.id
+  rule_number    = 100
+  egress         = false
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 0
+  to_port        = 65535
+}
+
+# the lower numbered rule denies every TCP port, so the later allow never applies
+resource "aws_network_acl" "pass_full_tcp_range_denied" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 10
+    action     = "deny"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 65535
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 22
+    to_port    = 22
+  }
+}
