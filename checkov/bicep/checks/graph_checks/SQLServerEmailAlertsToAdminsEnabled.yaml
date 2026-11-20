@@ -1,0 +1,37 @@
+metadata:
+  id: "CKV_AZURE_27"
+  name: "Ensure that 'Email service and co-administrators' is 'Enabled' for MSSQL servers"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - Microsoft.Sql/servers/databases
+    - cond_type: connection
+      resource_types:
+        - Microsoft.Sql/servers/databases
+      connected_resource_types:
+        - Microsoft.Sql/servers/databases/securityAlertPolicies
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - Microsoft.Sql/servers/databases/securityAlertPolicies
+      attribute: properties.state
+      operator: equals_ignore_case
+      value: Enabled
+    # a boolean from API version 2018-06-01-preview, 'Enabled' or 'Disabled' in 2014-04-01
+    - or:
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Sql/servers/databases/securityAlertPolicies
+          attribute: properties.emailAccountAdmins
+          operator: equals_ignore_case
+          value: true
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Sql/servers/databases/securityAlertPolicies
+          attribute: properties.emailAccountAdmins
+          operator: equals_ignore_case
+          value: Enabled
