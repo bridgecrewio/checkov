@@ -24,6 +24,9 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 variables = environment.get("Variables")
                 if variables and isinstance(variables, dict):
                     for var_name, value in variables.items():
+                        if var_name in ("__file__", "__startline__", "__endline__"):
+                            continue
+
                         if isinstance(value, dict):
                             # if it is a resolved intrinsic function like !Ref: xyz, then it can't be a secret
                             continue
