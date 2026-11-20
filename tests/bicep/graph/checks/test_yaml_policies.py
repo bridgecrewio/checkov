@@ -42,6 +42,12 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_SQLServerThreatDetectionTypes(self):
         self.go("SQLServerThreatDetectionTypes")
 
+    def test_SQLServerEmailAlertsEnabled(self):
+        self.go("SQLServerEmailAlertsEnabled")
+
+    def test_SQLServerEmailAlertsToAdminsEnabled(self):
+        self.go("SQLServerEmailAlertsToAdminsEnabled")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

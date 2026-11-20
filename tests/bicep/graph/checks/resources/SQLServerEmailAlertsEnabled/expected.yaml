@@ -1,0 +1,12 @@
+pass:
+  - 'Microsoft.Sql/servers/databases.databaseNestedPolicy'
+  - 'Microsoft.Sql/servers/databases.databaseParentPolicy'
+fail:
+  - 'Microsoft.Sql/servers/databases.databaseWithoutPolicy'
+  - 'Microsoft.Sql/servers/databases.databaseDisabledPolicy'
+  - 'Microsoft.Sql/servers/databases.databaseWithoutEmailAddresses'
+  - 'Microsoft.Sql/servers/databases.databaseEmptyEmailAddresses'
+evaluated_keys:
+  - 'resource_type'
+  - 'properties/state'
+  - 'properties/emailAddresses'
