@@ -18,12 +18,13 @@ def collect_suppressions_for_report(code_lines: list[tuple[int, str]]) -> dict[s
 
     for _, line in code_lines:
         skip_search = re.search(COMMENT_REGEX, line)
-        if skip_search:
+        if skip_search and skip_search.group(2):
             check_result: _CheckResult = {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
             }
-            suppressions[skip_search.group(2)] = check_result
+            for check_id in skip_search.group(2).split(","):
+                suppressions[check_id] = check_result
 
     return suppressions
 
@@ -35,19 +36,20 @@ def collect_suppressions_for_context(code_lines: Iterable[tuple[int, int | str]]
     bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
     for line_number, line_text in code_lines:
         skip_search = re.search(COMMENT_REGEX, str(line_text))
-        if skip_search:
-            skipped_check: _SkippedCheck = {
-                "id": skip_search.group(2),
-                "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
-                "line_number": line_number
-            }
-            # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-            if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
-                skipped_check["bc_id"] = skipped_check["id"]
-                skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-            elif metadata_integration.check_metadata:
-                skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
+        if skip_search and skip_search.group(2):
+            for check_id in skip_search.group(2).split(","):
+                skipped_check: _SkippedCheck = {
+                    "id": check_id,
+                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
+                    "line_number": line_number
+                }
+                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                    skipped_check["bc_id"] = skipped_check["id"]
+                    skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
+                elif metadata_integration.check_metadata:
+                    skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
-            skipped_checks.append(skipped_check)
+                skipped_checks.append(skipped_check)
 
     return skipped_checks

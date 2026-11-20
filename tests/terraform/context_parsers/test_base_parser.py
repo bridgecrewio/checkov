@@ -16,6 +16,7 @@ mock_tf_file = os.path.dirname(os.path.realpath(__file__)) + "/mock_tf_files/moc
 mock_definition = (mock_tf_file, {"mock": [{"mock_type": {"mock_name": {"value": ["mock_value"]}}}]})
 
 inline_tf_file = os.path.dirname(os.path.realpath(__file__)) + "/mock_tf_files/inline_suppression.tf"
+inline_tf_empty_file = os.path.dirname(os.path.realpath(__file__)) + "/mock_tf_files/inline_suppression_empty.tf"
 mock_dir_path = os.path.dirname(os.path.realpath(__file__)) + "/mock_tf_files"
 
 
@@ -71,6 +72,20 @@ class TestBaseParser(unittest.TestCase):
         self.assertEqual(len(aws_s3_bucket_resources["one-line-one-check"].get("skipped_checks")), 1)
         self.assertEqual(len(aws_s3_bucket_resources["one-line-multi-checks"].get("skipped_checks")), 2)
         self.assertEqual(len(aws_s3_bucket_resources["no-comment"].get("skipped_checks")), 0)
+
+    def test_inline_suppression_empty_check_id(self):
+        parser = TFParser()
+        _, tf_definition = parser.parse_hcl_module(mock_dir_path, source='TERRAFORM')
+        resources_parser = ResourceContextParser()
+        parser_registry.register(resources_parser)
+        inline_key = TFDefinitionKey(inline_tf_empty_file)
+        inline_suppression_definition = tf_definition[inline_key]
+        definition_context = parser_registry.enrich_definitions_context((inline_key, inline_suppression_definition))
+
+        aws_s3_bucket_resources = definition_context[inline_key]["resource"]["aws_s3_bucket"]
+
+        # an empty check id must not crash parsing and must not suppress anything
+        self.assertEqual(len(aws_s3_bucket_resources["empty-skip-comment"].get("skipped_checks")), 0)
 
 
 if __name__ == "__main__":

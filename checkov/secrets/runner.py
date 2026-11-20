@@ -725,7 +725,8 @@ class Runner(BaseRunner[None, None, None]):
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
             lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
-            if skip_search and (skip_search.group(2) == check_id or skip_search.group(2) == bc_check_id):
+            skip_check_ids = skip_search.group(2).split(",") if skip_search and skip_search.group(2) else []
+            if skip_check_ids and (check_id in skip_check_ids or bc_check_id in skip_check_ids):
                 comment: str = skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 return {
                     "result": CheckResult.SKIPPED,

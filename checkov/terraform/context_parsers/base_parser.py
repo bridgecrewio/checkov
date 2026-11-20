@@ -105,7 +105,7 @@ class BaseContextParser(ABC):
             for (line_num, x) in self.file_lines
             if self.is_optional_comment_line(x)
             for match in [re.search(COMMENT_REGEX, x)]
-            if match
+            if match and match.group(2)
             for identifier in match.group(2).split(",")
         ]
         for entity_block in definition_blocks:
