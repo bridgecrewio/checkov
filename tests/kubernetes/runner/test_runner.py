@@ -1,9 +1,11 @@
 import dis
 import inspect
 import os
+import tempfile
 import unittest
 from collections import defaultdict
 from pathlib import Path
+from unittest import mock
 
 from parameterized import parameterized_class
 
@@ -13,6 +15,7 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
@@ -177,6 +180,44 @@ class TestRunnerValid(unittest.TestCase):
             self.assertGreater(len(report.failed_checks) + len(report.passed_checks), 0)
         except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
+
+    def test_unparsable_file_is_reported_as_parsing_error(self):
+        # a single '=' is a valid YAML value, but the safe loader can't construct it,
+        # so the file used to be skipped without any indication in the report
+        invalid_template = (
+            "apiVersion: v1\n"
+            "kind: Service\n"
+            "metadata:\n"
+            "  name: test\n"
+            "  labels:\n"
+            "    test: =\n"
+            "spec:\n"
+            "  selector:\n"
+            "    app: test\n"
+            "  ports:\n"
+            "  - port: 8080\n"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            scan_file_path = os.path.join(tmp_dir, "service.yaml")
+            with open(scan_file_path, "w") as f:
+                f.write(invalid_template)
+
+            runner = Runner(db_connector=self.db_connector())
+            report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                                runner_filter=RunnerFilter(framework=['kubernetes']))
+
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+        self.assertEqual(report.get_summary()["parsing_errors"], 1)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        # the file is now part of the report, so 'CKV_PARSE_ERROR_FAIL' can act on it
+        exit_code_thresholds = {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None,
+                                'hard_fail_checks': [], 'hard_fail_threshold': None}
+        self.assertEqual(report.get_exit_code(exit_code_thresholds), 0)
+        with mock.patch.dict(os.environ, {PARSE_ERROR_FAIL_FLAG: "true"}):
+            self.assertEqual(report.get_exit_code(exit_code_thresholds), 1)
 
     def test_record_includes_severity(self):
         custom_check_id = "CKV_MY_CUSTOM_CHECK"
