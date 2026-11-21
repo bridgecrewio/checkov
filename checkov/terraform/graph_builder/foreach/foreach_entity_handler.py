@@ -25,6 +25,13 @@ class ForeachEntityHandler(ForeachAbstractHandler):
         self._create_new_resources(block_index_to_statement)
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
+        oracle = getattr(self.local_graph, "foreach_statement_oracle", None)
+        if oracle is not None and resources_blocks:
+            # opt-in (diff-files-only PR scan): expansion values provably unchanged since the baseline are reused
+            return oracle.statements(self, resources_blocks)
+        return self._get_statements_checkov(resources_blocks)
+
+    def _get_statements_checkov(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
         if not resources_blocks:
             return {}
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}

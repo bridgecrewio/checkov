@@ -3,11 +3,16 @@ from __future__ import annotations
 from abc import abstractmethod
 from collections import defaultdict
 from functools import partial
-from typing import List, Dict, Callable, Union, Any, Set, Iterable, TypeVar, Generic, TYPE_CHECKING
+from typing import List, Dict, Callable, Union, Any, Set, Iterable, TypeVar, Generic, Optional, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_resources_encription_manager import GraphResourcesEncryptionManager
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.deterministic import (
+    deterministic_graph_enabled,
+    incremental_graph_enabled,
+    stable_block_key,
+)
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder import Edge
@@ -26,6 +31,9 @@ class LocalGraph(Generic[_Block]):
         self.vertex_hash_cache: Dict[int, str] = defaultdict(str)
         self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self._graph_resource_encryption_manager = GraphResourcesEncryptionManager()
+        self.stable_key_cache: Optional[Dict[int, tuple[str, ...]]] = None
+        """Set by the renderer for the duration of one edge loop (opt-in, CHECKOV_STABLE_KEY_CACHE): the vertex list
+        and the fields a stable key reads do not change while edges are evaluated."""
 
     @abstractmethod
     def build_graph(self, render_variables: bool) -> None:
@@ -56,6 +64,8 @@ class LocalGraph(Generic[_Block]):
         return res
 
     def sort_edged_by_dest_out_degree(self, edges: Iterable[Edge]) -> List[Edge]:
+        if deterministic_graph_enabled():
+            return sorted(edges, key=lambda e: (len(self.out_edges[e.dest]), self.stable_edge_key(e)))
         edged_by_out_degree: Dict[int, List[Edge]] = {}
         for edge in edges:
             dest_out_degree = len(self.out_edges[edge.dest])
@@ -65,8 +75,28 @@ class LocalGraph(Generic[_Block]):
             sorted_edges.extend(edged_by_out_degree[degree])
         return sorted_edges
 
+    def stable_vertex_key(self, index: int) -> tuple[str, ...]:
+        """Identity of a vertex that does not depend on its position in the graph (see deterministic mode)."""
+        cache: Optional[Dict[int, tuple[str, ...]]] = getattr(self, "stable_key_cache", None)
+        if cache is not None:
+            key = cache.get(index)
+            if key is None:
+                key = self._compute_stable_vertex_key(index)
+                cache[index] = key
+            return key
+        return self._compute_stable_vertex_key(index)
+
+    def _compute_stable_vertex_key(self, index: int) -> tuple[str, ...]:
+        vertex = self.vertices[index]
+        if not vertex:
+            return ("",)
+        return stable_block_key(vertex)
+
+    def stable_edge_key(self, edge: Edge) -> tuple[Any, ...]:
+        return self.stable_vertex_key(edge.origin), edge.label, self.stable_vertex_key(edge.dest)
+
     @abstractmethod
-    def update_vertices_configs(self) -> None:
+    def update_vertices_configs(self, skip: Optional[Set[int]] = None) -> None:
         pass
 
     @staticmethod
@@ -93,6 +123,8 @@ class LocalGraph(Generic[_Block]):
         previous_breadcrumbs = []
         if attribute_at_dest and change_origin_id is not None:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
+            if incremental_graph_enabled():
+                previous_breadcrumbs = list(previous_breadcrumbs)
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest, transform_step
         )

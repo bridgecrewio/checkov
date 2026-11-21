@@ -533,6 +533,86 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             env_var="CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS",
         )
         self.add(
+            "--deterministic-graph",
+            default=False,
+            action="store_true",
+            env_var="CHECKOV_DETERMINISTIC_GRAPH",
+            help="Evaluate graphs in a stable, context-independent order (required for incremental scanning)",
+        )
+        self.add(
+            "--incremental-metadata-out",
+            default=None,
+            help="Periodic scan: scan the whole directory and write the incremental metadata graph to this file",
+        )
+        self.add(
+            "--incremental-baseline",
+            default=None,
+            help="PR scan: metadata graph produced by a previous --incremental-metadata-out run",
+        )
+        self.add(
+            "--export-graph",
+            default=None,
+            env_var="CHECKOV_EXPORT_GRAPH",
+            help="Export rendered graph artifact to the given JSON file for incremental scanning",
+        )
+        self.add(
+            "--import-graph",
+            default=None,
+            env_var="CHECKOV_IMPORT_GRAPH",
+            help="Load baseline graph artifact from JSON file and incrementally re-render affected vertices only",
+        )
+        self.add(
+            "--changed-files",
+            default=None,
+            help="PR scan: comma separated repository-relative paths changed/added/deleted by the PR (the MR diff)",
+        )
+        self.add(
+            "--diff-baseline-out",
+            default=None,
+            help="Terraform diff-files-only: full scan of -d, write the baseline artifact to this file",
+        )
+        self.add(
+            "--diff-baseline",
+            default=None,
+            help="Terraform diff-files-only PR scan: baseline artifact (from --diff-baseline-out). -d holds ONLY the "
+                 "changed files",
+        )
+        self.add(
+            "--diff-changes",
+            default=None,
+            help="Terraform diff-files-only PR scan: file-operation metadata JSON "
+                 '{"changed": [...], "deleted": [...], "renamed": [{"from": .., "to": ..}]}',
+        )
+        self.add(
+            "--diff-baseline-commit",
+            default=None,
+            help="Terraform diff-files-only baseline: the commit -d is a checkout of (recorded in the artifact with "
+                 "every file's git blob SHA)",
+        )
+        self.add(
+            "--diff-scan-target",
+            default=None,
+            help="Terraform diff-files-only PR scan: JSON {\"base_commit\": B, \"target_tree_id\": T, \"manifest\": "
+                 "{path: git blob SHA} for EVERY file of the scan target tree}; the scan is refused unless "
+                 "--diff-changes is exactly the B -> T diff",
+        )
+        self.add(
+            "--external-modules-dir",
+            default=None,
+            help="Terraform diff-files-only: all resolved external modules (<dir>/manifest.txt + <dir>/_sources/...)",
+        )
+        self.add(
+            "--diff-full-scan",
+            default=False,
+            action="store_true",
+            help="Terraform diff-files-only: deterministic full scan of -d with the same flags (reference / oracle)",
+        )
+        self.add(
+            "--diff-report",
+            default=None,
+            help="Terraform diff-files-only PR scan: write the rebuilt/reused counters to this JSON file",
+        )
+        self.add(
             "--deep-analysis",
             default=False,
             action="store_true",

@@ -5,12 +5,35 @@ from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class TFModule:
     path: str
     name: str | None
     nested_tf_module: TFModule | None = None
     foreach_idx: int | str | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "_hash", hash((self.path, self.name, self.nested_tf_module, self.foreach_idx)))
+
+    def __hash__(self) -> int:
+        h = getattr(self, "_hash", None)
+        if h is None:
+            h = hash((self.path, self.name, self.nested_tf_module, self.foreach_idx))
+            object.__setattr__(self, "_hash", h)
+        return h
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
+        if not isinstance(other, TFModule) or hash(self) != hash(other):
+            return False
+        return (self.path == other.path and self.name == other.name
+                and self.foreach_idx == other.foreach_idx and self.nested_tf_module == other.nested_tf_module)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        for k, v in state.items():
+            object.__setattr__(self, k, v)
+        object.__setattr__(self, "_hash", hash((self.path, self.name, self.nested_tf_module, self.foreach_idx)))
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, TFModule):
@@ -45,10 +68,32 @@ class TFModule:
                             'nested_tf_module') else None)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class TFDefinitionKey:
     file_path: str
     tf_source_modules: TFModule | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "_hash", hash((self.file_path, self.tf_source_modules)))
+
+    def __hash__(self) -> int:
+        h = getattr(self, "_hash", None)
+        if h is None:
+            h = hash((self.file_path, self.tf_source_modules))
+            object.__setattr__(self, "_hash", h)
+        return h
+
+    def __eq__(self, other: object) -> bool:
+        if self is other:
+            return True
+        if not isinstance(other, TFDefinitionKey) or hash(self) != hash(other):
+            return False
+        return self.file_path == other.file_path and self.tf_source_modules == other.tf_source_modules
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        for k, v in state.items():
+            object.__setattr__(self, k, v)
+        object.__setattr__(self, "_hash", hash((self.file_path, self.tf_source_modules)))
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, TFDefinitionKey):

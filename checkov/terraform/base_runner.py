@@ -29,12 +29,14 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.terraform.graph_builder.graph_to_tf_definitions import breadcrumbs_key
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.terraform.tf_parser import TFParser
 from checkov.common.util.env_vars_config import env_vars_config
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, module_chain_key
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -55,6 +57,14 @@ _CUSTOM_CHECK_ID_RE = re.compile(r'^[A-Za-z]+_CUSTOM_([a-f0-9\-]{36})$', re.IGNO
 # Controls whether *_CUSTOM_<uuid> skip comments can match checks with different prefixes.
 # Set CKV_CUSTOM_PREFIX_SUPPRESSION=false to disable and use exact equality only (for benchmarking).
 _CUSTOM_PREFIX_SUPPRESSION_ENABLED = os.environ.get("CKV_CUSTOM_PREFIX_SUPPRESSION", "true").lower() != "false"
+
+
+def _source_module_of(entity: dict[str, Any]) -> Any:
+    source_module = entity.get(CustomAttributes.SOURCE_MODULE_OBJECT)
+    if isinstance(source_module, dict):
+        from checkov.terraform.modules.module_objects import TFModule
+        return TFModule.from_json(source_module)
+    return source_module
 
 
 def _skip_matches_check_id(skip_id: str, check_id: str) -> bool:
@@ -230,8 +240,12 @@ class BaseTerraformRunner(
                         connected_node=connected_node_data,
                         definition_context_file_path=definition_context_file_path,
                     )
+                    breadcrumb_key = resource
+                    if deterministic_graph_enabled():
+                        record.module_chain = module_chain_key(_source_module_of(entity))
+                        breadcrumb_key = breadcrumbs_key(resource, _source_module_of(entity))
                     if self.breadcrumbs:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(breadcrumb_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)

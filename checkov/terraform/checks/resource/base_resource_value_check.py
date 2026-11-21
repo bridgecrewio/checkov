@@ -11,7 +11,6 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
-from checkov.terraform.parser_functions import handle_dynamic_values
 
 ARRAY_INDEX_PATTERN = re.compile(r"^\[?\d+]?$")
 
@@ -55,7 +54,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         return any(x in key for x in inspected_attributes)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        handle_dynamic_values(conf)
+        self.handle_dynamic_values_unless_expanded(conf)
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:

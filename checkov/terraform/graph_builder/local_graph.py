@@ -6,11 +6,14 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, TypedDict, cast
+from typing import List, Optional, Union, Any, Dict, Set, TypedDict, cast
 
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
+from checkov.common.graph.graph_builder.deterministic import module_output_index_enabled
+from checkov.common.graph.graph_builder.deterministic import deterministic_graph_enabled, incremental_graph_enabled, \
+    realpath_memo_enabled
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys, \
@@ -31,6 +34,7 @@ from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
+    nested_prefix_index,
     remove_index_pattern_from_str, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
     get_sanitized_terraform_resource_id
@@ -76,6 +80,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._vertex_path_to_realpath_cache: Dict[str, str] = {}
 
     def build_graph(self, render_variables: bool) -> None:
+        self.build_pre_render_graph()
+        if render_variables:
+            self.render_and_finalize_graph()
+        else:
+            self.update_vertices_fields()
+
+    def build_pre_render_graph(self) -> None:
+        """Vertices, edges, for_each / count expansion and the pre-render passes: everything before rendering."""
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
@@ -94,24 +106,27 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         self._connect_module_provider()
-        if render_variables:
-            logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
-            renderer = TerraformVariableRenderer(self)
-            renderer.render_variables_from_local_graph()
-            self.update_vertices_fields()
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
-                # experimental flag on building cross variable edges for terraform graph
-                logging.info("Building cross variable edges")
-                edges_count = len(self.edges)
-                self._build_cross_variable_edges()
-                logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
-            # building S3 edges by name for terraform graph
-            logging.info("Building S3 edges name references")
+
+    def render_and_finalize_graph(self) -> None:
+        logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
+        renderer = TerraformVariableRenderer(self)
+        renderer.render_variables_from_local_graph()
+        self.update_vertices_fields()
+        self.build_post_render_edges()
+
+    def build_post_render_edges(self) -> None:
+        """Edges derived from rendered values; they read the whole graph, never change vertex attributes."""
+        if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
+            # experimental flag on building cross variable edges for terraform graph
+            logging.info("Building cross variable edges")
             edges_count = len(self.edges)
-            self._build_s3_name_reference_edges()
-            logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
-        else:
-            self.update_vertices_fields()
+            self._build_cross_variable_edges()
+            logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
+        # building S3 edges by name for terraform graph
+        logging.info("Building S3 edges name references")
+        edges_count = len(self.edges)
+        self._build_s3_name_reference_edges()
+        logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
 
     def update_vertices_fields(self) -> None:
         # Important to keep those 2 functions together, as the first affects the calculation of the second
@@ -165,36 +180,47 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             6. If still no provider is found, iterates through nested modules to find a provider.
             7. Assigns the provider fields to the vertex once a provider is determined.
         """
+        isolate_failures = deterministic_graph_enabled() and os.getenv("DFO_NEGATIVE", "") != "provider_pass_aborts"
         for vertex in self.vertices:
-            if vertex.block_type == BlockType.RESOURCE:
-                path_for_tf_definition = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
-                if BlockType.PROVIDER in vertex.attributes:
-                    provider = self._get_the_default_provider(vertex.attributes[BlockType.PROVIDER], path_for_tf_definition)
-                    self._assign_provider_fields(vertex, provider)
-                elif BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, {}):
-                    provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []), path_for_tf_definition, is_same_file=True)
-                    v_name = vertex.name.split('.')
-                    provider_name = vertex.config[v_name[0]][v_name[1]][CustomAttributes.TF_RESOURCE_ADDRESS].replace(vertex.name, provider_name)
-                    self._assign_provider_fields(vertex, provider_name)
-                else:
-                    while path_for_tf_definition.tf_source_modules:
-                        if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
-                            module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+            if not isolate_failures:
+                self._add_provider_attr_to_resource(vertex)
+                continue
+            try:
+                self._add_provider_attr_to_resource(vertex)
+            except Exception as e:
+                # One failing vertex must not decide, through vertex order, which other vertices get the attribute.
+                logging.info(f'Failed to add provider attributes to {vertex.name}, error: {str(e)}')
+
+    def _add_provider_attr_to_resource(self, vertex: TerraformBlock) -> None:
+        if vertex.block_type == BlockType.RESOURCE:
+            path_for_tf_definition = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
+            if BlockType.PROVIDER in vertex.attributes:
+                provider = self._get_the_default_provider(vertex.attributes[BlockType.PROVIDER], path_for_tf_definition)
+                self._assign_provider_fields(vertex, provider)
+            elif BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, {}):
+                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []), path_for_tf_definition, is_same_file=True)
+                v_name = vertex.name.split('.')
+                provider_name = vertex.config[v_name[0]][v_name[1]][CustomAttributes.TF_RESOURCE_ADDRESS].replace(vertex.name, provider_name)
+                self._assign_provider_fields(vertex, provider_name)
+            else:
+                while path_for_tf_definition.tf_source_modules:
+                    if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
+                        module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+                        provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
+                        self._assign_provider_fields(vertex, provider_name)
+                        break
+                    elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
+                        if vertex.source_module_object and vertex.source_module_object.nested_tf_module:
+                            module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]  # type:ignore
                             provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                             self._assign_provider_fields(vertex, provider_name)
-                            break
-                        elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
-                            if vertex.source_module_object and vertex.source_module_object.nested_tf_module:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]  # type:ignore
-                                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
-                                self._assign_provider_fields(vertex, provider_name)
-                            else:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
-                                provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
-                                self._assign_provider_fields(vertex, provider_name)
-                            break
                         else:
-                            path_for_tf_definition = TFDefinitionKey(tf_source_modules=path_for_tf_definition.tf_source_modules.nested_tf_module, file_path=path_for_tf_definition.tf_source_modules.path)
+                            module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
+                            provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
+                            self._assign_provider_fields(vertex, provider_name)
+                        break
+                    else:
+                        path_for_tf_definition = TFDefinitionKey(tf_source_modules=path_for_tf_definition.tf_source_modules.nested_tf_module, file_path=path_for_tf_definition.tf_source_modules.path)
 
     @staticmethod
     def _assign_provider_fields(vertex: TerraformBlock, provider_name: str) -> None:
@@ -204,7 +230,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _get_provider_address(self, path_for_tf_definition: TFDefinitionKeyType) -> list[int] | None:
         if isinstance(path_for_tf_definition, TFDefinitionKey):
-            return self.vertices_by_module_dependency[path_for_tf_definition.tf_source_modules].get(BlockType.PROVIDER)
+            providers = self.vertices_by_module_dependency[path_for_tf_definition.tf_source_modules].get(BlockType.PROVIDER)
+            if providers and deterministic_graph_enabled():
+                # every root module shares the module key None: keep only providers of the same module directory
+                directory = self.get_dirname(path_for_tf_definition.file_path)
+                providers = [i for i in providers if self.get_dirname(self.vertices[i].path) == directory]
+            return providers
         return None
 
     def _get_the_default_provider(
@@ -277,7 +308,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for module_idx in self.vertices_by_block_type[BlockType.MODULE]:
             module_vertex = self.vertices[module_idx]
             composed_key = (
-                module_vertex.name,
+                module_vertex.name.split("[", 1)[0] if "[" in module_vertex.name else module_vertex.name,
                 module_vertex.path,
                 module_vertex.source_module_object,
                 module_vertex.for_each_index,
@@ -314,9 +345,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 referenced_modules: Optional[List[Dict[str, Any]]] = None) -> None:
 
         attribute_is_leaf = get_attribute_is_leaf(vertex)
+        prefix_index = nested_prefix_index(vertex.attributes)
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
-                    attribute_key, vertex.attributes, attribute_is_leaf
+                    attribute_key, vertex.attributes, attribute_is_leaf, prefix_index
             ):
                 continue
             referenced_vertices = get_referenced_vertices_in_value(
@@ -422,29 +454,32 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _connect_module_provider(self) -> None:
         for origin_node_index, referenced_vertices in self.out_edges.items():
-            if not referenced_vertices:
-                continue
-            vertex = self.vertices[origin_node_index]
-            # if we have an edge of module->provider we need to connect that modules' resources to the provider
-            if vertex.block_type == BlockType.MODULE:
-                try:
-                    tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
-                    if tf_def and isinstance(tf_def, list):
-                        if isinstance(tf_def[0], str):
-                            definition = json.loads(tf_def[0])
-                            tf_module = TFDefinitionKey.from_json(definition).tf_source_modules
-                        else:
-                            tf_module = tf_def[0].tf_source_modules
-                        # get all resources connected to module
-                        resources = self.vertices_by_module_dependency[tf_module].get("resource")
-                        if resources:
-                            # search for provider vertices in the referenced vertices
-                            for e in referenced_vertices:
-                                if self.vertices[e.dest].block_type == BlockType.PROVIDER:
-                                    for resource in resources:
-                                        self.create_edge(resource, e.dest, e.label)
-                except Exception as e:
-                    logging.warning(f"Failed in connecting module resources to provider due to {e}")
+            self._connect_module_provider_for_vertex(origin_node_index, referenced_vertices)
+
+    def _connect_module_provider_for_vertex(self, origin_node_index: int, referenced_vertices: List[Edge]) -> None:
+        if not referenced_vertices:
+            return
+        vertex = self.vertices[origin_node_index]
+        # if we have an edge of module->provider we need to connect that modules' resources to the provider
+        if vertex.block_type == BlockType.MODULE:
+            try:
+                tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
+                if tf_def and isinstance(tf_def, list):
+                    if isinstance(tf_def[0], str):
+                        definition = json.loads(tf_def[0])
+                        tf_module = TFDefinitionKey.from_json(definition).tf_source_modules
+                    else:
+                        tf_module = tf_def[0].tf_source_modules
+                    # get all resources connected to module
+                    resources = self.vertices_by_module_dependency[tf_module].get("resource")
+                    if resources:
+                        # search for provider vertices in the referenced vertices
+                        for e in referenced_vertices:
+                            if self.vertices[e.dest].block_type == BlockType.PROVIDER:
+                                for resource in resources:
+                                    self.create_edge(resource, e.dest, e.label)
+            except Exception as e:
+                logging.warning(f"Failed in connecting module resources to provider due to {e}")
 
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
@@ -530,6 +565,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             output_blocks_with_name = self.vertices_block_name_map.get(BlockType.OUTPUT, {}).get(
                 block_name_in_other_module, []
             )
+            if module_output_index_enabled():
+                output_blocks_with_name = self._outputs_of_module_instance(
+                    block_name_in_other_module, output_blocks_with_name, dest_module_path, module_node)
             for vertex_index in output_blocks_with_name:
                 vertex = self.vertices[vertex_index]
                 if self._should_add_edge(vertex, dest_module_path, module_node):
@@ -537,6 +575,32 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if added_edge:
                         self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break
+
+    def _outputs_of_module_instance(self, name: str, candidates: List[int], dest_module_path: str,
+                                    module_node: TerraformBlock) -> List[int]:
+        # Correctness: _should_add_edge (deterministic) is True exactly for candidates with
+        # dirname(path) == dest_module_path and source_module_object == get_vertex_as_tf_module(module_node);
+        # the loop below still calls it, so this only drops candidates it would reject.
+        """The candidates _should_add_edge can accept, in their original order: deterministic mode accepts only an
+        output whose source_module_object equals this module block's instance, so the candidates are bucketed once
+        per output name by (dirname, source_module_object) instead of every call scanning all outputs of that name
+        (O(outputs) per reference -> O(1); Customer 2: 69 M _should_add_edge calls in one PR). The bucket map is
+        rebuilt whenever the name index or any candidate vertex object changed (for_each replaces vertices)."""
+        if not deterministic_graph_enabled():
+            return candidates
+        cache: Dict[str, Any] = self.__dict__.setdefault("_module_output_index", {})
+        signature = (id(self.vertices_block_name_map), len(self.vertices), len(candidates),
+                     hash(tuple(id(self.vertices[i]) for i in candidates)))
+        index = cache.get(name)
+        if index is None or index[0] != signature:
+            buckets: Dict[Any, List[int]] = defaultdict(list)
+            for vertex_index in candidates:
+                vertex = self.vertices[vertex_index]
+                if vertex.source_module_object:
+                    buckets[(self.get_dirname(vertex.path), vertex.source_module_object)].append(vertex_index)
+            index = (signature, buckets)
+            cache[name] = index
+        return index[1].get((dest_module_path, get_vertex_as_tf_module(module_node)), [])
 
     def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
         """
@@ -605,12 +669,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 return indices
         return []
 
+    def _origin_realpath(self, origin_path: str) -> str:
+        if not realpath_memo_enabled():
+            return os.path.realpath(origin_path)
+        cached = self._vertex_path_to_realpath_cache.get(origin_path)
+        if cached is None:
+            cached = os.path.realpath(origin_path)
+            self._vertex_path_to_realpath_cache[origin_path] = cached
+        return cached
+
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
         vertices_with_longest_common_prefix = []
-        origin_real_path = os.path.realpath(origin_path)
+        origin_real_path = self._origin_realpath(origin_path)
         for vertex_index in relevant_vertices_indexes:
             vertex = self.vertices[vertex_index]
             if vertex.path in self._vertex_path_to_realpath_cache:
@@ -715,12 +788,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         attribute_at_dest = self.vertices[change_origin_id].find_attribute(attribute_at_dest)
         if attribute_at_dest:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
+            if incremental_graph_enabled():
+                previous_breadcrumbs = list(previous_breadcrumbs)
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest
         )
 
-    def update_vertices_configs(self) -> None:
-        for vertex in self.vertices:
+    def update_vertices_configs(self, skip: Optional[Set[int]] = None) -> None:
+        if skip and len(skip) * 2 > len(self.vertices):
+            indices: Iterable[int] = sorted(set(range(len(self.vertices))) - skip)
+        else:
+            indices = range(len(self.vertices))
+        for index in indices:
+            if skip and index in skip:
+                continue
+            vertex = self.vertices[index]
             changed_attributes = list(vertex.changed_attributes.keys())
             changed_attributes = filter_sub_keys(changed_attributes)
             self.update_vertex_config(vertex, changed_attributes)
@@ -763,7 +845,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             update_dictionary_attribute(vertex.config, vertex_name, updated_config, dynamic_blocks)
 
     def get_resources_types_in_graph(self) -> List[str]:
-        return self.module.get_resources_types()
+        cached = getattr(self, "_cached_resources_types", None)
+        if cached is not None and len(cached) == len(self.module.resources_types):
+            return cached
+        res = self.module.get_resources_types()
+        self._cached_resources_types = res
+        return res
 
     def _update_vertices_breadcrumbs_and_module_connections(self) -> None:
         """
@@ -852,6 +939,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def _should_add_edge(self, vertex: TerraformBlock, dest_module_path: str, module_node: TerraformBlock) -> bool:
         if not vertex.source_module_object:
             return False
+        if deterministic_graph_enabled():
+            # the output must belong to the instance created by this exact module block; matching on the caller
+            # file alone links every root module that reaches the same module code through the same file
+            return self.get_dirname(vertex.path) == dest_module_path and \
+                vertex.source_module_object == get_vertex_as_tf_module(module_node)
 
         return (self.get_dirname(vertex.path) == dest_module_path) and \
             (
@@ -864,7 +956,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if CustomAttributes.VIRTUAL_RESOURCES in vertex.config:
             for i, v in enumerate(self.vertices):
                 if v.name in vertex.config[CustomAttributes.VIRTUAL_RESOURCES]:
+                    if deterministic_graph_enabled() and not self._same_module_instance(v, vertex):
+                        # instances are matched by bare name; only the ones expanded from this block are its own
+                        continue
                     self.create_edge(i, origin_node_index, VIRTUAL_RESOURCE)
+
+    @staticmethod
+    def _same_module_instance(vertex: TerraformBlock, other: TerraformBlock) -> bool:
+        return vertex.path == other.path and vertex.source_module_object == other.source_module_object
 
 
 def get_vertex_as_tf_module(block: TerraformBlock) -> TFModule:

@@ -111,9 +111,43 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
                     return input_str
 
 
+WHOLE_REFERENCE_FIX_ENV = "CHECKOV_RENDER_WHOLE_REFERENCE_KEEPS_TYPE"
+"""Opt-in: `x = local.y` where local.y is a map / list keeps the map / list (see _is_whole_reference)."""
+
+
+def _whole_reference_fix_enabled() -> bool:
+    return os.getenv(WHOLE_REFERENCE_FIX_ENV, "false").lower() == "true"
+
+
+def _is_whole_reference(item: Any, str_to_replace: str) -> bool:
+    """The value is exactly one reference: `${local.y}`, `local.y` or `"${local.y}"` (nothing around it)."""
+    if not isinstance(item, str):
+        return False
+    stripped = item.strip()
+    return stripped in (str_to_replace, "${" + str_to_replace + "}", '"${' + str_to_replace + '}"',
+                        '"' + str_to_replace + '"')
+
+
+class WholeReferenceValue(list):  # type: ignore[type-arg]
+    """[value] produced for `x = local.y` when local.y is a map / list: marks the replacement as an already-evaluated
+    value so update_evaluated_value stores it as is (a plain list behaves the same everywhere else)."""
+
+
+def whole_reference_value(value: Any) -> Optional[list[Any]]:
+    return value if isinstance(value, WholeReferenceValue) else None
+
+
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
     if original_str is None or type(original_str) not in (str, list):
         return original_str
+
+    if (type(original_str) is list and len(original_str) == 1 and isinstance(replaced_value, (list, dict))
+            and _whole_reference_fix_enabled() and _is_whole_reference(original_str[0], str_to_replace)):
+        # `x = local.y` (HCL attributes are parsed as one-element lists) where local.y is a map / list: the value IS
+        # the referenced map / list. Replacing inside the element would turn it into its Python repr string, which
+        # evaluate_terraform then parses as a one-element list holding that STRING; every later `local.x.k.attr`
+        # lookup then fails and falls back to the whole value, duplicating the map into every referrer.
+        return WholeReferenceValue([replaced_value])
 
     if type(original_str) is list:
         for i, item in enumerate(original_str):
