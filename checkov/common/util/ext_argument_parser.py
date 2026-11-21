@@ -182,6 +182,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="Path to a PEM-encoded ECDSA P-256 public key used to verify "
                  "every .py file under --external-checks-dir / --external-checks-git "
                  "before it is loaded. Can be specified multiple times to rotate keys. "
+                 "Requires the optional 'ecdsa' dependency: install it with "
+                 "'pip install checkov[signed-checks]'. "
                  "When set, any file without a valid '# checkov-digest: <hex>' trailer "
                  "signed by one of the configured keys causes Checkov to exit with code 2 "
                  "before scanning (or 0 if --no-fail-on-crash is also set; the "

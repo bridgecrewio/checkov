@@ -6,13 +6,10 @@ import hashlib
 import logging
 from typing import Iterable
 
-# ecdsa ships no py.typed marker; suppress the strict-mode import-untyped
-# noise here rather than polluting mypy.ini for a single MR-scoped dependency.
-from ecdsa import BadSignatureError, NIST256p  # type: ignore[import-untyped]
-from ecdsa.der import UnexpectedDER  # type: ignore[import-untyped]
-from ecdsa.errors import MalformedPointError  # type: ignore[import-untyped]
-from ecdsa.util import sigdecode_der  # type: ignore[import-untyped]
-
+# ``ecdsa`` is an optional dependency (the ``signed-checks`` extra); every
+# primitive is resolved through the lazy ``_ecdsa`` accessor so that
+# ``import checkov`` stays free of it.
+from . import _ecdsa
 from .keys import VerificationKey
 from .trailer_format import (
     decode_hex_signature,
@@ -23,16 +20,6 @@ from .trailer_format import (
 
 
 logger = logging.getLogger(__name__)
-
-
-_SECP256R1_N = NIST256p.order
-
-_EXPECTED_VERIFY_ERRORS = (
-    BadSignatureError,
-    UnexpectedDER,
-    MalformedPointError,
-    ValueError,
-)
 
 
 class VerificationResult(enum.Enum):
@@ -46,13 +33,14 @@ class VerificationResult(enum.Enum):
 
 def _signature_is_well_formed(sig_der: bytes) -> bool:
     """Strict-DER decode plus ECDSA ``[1, n-1]`` range check on ``r`` and ``s``."""
+    order = _ecdsa.secp256r1_order()
     try:
-        r, s = sigdecode_der(sig_der, _SECP256R1_N)
+        r, s = _ecdsa.sigdecode_der()(sig_der, order)
     except Exception:
         return False
-    if r <= 0 or r >= _SECP256R1_N:
+    if r <= 0 or r >= order:
         return False
-    if s <= 0 or s >= _SECP256R1_N:
+    if s <= 0 or s >= order:
         return False
     return True
 
@@ -62,13 +50,15 @@ def _verify_against_keys(
     sig_der: bytes,
     keys: "Iterable[VerificationKey]",
 ) -> VerificationResult:
+    expected_errors = _ecdsa.verify_error_types()
+    sigdecode = _ecdsa.sigdecode_der()
     for key in keys:
         try:
             key.public_key.verify(
-                sig_der, payload, hashfunc=hashlib.sha256, sigdecode=sigdecode_der,
+                sig_der, payload, hashfunc=hashlib.sha256, sigdecode=sigdecode,
             )
             return VerificationResult.OK
-        except _EXPECTED_VERIFY_ERRORS:
+        except expected_errors:
             continue
     return VerificationResult.UNKNOWN_KEY
 
