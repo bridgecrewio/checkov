@@ -953,7 +953,7 @@ def test_load_public_keys_propagates_unexpected_exception_types(
         raise sentinel
 
     from checkov.common.external_checks.verification import keys as keys_mod
-    monkeypatch.setattr(keys_mod.VerifyingKey, "from_pem", staticmethod(_exploding_from_pem))
+    monkeypatch.setattr(keys_mod, "load_pem_public_key", _exploding_from_pem)
 
     with pytest.raises(RuntimeError) as raised:
         load_public_keys([str(pem_path)])
@@ -991,13 +991,10 @@ def test_verify_against_keys_propagates_unexpected_exception_types():
     # Build a plausible signed file: real body + a well-formed trailer.
     # Sign with an actual key so well-formedness passes, then point
     # verify_bytes at a MOCK key that raises on .verify().
-    from ecdsa import NIST256p, SigningKey
-    from ecdsa.util import sigencode_der
-    import hashlib
-    priv = SigningKey.generate(curve=NIST256p)
-    sig_der = priv.sign_deterministic(
-        body, hashfunc=hashlib.sha256, sigencode=sigencode_der,
-    )
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import ec
+    priv = ec.generate_private_key(ec.SECP256R1())
+    sig_der = priv.sign(body, ec.ECDSA(hashes.SHA256()))
     file_bytes = body + b"# checkov-digest: " + sig_der.hex().encode("ascii") + b"\n"
 
     mock_public_key = MagicMock()
@@ -1018,25 +1015,24 @@ def test_verify_against_keys_propagates_unexpected_exception_types():
 
 
 # --------------------------------------------------------------------------
-# 12. T2: `cryptography` library is NOT in the import graph.
+# 12. T2: `ecdsa` library is NOT in the import graph.
 #
-# The migration off ``cryptography`` to ``ecdsa`` is a deliberate
-# dependency reduction. A future PR that re-introduces a transitive
-# ``cryptography`` import (e.g. via a sibling util that gets pulled in
-# by the verification package) would silently revive the old dep.
+# The migration off ``ecdsa`` to ``cryptography`` resolves CVE-2024-23342.
+# A future PR that re-introduces a transitive ``ecdsa`` import would
+# silently revive the vulnerable dep.
 # --------------------------------------------------------------------------
 
 
-def test_verification_package_does_not_import_cryptography():
-    """Pin the dep migration: no transitive ``cryptography`` import via
+def test_verification_package_does_not_import_ecdsa():
+    """Pin the dep migration: no transitive ``ecdsa`` import via
     the verification surface."""
     import sys
     from checkov.common.external_checks import verification  # noqa: F401
 
-    cryptography_modules = [m for m in sys.modules if m == "cryptography" or m.startswith("cryptography.")]
-    assert not cryptography_modules, (
-        f"verification package transitively imported the ``cryptography`` "
-        f"library via: {cryptography_modules}. The migration to ``ecdsa`` "
+    ecdsa_modules = [m for m in sys.modules if m == "ecdsa" or m.startswith("ecdsa.")]
+    assert not ecdsa_modules, (
+        f"verification package transitively imported the ``ecdsa`` "
+        f"library via: {ecdsa_modules}. The migration to ``cryptography`` "
         f"is supposed to drop this dep — investigate which import re-added it."
     )
 

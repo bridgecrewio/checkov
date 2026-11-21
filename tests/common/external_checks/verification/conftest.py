@@ -9,8 +9,9 @@ from pathlib import Path
 from typing import Callable
 
 import pytest
-from ecdsa import NIST256p, SigningKey
-from ecdsa.util import sigencode_der
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -63,33 +64,31 @@ if sys.version_info < (3, 11):
 # ──────────────────────────────────────────────────────────────────────────────
 
 
-def _gen_p256_pem() -> tuple[bytes, SigningKey]:
+def _gen_p256_pem() -> tuple[bytes, ec.EllipticCurvePrivateKey]:
     """Return ``(public_key_pem_bytes, private_key_object)`` for a fresh P-256 key."""
-    priv = SigningKey.generate(curve=NIST256p)
-    pub_pem = priv.get_verifying_key().to_pem()
+    priv = ec.generate_private_key(ec.SECP256R1())
+    pub_pem = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
     return pub_pem, priv
 
 
-def _sign_p256(priv: SigningKey, payload: bytes) -> bytes:
+def _sign_p256(priv: ec.EllipticCurvePrivateKey, payload: bytes) -> bytes:
     """Produce a DER ECDSA-SHA256 signature over ``payload``."""
-    return priv.sign_deterministic(
-        payload, hashfunc=hashlib.sha256, sigencode=sigencode_der,
-    )
+    return priv.sign(payload, ec.ECDSA(hashes.SHA256()))
 
 
-def _append_trailer(body: bytes, priv: SigningKey) -> bytes:
+def _append_trailer(body: bytes, priv: ec.EllipticCurvePrivateKey) -> bytes:
     """Return ``body + b"# checkov-digest: <hex>\\n"`` ready to write to disk."""
     sig_der = _sign_p256(priv, body)
     return body + b"# checkov-digest: " + sig_der.hex().encode("ascii") + b"\n"
 
 
 @pytest.fixture(scope="session")
-def keypair_a() -> tuple[bytes, SigningKey]:
+def keypair_a() -> tuple[bytes, ec.EllipticCurvePrivateKey]:
     return _gen_p256_pem()
 
 
 @pytest.fixture(scope="session")
-def keypair_b() -> tuple[bytes, SigningKey]:
+def keypair_b() -> tuple[bytes, ec.EllipticCurvePrivateKey]:
     return _gen_p256_pem()
 
 
@@ -104,12 +103,12 @@ def key_b_pub_pem(keypair_b) -> bytes:
 
 
 @pytest.fixture(scope="session")
-def priv_a(keypair_a) -> SigningKey:
+def priv_a(keypair_a) -> ec.EllipticCurvePrivateKey:
     return keypair_a[1]
 
 
 @pytest.fixture(scope="session")
-def priv_b(keypair_b) -> SigningKey:
+def priv_b(keypair_b) -> ec.EllipticCurvePrivateKey:
     return keypair_b[1]
 
 
@@ -217,13 +216,13 @@ def unsupported_key_format_e() -> bytes:
 
 
 @pytest.fixture
-def make_sign() -> Callable[[SigningKey, bytes], bytes]:
+def make_sign() -> Callable[[ec.EllipticCurvePrivateKey, bytes], bytes]:
     """Return a callable that produces a DER signature over given bytes."""
     return _sign_p256
 
 
 @pytest.fixture
-def make_trailer() -> Callable[[bytes, SigningKey], bytes]:
+def make_trailer() -> Callable[[bytes, ec.EllipticCurvePrivateKey], bytes]:
     """Return a callable that returns ``body + trailer-line`` for any body+key."""
     return _append_trailer
 

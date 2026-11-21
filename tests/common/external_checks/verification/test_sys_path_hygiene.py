@@ -14,10 +14,9 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 import pytest
-from ecdsa import SigningKey
 
 from checkov.common.external_checks.verification.sources_registry import (
     reset_for_tests,
@@ -45,7 +44,7 @@ def _restore_sys_path():
 
 
 def _build_nested_signed_dir(
-    root: Path, priv: SigningKey, make_trailer: Callable[[bytes, SigningKey], bytes],
+    root: Path, priv: Any, make_trailer: Callable[[bytes, Any], bytes],
 ) -> Path:
     """Two-level signed tree: ``root/__init__.py``, ``root/sub/__init__.py``,
     ``root/sub/aws_check.py`` — every ``.py`` carries a valid trailer.
@@ -66,9 +65,9 @@ def _build_nested_signed_dir(
 
 def test_verified_load_does_not_leak_sys_path(
     tmp_path: Path,
-    priv_a: SigningKey,
+    priv_a: Any,
     key_a_pub_pem: bytes,
-    make_trailer: Callable[[bytes, SigningKey], bytes],
+    make_trailer: Callable[[bytes, Any], bytes],
     stub_registry,
 ):
     """After ``load_external_checks()`` returns, ``sys.path`` is unchanged.
