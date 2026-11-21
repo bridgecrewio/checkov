@@ -43,6 +43,11 @@ setuptools = "==78.1.1"
 iniconfig = "*"
 py = "*"
 filelock = "*"
+# Optional runtime extra (setup.py ``signed-checks``): signature verification
+# of external checks is opt-in, and ecdsa carries CVE-2024-23342 with no fix
+# planned, so it must not be in [packages]. Listed here because the
+# verification test suite signs trailer fixtures with it.
+ecdsa = ">=0.19.0,<1.0.0"
 
 [packages]
 bc-jsonpath-ng = "==1.6.1"
@@ -89,7 +94,6 @@ asteval = "==1.0.6"
 urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.3"
 platformdirs = ">=4.0.0,<5.0.0"
-ecdsa = ">=0.19.0,<1.0.0"
 bc-detect-secrets = "*"
 
 [requires]

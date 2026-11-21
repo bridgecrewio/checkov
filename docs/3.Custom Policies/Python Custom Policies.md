@@ -351,6 +351,14 @@ Enable verification by passing one or more PEM-encoded ECDSA P-256 public keys v
 
 When `--external-checks-public-key` is not set, no verification is performed and behaviour is unchanged.
 
+Verification needs an optional dependency. Install it with:
+
+```bash
+pip install checkov[signed-checks]
+```
+
+`ecdsa` is not part of the default install because it carries CVE-2024-23342 (a timing side channel in P-256 signing) with no upstream fix planned, and the default code path never uses it. Without the extra, passing `--external-checks-public-key` fails with a message naming the `signed-checks` extra and exits with code `2`.
+
 ### Constraints
 
 * **Trailer signing covers `.py` files only.** Binary loadable file types (`.pyc`, `.so`, `.pyd`, `.pyi`) cannot be trailer-signed and are rejected by the verifier. Distribute compiled extensions via `pip install` and import them by package name; do not place them in `--external-checks-dir`.
