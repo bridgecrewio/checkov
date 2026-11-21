@@ -21,6 +21,14 @@ hidden_imports = ['policyuniverse', 'cloudsplaining']
 hidden_imports += collect_submodules('detect_secrets.plugins')
 hidden_imports += collect_submodules('policyuniverse.policy')
 hidden_imports += collect_submodules('cloudsplaining.scan')
+# ``ecdsa`` backs --external-checks-public-key and is imported lazily (see
+# checkov/common/external_checks/verification/_ecdsa.py), so static analysis
+# misses it. It ships as an optional extra, hence the guard: the binary is
+# built from the default install and simply omits signed-check verification.
+try:
+    hidden_imports += collect_submodules('ecdsa')
+except ImportError:
+    pass
 
 
 ## From here to the bottom - default settings

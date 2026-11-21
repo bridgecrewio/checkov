@@ -62,7 +62,14 @@ setup(
             "GitPython==3.1.41",
             "bandit",
             "jsonschema",
-        ]
+        ],
+        # Signature verification of external custom checks
+        # (--external-checks-public-key) is opt-in, so its only extra
+        # dependency is optional too: ecdsa carries CVE-2024-23342 with no
+        # fix planned, and a default install should not inherit it.
+        "signed-checks": [
+            "ecdsa<1.0.0,>=0.19.0",
+        ],
     },
     install_requires=[
         "bc-jsonpath-ng==1.6.1",
@@ -110,7 +117,7 @@ setup(
         "urllib3>=1.26.20",
         "bc-python-hcl2==0.4.3",
         "platformdirs>=4.0.0,<5.0.0",
-        "ecdsa<1.0.0,>=0.19.0",
+        "bc-detect-secrets==1.5.52",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
