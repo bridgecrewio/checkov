@@ -2,16 +2,13 @@
 from __future__ import annotations
 
 import enum
-import hashlib
 import logging
 from typing import Iterable
 
-# ecdsa ships no py.typed marker; suppress the strict-mode import-untyped
-# noise here rather than polluting mypy.ini for a single MR-scoped dependency.
-from ecdsa import BadSignatureError, NIST256p  # type: ignore[import-untyped]
-from ecdsa.der import UnexpectedDER  # type: ignore[import-untyped]
-from ecdsa.errors import MalformedPointError  # type: ignore[import-untyped]
-from ecdsa.util import sigdecode_der  # type: ignore[import-untyped]
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 from .keys import VerificationKey
 from .trailer_format import (
@@ -25,13 +22,13 @@ from .trailer_format import (
 logger = logging.getLogger(__name__)
 
 
-_SECP256R1_N = NIST256p.order
+# SECP256R1 / NIST P-256 curve order n
+_SECP256R1_N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 
 _EXPECTED_VERIFY_ERRORS = (
-    BadSignatureError,
-    UnexpectedDER,
-    MalformedPointError,
+    InvalidSignature,
     ValueError,
+    TypeError,
 )
 
 
@@ -47,7 +44,7 @@ class VerificationResult(enum.Enum):
 def _signature_is_well_formed(sig_der: bytes) -> bool:
     """Strict-DER decode plus ECDSA ``[1, n-1]`` range check on ``r`` and ``s``."""
     try:
-        r, s = sigdecode_der(sig_der, _SECP256R1_N)
+        r, s = decode_dss_signature(sig_der)
     except Exception:
         return False
     if r <= 0 or r >= _SECP256R1_N:
@@ -65,7 +62,9 @@ def _verify_against_keys(
     for key in keys:
         try:
             key.public_key.verify(
-                sig_der, payload, hashfunc=hashlib.sha256, sigdecode=sigdecode_der,
+                sig_der,
+                payload,
+                ec.ECDSA(hashes.SHA256()),
             )
             return VerificationResult.OK
         except _EXPECTED_VERIFY_ERRORS:

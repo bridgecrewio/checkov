@@ -6,8 +6,13 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from ecdsa import NIST256p
-from ecdsa.util import sigdecode_der, sigencode_der
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    decode_dss_signature,
+    encode_dss_signature,
+)
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from checkov.common.external_checks.verification import (
     VerificationResult,
@@ -19,12 +24,20 @@ from checkov.common.external_checks.verification.trailer_format import (
 )
 
 
-_SECP256R1_N = NIST256p.order
+_SECP256R1_N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
 
 
-def _sign(priv, body: bytes, hashfunc=hashlib.sha256) -> bytes:
-    """Produce a DER ECDSA signature over ``body`` using ``hashfunc``."""
-    return priv.sign_deterministic(body, hashfunc=hashfunc, sigencode=sigencode_der)
+def _sign(priv, body: bytes, hash_algo: hashes.HashAlgorithm | None = None, hashfunc=None) -> bytes:
+    """Produce a DER ECDSA signature over ``body``."""
+    if hashfunc is hashlib.sha384:
+        algo = hashes.SHA384()
+    elif hashfunc is hashlib.sha512:
+        algo = hashes.SHA512()
+    elif hash_algo is not None:
+        algo = hash_algo
+    else:
+        algo = hashes.SHA256()
+    return priv.sign(body, ec.ECDSA(algo))
 
 
 # --------------------------------------------------------------------------
@@ -107,19 +120,19 @@ def test_openssl_dgst_sign_recipe_from_docs_verifies(tmp_path: Path):
 
 def _flip_to_high_s(sig_der: bytes) -> bytes:
     """Return a DER signature with ``s`` flipped to its high-S equivalent."""
-    r, s = sigdecode_der(sig_der, _SECP256R1_N)
+    r, s = decode_dss_signature(sig_der)
     if s > _SECP256R1_N // 2:
         return sig_der
     high_s = _SECP256R1_N - s
-    return sigencode_der(r, high_s, _SECP256R1_N)
+    return encode_dss_signature(r, high_s)
 
 
 def _flip_to_low_s(sig_der: bytes) -> bytes:
     """Return a DER signature with ``s`` flipped to its low-S equivalent."""
-    r, s = sigdecode_der(sig_der, _SECP256R1_N)
+    r, s = decode_dss_signature(sig_der)
     if s <= _SECP256R1_N // 2:
         return sig_der
-    return sigencode_der(r, _SECP256R1_N - s, _SECP256R1_N)
+    return encode_dss_signature(r, _SECP256R1_N - s)
 
 
 def test_high_s_signature_verifies(
@@ -129,7 +142,7 @@ def test_high_s_signature_verifies(
     body = b"def check():\n    pass\n"
     raw_sig = _sign(priv_a, body)
     high_s_sig = _flip_to_high_s(raw_sig)
-    _r, s = sigdecode_der(high_s_sig, _SECP256R1_N)
+    _r, s = decode_dss_signature(high_s_sig)
     assert s > _SECP256R1_N // 2, "test helper failed to produce a high-S sig"
 
     target = tmp_path / "high_s.py"
@@ -153,7 +166,7 @@ def test_low_s_signature_verifies(
     body = b"def check():\n    pass\n"
     raw_sig = _sign(priv_a, body)
     low_s_sig = _flip_to_low_s(raw_sig)
-    _r, s = sigdecode_der(low_s_sig, _SECP256R1_N)
+    _r, s = decode_dss_signature(low_s_sig)
     assert s <= _SECP256R1_N // 2, "test helper failed to produce a low-S sig"
 
     target = tmp_path / "low_s.py"
@@ -269,8 +282,8 @@ def test_openssl_generated_pem_loads(tmp_path: Path):
 
 
 def test_ecdsa_generated_pem_loads(tmp_path: Path, priv_a):
-    """A PEM produced via ``priv.get_verifying_key().to_pem()`` loads."""
-    pub_pem = priv_a.get_verifying_key().to_pem()
+    """A PEM produced via ``public_bytes`` loads."""
+    pub_pem = priv_a.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
     pub_path = tmp_path / "pub.pem"
     pub_path.write_bytes(pub_pem)
     keys = load_public_keys([str(pub_path)])
@@ -316,8 +329,8 @@ def test_manually_encoded_dss_signature_verifies(
     """
     body = b"# DER round-trip\n"
     raw_sig = _sign(priv_a, body)
-    r, s = sigdecode_der(raw_sig, _SECP256R1_N)
-    re_encoded = sigencode_der(r, s, _SECP256R1_N)
+    r, s = decode_dss_signature(raw_sig)
+    re_encoded = encode_dss_signature(r, s)
 
     target = tmp_path / "reencoded.py"
     target.write_bytes(body + TRAILER_PREFIX + re_encoded.hex().encode("ascii") + b"\n")
@@ -395,7 +408,7 @@ def test_jose_raw_r_s_signature_rejected_as_bad_signature(
     """A 64-byte raw ``r||s`` signature (the JWS / IEEE P1363 form) is rejected."""
     body = b"def check():\n    return 'ok'\n"
     der_sig = _sign(priv_a, body)
-    r, s = sigdecode_der(der_sig, _SECP256R1_N)
+    r, s = decode_dss_signature(der_sig)
     raw_sig = r.to_bytes(32, "big") + s.to_bytes(32, "big")
     assert len(raw_sig) == 64, "test helper failed to produce a 64-byte raw sig"
 
@@ -432,7 +445,7 @@ def test_legacy_banner_with_spki_body_is_accepted(tmp_path: Path, priv_a):
     Documents that ``ecdsa.VerifyingKey.from_pem`` is banner-tolerant,
     in contrast to ``cryptography.serialization.load_pem_public_key``.
     """
-    spki_pem = priv_a.get_verifying_key().to_pem()
+    spki_pem = priv_a.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
     legacy_pem = (
         spki_pem
         .replace(b"-----BEGIN PUBLIC KEY-----", b"-----BEGIN EC PUBLIC KEY-----")
