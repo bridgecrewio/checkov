@@ -13,6 +13,10 @@ if TYPE_CHECKING:
     from checkov.common.typing import _BaselineFinding, _BaselineFailedChecks
 
 
+class BaselineError(Exception):
+    """Raised when a baseline file cannot be read, parsed or understood."""
+
+
 class Baseline:
     def __init__(self, output_skipped: bool = False) -> None:
         self.path = ""
@@ -93,6 +97,23 @@ class Baseline:
 
     def from_json(self, file_path: str) -> None:
         self.path = file_path
-        with open(file_path, "r") as f:
-            baseline_raw = json.load(f)
-            self.failed_checks = baseline_raw.get("failed_checks", {})
+        try:
+            with open(file_path, "r") as f:
+                baseline_raw = json.load(f)
+        except OSError as e:
+            raise BaselineError(f"Unable to read baseline file {file_path}: {e}") from e
+        except json.JSONDecodeError as e:
+            raise BaselineError(f"Unable to parse baseline file {file_path}: {e}") from e
+
+        if not isinstance(baseline_raw, dict):
+            raise BaselineError(
+                f"Unable to parse baseline file {file_path}: expected a JSON object, "
+                f"got {type(baseline_raw).__name__}"
+            )
+        failed_checks = baseline_raw.get("failed_checks", [])
+        if not isinstance(failed_checks, list):
+            raise BaselineError(
+                f"Unable to parse baseline file {file_path}: 'failed_checks' must be a list, "
+                f"got {type(failed_checks).__name__}"
+            )
+        self.failed_checks = failed_checks
