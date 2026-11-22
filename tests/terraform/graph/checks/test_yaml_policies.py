@@ -88,6 +88,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GuardDutyIsEnabled(self):
         self.go("GuardDutyIsEnabled")
 
+    def test_SecurityHubEnabledWithStandardsSubscription(self):
+        self.go("SecurityHubEnabledWithStandardsSubscription")
+
     def test_SGAttachedToResource(self):
         self.go("SGAttachedToResource")
 
