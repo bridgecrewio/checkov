@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
+from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader, get_allowed_vcs_hosts, get_source_host
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams
@@ -20,6 +20,9 @@ class GithubAccessTokenLoader(GenericGitLoader):
             # if GITHUB_PAT is set and previous loaders failed, convert source (github ssh or github http or generic git)
             # to use the token in generic format git::https://x-access-token:<token>@github.com/org/repo.git
             self.logger.debug("GITHUB_PAT found. Attempting to clone module using HTTP basic authentication.")
+            # if VCS_ALLOWED_HOSTS is set, GITHUB_PAT is only added for github.com
+            if get_allowed_vcs_hosts() is not None and self._source_host(module_params.module_source) != self.module_source_prefix:
+                return False
             # if module_source = github.com/org/repo
             if module_params.module_source.startswith(self.module_source_prefix):
                 module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source}"
@@ -38,6 +41,15 @@ class GithubAccessTokenLoader(GenericGitLoader):
                 return True
 
         return False
+
+    @staticmethod
+    def _source_host(source: str) -> str | None:
+        for prefix in ("git::https://", "git::ssh://git@"):
+            if source.startswith(prefix):
+                return get_source_host(source[len(prefix):])
+        if source.startswith("git@"):
+            return get_source_host(source[len("git@"):].replace(":", "/", 1))
+        return get_source_host(source)
 
 
 loader = GithubAccessTokenLoader()

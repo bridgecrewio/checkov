@@ -1,6 +1,59 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.3.26...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.4.5...HEAD)
+
+## [3.4.5](https://github.com/bridgecrewio/checkov/compare/3.4.4...3.4.5) - 2026-11-12
+
+### Bug Fix
+
+- **general:** harden request error logging - [#7795](https://github.com/bridgecrewio/checkov/pull/7795)
+
+## [3.4.4](https://github.com/bridgecrewio/checkov/compare/3.4.3...3.4.4) - 2026-11-11
+
+### Bug Fix
+
+- **bicep:** resolve references within the declaring file - [#7794](https://github.com/bridgecrewio/checkov/pull/7794)
+
+## [3.4.3](https://github.com/bridgecrewio/checkov/compare/3.4.2...3.4.3) - 2026-11-02
+
+### Bug Fix
+
+- **terraform:** build userinfo test URLs dynamically - [#7776](https://github.com/bridgecrewio/checkov/pull/7776)
+
+## [3.4.2](https://github.com/bridgecrewio/checkov/compare/3.4.0...3.4.2) - 2026-11-02
+
+### Bug Fix
+
+- **general:** harden network and credential handling defaults - [#7701](https://github.com/bridgecrewio/checkov/pull/7701)
+- **terraform:** add optional allowlist for external module download sources - [#7758](https://github.com/bridgecrewio/checkov/pull/7758)
+
+## [3.4.0](https://github.com/bridgecrewio/checkov/compare/3.3.30...3.4.0) - 2026-10-28
+
+- no noteworthy changes
+
+## [3.3.30](https://github.com/bridgecrewio/checkov/compare/3.3.29...3.3.30) - 2026-10-20
+
+### Bug Fix
+
+- **secrets:** load platform-provided detectors in spawn-mode secrets … - [#7757](https://github.com/bridgecrewio/checkov/pull/7757)
+
+## [3.3.29](https://github.com/bridgecrewio/checkov/compare/3.3.28...3.3.29) - 2026-10-13
+
+### Bug Fix
+
+- **terraform:** extend MySQL public access check to cover flexible server resources - [#7737](https://github.com/bridgecrewio/checkov/pull/7737)
+
+## [3.3.28](https://github.com/bridgecrewio/checkov/compare/3.3.27...3.3.28) - 2026-10-12
+
+### Bug Fix
+
+- **terraform:** resolve graph edges for count/for_each indexed resource references - [#7736](https://github.com/bridgecrewio/checkov/pull/7736)
+
+## [3.3.27](https://github.com/bridgecrewio/checkov/compare/3.3.26...3.3.27) - 2026-10-11
+
+### Bug Fix
+
+- **secrets:** detect paired AWS secret in bare CSV/delimited format - [#7734](https://github.com/bridgecrewio/checkov/pull/7734)
 
 ## [3.3.26](https://github.com/bridgecrewio/checkov/compare/3.3.25...3.3.26) - 2026-10-07
 

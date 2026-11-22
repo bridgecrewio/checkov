@@ -10,6 +10,7 @@ import subprocess  # nosec
 import tempfile
 import threading
 from typing import Any, Type, TYPE_CHECKING
+from urllib.parse import urlsplit
 import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -66,6 +67,32 @@ def _get_chart_remote_repos(chart_dir: str) -> list[str]:
     return remote_repos
 
 
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def _repo_matches_prefix(repo: str, prefix: str) -> bool:
+    """Return True if the (lowercased) repo URL is covered by the (lowercased) allowlist prefix.
+
+    For URLs the scheme, host and port must match exactly (so a lookalike host such as
+    'charts.example.com.other.net' or port 8443 vs 844 does not match), and the repo path
+    must start with the prefix path. Values without '://' keep the plain prefix comparison.
+    """
+    if "://" not in prefix or "://" not in repo:
+        return repo.startswith(prefix)
+    try:
+        p, r = urlsplit(prefix), urlsplit(repo)
+        if p.scheme != r.scheme or not p.hostname or p.hostname != r.hostname:
+            return False
+        default_port = _DEFAULT_PORTS.get(p.scheme)
+        p_port = default_port if p.port is None else p.port
+        r_port = default_port if r.port is None else r.port
+        if p_port != r_port:
+            return False
+    except ValueError:
+        return False  # e.g. invalid port
+    return r.path.startswith(p.path)
+
+
 def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
     """Return dependency repos blocked by the CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
 
@@ -77,8 +104,10 @@ def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
         return []  # no allowlist configured → allow everything (original behaviour)
 
     allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
+    if "*" in allowed_prefixes:
+        return []  # '*' → allow everything
     remote_repos = _get_chart_remote_repos(chart_dir)
-    return [repo for repo in remote_repos if not any(repo.lower().startswith(p) for p in allowed_prefixes)]
+    return [repo for repo in remote_repos if not any(_repo_matches_prefix(repo.lower(), p) for p in allowed_prefixes)]
 
 
 class K8sHelmRunner(k8_runner):

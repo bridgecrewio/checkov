@@ -23,7 +23,9 @@ def test_build_graph_from_source_directory():
     assert set(definitions.keys()) == {existing_file, playground_file, graph_file, loop_file}  # should not include 'malformed.bicep' file
 
     assert len(local_graph.vertices) == 48
-    assert len(local_graph.edges) == 47
+    # references are resolved within the declaring file only, 'graph.bicep' and 'loop.bicep' use 'location'
+    # and 'storageAccountType' without declaring them, therefore no edges to the params in 'playground.bicep'
+    assert len(local_graph.edges) == 42
 
     storage_account_idx = local_graph.vertices_by_name["diagsAccount"]  # vertices_by_name exists for BicepGraphManager
     storage_account = local_graph.vertices[storage_account_idx]
