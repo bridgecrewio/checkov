@@ -87,7 +87,7 @@ setup(
         "typing-extensions<5.0.0,>=4.5.0",
         "importlib-metadata<8.0.0,>=6.0.0",
         "cachetools>=5.2.0,<6.0.0",
-        "cyclonedx-python-lib<8.0.0,>=6.0.0",
+        "cyclonedx-python-lib<12.0.0,>=8.0.0",
         "packageurl-python>=0.11.1,<0.14.0",
         "click<9.0.0,>=8.1.0",
         "aiohttp<3.15.0,>=3.8.0",
