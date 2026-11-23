@@ -19,6 +19,7 @@ class TestSecurityGroupUnrestrictedEgressAny(unittest.TestCase):
 
         passing_resources = {
             "aws_security_group.pass",
+            "aws_security_group.pass_self",
             "aws_security_group_rule.pass",
             "aws_vpc_security_group_egress_rule.pass"
         }
@@ -26,6 +27,7 @@ class TestSecurityGroupUnrestrictedEgressAny(unittest.TestCase):
         failing_resources = {
             "aws_security_group.fail2",
             "aws_security_group.fail",
+            "aws_security_group.fail_self_first",
             "aws_security_group_rule.fail",
             "aws_vpc_security_group_egress_rule.fail",
             "aws_security_group_rule.fail2"

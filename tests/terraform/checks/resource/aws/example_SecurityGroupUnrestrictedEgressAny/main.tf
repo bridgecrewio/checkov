@@ -108,3 +108,34 @@ resource "aws_vpc_security_group_egress_rule" "fail" {
   ip_protocol = "tcp"
   to_port     = -1
 }
+
+# A self-referencing egress block must not suppress evaluation of the
+# egress blocks that follow it
+resource "aws_security_group" "fail_self_first" {
+  name = "self-first-egress"
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# A group with only a self-referencing egress block stays passing
+resource "aws_security_group" "pass_self" {
+  name = "self-only-egress"
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
+  }
+}
