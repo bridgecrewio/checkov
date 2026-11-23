@@ -14,7 +14,13 @@ from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
 from checkov.secrets.plugins.load_detectors import load_detectors
 
 try:
-    from detect_secrets.util.prevalidation import could_match, is_enabled, required_literals
+    # Available from the bc-detect-secrets release that adds document-level pre-validation; the
+    # ignore covers older pinned releases, and `unused-ignore` keeps it quiet once it is installed.
+    from detect_secrets.util.prevalidation import (  # type: ignore[import-not-found, unused-ignore]
+        could_match,
+        is_enabled,
+        required_literals,
+    )
     PREVALIDATION_ENABLED = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
 except ImportError:  # older detect-secrets without document-level pre-validation
     PREVALIDATION_ENABLED = False
