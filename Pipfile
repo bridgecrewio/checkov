@@ -43,6 +43,8 @@ setuptools = "==78.1.1"
 iniconfig = "*"
 py = "*"
 filelock = "*"
+# prettytable >= 3.18 wraps table cells with wcwidth.wrap(); wcwidth 0.9 changed where long values break
+wcwidth = "<0.9"
 
 [packages]
 bc-jsonpath-ng = "==1.6.1"
