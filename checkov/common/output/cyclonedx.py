@@ -16,7 +16,6 @@ from cyclonedx.model import (
     HashAlgorithm,
     HashType,
     Property,
-    Tool,
 )
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -49,6 +48,13 @@ from checkov.common.output.cyclonedx_consts import (
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
 
+try:
+    # cyclonedx-python-lib >= 8.0.0
+    from cyclonedx.model.tool import Tool
+except ImportError:  # pragma: no cover
+    # cyclonedx-python-lib < 8.0.0
+    from cyclonedx.model import Tool  # type:ignore[attr-defined,no-redef]
+
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
     from checkov.common.output.record import Record
@@ -74,7 +80,7 @@ class CycloneDX:
 
         this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
         self.update_tool_external_references(this_tool)
-        bom.metadata.tools.add(this_tool)
+        add_tool_to_bom(bom=bom, tool=this_tool)
 
         for report in self.reports:
             if report.check_type in SCA_CHECKTYPES and self.export_iac_only:
@@ -476,6 +482,20 @@ class CycloneDX:
                 ),
             ]
         )
+
+
+def add_tool_to_bom(bom: Bom, tool: Tool) -> None:
+    """Adds the given tool to the BOM metadata, independent of the installed cyclonedx-python-lib version.
+
+    Since cyclonedx-python-lib 8.0.0 'metadata.tools' is a 'ToolRepository', before it was a set of 'Tool' objects.
+    """
+
+    tools: Any = bom.metadata.tools
+    if hasattr(tools, "tools"):
+        # cyclonedx-python-lib >= 8.0.0
+        tools.tools.add(tool)
+    else:
+        tools.add(tool)
 
 
 # Copy of https://github.com/CycloneDX/cyclonedx-python-lib/blob/74865f8e498c9723c2ce3556ceecb6a3cfc4c490/cyclonedx/_internal/hash.py
