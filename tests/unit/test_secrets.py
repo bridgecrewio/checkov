@@ -1,6 +1,10 @@
+import base64
+import random
+import string
+import time
 import unittest
 
-from checkov.common.util.secrets import string_has_secrets, ALL, AWS, GENERAL, omit_secret_value_from_line, \
+from checkov.common.util.secrets import string_has_secrets, ALL, AWS, AZURE, GENERAL, omit_secret_value_from_line, \
     get_secrets_from_string
 
 
@@ -70,3 +74,45 @@ class TestSecrets(unittest.TestCase):
         secret = get_secrets_from_string(s)
 
         assert secret == ["AKIAIOSFODNN7EXAMPLE"]
+
+    def test_azure_hostnames_are_detected(self):
+        test_strings = [
+            'https://myaccount.blob.core.windows.net/container',
+            'Server=tcp:mydb.database.windows.net,1433',
+            'login via example.onmicrosoft.com',
+            "'svc.servicebus.windows.net'",
+            'endpoint: myapp.cloudapp.azure.com',
+            'db.documents.azure.com',
+        ]
+
+        for s in test_strings:
+            with self.subTest(s=s):
+                self.assertTrue(string_has_secrets(s, AZURE))
+
+    def test_azure_hostname_without_subdomain_is_not_detected(self):
+        self.assertFalse(string_has_secrets('blob.core.windows.net', AZURE))
+        self.assertFalse(string_has_secrets('no azure host here', AZURE))
+
+    def test_get_secrets_from_string_returns_azure_hostname(self):
+        s = 'url = "https://myaccount.blob.core.windows.net/container"'
+
+        secrets = get_secrets_from_string(s, AZURE)
+
+        self.assertEqual(secrets, ['myaccount.blob.core.windows.net'])
+
+    def test_long_strings_without_azure_hostname_are_evaluated_quickly(self):
+        rng = random.Random(0)
+        # base64 and alphanumeric input contain no '.', so none of the Azure hostname patterns can match
+        test_strings = {
+            'base64': base64.b64encode(rng.randbytes(12_321)).decode(),
+            'alphanumeric': ''.join(rng.choices(string.ascii_letters + string.digits, k=16_428)),
+        }
+
+        for name, s in test_strings.items():
+            with self.subTest(input=name):
+                start = time.monotonic()
+                result = string_has_secrets(s, AZURE, GENERAL)
+                elapsed = time.monotonic() - start
+
+                self.assertFalse(result)
+                self.assertLess(elapsed, 2)

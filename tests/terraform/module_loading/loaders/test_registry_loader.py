@@ -1,3 +1,5 @@
+import os
+
 import responses
 import pytest
 from unittest import mock
@@ -249,3 +251,88 @@ def test_load_module_returns_dest_dir_when_no_inner_module(tmp_path):
     # then
     assert content.loaded()
     assert content.path() == str(base_dir)
+
+
+ALLOWED_MODULE_PREFIXES_ENV = "CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES"
+REGISTRY_HOST = "example.registry.com"
+REGISTRY_DOWNLOAD_URL = f"https://{REGISTRY_HOST}/api/registry/v1/modules/terraform-aws-modules/example/1.0.0/download"
+REGISTRY_GETTER_PATH = "checkov.terraform.module_loading.loaders.registry_loader.RegistryGetter"
+
+
+def _load_registry_module(download_location: str, env: dict):
+    """Run _load_module with a registry response whose X-Terraform-Get header is download_location."""
+    responses.add(
+        method=responses.GET,
+        url=REGISTRY_DOWNLOAD_URL,
+        status=204,
+        headers={"X-Terraform-Get": download_location},
+    )
+    loader = RegistryLoader()
+    # RegistryGetter is mocked, so nothing is written; the folder must not exist, otherwise _load_module returns early
+    dest_dir = os.path.abspath("checkov_registry_loader_test_dest_not_existing")
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", "", dest_dir, "")
+    module_params.tf_modules_endpoint = f"https://{REGISTRY_HOST}/api/registry/v1/modules/"
+    module_params.best_version = "1.0.0"
+    with mock.patch.dict("os.environ", {"TF_HOST_NAME": REGISTRY_HOST}):
+        loader.discover(module_params)
+    with mock.patch.dict("os.environ", env):
+        if ALLOWED_MODULE_PREFIXES_ENV not in env:
+            os.environ.pop(ALLOWED_MODULE_PREFIXES_ENV, None)
+        return loader._load_module(module_params)
+
+
+@pytest.mark.parametrize("env", [{}, {ALLOWED_MODULE_PREFIXES_ENV: ""}, {ALLOWED_MODULE_PREFIXES_ENV: "  "}],
+                         ids=["not_set", "empty", "whitespace"])
+@responses.activate
+@mock.patch(REGISTRY_GETTER_PATH, autospec=True)
+def test_registry_download_allowed_prefixes_not_configured_keeps_current_behaviour(registry_getter, env: dict) -> None:
+    content = _load_registry_module("http://127.0.0.1:9999/module.tar.gz", env)
+
+    registry_getter.assert_called_once()
+    assert content.loaded()
+
+
+@pytest.mark.parametrize(
+    "download_location",
+    [
+        "http://127.0.0.1:9999/module.tar.gz",
+        "http://192.0.2.1/latest/meta-data/?archive=tar.gz",
+        "https://other.example.com/module.zip",
+        "https://example.registry.com.other.example.com/module.zip",
+        "https://example.registry.com@other.example.com/module.zip",
+        "https://other.example.com/module.zip?@example.registry.com/",
+        "https://example.registry.com:8443/module.zip",
+    ],
+    ids=["loopback", "ip_address", "other_host", "lookalike_host", "user_info_host", "query_with_at_sign",
+         "other_port"],
+)
+@responses.activate
+@mock.patch(REGISTRY_GETTER_PATH, autospec=True)
+def test_registry_download_not_in_allowed_prefixes_is_skipped(registry_getter, download_location: str) -> None:
+    env = {ALLOWED_MODULE_PREFIXES_ENV: f"https://{REGISTRY_HOST}/, https://github.com/"}
+
+    content = _load_registry_module(download_location, env)
+
+    registry_getter.assert_not_called()
+    assert not content.loaded()
+    assert content.failed_url
+
+
+@pytest.mark.parametrize(
+    "download_location, allowed",
+    [
+        ("/api/registry/v1/modules/terraform-aws-modules/example/1.0.0/archive.tar.gz", f"https://{REGISTRY_HOST}/"),
+        (f"https://{REGISTRY_HOST}/files/module.zip", f"https://{REGISTRY_HOST}/"),
+        ("https://github.com/org/repo/archive/v1.0.0.tar.gz", f"https://{REGISTRY_HOST}/,https://github.com/"),
+        ("https://GitHub.com/org/repo/archive/v1.0.0.zip", "https://github.com/"),
+        (f"https://{REGISTRY_HOST}:443/files/module.zip", f"https://{REGISTRY_HOST}"),
+    ],
+    ids=["relative_to_registry", "same_registry_host", "second_prefix", "case_insensitive", "default_port"],
+)
+@responses.activate
+@mock.patch(REGISTRY_GETTER_PATH, autospec=True)
+def test_registry_download_in_allowed_prefixes_is_loaded(registry_getter, download_location: str, allowed: str) -> None:
+    content = _load_registry_module(download_location, {ALLOWED_MODULE_PREFIXES_ENV: allowed})
+
+    registry_getter.assert_called_once()
+    assert content.loaded()

@@ -13,7 +13,7 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import extract_error_message, get_default_post_headers
+from checkov.common.util.http_utils import extract_error_message, get_default_post_headers, redact_headers
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -119,7 +119,7 @@ class FixesIntegration(BaseIntegrationFeature):
             raise AttributeError("HTTP manager was not correctly created")
 
         try:
-            logging.debug(f'Calling fixes API with payload: {json.dumps(payload)}, headers: {headers}, url: {self.fixes_url}')
+            logging.debug(f'Calling fixes API with payload: {json.dumps(payload)}, headers: {redact_headers(headers)}, url: {self.fixes_url}')
             request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
 
         # When running via IDE we can fail here in case of running with -d when the poolManager is broken

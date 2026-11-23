@@ -7,7 +7,7 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
-        language_version: python3.9
+        language_version: python3.10
         additional_dependencies:
           - dlint
           - flake8-bugbear
@@ -16,7 +16,7 @@ repos:
     rev: 0.4.3
     hooks:
       - id: teyit
-        language_version: python3.9
+        language_version: python3.10
   - repo: https://github.com/rhysd/actionlint
     rev: v1.6.26
     hooks:
@@ -27,7 +27,7 @@ repos:
     rev: v3.2.0
     hooks:
       - id: pipenv-setup
-        language_version: python3.9
+        language_version: python3.10
         entry: pipenv-setup check
         args: []
         additional_dependencies:
@@ -37,5 +37,5 @@ repos:
     rev: v1.12.1
     hooks:
       - id: import-linter
-        language_version: python3.9
+        language_version: python3.10
         args: ["--show-timings"]

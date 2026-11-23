@@ -50,6 +50,9 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
         self.vertices: list[BicepBlock] = []
         self.definitions = definitions
         self.vertices_by_name: dict[str, int] = {}
+        # Bicep symbols (params, vars, resources, modules, outputs) are scoped to the file they are declared in,
+        # so references must be resolved against the same file
+        self.vertices_by_path_and_name: dict[tuple[str, str], int] = {}
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
@@ -74,6 +77,7 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
             self.vertices_by_name[vertex.name] = i
+            self.vertices_by_path_and_name[(vertex.path, vertex.name)] = i
 
             self.in_edges[i] = []
             self.out_edges[i] = []
@@ -236,8 +240,9 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             # special case for`bicep elements, when properties are accessed
             vertex_name = vertex_name.split(".")[0]
 
-        dest_vertex_index = self.vertices_by_name.get(vertex_name)
-        if dest_vertex_index:
+        origin_path = self.vertices[origin_vertex_index].path
+        dest_vertex_index = self.vertices_by_path_and_name.get((origin_path, vertex_name))
+        if dest_vertex_index is not None:
             if origin_vertex_index == dest_vertex_index:
                 return
             edge = Edge(origin_vertex_index, dest_vertex_index, label)

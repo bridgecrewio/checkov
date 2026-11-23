@@ -397,6 +397,27 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertCountEqual(passed_check_ids, expected_passed_check_ids)
 
+    def test_runner_skip_forget_action_resources(self):
+        # A resource being removed from state (no destroy) via a 'removed' block has a 'forget' change action and will
+        # appear in planned_values without values due to a Terraform bug (issue: hashicorp/terraform#38641), causing false positives.
+        # This test verifies 'forgotten' resources are getting skipped to account for the bug.
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        plan_path = current_dir + "/resources/plan_forget_action/tfplan.json"
+
+        report = Runner().run(
+            root_folder=None,
+            files=[plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        scanned_resources = {
+            record.resource
+            for record in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)
+        }
+
+        self.assertNotIn("aws_s3_bucket.forgotten", scanned_resources)
+
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
         # Often 'data' does not even appear in the *_modules[x].resources field within planned_values and is not scanned as expected
@@ -719,6 +740,32 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 1)
 
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_runner_for_each_nested_modules_with_connections(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_for_each_nested_modules_with_connections/tfplan.json"
+
+        passing_resources = {
+            'module.parent["prod"].module.child.azurerm_subnet.subnet["app"]',
+        }
+        failing_resources = {
+            'module.parent["prod"].module.child.azurerm_subnet.unassociated["data"]',
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AZURE_31"]),
+        )
+
+        # then
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 

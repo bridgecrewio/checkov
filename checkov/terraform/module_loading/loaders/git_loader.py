@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import os
+import posixpath
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from urllib.parse import urlparse, urlsplit
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.util.file_utils import _is_within
 from checkov.terraform.module_loading.content import ModuleContent
 
 from checkov.terraform.module_loading.loader import ModuleLoader
@@ -16,6 +19,115 @@ if TYPE_CHECKING:
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
+_warned_hosts: set[str | None] = set()
+ALLOWED_MODULE_PREFIXES_ENV = "CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES"
+# 'user[:password]@' right after 'scheme://'
+URL_USER_INFO_PATTERN = re.compile(r"^([a-z][a-z0-9+.\-]*://)[^/?#@]*@")
+URL_SCHEME_PATTERN = re.compile(r"^[a-z][a-z0-9+.\-]*://", re.IGNORECASE)
+DEFAULT_PORTS = {"http": 80, "https": 443, "ssh": 22, "git": 9418}
+
+
+def get_allowed_vcs_hosts() -> set[str | None] | None:
+    """Return the hosts of the optional VCS_ALLOWED_HOSTS env var (comma-separated), None if it is not set"""
+    hosts: set[str | None] = {host.strip().lower() for host in os.getenv("VCS_ALLOWED_HOSTS", "").split(",") if host.strip()}
+    return hosts or None
+
+
+def get_source_host(source: str) -> str | None:
+    """Return the lowercased host of a module source ('host' or 'host:port' for a non 443 port).
+
+    Returns None, if the source can't be parsed or contains user info.
+    """
+    if source.startswith("git::"):
+        source = source[len("git::"):]
+    if "://" not in source:
+        source = f"https://{source}"
+    try:
+        parsed = urlparse(source)
+        if parsed.username is None and parsed.hostname:
+            return parsed.hostname if parsed.port in (None, 443) else f"{parsed.hostname}:{parsed.port}"
+    except ValueError:
+        pass
+    return None
+
+
+def _normalize_module_source(source: str) -> str:
+    """Lowercase, drop the 'git::' prefix and any 'user[:password]@' part, so sources and prefixes are comparable."""
+    source = source.strip().lower()
+    if source.startswith("git::"):
+        source = source[len("git::"):]
+    return URL_USER_INFO_PATTERN.sub(r"\1", source)
+
+
+def _split_module_url(url: str) -> Tuple[str, Optional[str], Optional[int], str]:
+    """Split a module source / prefix into (scheme, hostname, port, lowercased path).
+
+    Drops a leading 'git::', assumes 'https://' when no scheme is given and fills in the scheme's default port.
+    Raises ValueError for unparsable URLs (e.g. an invalid port).
+    """
+    url = url.strip()
+    if url.lower().startswith("git::"):
+        url = url[len("git::"):]
+    if not URL_SCHEME_PATTERN.match(url):
+        url = f"https://{url}"
+    parts = urlsplit(url)
+    port = parts.port
+    if port is None:
+        port = DEFAULT_PORTS.get(parts.scheme)
+    return parts.scheme, parts.hostname, port, parts.path.lower()
+
+
+def _matches_module_prefix(source: str, prefix: str) -> bool:
+    """Scheme, host and port must match exactly; the source path must start with the prefix path."""
+    try:
+        source_scheme, source_host, source_port, source_path = _split_module_url(source)
+        prefix_scheme, prefix_host, prefix_port, prefix_path = _split_module_url(prefix)
+    except ValueError:
+        return False
+    return (
+        source_scheme == prefix_scheme
+        and source_host == prefix_host
+        and source_port == prefix_port
+        and source_path.startswith(prefix_path)
+    )
+
+
+def _is_allowed_module_source(source: str) -> bool:
+    """Check the module source against the CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES allowlist.
+
+    Not set -> True (allow all, original behaviour). Set -> True only if the source matches one of the
+    comma-separated prefixes (same scheme, host and port, path starting with the prefix path).
+    To block all git module downloads, set the var to a non-matching value (e.g. 'none').
+    """
+    allowed_prefixes_raw = os.getenv(ALLOWED_MODULE_PREFIXES_ENV, "")
+    if not allowed_prefixes_raw.strip():
+        return True  # no allowlist configured -> allow everything (original behaviour)
+
+    allowed_prefixes = [p for p in allowed_prefixes_raw.split(",") if p.strip()]
+    return any(_matches_module_prefix(source, prefix) for prefix in allowed_prefixes)
+
+
+def _validate_ref(ref: str) -> None:
+    """Reject refs that would change the folder the module is downloaded to.
+
+    None of the rejected values is a valid git ref name (see 'git check-ref-format'),
+    so valid refs like 'v1.0.0', 'feature/foo' or commit hashes are never affected.
+    """
+    if "\0" in ref or "\\" in ref or ref.startswith("/") or ".." in ref.split("/"):
+        raise ValueError(f"Invalid module ref: {ref!r}")
+
+
+def _validate_subdir(subdir: str) -> None:
+    """Reject a module subdirectory ('//subdir' part of the source), which leads outside of the module package.
+
+    Same rule as Terraform - the cleaned path must not be absolute or start with '../'.
+    Values like 'modules/vpc' or 'modules/../vpc' are allowed.
+    """
+    if not subdir:
+        return
+    cleaned = posixpath.normpath(subdir)
+    if "\0" in subdir or posixpath.isabs(cleaned) or cleaned == ".." or cleaned.startswith("../"):
+        raise ValueError(f"Invalid module subdirectory, leads outside of the module package: {subdir!r}")
 
 
 @dataclass(frozen=True)
@@ -46,11 +158,26 @@ class GenericGitLoader(ModuleLoader):
         module_params.username = os.getenv("VCS_USERNAME", None)
         module_params.token = os.getenv("VCS_TOKEN", None)
 
+    def _credentials_allowed(self, module_params: ModuleParams, source: str) -> bool:
+        """If VCS_ALLOWED_HOSTS is set, credentials are only added for its hosts and the VCS_BASE_URL host"""
+        allowed_hosts = get_allowed_vcs_hosts()
+        if allowed_hosts is None:
+            return True  # VCS_ALLOWED_HOSTS is not set
+        if module_params.vcs_base_url:
+            allowed_hosts.add(get_source_host(module_params.vcs_base_url))
+        host = get_source_host(source)
+        if host is not None and host in allowed_hosts:
+            return True
+        if host not in _warned_hosts:
+            _warned_hosts.add(host)
+            self.logger.warning(f"Credentials are not added to module sources from host {host or 'unknown'}, it is not in VCS_ALLOWED_HOSTS")
+        return False
+
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         module_source_prefix = module_params.module_source_prefix if module_params.module_source_prefix else self.module_source_prefix
         if module_params.module_source.startswith(module_source_prefix):
             source = module_params.module_source.split(DEFAULT_MODULE_SOURCE_PREFIX)[-1]
-            if module_params.token and module_params.username:
+            if module_params.token and module_params.username and self._credentials_allowed(module_params, source):
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
             else:
                 module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"
@@ -61,6 +188,9 @@ class GenericGitLoader(ModuleLoader):
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         try:
             self._process_generic_git_repo(module_params)
+            if not _is_allowed_module_source(module_params.module_source):
+                self.logger.warning(f"Skipping module: not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist.")
+                return ModuleContent(dir=None, failed_url=module_params.module_source)
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
@@ -80,19 +210,35 @@ class GenericGitLoader(ModuleLoader):
             return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
         return ModuleContent(dir=return_dir)
 
-    def _find_module_path(self, module_params: ModuleParams) -> str:
-        module_source = self._parse_module_source(module_params)
-        module_path = Path(module_params.root_dir).joinpath(
+    @staticmethod
+    def _get_module_dir(module_params: ModuleParams, module_source: ModuleSource) -> Path:
+        # an absolute root module (ex. 'git::file:///path/to/repo') must not replace the external modules folder
+        return Path(module_params.root_dir).joinpath(
             module_params.external_modules_folder_name,
-            module_source.root_module,
+            module_source.root_module.lstrip("/"),
             module_source.version,
-            module_source.inner_module,
         )
 
+    def _find_module_path(self, module_params: ModuleParams) -> str:
+        module_source = self._parse_module_source(module_params)
+        module_path = self._get_module_dir(module_params, module_source)
+        if module_source.inner_module:
+            module_path = module_path / module_source.inner_module
+
         if module_params.inner_module:
+            _validate_subdir(module_params.inner_module)
             module_path = module_path / module_params.inner_module
 
+        self._validate_within_external_modules_dir(module_params, str(module_path))
         return str(module_path)
+
+    @staticmethod
+    def _validate_within_external_modules_dir(module_params: ModuleParams, path: str) -> None:
+        external_modules_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name)
+        if not _is_within(external_modules_dir, path):
+            raise ValueError(
+                f"Module path {path} is outside of the external modules folder {external_modules_dir}"
+            )
 
     def _parse_module_source(self, module_params: ModuleParams) -> ModuleSource:
         module_source_components = module_params.module_source.split("//")
@@ -129,6 +275,11 @@ class GenericGitLoader(ModuleLoader):
         if root_module.endswith(".git"):
             root_module = root_module[:-4]
 
+        # these values are used as path components of the folder the module is downloaded to.
+        # root_module is covered by the containment check of the final folder, see _validate_within_external_modules_dir()
+        _validate_subdir(inner_module)
+        _validate_ref(version)
+
         return ModuleSource(
             protocol=module_source_components[0], root_module=root_module, inner_module=inner_module, version=version,
             username=username[1] if username and username[1] != "git@" else ""
@@ -137,24 +288,17 @@ class GenericGitLoader(ModuleLoader):
     def _process_generic_git_repo(self, module_params: ModuleParams) -> None:
         module_source = self._parse_module_source(module_params)
 
+        module_params.dest_dir = str(self._get_module_dir(module_params, module_source))
         if module_source.inner_module:
-            module_params.dest_dir = str(
-                Path(module_params.root_dir).joinpath(
-                    module_params.external_modules_folder_name, module_source.root_module, module_source.version
-                )
-            )
             module_params.inner_module = module_source.inner_module
             module_params.module_source = f"{module_source.protocol}//{module_source.root_module}"
             if module_source.username:
                 module_params.module_source = f"{module_source.protocol}//{module_source.username}{module_source.root_module}"
             if module_source.version != "HEAD":
                 module_params.module_source += f"?ref={module_source.version}"
-        else:
-            module_params.dest_dir = str(
-                Path(module_params.root_dir).joinpath(
-                    module_params.external_modules_folder_name, module_source.root_module, module_source.version
-                )
-            )
+
+        # defense in depth - never clone outside the external modules folder
+        self._validate_within_external_modules_dir(module_params, module_params.dest_dir)
 
 
 loader = GenericGitLoader()

@@ -103,5 +103,22 @@ class TestParallel(unittest.TestCase):
             parallel_runner = ParallelRunner()
             self.assertEqual(parallel_runner.type, ParallelizationType.SPAWN)
 
+    @patch.dict(os.environ, {'PYCHARM_HOSTED': '0'})
+    def test_fork_worker_killed_does_not_deadlock(self) -> None:
+        import platform as pf
+        if pf.system() == "Windows":
+            return
+        runner = ParallelRunner(workers_number=2, parallelization_type=ParallelizationType.FORK)
+        runner.type = ParallelizationType.FORK
+
+        def worker_task(x: int) -> int:
+            if x == 1:
+                import signal
+                os.kill(os.getpid(), signal.SIGKILL)
+            return x * 10
+
+        results = list(runner.run_function(worker_task, [1, 2, 3, 4], group_size=2))
+        self.assertEqual(results, [30, 40])
+
 if __name__ == "__main__":
     unittest.main()

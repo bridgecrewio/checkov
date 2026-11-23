@@ -53,6 +53,8 @@ def parse(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]] | tup
                 logger.error(f"Tried to parse {file_path} as JSON", exc_info=True)
     except YAMLError:
         pass
+    except Exception:
+        logger.error(f"Failed to parse template: {file_path}", exc_info=True)
 
     if template is None or template_lines is None:
         return None, None
@@ -91,8 +93,27 @@ def prepare_definition(definition: dict[str, Any]) -> dict[str, Any]:
     return definition_new
 
 
-def handle_block_type(block_type: str, blocks: dict[str, Any]) -> list[dict[str, Any]]:
+def handle_block_type(block_type: str, blocks: dict[str, Any] | list[dict[str, Any]]) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
+
+    # HCL JSON spec allows block types as an array of single-key objects
+    if isinstance(blocks, list):
+        normalized: dict[str, Any] = {}
+        for block_obj in blocks:
+            if isinstance(block_obj, dict):
+                for key, value in block_obj.items():
+                    if key in normalized:
+                        # Multiple blocks with same name — merge into list
+                        existing = normalized[key]
+                        if isinstance(existing, list):
+                            existing.append(value)
+                        else:
+                            normalized[key] = [existing, value]
+                    else:
+                        normalized[key] = value
+            else:
+                logger.debug(f"Skipping non-dict element in '{block_type}' blocks array: {type(block_obj).__name__}")
+        blocks = normalized
 
     for block_name, config in blocks.items():
         if block_name == COMMENT_FIELD_NAME or block_name in LINE_FIELD_NAMES:
@@ -105,7 +126,9 @@ def handle_block_type(block_type: str, blocks: dict[str, Any]) -> list[dict[str,
                     continue
                 result.append({block_name: {resource_name: hclify(obj=resource_config)}})
         elif block_type == BlockType.PROVIDER:
-            # provider are stored as a list, which we need to move one level higher to add the name
+            # provider can be a list of configs or a single dict; normalize to list
+            if isinstance(config, dict):
+                config = [config]
             for provider_config in config:
                 result.append({block_name: hclify(obj=provider_config)})
         elif block_type == BlockType.LOCALS:

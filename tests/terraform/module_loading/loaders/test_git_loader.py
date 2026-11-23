@@ -1,7 +1,28 @@
+import logging
+import os
+from pathlib import Path
+from unittest import mock
+
 import pytest
 
-from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
+from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader
+from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader
+from checkov.terraform.module_loading.loaders.git_loader import (
+    GenericGitLoader,
+    _is_allowed_module_source,
+    _validate_ref,
+    _validate_subdir,
+)
+from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader
+from checkov.terraform.module_loading.loaders.github_loader import GithubLoader
 from checkov.terraform.module_loading.module_params import ModuleParams
+
+EXTERNAL_MODULES_FOLDER_NAME = ".external_modules"
+
+# userinfo fragments for URL test inputs, assembled at runtime
+USER_INFO_TOKEN = ":".join(("user", "token"))
+USER_INFO_PASS = ":".join(("user", "pass"))
+OTHER_USER_INFO = ":".join(("other", "creds"))
 
 
 @pytest.mark.parametrize("source, expected_root_module, expected_inner_module", [
@@ -34,3 +55,415 @@ def test__parse_module_source(source: str, expected_root_module: str, expected_i
     module_source = git_loader._parse_module_source(module_params)
     assert module_source.root_module == expected_root_module
     assert module_source.inner_module == expected_inner_module
+
+
+@pytest.fixture
+def root_dir() -> Path:
+    # these tests only compute paths and never write to disk, so a fixed (non existing) folder is enough.
+    # avoids pytest's tmp_path, which crashes the xdist worker on python 3.9/3.10 (see verification/conftest.py)
+    return Path(os.path.abspath("checkov_git_loader_test_root"))
+
+
+def _module_params(root_dir: Path, source: str) -> ModuleParams:
+    return ModuleParams(
+        root_dir=str(root_dir),
+        current_dir=str(root_dir),
+        source=source,
+        source_version=None,
+        dest_dir="",
+        external_modules_folder_name=EXTERNAL_MODULES_FOLDER_NAME,
+    )
+
+
+def _is_inside(base: Path, path: str) -> bool:
+    return os.path.commonpath([os.path.abspath(base), os.path.abspath(path)]) == os.path.abspath(base)
+
+
+@pytest.mark.parametrize(
+    "source, expected_dest_dir, expected_module_path",
+    [
+        (
+            "git::https://github.com/org/repo.git?ref=v1.0.0",
+            "github.com/org/repo/v1.0.0",
+            "github.com/org/repo/v1.0.0",
+        ),
+        (
+            "git::https://github.com/org/repo.git?ref=valid-tag-v1.0",
+            "github.com/org/repo/valid-tag-v1.0",
+            "github.com/org/repo/valid-tag-v1.0",
+        ),
+        (
+            "git::https://github.com/org/repo.git?ref=feature/with/slashes",
+            "github.com/org/repo/feature/with/slashes",
+            "github.com/org/repo/feature/with/slashes",
+        ),
+        (
+            "git::https://github.com/org/repo.git?ref=heads/release..1",
+            "github.com/org/repo/heads/release..1",
+            "github.com/org/repo/heads/release..1",
+        ),
+        (
+            "git::https://github.com/org/repo.git//modules/vpc?ref=v2",
+            "github.com/org/repo/v2",
+            "github.com/org/repo/v2/modules/vpc",
+        ),
+        (
+            "git::https://github.com/org/repo.git",
+            "github.com/org/repo/HEAD",
+            "github.com/org/repo/HEAD",
+        ),
+        (
+            "git::file:///srv/git/repo.git?ref=v1",
+            "srv/git/repo/v1",
+            "srv/git/repo/v1",
+        ),
+        (
+            "git::https://github.com/org/repo.git?ref=a1b2c3d4e5f6a7b8c9d0a1b2c3d4e5f6a7b8c9d0",
+            "github.com/org/repo/a1b2c3d4e5f6a7b8c9d0a1b2c3d4e5f6a7b8c9d0",
+            "github.com/org/repo/a1b2c3d4e5f6a7b8c9d0a1b2c3d4e5f6a7b8c9d0",
+        ),
+        (
+            "git::https://github.com/org/repo.git//modules/../vpc?ref=v2",
+            "github.com/org/repo/v2",
+            "github.com/org/repo/v2/modules/../vpc",
+        ),
+        (
+            "git::https://github.com/org/repo.git//modules/vpc/?ref=v2",
+            "github.com/org/repo/v2",
+            "github.com/org/repo/v2/modules/vpc",
+        ),
+        (
+            "git::https://dev.azure.com/org/project/_git/repo?ref=v1",
+            "dev.azure.com/org/project/_git/repo/v1",
+            "dev.azure.com/org/project/_git/repo/v1",
+        ),
+    ],
+    ids=[
+        "tag", "tag_with_dash", "branch_with_slashes", "dots_inside_segment", "inner_module", "no_ref",
+        "local_file_repo", "commit_sha", "inner_module_with_inner_dotdot", "inner_module_trailing_slash", "azure_devops",
+    ],
+)
+def test_valid_sources_stay_in_external_modules_dir(
+    root_dir: Path, source: str, expected_dest_dir: str, expected_module_path: str
+) -> None:
+    external_modules_dir = root_dir / EXTERNAL_MODULES_FOLDER_NAME
+    loader = GenericGitLoader()
+
+    module_path = loader._find_module_path(_module_params(root_dir, source))
+    module_params = _module_params(root_dir, source)
+    loader._process_generic_git_repo(module_params)
+
+    assert module_params.dest_dir == str(external_modules_dir / expected_dest_dir)
+    assert module_path == str(external_modules_dir / expected_module_path)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "git::https://github.com/some/repo.git?ref=../../../../../../tmp/target",
+        "git::https://github.com/some/repo.git?ref=..",
+        "git::https://github.com/some/repo.git?ref=v1/../../../../target",
+        "git::https://github.com/some/repo.git?ref=/tmp/target",
+        "git::https://github.com/some/repo.git?ref=..\\..\\target",
+        "git::https://github.com/some/repo.git//../../../../../../tmp?ref=v1",
+        "git::https://github.com/some/repo.git//modules/../../../../../../../tmp?ref=v1",
+        "git::https://github.com/some/repo.git//..?ref=v1",
+        "git::https://github.com/some/repo.git///tmp/target?ref=v1",
+        "git::https://github.com/../../../../../../tmp/target",
+        "git::file:///../../../../tmp/target",
+    ],
+    ids=[
+        "ref_relative_traversal",
+        "ref_parent_dir",
+        "ref_nested_traversal",
+        "ref_absolute_path",
+        "ref_backslash_traversal",
+        "inner_module_traversal",
+        "inner_module_nested_traversal",
+        "inner_module_parent_dir",
+        "inner_module_absolute_path",
+        "root_module_traversal",
+        "local_file_repo_traversal",
+    ],
+)
+def test_path_traversal_in_source_is_rejected(root_dir: Path, source: str) -> None:
+    loader = GenericGitLoader()
+
+    with pytest.raises(ValueError):
+        loader._process_generic_git_repo(_module_params(root_dir, source))
+    with pytest.raises(ValueError):
+        loader._find_module_path(_module_params(root_dir, source))
+
+
+def test_traversal_in_inner_module_param_is_rejected(root_dir: Path) -> None:
+    module_params = _module_params(root_dir, "git::https://github.com/org/repo.git?ref=v1")
+    module_params.inner_module = "../../../../../tmp"
+
+    with pytest.raises(ValueError):
+        GenericGitLoader()._find_module_path(module_params)
+
+
+def test_dest_dir_outside_external_modules_dir_is_rejected(root_dir: Path) -> None:
+    # defense in depth - even if parsing returns an unexpected value, never use a folder outside the modules folder
+    loader = GenericGitLoader()
+    with mock.patch.object(GenericGitLoader, "_get_module_dir", return_value=root_dir / "outside"):
+        with pytest.raises(ValueError):
+            loader._process_generic_git_repo(_module_params(root_dir, "git::https://github.com/org/repo.git"))
+        with pytest.raises(ValueError):
+            loader._find_module_path(_module_params(root_dir, "git::https://github.com/org/repo.git"))
+
+
+TRAVERSAL_REF = "?ref=../../../../../../../../tmp/target"
+
+
+@pytest.mark.parametrize(
+    "loader_class, source, env",
+    [
+        (GenericGitLoader, f"git::https://github.com/org/repo.git{TRAVERSAL_REF}", {}),
+        (GenericGitLoader, f"git::ssh://git@example.com/org/repo.git{TRAVERSAL_REF}", {}),
+        (GithubLoader, f"github.com/org/repo{TRAVERSAL_REF}", {}),
+        (GithubLoader, f"git@github.com:org/repo.git{TRAVERSAL_REF}", {}),
+        (GithubLoader, f"git::git@github.com:org/repo.git{TRAVERSAL_REF}", {}),
+        (GithubAccessTokenLoader, f"github.com/org/repo{TRAVERSAL_REF}", {"GITHUB_PAT": "test"}),
+        (GithubAccessTokenLoader, f"git@github.com:org/repo.git{TRAVERSAL_REF}", {"GITHUB_PAT": "test"}),
+        (BitbucketLoader, f"bitbucket.org/org/repo{TRAVERSAL_REF}", {}),
+        (BitbucketAccessTokenLoader, f"bitbucket.org/org/repo{TRAVERSAL_REF}", {"BITBUCKET_TOKEN": "test"}),
+    ],
+    ids=[
+        "generic_git_https",
+        "generic_git_ssh",
+        "github",
+        "github_ssh",
+        "github_git_ssh",
+        "github_access_token",
+        "github_access_token_ssh",
+        "bitbucket",
+        "bitbucket_access_token",
+    ],
+)
+@mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
+def test_git_based_loaders_do_not_clone_outside_external_modules_dir(
+    git_getter, root_dir: Path, loader_class, source: str, env: dict
+) -> None:
+    with mock.patch.dict(os.environ, env):
+        loader = loader_class()
+        module_params = _module_params(root_dir, source)
+        loader.discover(module_params)
+        assert loader._is_matching_loader(module_params)
+
+        with pytest.raises(ValueError):
+            loader.load(_module_params(root_dir, source))
+        content = loader._load_module(module_params)
+
+    assert not content.loaded()
+    git_getter.assert_not_called()
+    assert not module_params.dest_dir or _is_inside(root_dir / EXTERNAL_MODULES_FOLDER_NAME, module_params.dest_dir)
+
+
+@pytest.mark.parametrize(
+    "ref",
+    ["v1.0.0", "valid-tag-v1.0", "feature/with/slashes", "heads/main", "tags/v1.2.3", "release..1", "a.b", "HEAD",
+     "a1b2c3d", "user@feature", "feature.v2"],
+)
+def test_validate_ref_allows_valid_git_refs(ref: str) -> None:
+    _validate_ref(ref)
+
+
+@pytest.mark.parametrize("ref", ["..", "../x", "x/..", "x/../../y", "/abs", "/", "a\\b", "..\\x", "a\0b"])
+def test_validate_ref_rejects_traversal(ref: str) -> None:
+    with pytest.raises(ValueError):
+        _validate_ref(ref)
+
+
+@pytest.mark.parametrize(
+    "subdir", ["", "modules/vpc", "modules/vpc/", "./modules/vpc", "modules/../vpc", "a/b/../../c", "modules//vpc", "v1..2"]
+)
+def test_validate_subdir_allows_paths_inside_package(subdir: str) -> None:
+    _validate_subdir(subdir)
+
+
+@pytest.mark.parametrize("subdir", ["..", "../x", "x/../..", "a/b/../../../c", "/abs", "/", "a\0b"])
+def test_validate_subdir_rejects_paths_outside_package(subdir: str) -> None:
+    with pytest.raises(ValueError):
+        _validate_subdir(subdir)
+
+
+ALLOWED_MODULE_PREFIXES_ENV = "CHECKOV_TERRAFORM_ALLOWED_MODULE_PREFIXES"
+GIT_GETTER_PATH = "checkov.terraform.module_loading.loaders.git_loader.GitGetter"
+
+
+def _load_with_env(root_dir: Path, loader_class, source: str, env: dict):
+    """Run discover -> match -> _load_module like the registry does, with the given env vars."""
+    clean_env = {k: v for k, v in os.environ.items() if k not in (ALLOWED_MODULE_PREFIXES_ENV, "VCS_BASE_URL",
+                                                                  "VCS_USERNAME", "VCS_TOKEN")}
+    clean_env.update(env)
+    with mock.patch.dict(os.environ, clean_env, clear=True):
+        loader = loader_class()
+        module_params = _module_params(root_dir, source)
+        loader.discover(module_params)
+        assert loader._is_matching_loader(module_params)
+        return loader._load_module(module_params)
+
+
+@pytest.mark.parametrize("env", [{}, {ALLOWED_MODULE_PREFIXES_ENV: ""}, {ALLOWED_MODULE_PREFIXES_ENV: "  "}],
+                         ids=["not_set", "empty", "whitespace"])
+@mock.patch(GIT_GETTER_PATH, autospec=True)
+def test_allowed_module_prefixes_not_configured_keeps_current_behaviour(git_getter, root_dir: Path, env: dict) -> None:
+    content = _load_with_env(root_dir, GenericGitLoader, "git::http://127.0.0.1:9999/test", env)
+
+    git_getter.assert_called_once()
+    assert content.loaded()
+
+
+@pytest.mark.parametrize(
+    "loader_class, source, env",
+    [
+        (GenericGitLoader, "git::http://127.0.0.1:9999/test", {}),
+        (GenericGitLoader, "git::https://192.0.2.1/latest", {}),
+        (GenericGitLoader, "git::https://gitlab.example.com/org/repo.git?ref=v1", {}),
+        (GenericGitLoader, "git::ssh://git@example.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://github.com.example.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://github.com@other.example.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://other.example.com/x?@github.com/org/repo.git", {}),
+        (GenericGitLoader, "git::https://other.example.com/x#@github.com/org/repo.git", {}),
+        (GithubLoader, "git@github.com:other/repo.git", {}),
+        (BitbucketLoader, "bitbucket.org/org/repo", {}),
+        (BitbucketAccessTokenLoader, "bitbucket.org/org/repo", {"BITBUCKET_TOKEN": "test"}),
+    ],
+    ids=["loopback", "ip_address", "other_host", "generic_ssh", "lookalike_host", "user_info_host",
+         "query_with_at_sign", "fragment_with_at_sign", "github_ssh_other_org", "bitbucket", "bitbucket_access_token"],
+)
+@mock.patch(GIT_GETTER_PATH, autospec=True)
+def test_module_source_not_in_allowed_prefixes_is_skipped(
+    git_getter, root_dir: Path, loader_class, source: str, env: dict
+) -> None:
+    env = {ALLOWED_MODULE_PREFIXES_ENV: "https://github.com/, ssh://github.com/org/", **env}
+
+    content = _load_with_env(root_dir, loader_class, source, env)
+
+    git_getter.assert_not_called()
+    assert not content.loaded()
+    assert content.failed_url
+
+
+@pytest.mark.parametrize(
+    "loader_class, source, allowed, env",
+    [
+        (GenericGitLoader, "git::https://github.com/org/repo.git?ref=v1", "https://github.com/", {}),
+        (GenericGitLoader, "git::https://github.com/org/repo.git?ref=v1", "git::https://github.com/", {}),
+        (GenericGitLoader, "git::https://GitHub.com/org/repo.git", "https://github.com/", {}),
+        (GenericGitLoader, "git::https://gitlab.example.com/org/repo.git", "https://github.com/,https://gitlab.example.com/", {}),
+        (GenericGitLoader, "git::https://gitlab.example.com/org/repo.git", "https://gitlab.example.com/",
+         {"VCS_BASE_URL": "https://gitlab.example.com", "VCS_USERNAME": "user", "VCS_TOKEN": "token"}),
+        (GithubLoader, "github.com/org/repo", "https://github.com/", {}),
+        (GithubLoader, "git@github.com:org/repo.git", "ssh://git@github.com/org/", {}),
+        (GithubLoader, "git::git@github.com:org/repo.git", "ssh://github.com/org/", {}),
+        (BitbucketLoader, "bitbucket.org/org/repo", "https://bitbucket.org/", {}),
+    ],
+    ids=["https", "prefix_with_git_scheme", "case_insensitive", "second_prefix", "vcs_credentials",
+         "github_shorthand", "github_ssh", "github_git_ssh_prefix_without_user", "bitbucket"],
+)
+@mock.patch(GIT_GETTER_PATH, autospec=True)
+def test_module_source_in_allowed_prefixes_is_loaded(
+    git_getter, root_dir: Path, loader_class, source: str, allowed: str, env: dict
+) -> None:
+    content = _load_with_env(root_dir, loader_class, source, {ALLOWED_MODULE_PREFIXES_ENV: allowed, **env})
+
+    git_getter.assert_called_once()
+    assert content.loaded()
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        f"git::https://{USER_INFO_TOKEN}@127.0.0.1:8443/x?@github.com/org/repo.git",
+        f"git::https://{USER_INFO_TOKEN}@127.0.0.1:8443/x#@github.com/org/repo.git",
+    ],
+    ids=["query_with_at_sign", "fragment_with_at_sign"],
+)
+@mock.patch(GIT_GETTER_PATH, autospec=True)
+def test_skip_warning_omits_module_source(git_getter, root_dir: Path, source: str, caplog) -> None:
+    with caplog.at_level(logging.WARNING):
+        _load_with_env(root_dir, GenericGitLoader, source, {ALLOWED_MODULE_PREFIXES_ENV: "https://github.com/"})
+
+    git_getter.assert_not_called()
+    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING and "Skipping module" in r.message]
+    assert warnings == [f"Skipping module: not in {ALLOWED_MODULE_PREFIXES_ENV} allowlist."]
+    assert "127.0.0.1" not in warnings[0]
+    assert "github.com" not in warnings[0]
+    assert "user" not in warnings[0]
+    assert "token" not in warnings[0]
+
+
+
+
+@pytest.mark.parametrize(
+    "source, allowed",
+    [
+        ("git::https://other.example.com/x?@github.com/org/repo", "https://github.com/"),
+        ("git::https://other.example.com/x#@github.com/org/repo", "https://github.com/"),
+        ("git::https://github.com.other.example.com/org/repo", "https://github.com"),
+        ("git::https://github.com.other.example.com/org/repo", "https://github.com/"),
+        ("https://192.0.2.1:8443/org/repo", "https://192.0.2.1:844"),
+        ("https://192.0.2.1:844/org/repo", "https://192.0.2.1:8443"),
+        ("https://github.com:8443/org/repo", "https://github.com/"),
+        ("http://github.com/org/repo", "https://github.com/"),
+        ("https://github.com/other/repo", "https://github.com/org/"),
+        ("https://github.com:notaport/org/repo", "https://github.com/"),
+    ],
+    ids=["query_with_at_sign", "fragment_with_at_sign", "lookalike_host_no_trailing_slash", "lookalike_host",
+         "port_prefix_of_other_port", "port_longer_than_source_port", "non_default_port", "different_scheme",
+         "different_path", "invalid_port"],
+)
+def test_is_allowed_module_source_rejects_non_matching_source(source: str, allowed: str) -> None:
+    with mock.patch.dict(os.environ, {ALLOWED_MODULE_PREFIXES_ENV: allowed}):
+        assert not _is_allowed_module_source(source)
+
+
+@pytest.mark.parametrize(
+    "source, allowed",
+    [
+        ("git::https://github.com/org/repo.git?ref=v1", "https://github.com"),
+        ("git::https://github.com/org/repo.git?ref=v1", "https://github.com/"),
+        ("https://github.com:443/org/repo", "https://github.com/"),
+        ("https://github.com/org/repo", "https://github.com:443/"),
+        ("http://github.com:80/org/repo", "http://github.com/"),
+        ("https://192.0.2.1:8443/org/repo", "https://192.0.2.1:8443"),
+        (f"git::https://{USER_INFO_PASS}@github.com/org/repo.git", "https://github.com/"),
+        (f"git::https://{USER_INFO_PASS}@github.com/org/repo.git", f"https://{OTHER_USER_INFO}@github.com/org/"),
+        ("git::https://GitHub.com/Org/repo.git", "https://github.com/org/"),
+        ("github.com/org/repo", "github.com/org/"),
+        ("git::ssh://git@github.com/org/repo.git", "ssh://github.com/org/"),
+    ],
+    ids=["no_trailing_slash", "trailing_slash", "explicit_default_port_in_source",
+         "explicit_default_port_in_prefix", "explicit_default_http_port", "explicit_port", "user_info_in_source",
+         "user_info_in_both", "case_insensitive", "no_scheme", "ssh_with_user"],
+)
+def test_is_allowed_module_source_accepts_matching_source(source: str, allowed: str) -> None:
+    with mock.patch.dict(os.environ, {ALLOWED_MODULE_PREFIXES_ENV: allowed}):
+        assert _is_allowed_module_source(source)
+
+
+@pytest.mark.parametrize(
+    "env, source, injected",
+    [
+        # VCS_ALLOWED_HOSTS not set -> credentials are added for any host (unchanged behaviour)
+        ({}, "git::https://github.com/org/repo.git", True),
+        ({}, "git::https://other.example.com/org/repo.git", True),
+        ({"VCS_BASE_URL": "https://git.example.com"}, "git::https://git.example.com/org/repo.git", True),
+        # VCS_ALLOWED_HOSTS set -> only the listed hosts and the VCS_BASE_URL host
+        ({"VCS_ALLOWED_HOSTS": " GitLab.com , "}, "git::https://gitlab.com/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com", "VCS_BASE_URL": "https://git.example.com"}, "git::https://git.example.com/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "git.example.com:8443"}, "git::https://git.example.com:8443/org/repo.git", True),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://other.example.com/org/repo.git", False),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://gitlab.com.example.com/org/repo.git", False),
+        ({"VCS_ALLOWED_HOSTS": "gitlab.com"}, "git::https://gitlab.com@other.example.com/org/repo.git", False),
+    ],
+)
+def test_vcs_allowed_hosts(env: dict[str, str], source: str, injected: bool) -> None:
+    loader = GenericGitLoader()
+    module_params = _module_params(Path("test"), source)
+    with mock.patch.dict(os.environ, {"VCS_USERNAME": "user", "VCS_TOKEN": "token", **env}, clear=True):
+        loader.discover(module_params)
+        loader._is_matching_loader(module_params)
+    assert ("user:token@" in module_params.module_source) is injected

@@ -10,6 +10,7 @@ import subprocess  # nosec
 import tempfile
 import threading
 from typing import Any, Type, TYPE_CHECKING
+from urllib.parse import urlsplit
 import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -20,6 +21,7 @@ from checkov.common.images.image_referencer import fix_related_resource_ids, Ima
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.file_utils import _is_within
 from checkov.helm.image_referencer.manager import HelmImageReferencerManager
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -65,6 +67,32 @@ def _get_chart_remote_repos(chart_dir: str) -> list[str]:
     return remote_repos
 
 
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def _repo_matches_prefix(repo: str, prefix: str) -> bool:
+    """Return True if the (lowercased) repo URL is covered by the (lowercased) allowlist prefix.
+
+    For URLs the scheme, host and port must match exactly (so a lookalike host such as
+    'charts.example.com.other.net' or port 8443 vs 844 does not match), and the repo path
+    must start with the prefix path. Values without '://' keep the plain prefix comparison.
+    """
+    if "://" not in prefix or "://" not in repo:
+        return repo.startswith(prefix)
+    try:
+        p, r = urlsplit(prefix), urlsplit(repo)
+        if p.scheme != r.scheme or not p.hostname or p.hostname != r.hostname:
+            return False
+        default_port = _DEFAULT_PORTS.get(p.scheme)
+        p_port = default_port if p.port is None else p.port
+        r_port = default_port if r.port is None else r.port
+        if p_port != r_port:
+            return False
+    except ValueError:
+        return False  # e.g. invalid port
+    return r.path.startswith(p.path)
+
+
 def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
     """Return dependency repos blocked by the CHECKOV_HELM_ALLOWED_REMOTE_REPOS allowlist.
 
@@ -76,8 +104,10 @@ def _get_blocked_helm_repos(chart_dir: str) -> list[str]:
         return []  # no allowlist configured → allow everything (original behaviour)
 
     allowed_prefixes = [p.strip().lower() for p in allowed_prefixes_raw.split(",") if p.strip()]
+    if "*" in allowed_prefixes:
+        return []  # '*' → allow everything
     remote_repos = _get_chart_remote_repos(chart_dir)
-    return [repo for repo in remote_repos if not any(repo.lower().startswith(p) for p in allowed_prefixes)]
+    return [repo for repo in remote_repos if not any(_repo_matches_prefix(repo.lower(), p) for p in allowed_prefixes)]
 
 
 class K8sHelmRunner(k8_runner):
@@ -221,6 +251,20 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return self.check_type
 
     @staticmethod
+    def _is_safe_source_path(target_dir: str, source: str) -> bool:
+        """Check the path from a '# Source: ' line of the helm template output stays inside target_dir.
+
+        Helm always renders it as a relative path inside the chart, ex. 'mychart/templates/deployment.yaml',
+        so absolute paths and '..' segments can only come from the template content itself.
+        """
+        if not source or "\0" in source or os.path.isabs(source) or source.startswith(("/", "\\")):
+            return False
+        if ".." in re.split(r"[/\\]", source):
+            return False
+        # defense in depth - the resolved file path must be inside the target dir
+        return bool(_is_within(target_dir, os.path.join(target_dir, source)))
+
+    @staticmethod
     def _parse_output(target_dir: str, output: bytes, chart_dir: str, template_mapping: dict[str, str]) -> None:
         output_str = str(output, 'utf-8')
         reader = io.StringIO(output_str)
@@ -241,26 +285,34 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                 if not s.startswith('# Source: '):
                     raise Exception(f'Line {line_num}: Expected line to start with # Source: {s}')
                 source = s[10:]
-                if source != cur_source_file:
+                if not Runner._is_safe_source_path(target_dir, source):
+                    # Drop this document - its content must not be written outside of the target dir
+                    logging.warning(f"Helm: skipping rendered document with an invalid source path: {source!r}")
                     if cur_writer:
                         cur_writer.close()
-                    file_path = os.path.join(target_dir, source)
-                    parent = os.path.dirname(file_path)
-                    os.makedirs(parent, exist_ok=True)
-                    cur_source_file = source
-                    cur_writer = open(os.path.join(target_dir, source), 'a')
+                    cur_writer = None
+                    cur_source_file = None
+                else:
+                    if source != cur_source_file:
+                        if cur_writer:
+                            cur_writer.close()
+                        file_path = os.path.join(target_dir, source)
+                        parent = os.path.dirname(file_path)
+                        os.makedirs(parent, exist_ok=True)
+                        cur_source_file = source
+                        cur_writer = open(os.path.join(target_dir, source), 'a')
 
-                # Now extract the original template path from the source comment
-                # Format is typically: "chartname/templates/deployment.yaml"
-                # We need to extract just the "templates/deployment.yaml" part
-                template_path = source.split('/', 1)[1] if '/' in source else source
+                    # Now extract the original template path from the source comment
+                    # Format is typically: "chartname/templates/deployment.yaml"
+                    # We need to extract just the "templates/deployment.yaml" part
+                    template_path = source.split('/', 1)[1] if '/' in source else source
 
-                # Construct the path to the original template file
-                original_template = os.path.join(chart_dir, template_path)
+                    # Construct the path to the original template file
+                    original_template = os.path.join(chart_dir, template_path)
 
-                if os.path.exists(original_template):
-                    # Store mapping: temp file path (without prefix) -> original template path
-                    template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
+                    if os.path.exists(original_template):
+                        # Store mapping: temp file path (without prefix) -> original template path
+                        template_mapping[os.path.join(target_dir, source).replace('//', '/')] = original_template
 
                 if cur_writer:
                     cur_writer.write('---' + os.linesep)
