@@ -62,7 +62,7 @@ resource "azurerm_postgresql_server_key" "ok" {
   key_vault_key_id = azurerm_key_vault_key.ok.id
 }
 
-resource "azurerm_postgresql_server_key" "not_ok" {
+resource "azurerm_postgresql_server" "not_ok" {
   name                             = "ok-pg-server"
   location                         = azurerm_resource_group.ok.location
   resource_group_name              = azurerm_resource_group.ok.name

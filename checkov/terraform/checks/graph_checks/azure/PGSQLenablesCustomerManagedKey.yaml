@@ -19,6 +19,6 @@ definition:
     - cond_type: filter
       attribute: resource_type
       value:
-        - azurerm_postgresql_server_key
+        - azurerm_postgresql_server
       operator: within
 
