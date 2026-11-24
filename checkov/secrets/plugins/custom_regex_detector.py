@@ -14,7 +14,6 @@ import re
 from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
 from checkov.secrets.plugins.load_detectors import load_detectors
 
-PREVALIDATION_ENABLED = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 100
 
@@ -38,6 +37,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
         self._multiline_regex_supported_file_types: Set[str] = set()
         self._active_rules_by_file: Dict[str, Tuple[Set[Pattern[str]], Set[Pattern[str]]]] = {}
+        self._prevalidation_enabled = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
         detectors = load_detectors()
 
         for detector in detectors:
@@ -64,7 +64,7 @@ class CustomRegexDetector(RegexBasedDetector):
 
     def _active_rules(self, filename: str) -> Optional[Tuple[Set[Pattern[str]], Set[Pattern[str]]]]:
         """Single-line and multiline rules that could match somewhere in the file, or None to run all."""
-        if not PREVALIDATION_ENABLED:
+        if not self._prevalidation_enabled:
             return None
         cached = self._active_rules_by_file.get(filename)
         if cached is not None:

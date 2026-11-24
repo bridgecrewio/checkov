@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from unittest import mock
 
@@ -7,7 +8,6 @@ import pytest
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.plugins import custom_regex_detector
 from checkov.secrets.plugins.custom_regex_detector import CustomRegexDetector
 from checkov.secrets.runner import Runner
 
@@ -70,8 +70,12 @@ def custom_policies():
     bc_integration.customer_run_config_response = previous
 
 
+def _prevalidation_env(enabled: bool) -> mock._patch_dict:
+    return mock.patch.dict(os.environ, {"CHECKOV_SECRETS_PREVALIDATION": "1" if enabled else "0"})
+
+
 def _scan(root: Path, enabled: bool) -> list[tuple[str, str, int]]:
-    with mock.patch.object(custom_regex_detector, "PREVALIDATION_ENABLED", enabled):
+    with _prevalidation_env(enabled):
         report = Runner().run(
             root_folder=str(root),
             runner_filter=RunnerFilter(framework=["secrets"], enable_secret_scan_all_files=True),
@@ -90,7 +94,7 @@ def test_same_findings_with_and_without_prevalidation(repo: Path) -> None:
 
 
 def test_active_rules_only_keep_rules_whose_literals_appear(repo: Path) -> None:
-    with mock.patch.object(custom_regex_detector, "PREVALIDATION_ENABLED", True):
+    with _prevalidation_env(True):
         detector = CustomRegexDetector()
         single, multiline = detector._active_rules(str(repo / "service.py"))
         assert {r.pattern for r in single} == {"(?i)acmeint_([a-z0-9]{32})"}
@@ -102,5 +106,5 @@ def test_active_rules_only_keep_rules_whose_literals_appear(repo: Path) -> None:
 
 
 def test_active_rules_disabled_runs_everything(repo: Path) -> None:
-    with mock.patch.object(custom_regex_detector, "PREVALIDATION_ENABLED", False):
+    with _prevalidation_env(False):
         assert CustomRegexDetector()._active_rules(str(repo / "notes.txt")) is None
