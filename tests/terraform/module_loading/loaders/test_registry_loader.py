@@ -117,6 +117,8 @@ def test_load_module():
     [
         ("https://example.com/download?archive=tgz", "tgz"),
         ("https://example.com/download?archive=zip", "zip"),
+        ("https://example.com/download?token=abc&archive=tgz", "tgz"),
+        ("https://example.com/download?archive=tgz&token=abc", "tgz"),
         ("https://example.com/download/module.zip", "zip"),
         ("https://example.com/download/module.zip?sig=foo", "zip"),
         ("https://example.com/download/module/archive", None),
