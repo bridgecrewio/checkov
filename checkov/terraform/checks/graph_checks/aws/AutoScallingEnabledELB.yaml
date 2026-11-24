@@ -3,46 +3,116 @@ metadata:
   name: "Ensure that auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks."
   category: "NETWORKING"
 definition:
-  and:
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - aws_autoscaling_attachment
-      operator: within
-    - cond_type: attribute
-      resource_types:
-          - aws_autoscaling_group
-      attribute: health_check_type
-      operator: equals
-      value: "ELB"
-    - resource_types:
-        - aws_autoscaling_group
-      connected_resource_types:
-        - aws_autoscaling_attachment
-      operator:  exists
-      cond_type: connection
-    - or:
-        - and:
-            - resource_types:
-                - aws_elb
-              connected_resource_types:
-                - aws_autoscaling_attachment
-              operator:  exists
-              cond_type: connection
-            - cond_type: attribute
-              resource_types:
-                  - aws_elb
-              attribute: health_check
-              operator: exists
-        - and:
-            - resource_types:
-                - aws_lb_target_group
-              connected_resource_types:
-                - aws_autoscaling_attachment
-              operator:  exists
-              cond_type: connection
-            - cond_type: attribute
-              resource_types:
-                  - aws_lb_target_group
-              attribute: health_check
-              operator: exists
+  or:
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          value:
+            - aws_autoscaling_group
+          operator: within
+        - cond_type: attribute
+          resource_types:
+            - aws_autoscaling_group
+          attribute: health_check_type
+          operator: equals
+          value: "ELB"
+        - resource_types:
+            - aws_autoscaling_group
+          connected_resource_types:
+            - aws_autoscaling_attachment
+          operator: exists
+          cond_type: connection
+        - or:
+            - and:
+                - resource_types:
+                    - aws_elb
+                  connected_resource_types:
+                    - aws_autoscaling_attachment
+                  operator: exists
+                  cond_type: connection
+                - cond_type: attribute
+                  resource_types:
+                    - aws_elb
+                  attribute: health_check
+                  operator: exists
+            - and:
+                - resource_types:
+                    - aws_lb_target_group
+                  connected_resource_types:
+                    - aws_autoscaling_attachment
+                  operator: exists
+                  cond_type: connection
+                - cond_type: attribute
+                  resource_types:
+                    - aws_lb_target_group
+                  attribute: health_check
+                  operator: exists
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          value:
+            - aws_autoscaling_group
+          operator: within
+        - cond_type: attribute
+          resource_types:
+            - aws_autoscaling_group
+          attribute: health_check_type
+          operator: equals
+          value: "ELB"
+        - or:
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - aws_autoscaling_group
+                  attribute: load_balancers
+                  operator: exists
+                - resource_types:
+                    - aws_autoscaling_group
+                  connected_resource_types:
+                    - aws_elb
+                  operator: exists
+                  cond_type: connection
+                - cond_type: attribute
+                  resource_types:
+                    - aws_elb
+                  attribute: health_check
+                  operator: exists
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - aws_autoscaling_group
+                  attribute: target_group_arns
+                  operator: exists
+                - resource_types:
+                    - aws_autoscaling_group
+                  connected_resource_types:
+                    - aws_lb_target_group
+                  operator: exists
+                  cond_type: connection
+                - cond_type: attribute
+                  resource_types:
+                    - aws_lb_target_group
+                  attribute: health_check
+                  operator: exists
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          value:
+            - aws_autoscaling_group
+          operator: within
+        - resource_types:
+            - aws_autoscaling_group
+          connected_resource_types:
+            - aws_autoscaling_attachment
+          operator: not_exists
+          cond_type: connection
+        - cond_type: attribute
+          resource_types:
+            - aws_autoscaling_group
+          attribute: load_balancers
+          operator: not_exists
+        - cond_type: attribute
+          resource_types:
+            - aws_autoscaling_group
+          attribute: target_group_arns
+          operator: not_exists
