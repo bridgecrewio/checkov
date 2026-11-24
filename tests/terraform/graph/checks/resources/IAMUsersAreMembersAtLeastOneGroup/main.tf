@@ -20,6 +20,16 @@ resource "aws_iam_user" "user_bad" {
   name = "test-user-two"
 }
 
+resource "aws_iam_user" "user_alt" {
+  name = "test-user-three"
+}
+
+resource "aws_iam_user_group_membership" "alt_group" {
+  user = aws_iam_user.user_alt.name
+  groups = [
+    aws_iam_group.group.name,
+  ]
+}
 
 resource "aws_iam_group_membership" "bad_group" {
   name = "tf-testing-group-membership"

@@ -1,4 +1,5 @@
 pass:
-  - "aws_iam_group_membership.ok_group"
+  - "aws_iam_user.user_good"
+  - "aws_iam_user.user_alt"
 fail:
-  - "aws_iam_group_membership.bad_group"
+  - "aws_iam_user.user_bad"
