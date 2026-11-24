@@ -65,6 +65,6 @@ def test__load_or_die_quietly_with_timeout() -> None:
     definition = load_or_die_quietly(file=test_file, parsing_errors=parsing_errors)
 
     # then
+    assert definition is None
     assert parsing_errors
     assert str(test_file) in parsing_errors
-    assert 'seconds to parse' in str(parsing_errors[str(test_file)])

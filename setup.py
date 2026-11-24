@@ -108,7 +108,7 @@ setup(
         "asteval==1.0.6",
         "bc-detect-secrets==1.5.52",
         "urllib3>=1.26.20",
-        "bc-python-hcl2==0.4.3",
+        "bc-python-hcl2==0.4.5",
         "platformdirs>=4.0.0,<5.0.0",
         "ecdsa<1.0.0,>=0.19.0",
     ],
