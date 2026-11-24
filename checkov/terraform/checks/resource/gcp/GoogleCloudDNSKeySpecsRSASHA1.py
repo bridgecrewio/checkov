@@ -17,19 +17,47 @@ class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
         :param conf: dns_managed_zone configuration
         :return: <CheckResult>
         """
-        if "dnssec_config" in conf.keys():
-            dnssec_config = conf["dnssec_config"][0]
-            self.evaluated_keys = ['dnssec_config']
-            # default algo RSASHA256 as per the documentation:
-            # https://cloud.google.com/dns/docs/dnssec-advanced#advanced-signing-options
-            if "default_key_specs" in dnssec_config:
-                for default_key_specs in dnssec_config["default_key_specs"]:
-                    if "algorithm" in default_key_specs and default_key_specs["algorithm"] == ["rsasha1"]:
-                        self.evaluated_keys = [f'dnssec_config/[0]/default_key_specs/'
-                                               f'[{dnssec_config["default_key_specs"].index(default_key_specs)}]/'
-                                               f'algorithm']
-                        return CheckResult.FAILED
-                self.evaluated_keys = ['dnssec_config/[0]/default_key_specs']
+        dnssec_configs = conf.get("dnssec_config")
+        if dnssec_configs is None:
+            return CheckResult.PASSED
+
+        self.evaluated_keys = ["dnssec_config"]
+        if not isinstance(dnssec_configs, list) or not dnssec_configs:
+            return CheckResult.UNKNOWN
+
+        dnssec_config = dnssec_configs[0]
+        if not isinstance(dnssec_config, dict):
+            return CheckResult.UNKNOWN
+
+        default_key_specs = dnssec_config.get("default_key_specs")
+        # Default algorithm is RSASHA256: https://cloud.google.com/dns/docs/dnssec-advanced#advanced-signing-options
+        if default_key_specs is None:
+            return CheckResult.PASSED
+        if not isinstance(default_key_specs, list):
+            return CheckResult.UNKNOWN
+
+        has_unknown_key_specs = False
+        for index, key_specs in enumerate(default_key_specs):
+            if not isinstance(key_specs, dict):
+                has_unknown_key_specs = True
+                continue
+
+            algorithm = key_specs.get("algorithm")
+            if algorithm == ["rsasha1"]:
+                self.evaluated_keys = [f"dnssec_config/[0]/default_key_specs/[{index}]/algorithm"]
+                return CheckResult.FAILED
+            if algorithm is not None and (
+                not isinstance(algorithm, list)
+                or len(algorithm) != 1
+                or not isinstance(algorithm[0], str)
+                or self._is_variable_dependant(algorithm[0])
+            ):
+                has_unknown_key_specs = True
+
+        self.evaluated_keys = ["dnssec_config/[0]/default_key_specs"]
+        if has_unknown_key_specs:
+            return CheckResult.UNKNOWN
+
         return CheckResult.PASSED
 
 
