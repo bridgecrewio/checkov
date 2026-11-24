@@ -8,23 +8,13 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.inject import call_function_with_arguments
+from detect_secrets.util.prevalidation import could_match, is_enabled, required_literals
 import re
 
 from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
 from checkov.secrets.plugins.load_detectors import load_detectors
 
-try:
-    # Available from the bc-detect-secrets release that adds document-level pre-validation; the
-    # ignore covers older pinned releases, and `unused-ignore` keeps it quiet once it is installed.
-    from detect_secrets.util.prevalidation import (  # type: ignore[import-not-found, unused-ignore]
-        could_match,
-        is_enabled,
-        required_literals,
-    )
-    PREVALIDATION_ENABLED = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
-except ImportError:  # older detect-secrets without document-level pre-validation
-    PREVALIDATION_ENABLED = False
-
+PREVALIDATION_ENABLED = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 100
 

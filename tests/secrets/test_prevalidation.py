@@ -11,8 +11,6 @@ from checkov.secrets.plugins import custom_regex_detector
 from checkov.secrets.plugins.custom_regex_detector import CustomRegexDetector
 from checkov.secrets.runner import Runner
 
-pytest.importorskip("detect_secrets.util.prevalidation")
-
 
 def _policy(incident_id: str, code: str) -> dict:
     return {
