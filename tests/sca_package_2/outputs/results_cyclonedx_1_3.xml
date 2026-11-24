@@ -4,11 +4,6 @@
 		<timestamp>2025-02-05T09:32:16.848085+00:00</timestamp>
 		<tools>
 			<tool>
-				<vendor>CycloneDX</vendor>
-				<name>cyclonedx-python-lib</name>
-				<version>7.6.2</version>
-			</tool>
-			<tool>
 				<vendor>bridgecrew</vendor>
 				<name>checkov</name>
 				<version>UNKNOWN</version>
