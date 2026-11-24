@@ -8,22 +8,28 @@ definition:
       attribute: resource_type
       operator: within
       value:
-        - aws_config_configuration_recorder_status
+        - aws_config_configuration_recorder
     - cond_type: connection
       resource_types:
-        - aws_config_configuration_recorder_status
+        - aws_config_configuration_recorder
       connected_resource_types:
-        - aws_config_configuration_recorder
+        - aws_config_configuration_recorder_status
       operator: exists
-    - cond_type: attribute
-      resource_types:
-        - aws_config_configuration_recorder
-      attribute: recording_group.all_supported
-      operator: not_equals
-      value: "false"
     - cond_type: attribute
       resource_types:
         - aws_config_configuration_recorder_status
       attribute: is_enabled
       operator: equals
       value: "true"
+    - or:
+      - cond_type: attribute
+        resource_types:
+          - aws_config_configuration_recorder
+        attribute: recording_group.all_supported
+        operator: not_equals
+        value: "false"
+      - cond_type: attribute
+        resource_types:
+          - aws_config_configuration_recorder
+        attribute: recording_group
+        operator: not_exists

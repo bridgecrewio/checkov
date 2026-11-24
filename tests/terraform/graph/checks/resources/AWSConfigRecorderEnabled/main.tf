@@ -36,3 +36,21 @@ resource "aws_config_configuration_recorder_status" "fail_2" {
   name       = aws_config_configuration_recorder.fail_recorder_2.name
   is_enabled = true
 }
+
+resource "aws_config_configuration_recorder" "fail_recorder_3" {
+  name     = "example"
+  role_arn = aws_iam_role.r.arn
+  recording_group {
+    all_supported = true
+  }
+}
+
+resource "aws_config_configuration_recorder" "pass_recorder_no_group" {
+  name     = "example"
+  role_arn = aws_iam_role.r.arn
+}
+
+resource "aws_config_configuration_recorder_status" "pass_no_group" {
+  name       = aws_config_configuration_recorder.pass_recorder_no_group.name
+  is_enabled = true
+}
