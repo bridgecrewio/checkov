@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast, Union
 from collections import defaultdict
 
@@ -8,10 +9,11 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.inject import call_function_with_arguments
-from detect_secrets.util.prevalidation import could_match, is_enabled, required_literals
+from detect_secrets.util.prevalidation import could_match, required_literals
 import re
 
 from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.secrets.plugins.load_detectors import load_detectors
 
 MIN_CHARACTERS = 5
@@ -37,7 +39,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
         self._multiline_regex_supported_file_types: Set[str] = set()
         self._active_rules_by_file: Dict[str, Tuple[Set[Pattern[str]], Set[Pattern[str]]]] = {}
-        self._prevalidation_enabled = is_enabled("CHECKOV_SECRETS_PREVALIDATION")
+        self._prevalidation_enabled = convert_str_to_bool(os.getenv("CHECKOV_SECRETS_PREVALIDATION", False))
         detectors = load_detectors()
 
         for detector in detectors:

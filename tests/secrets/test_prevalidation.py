@@ -71,7 +71,7 @@ def custom_policies():
 
 
 def _prevalidation_env(enabled: bool) -> mock._patch_dict:
-    return mock.patch.dict(os.environ, {"CHECKOV_SECRETS_PREVALIDATION": "1" if enabled else "0"})
+    return mock.patch.dict(os.environ, {"CHECKOV_SECRETS_PREVALIDATION": "true" if enabled else "false"})
 
 
 def _scan(root: Path, enabled: bool) -> list[tuple[str, str, int]]:
