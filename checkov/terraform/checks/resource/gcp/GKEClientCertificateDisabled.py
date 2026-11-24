@@ -1,5 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories
 
 
 class GKEClientCertificateDisabled(BaseResourceValueCheck):
@@ -8,20 +8,14 @@ class GKEClientCertificateDisabled(BaseResourceValueCheck):
         id = "CKV_GCP_13"
         supported_resources = ['google_container_cluster']
         categories = [CheckCategories.KUBERNETES]
-
-        # The google provider defaults issue_client_certificate to false, which is exactly the
-        # desired state. Omitting master_auth/client_certificate_config therefore leaves client
-        # certificate auth disabled, so a missing block should pass rather than fail.
-        # Dedicated Autopilot clusters do not support this block and correctly pass.
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,missing_block_result=CheckResult.PASSED)
-
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
         """
-        Looks for client certificate configuration on google_container_cluster:
-        https://www.terraform.io/docs/providers/google/r/container_cluster.html#client_certificate_config
-        :param conf: google_container_cluster configuration
-        :return: <CheckResult>
+                    Looks for client certificate configuration on google_container_cluster:
+                    https://www.terraform.io/docs/providers/google/r/container_cluster.html#client_certificate_config
+                :param conf: google_container_cluster configuration
+                :return: <CheckResult>
         """
         return 'master_auth/[0]/client_certificate_config/[0]/issue_client_certificate/[0]'
 
