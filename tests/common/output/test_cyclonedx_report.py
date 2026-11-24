@@ -126,6 +126,7 @@ def test_valid_cyclonedx_image_bom():
         version='ubuntu:latest',
     )
     image_component = Component(
+        bom_ref=str(image_purl),
         name='acme/repo//ubuntu:latest',
         purl=image_purl,
         group=None,
