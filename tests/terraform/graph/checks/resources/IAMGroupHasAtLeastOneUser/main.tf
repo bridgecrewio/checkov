@@ -33,3 +33,18 @@ resource "aws_iam_group_membership" "bad_group" {
 resource "aws_iam_group" "bad_group" {
   name = "test-group"
 }
+
+resource "aws_iam_group" "lonely_group" {
+  name = "lonely-group"
+}
+
+resource "aws_iam_group" "alt_group" {
+  name = "alt-group"
+}
+
+resource "aws_iam_user_group_membership" "alt_membership" {
+  user = aws_iam_user.user_one.name
+  groups = [
+    aws_iam_group.alt_group.name,
+  ]
+}
