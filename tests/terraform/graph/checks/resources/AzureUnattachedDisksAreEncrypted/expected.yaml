@@ -1,7 +1,7 @@
 pass:
-  - "azurerm_virtual_machine.virtual_machine_good_1"
-  - "azurerm_virtual_machine.virtual_machine_good_2"
-  - "azurerm_virtual_machine.virtual_machine_good_3"
+  - "azurerm_managed_disk.managed_disk_good_1"
+  - "azurerm_managed_disk.managed_disk_good_2"
+  - "azurerm_managed_disk.managed_disk_good_3"
 fail:
-  - "azurerm_virtual_machine.virtual_machine_bad_1"
-  - "azurerm_virtual_machine.virtual_machine_bad_2"
+  - "azurerm_managed_disk.managed_disk_bad_1"
+  - "azurerm_managed_disk.managed_disk_bad_2"
