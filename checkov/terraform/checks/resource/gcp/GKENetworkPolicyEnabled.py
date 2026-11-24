@@ -1,38 +1,44 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.type_forcers import force_list
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class GKENetworkPolicyEnabled(BaseResourceValueCheck):
+class GKENetworkPolicyEnabled(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Network Policy is enabled on Kubernetes Engine Clusters"
-        id = "CKV_GCP_12"
-        supported_resources = ['google_container_cluster']
-        categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name="Ensure Network Policy is enabled on Kubernetes Engine Clusters",
+            id="CKV_GCP_12",
+            categories=[CheckCategories.KUBERNETES],
+            supported_resources=["google_container_cluster"],
+        )
 
     def scan_resource_conf(self, conf):
-        """
-            Looks for network policy configuration on google_container_cluster:
-            https://www.terraform.io/docs/providers/google/r/container_cluster.html
-            Expects either network policies or Dataplane V2 to be enabled
-        :param conf: google_container_cluster configuration
-        :return: <CheckResult>
-        """
-        if 'network_policy' in conf:
-            network_policy = conf.get('network_policy')
-            datapath_provider = conf.get('datapath_provider')
+        # Dedicated Autopilot clusters always use GKE Dataplane V2
+        # and enforce Kubernetes NetworkPolicy.
+        if conf.get("enable_autopilot") == [True]:
+            return CheckResult.PASSED
 
-            if 'enabled' in network_policy[0]:
-                policy_enabled = network_policy[0].get('enabled')[0]
-                if policy_enabled:
-                    return CheckResult.PASSED
-                elif not policy_enabled and datapath_provider == ['ADVANCED_DATAPATH']:
-                    return CheckResult.PASSED
+        # Dataplane V2 enforces Kubernetes NetworkPolicy without
+        # requiring the legacy network_policy block.
+        if conf.get("datapath_provider") == ["ADVANCED_DATAPATH"]:
+            return CheckResult.PASSED
+
+        # Standard cluster using the legacy network-policy configuration.
+        for network_policy in force_list(conf.get("network_policy", [])):
+            if (
+                isinstance(network_policy, dict)
+                and network_policy.get("enabled") == [True]
+            ):
+                return CheckResult.PASSED
 
         return CheckResult.FAILED
 
-    def get_inspected_key(self):
-        return 'network_policy/[0]/enabled'
+    def get_evaluated_keys(self):
+        return [
+            "enable_autopilot",
+            "datapath_provider",
+            "network_policy/[0]/enabled",
+        ]
 
 
 check = GKENetworkPolicyEnabled()
