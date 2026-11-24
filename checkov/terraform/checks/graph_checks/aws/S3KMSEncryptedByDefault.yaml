@@ -8,8 +8,10 @@ definition:
       resource_types:
         - aws_s3_bucket
       attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: equals
-      value: "aws:kms"
+      operator: within
+      value:
+        - "aws:kms"
+        - "aws:kms:dsse"
     - and:
       - cond_type: filter
         attribute: resource_type
@@ -26,5 +28,7 @@ definition:
         resource_types:
           - aws_s3_bucket_server_side_encryption_configuration
         attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-        operator: equals
-        value: "aws:kms"
+        operator: within
+        value:
+          - "aws:kms"
+          - "aws:kms:dsse"

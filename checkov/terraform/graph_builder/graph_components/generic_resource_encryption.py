@@ -111,6 +111,7 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
         {
             "server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm": [
                 EncryptionTypes.AWS_KMS_VALUE.value,
+                EncryptionTypes.AWS_KMS_DSSE_VALUE.value,
                 EncryptionTypes.AES256.value,
             ],
             "server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.kms_master_key_id": get_empty_list_str(),
