@@ -173,3 +173,79 @@ resource "aws_autoscaling_attachment" "alb_fail" {
   autoscaling_group_name = aws_autoscaling_group.alb_fail.id
   lb_target_group_arn    = aws_lb_target_group.alb_fail.arn
 }
+
+# Inline load balancer association (no aws_autoscaling_attachment)
+resource "aws_elb" "inline_elb" {
+  name               = "foobar-terraform-elb-inline"
+  availability_zones = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+  listener {
+    instance_port     = 8000
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:8000/"
+    interval            = 30
+  }
+}
+
+resource "aws_autoscaling_group" "inline_elb" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  desired_capacity          = 4
+  force_delete              = true
+  load_balancers            = [aws_elb.inline_elb.id]
+}
+
+resource "aws_autoscaling_group" "inline_ec2" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  desired_capacity          = 4
+  force_delete              = true
+  load_balancers            = [aws_elb.inline_elb.id]
+}
+
+# Inline target group association (no aws_autoscaling_attachment)
+resource "aws_lb_target_group" "inline_tg" {
+  name     = "tf-example-lb-tg-inline"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    port                = 8080
+    protocol            = "HTTP"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200-499"
+  }
+}
+
+resource "aws_autoscaling_group" "inline_tg" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  desired_capacity          = 4
+  force_delete              = true
+  target_group_arns         = [aws_lb_target_group.inline_tg.arn]
+}
+
+# No load balancer at all: out of scope, must not fail
+resource "aws_autoscaling_group" "no_lb" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  desired_capacity          = 4
+  force_delete              = true
+}

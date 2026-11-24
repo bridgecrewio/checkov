@@ -1,6 +1,10 @@
 pass:
-  - "aws_autoscaling_attachment.test_ok_attachment"
-  - "aws_autoscaling_attachment.alb_pass"
+  - "aws_autoscaling_group.autoscalling_ok"
+  - "aws_autoscaling_group.alb_pass"
+  - "aws_autoscaling_group.inline_elb"
+  - "aws_autoscaling_group.inline_tg"
+  - "aws_autoscaling_group.no_lb"
 fail:
-  - "aws_autoscaling_attachment.test_bad_attachment"
-  - "aws_autoscaling_attachment.alb_fail"
+  - "aws_autoscaling_group.autoscalling_bad"
+  - "aws_autoscaling_group.alb_fail"
+  - "aws_autoscaling_group.inline_ec2"
