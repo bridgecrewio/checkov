@@ -7,7 +7,7 @@ definition:
     - cond_type: filter
       attribute: resource_type
       value:
-        - ncloud_route_table_association
+        - ncloud_subnet
       operator: within
     - cond_type: attribute
       resource_types:

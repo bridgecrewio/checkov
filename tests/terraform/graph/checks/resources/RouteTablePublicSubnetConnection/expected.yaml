@@ -1,4 +1,4 @@
 pass:
-  - "ncloud_route_table_association.pass"
+  - "ncloud_subnet.subnet"
 fail:
-  - "ncloud_route_table_association.fail"
+  - "ncloud_subnet.subnet2"
