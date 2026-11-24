@@ -221,12 +221,12 @@
         },
         "bc-detect-secrets": {
             "hashes": [
-                "sha256:772353c949a131b7b5efd2b20473e0128af9c25ea27cdb15a3a6a6727ca73c4e",
-                "sha256:bb437db4b4ad81b19d52feaf8e0ebaf6ca0421ee6fefbdd9d41210bd4983e16b"
+                "sha256:25163b28aaab9a8083191f714d1a349eb3514cced10e94dc164f672ba7c426bd",
+                "sha256:e62cc8be5f9aa1c5c9d0d4c697fe2a8a72df202e0e17a41c95d335b5b51f1d11"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==1.5.52"
+            "markers": "python_version >= '3.9'",
+            "version": "==1.5.54"
         },
         "bc-jsonpath-ng": {
             "hashes": [
