@@ -35,6 +35,26 @@ resource "azuread_application_federated_identity_credential" "pass_special_chars
   subject             = "repo:${var.github_organisation_target}/${github_repository.project.name}:environment:${var.environment}"
 }
 
+# pass_environment_named_pull_request - "pull_request" here is an environment NAME,
+# not the pull_request event, so it must still pass
+resource "azuread_application_federated_identity_credential" "pass_environment_named_pull_request" {
+  application_object_id = "example-app-id"
+  display_name         = "github-actions-oidc"
+  audiences           = ["api://AzureADTokenExchange"]
+  issuer              = "https://token.actions.githubusercontent.com"
+  subject             = "repo:myOrg/myRepo:environment:pull_request"
+}
+
+# fail_pull_request - trusts pull_request-triggered workflows, which run proposed
+# (unreviewed, potentially fork) code
+resource "azuread_application_federated_identity_credential" "fail_pull_request" {
+  application_object_id = "example-app-id"
+  display_name         = "github-actions-oidc"
+  audiences           = ["api://AzureADTokenExchange"]
+  issuer              = "https://token.actions.githubusercontent.com"
+  subject             = "repo:myOrg/myRepo:pull_request"
+}
+
 # fail1 - Missing subject
 resource "azuread_application_federated_identity_credential" "fail1" {
   application_object_id = "example-app-id"
