@@ -1,58 +1,48 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class GKEMetadataServerIsEnabled(BaseResourceCheck):
     def __init__(self):
-        super().__init__(
-            name="Ensure the GKE Metadata Server is Enabled",
-            id="CKV_GCP_69",
-            categories=[CheckCategories.KUBERNETES],
-            supported_resources=[
-                "google_container_cluster",
-                "google_container_node_pool",
-            ],
-        )
+        name = "Ensure the GKE Metadata Server is Enabled"
+        id = "CKV_GCP_69"
+        supported_resources = ['google_container_cluster', 'google_container_node_pool']
+        categories = [CheckCategories.KUBERNETES]
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        # Dedicated Autopilot clusters always use Workload Identity
-        # Federation for GKE and the GKE metadata server.
-        if conf.get("enable_autopilot") == [True]:
+
+        # If cluster is type Autopilot short circuit this policy as feature is enabled by default
+        if self.entity_type == "google_container_cluster" and conf.get("enable_autopilot") == [True]:
             return CheckResult.PASSED
 
-        # Standard cluster default node pool or standalone node pool.
-        for node_config in force_list(conf.get("node_config", [])):
-            if not isinstance(node_config, dict):
-                continue
+        """
+        looks for workload_metadata_config in node_config which ensures that the metadata server is enabled
+        https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster
+        :param conf: google_container_cluster or google_container_node_pool configuration
+        :return: <CheckResult>
+        """
 
-            metadata_configs = force_list(
-                node_config.get("workload_metadata_config", [])
-            )
+        if 'node_config' in conf.keys():
+            node = conf["node_config"][0]
+            if isinstance(node, dict) and 'workload_metadata_config' in node:
 
-            for metadata_config in metadata_configs:
-                if not isinstance(metadata_config, dict):
-                    continue
-
-                # Current Google provider syntax.
-                if metadata_config.get("mode") == ["GKE_METADATA"]:
-                    return CheckResult.PASSED
-
-                # Older Google provider syntax.
-                if (
-                    metadata_config.get("node_metadata")
-                    == ["GKE_METADATA_SERVER"]
-                ):
-                    return CheckResult.PASSED
+                workload_metadatas = force_list(node["workload_metadata_config"][0])
+                for workload_metadata in workload_metadatas:
+                    if workload_metadata.get("mode", None) == ["GKE_METADATA"]:
+                        return CheckResult.PASSED
+                    # deprecated in newer Google provider
+                    elif workload_metadata.get("node_metadata", None) == ["GKE_METADATA_SERVER"]:
+                        return CheckResult.PASSED
 
         return CheckResult.FAILED
 
     def get_evaluated_keys(self):
         return [
-            "enable_autopilot",
-            "node_config/[0]/workload_metadata_config/[0]/mode",
-            "node_config/[0]/workload_metadata_config/[0]/node_metadata",
-        ]
-
+                "enable_autopilot",
+                "node_config/[0]/workload_metadata_config/[0]/mode",
+                "node_config/[0]/workload_metadata_config/[0]/node_metadata",
+            ]
 
 check = GKEMetadataServerIsEnabled()

@@ -10,7 +10,7 @@ class TestGKEMetadataServerIsEnabled(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = os.path.join(current_dir, "example_GKEMetadataServerIsEnabled")
+        test_files_dir = os.path.join(current_dir, "test_GKEMetadataServerIsEnabled")
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
