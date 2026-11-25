@@ -8,7 +8,11 @@ import pytest
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.plugins.custom_regex_detector import CustomRegexDetector
+from checkov.secrets.plugins.custom_regex_detector import (
+    DETECT_SECRETS_PREVALIDATION_ENV_VAR,
+    PREVALIDATION_ENV_VAR,
+    CustomRegexDetector,
+)
 from checkov.secrets.runner import Runner
 
 
@@ -71,7 +75,7 @@ def custom_policies():
 
 
 def _prevalidation_env(enabled: bool) -> mock._patch_dict:
-    return mock.patch.dict(os.environ, {"CHECKOV_SECRETS_PREVALIDATION": "true" if enabled else "false"})
+    return mock.patch.dict(os.environ, {PREVALIDATION_ENV_VAR: "true" if enabled else "false"})
 
 
 def _scan(root: Path, enabled: bool) -> list[tuple[str, str, int]]:
@@ -108,3 +112,11 @@ def test_active_rules_only_keep_rules_whose_literals_appear(repo: Path) -> None:
 def test_active_rules_disabled_runs_everything(repo: Path) -> None:
     with _prevalidation_env(False):
         assert CustomRegexDetector()._active_rules(str(repo / "notes.txt")) is None
+
+
+@pytest.mark.parametrize(("enabled", "expected"), [(True, "1"), (False, "0")])
+def test_detect_secrets_prevalidation_follows_checkov_flag(enabled: bool, expected: str) -> None:
+    preset = {DETECT_SECRETS_PREVALIDATION_ENV_VAR: "1" if not enabled else "0"}
+    with mock.patch.dict(os.environ, preset), _prevalidation_env(enabled):
+        CustomRegexDetector()
+        assert os.environ[DETECT_SECRETS_PREVALIDATION_ENV_VAR] == expected
