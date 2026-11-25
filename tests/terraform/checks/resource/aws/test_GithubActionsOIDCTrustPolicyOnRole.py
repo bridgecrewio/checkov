@@ -39,6 +39,7 @@ class TestGithubActionsOIDCTrustPolicyOnRole(unittest.TestCase):
             "aws_iam_role.pass-org-only",
             "aws_iam_role.pass-gh-org",
             "aws_iam_role.pass-fm-customer",
+            "aws_iam_role.pass-multivalue-pinned",
         }
         failing_resources = {
             "aws_iam_role.fail1",
@@ -47,6 +48,8 @@ class TestGithubActionsOIDCTrustPolicyOnRole(unittest.TestCase):
             "aws_iam_role.fail-abusable",
             "aws_iam_role.fail-wildcard-assertion",
             "aws_iam_role.fail-misused-repo",
+            "aws_iam_role.fail-multivalue-wildcard",
+            "aws_iam_role.fail-multivalue-abusable",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
