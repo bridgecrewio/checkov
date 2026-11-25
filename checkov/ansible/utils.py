@@ -168,7 +168,7 @@ def _process_blocks(
 
     if ResourceType.BLOCK in task and isinstance(task[ResourceType.BLOCK], list):
         prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
-        block_name = f"{prefix}.{task.get('name') or 'unknown'}"
+        block_name = f"{prefix}{task.get('name') or 'unknown'}"
         resource_context = _create_resource_context(definition_raw=definition_raw, resource=task)
         file_path_context[block_name] = resource_context
 
