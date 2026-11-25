@@ -2,7 +2,10 @@ from unittest.mock import MagicMock
 
 from pytest_mock import MockerFixture
 
-from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import (
+    SUPPORTED_BLOCK_TYPES,
+    BaseAttributeSolver,
+)
 
 
 def test_get_cached_jsonpath_statement(mocker: MockerFixture):
@@ -36,3 +39,8 @@ def test_get_cached_jsonpath_statement(mocker: MockerFixture):
     # then
     assert len(BaseAttributeSolver.jsonpath_parsed_statement_cache) == 1
     jsonpath_parse_mock.assert_not_called()  # jsonpath_ng.parse shouldn't have been called again
+
+
+def test_supported_block_types():
+    # the solver lives in checkov.common, so its block types come from the common BlockType, not terraform's
+    assert SUPPORTED_BLOCK_TYPES == {"resource", "data", "module", "provider"}
