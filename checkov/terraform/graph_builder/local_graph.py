@@ -330,6 +330,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
                 for i in range(len(sub_values)):
                     reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
+                    # only fall back to count/for_each instances (e.g. "widget[0]") when the attribute really
+                    # indexes the reference, not when the name is just mentioned, e.g. in a description
+                    allow_indexed_fallback = f"{reference_name}[" in str(attribute_value)
                     source_module_object = vertex.source_module_object
                     if referenced_modules is not None:
                         for module in referenced_modules:
@@ -341,24 +344,28 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 dest_node_index = self._find_vertex_index_relative_to_path(
                                     vertex_reference.block_type, reference_name, referenced_module_path,
                                     referenced_module_idx,
-                                    source_module_object=source_module_object
+                                    source_module_object=source_module_object,
+                                    allow_indexed_fallback=allow_indexed_fallback,
                                 )
                             self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index,
                                                              sub_values, vertex_reference, cross_variable_edges)
                     if vertex.source_module_object:
                         dest_node_index = self._find_vertex_index_relative_to_path(
                             vertex_reference.block_type, reference_name, vertex.path,
-                            source_module_object=source_module_object
+                            source_module_object=source_module_object,
+                            allow_indexed_fallback=allow_indexed_fallback,
                         )
                         if dest_node_index == -1:
                             dest_node_index = self._find_vertex_index_relative_to_path(
                                 vertex_reference.block_type, reference_name, vertex.path,
-                                source_module_object=source_module_object
+                                source_module_object=source_module_object,
+                                allow_indexed_fallback=allow_indexed_fallback,
                             )
                     else:
                         dest_node_index = self._find_vertex_index_relative_to_path(
                             vertex_reference.block_type, reference_name, vertex.path,
-                            source_module_object=source_module_object, origin_vertex_index=origin_node_index
+                            source_module_object=source_module_object, origin_vertex_index=origin_node_index,
+                            allow_indexed_fallback=allow_indexed_fallback,
                         )
                     if dest_node_index > -1 and origin_node_index > -1:
                         self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
@@ -564,6 +571,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         relative_module_idx: Optional[int] = None,
         source_module_object: Optional[TFModule] = None,
         origin_vertex_index: Optional[int] = None,
+        allow_indexed_fallback: bool = True,
     ) -> int:
         relative_vertices: list[int] = []
         if relative_module_idx is None:
@@ -576,7 +584,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = vertex.source_module_object
 
         # important to use this specific map for big graph performance
-        possible_vertices = self._get_possible_vertices(module_dependency_by_name_key, block_type, name)
+        possible_vertices = self._get_possible_vertices(
+            module_dependency_by_name_key, block_type, name, allow_indexed_fallback=allow_indexed_fallback
+        )
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
@@ -588,12 +598,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             relative_vertex = self._find_vertex_with_best_match(relative_vertices, block_path, origin_vertex_index)
         return relative_vertex
 
-    def _get_possible_vertices(self, module_dependency_by_name_key: TFModule | None, block_type: str, name: str) -> list[int]:
+    def _get_possible_vertices(
+        self,
+        module_dependency_by_name_key: TFModule | None,
+        block_type: str,
+        name: str,
+        allow_indexed_fallback: bool = True,
+    ) -> list[int]:
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
-        if possible_vertices:
+        if possible_vertices or not allow_indexed_fallback:
             return possible_vertices
         # Fallback for count/for_each indexed resources: when the index was stripped
         # from the reference (e.g. "s3_default" from "s3_default[0]"), try matching
