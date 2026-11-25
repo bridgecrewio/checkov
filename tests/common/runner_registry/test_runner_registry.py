@@ -131,6 +131,39 @@ class TestRunnerRegistry(unittest.TestCase):
         assert all(check["code_block"] is None for check in failed_checks)
         assert all(check["connected_node"] is None for check in failed_checks)
 
+    def test_json_output_without_reports_has_standard_structure(self):
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(banner, runner_filter)
+
+        config = argparse.Namespace(
+            file=None,
+            compact=False,
+            output=['json'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+            use_enforcement_rules=None
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=[], config=config)
+
+        output = json.loads(captured_output.getvalue())
+
+        assert output["check_type"] == ""
+        assert output["results"] == {
+            "passed_checks": [],
+            "failed_checks": [],
+            "skipped_checks": [],
+            "parsing_errors": [],
+        }
+        assert output["summary"]["passed"] == 0
+        assert output["summary"]["failed"] == 0
+        assert output["summary"]["resource_count"] == 0
+        assert "url" in output
+
     def test_compact_csv_output(self):
         test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
