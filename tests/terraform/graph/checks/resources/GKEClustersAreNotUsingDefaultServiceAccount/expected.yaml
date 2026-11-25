@@ -1,4 +1,12 @@
 pass:
-  - "google_project_default_service_accounts.ok"
+  - "google_container_cluster.custom"
+  - "google_container_cluster.pools_custom"
+  - "google_container_node_pool.custom_pool"
+  - "google_container_cluster.pools_default"
+  - "google_container_cluster.pools_defemail"
 fail:
-  - "google_project_default_service_accounts.not_ok"
+  - "google_container_cluster.bare"
+  - "google_container_cluster.defemail"
+  - "google_container_cluster.refdefault"
+  - "google_container_node_pool.default_pool"
+  - "google_container_node_pool.defemail_pool"
