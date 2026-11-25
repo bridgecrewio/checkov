@@ -49,7 +49,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.logger_streams import logger_streams
-from checkov.common.output.baseline import Baseline
+from checkov.common.output.baseline import Baseline, BaselineError
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.sast.consts import SastLanguages
@@ -515,7 +515,10 @@ class Checkov:
             baseline = None
             if self.config.baseline:
                 baseline = Baseline(self.config.output_baseline_as_skipped)
-                baseline.from_json(self.config.baseline)
+                try:
+                    baseline.from_json(self.config.baseline)
+                except BaselineError as e:
+                    self.parser.error(str(e))
 
             external_checks_dir = self.get_external_checks_dir()
             created_baseline_path = None
