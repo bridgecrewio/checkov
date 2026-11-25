@@ -182,3 +182,28 @@ resource "azurerm_synapse_workspace_vulnerability_assessment" "va_fail_3" {
     enabled = true
   }
 }
+
+# Case 5: Fail: workspace with no security alert policy and no vulnerability assessment
+
+resource "azurerm_synapse_workspace" "synapse_ws_fail_4" {
+  name                                 = "synapse_ws_fail_4"
+  resource_group_name                  = var.default_var
+  location                             = var.default_var
+  storage_data_lake_gen2_filesystem_id = var.default_var
+  sql_administrator_login              = "pudsqladminuser"
+  sql_administrator_login_password     = "P@ssw0rd@1" # checkov:skip=CKV_SECRET_80 test secret
+
+  aad_admin {
+    login     = "AzureAD Admin"
+    object_id = "00000000-0000-0000-0000-000000000000"
+    tenant_id = "00000000-0000-0000-0000-000000000000"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  tags = {
+    Env = "production"
+  }
+}

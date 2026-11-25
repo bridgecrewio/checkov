@@ -5,9 +5,9 @@ metadata:
 definition:
     and:
       - resource_types:
-          - azurerm_synapse_workspace_security_alert_policy
-        connected_resource_types:
           - azurerm_synapse_workspace
+        connected_resource_types:
+          - azurerm_synapse_workspace_security_alert_policy
         operator: exists
         cond_type: connection
 
@@ -28,6 +28,6 @@ definition:
       - cond_type: filter
         attribute: resource_type
         value:
-          - azurerm_synapse_workspace_vulnerability_assessment
+          - azurerm_synapse_workspace
         operator: within
 
