@@ -408,3 +408,63 @@ def test_runner_process_utf16_file():
     assert summary["failed"] == 0
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector,
+    ],
+)
+def test_runner_with_null_task(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "null_task.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_ANSIBLE_1", "CKV_ANSIBLE_2"])
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 1
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    assert {check.resource for check in report.passed_checks} == {
+        "tasks.uri.Check that you can connect (GET) to a page"
+    }
+    assert {check.resource for check in report.failed_checks} == {"tasks.ansible.builtin.get_url.Download foo.conf"}
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        RustworkxConnector,
+    ],
+)
+def test_runner_with_null_task_in_playbook(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "null_task_in_playbook.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_ANSIBLE_1", "CKV_ANSIBLE_2"])
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 1
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    assert {check.resource for check in report.passed_checks} == {
+        "tasks.block.uri.Check that you can connect (GET) to a page"
+    }
+    assert {check.resource for check in report.failed_checks} == {"tasks.ansible.builtin.get_url.Download foo.conf"}

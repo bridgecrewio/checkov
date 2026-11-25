@@ -150,7 +150,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         for _, file_conf in self.definitions.items():
             for resource in file_conf[:]:
                 if resource.get('kind') == "List":
-                    file_conf.extend(item for item in resource.get("items", []) if item)
+                    file_conf.extend(item for item in resource.get("items") or [] if item and isinstance(item, dict))
                     file_conf.remove(resource)
 
     def check_definitions(
@@ -218,7 +218,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                 if not resource_id:
                     continue
 
-                entity_context = self.context[k8_file][resource_id]
+                entity_context = self.context.get(k8_file, {}).get(resource_id)
+                if not entity_context:
+                    continue
 
                 record = Record(
                     check_id=check.id,
@@ -306,7 +308,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         if PARENT_RESOURCE_ID_KEY_NAME in entity:
             if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
                 # self.context not being None is checked in the caller method
-                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]  # type:ignore[index]
+                entity_context = self.context.get(entity_file_path, {}).get(entity[PARENT_RESOURCE_ID_KEY_NAME], {})  # type:ignore[union-attr]
             else:
                 logging.info(
                     "Unsupported nested resource type for Kubernetes graph edges. "
@@ -315,7 +317,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         else:
             entity_id = entity[CustomAttributes.ID]
             # self.context not being None is checked in the caller method
-            entity_context = self.context[entity_file_path][entity_id]  # type:ignore[index]
+            entity_context = self.context.get(entity_file_path, {}).get(entity_id, {})  # type:ignore[union-attr]
 
         return entity_context
 

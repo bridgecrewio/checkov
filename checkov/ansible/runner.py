@@ -80,9 +80,13 @@ class Runner(YamlRunner):
             return resource_key
 
         for code_block in file_conf:
+            if not isinstance(code_block, dict):
+                continue
             if code_block[START_LINE] <= start_line <= end_line <= code_block[END_LINE]:
                 if ResourceType.TASKS in code_block:
                     for task in code_block[ResourceType.TASKS]:
+                        if not isinstance(task, dict):
+                            continue
                         if task[START_LINE] <= start_line <= end_line <= task[END_LINE]:
                             if ResourceType.BLOCK in task:
                                 resource_name = self._handle_block_tasks(
@@ -110,6 +114,8 @@ class Runner(YamlRunner):
         self, start_line: int, end_line: int, code_block: dict[str, Any], prefix: str = ""
     ) -> str | None:
         for block_task in code_block[ResourceType.BLOCK]:
+            if not isinstance(block_task, dict):
+                continue
             if block_task[START_LINE] <= start_line <= end_line <= block_task[END_LINE]:
                 prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
                 if ResourceType.BLOCK in block_task:

@@ -1,0 +1,20 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "kind": "Pod",
+      "metadata": {
+        "name": "lab-pod"
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "nginx:1.25"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -52,3 +52,21 @@ def test_create_definitions():
 
     assert len(definitions) > 0
     assert all(key.endswith(".yml") or key.endswith(".yaml") and len(value) > 0 for key, value in definitions.items())
+
+
+def test_build_definitions_context_with_null_task():
+    # given
+    file_path = str(EXAMPLES_DIR / "null_task.yml")
+    definitions, definitions_raw = {}, {}
+    definitions[file_path], definitions_raw[file_path] = Runner()._parse_file(f=file_path)
+
+    # when
+    context = build_definitions_context(definitions=definitions, definitions_raw=definitions_raw)
+
+    # then
+    assert definitions[file_path][1] is None
+    assert set(context[file_path].keys()) == {
+        "tasks.uri.Check that you can connect (GET) to a page",
+        "tasks.ansible.builtin.get_url.Download foo.conf",
+        "tasks.debug.unknown",
+    }
