@@ -91,7 +91,7 @@ asteval = "==1.0.6"
 urllib3 = ">=1.26.20"
 bc-python-hcl2 = "==0.4.5"
 platformdirs = ">=4.0.0,<5.0.0"
-ecdsa = ">=0.19.0,<1.0.0"
+cryptography = ">=42.0.0"
 bc-detect-secrets = "*"
 
 [requires]

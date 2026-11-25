@@ -110,7 +110,7 @@ setup(
         "urllib3>=1.26.20",
         "bc-python-hcl2==0.4.5",
         "platformdirs>=4.0.0,<5.0.0",
-        "ecdsa<1.0.0,>=0.19.0",
+        "cryptography>=42.0.0",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
