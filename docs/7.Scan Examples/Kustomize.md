@@ -7,12 +7,12 @@ nav_order: 10
 
 # Scan Kustomize kustomizations with Checkov
 
-Checkov is able to autodetect kustomizations by the presence of a `Kustomization.yaml` file, if found, the the Kustomize framework will automatically be used to template out the referenced kustomization against referenced bases into resulting Kubernetes manifests, which will then be scanned by all Checkovs' Kubernetes policies.
+Checkov is able to autodetect kustomizations by the presence of a `kustomization.yaml` file, if found, the Kustomize framework will automatically be used to template out the referenced kustomization against referenced bases into resulting Kubernetes manifests, which will then be scanned by all Checkovs' Kubernetes policies.
 
 You can think of Kustomize as a "pre-framework". It doesn't currently contain any of it's own policies, rather serves to detect, parse, and provide metadata for Kustomize files to the Kubernetes framework.
 
-Each Overlay/Environment detected will be scanned, Checkov output will provide results for each overlay, and the base kubernetes manifests, so you can see seurity differences between overlays.
-Because Kustomizations don't inherently have names, Checkov generates a name for each overlay based on the relative file-path to the base referenced in the `Kustomizations.yaml` file.
+Each Overlay/Environment detected will be scanned, Checkov output will provide results for each overlay, and the base kubernetes manifests, so you can see security differences between overlays.
+Because Kustomizations don't inherently have names, Checkov generates a name for each overlay based on the relative file-path to the base referenced in the `kustomization.yaml` file.
 
 For example, The following directory structure will generate 3 sets of checkov violations for, `base:base`, `overlay:dev` and `overlay:prod` environments.
 
