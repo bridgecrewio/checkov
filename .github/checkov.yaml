@@ -14,6 +14,7 @@ skip-path:
 - tests/sca_image/conftest.py
 - tests/sca_package_2/conftest.py
 - tests/secrets
+- tests/pulumi
 - tests/terraform/checks/provider
 - tests/terraform/parser/resources/plan_tags/tfplan.json
 - tests/terraform/runner/resources/plan/tfplan.json

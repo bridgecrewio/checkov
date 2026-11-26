@@ -1,0 +1,65 @@
+name: checkov-azure
+runtime: yaml
+resources:
+  rg:
+    type: azure:core:ResourceGroup
+    properties:
+      name: checkov-rg
+      location: eastus
+  insecureStorage:
+    type: azure:storage:Account
+    properties:
+      name: insecurestorage01
+      resourceGroupName: ${rg.name}
+      location: eastus
+      accountTier: Standard
+      accountReplicationType: LRS
+      minTlsVersion: TLS1_0
+      allowNestedItemsToBePublic: true
+      httpsTrafficOnlyEnabled: false
+  secureStorage:
+    type: azure:storage:Account
+    properties:
+      name: securestorage01
+      resourceGroupName: ${rg.name}
+      location: eastus
+      accountTier: Standard
+      accountReplicationType: GRS
+      minTlsVersion: TLS1_2
+      allowNestedItemsToBePublic: false
+      publicNetworkAccessEnabled: false
+      sharedAccessKeyEnabled: false
+      blobProperties:
+        deleteRetentionPolicy:
+          days: 7
+      queueProperties:
+        logging:
+          delete: true
+          read: true
+          write: true
+          version: "1.0"
+          retentionPolicyDays: 10
+  nsg:
+    type: azure:network:NetworkSecurityGroup
+    properties:
+      name: open-nsg
+      resourceGroupName: ${rg.name}
+      location: eastus
+      securityRules:
+        - name: ssh
+          priority: 100
+          direction: Inbound
+          access: Allow
+          protocol: Tcp
+          sourcePortRange: "*"
+          destinationPortRange: "22"
+          sourceAddressPrefix: "*"
+          destinationAddressPrefix: "*"
+  vault:
+    type: azure:keyvault:KeyVault
+    properties:
+      name: checkov-kv
+      resourceGroupName: ${rg.name}
+      location: eastus
+      tenantId: 00000000-0000-0000-0000-000000000000
+      skuName: standard

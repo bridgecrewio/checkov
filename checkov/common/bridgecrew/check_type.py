@@ -24,6 +24,7 @@ class CheckType:
     KUBERNETES = "kubernetes"
     KUSTOMIZE = "kustomize"
     OPENAPI = "openapi"
+    PULUMI = "pulumi"
     SCA_PACKAGE = "sca_package"
     SCA_IMAGE = "sca_image"
     SECRETS = "secrets"

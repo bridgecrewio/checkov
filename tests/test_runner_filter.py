@@ -44,6 +44,7 @@ from checkov.runner_filter import RunnerFilter
                 "kustomize",
                 "sca_package",
                 "openapi",
+                "pulumi",
                 "sca_image",
                 "sast",
                 "3d_policy"

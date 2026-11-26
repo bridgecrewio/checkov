@@ -1,0 +1,2 @@
+{"sequence":0,"timestamp":1,"preludeEvent":{"config":{}}}
+{"sequence":1,"resourcePreEvent":{"metadata":{"op":"create","urn":"urn:pulumi:dev::project::aws:s3/bucket:Bucket::bucket"

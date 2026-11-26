@@ -1,0 +1,150 @@
+name: checkov-aws
+runtime: yaml
+resources:
+  insecureBucket:
+    type: aws:s3:Bucket
+    properties:
+      bucket: checkov-insecure-bucket
+      tags:
+        Environment: dev
+  secureBucket:
+    type: aws:s3:Bucket
+    properties:
+      bucket: checkov-secure-bucket
+  securePab:
+    type: aws:s3:BucketPublicAccessBlock
+    properties:
+      bucket: ${secureBucket.id}
+      blockPublicAcls: true
+      blockPublicPolicy: true
+      ignorePublicAcls: true
+      restrictPublicBuckets: true
+  secureVersioning:
+    type: aws:s3:BucketVersioning
+    properties:
+      bucket: ${secureBucket.id}
+      versioningConfiguration:
+        status: Enabled
+  secureEncryption:
+    type: aws:s3:BucketServerSideEncryptionConfiguration
+    properties:
+      bucket: ${secureBucket.id}
+      rules:
+        - applyServerSideEncryptionByDefault:
+            sseAlgorithm: aws:kms
+            kmsMasterKeyId: ${rotatedKey.arn}
+  secureLogging:
+    type: aws:s3:BucketLogging
+    properties:
+      bucket: ${secureBucket.id}
+      targetBucket: ${insecureBucket.id}
+      targetPrefix: logs/
+  openSg:
+    type: aws:ec2:SecurityGroup
+    properties:
+      name: open-sg
+      description: open ssh
+      ingress:
+        - description: ssh from anywhere
+          protocol: tcp
+          fromPort: 22
+          toPort: 22
+          cidrBlocks: ["0.0.0.0/0"]
+  plainKey:
+    type: aws:kms:Key
+    properties:
+      description: key without rotation
+  rotatedKey:
+    type: aws:kms:Key
+    properties:
+      description: key with rotation
+      enableKeyRotation: true
+      deletionWindowInDays: 7
+      policy:
+        fn::toJSON:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: root
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:root
+              Action: kms:*
+              Resource: "*"
+  db:
+    type: aws:rds:Instance
+    properties:
+      identifier: checkov-db
+      engine: mysql
+      instanceClass: db.t3.micro
+      allocatedStorage: 20
+      username: admin
+      password: SuperSecret123!
+      storageEncrypted: false
+      publiclyAccessible: true
+      skipFinalSnapshot: true
+  adminPolicy:
+    type: aws:iam:Policy
+    properties:
+      name: admin-policy
+      policy:
+        fn::toJSON:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: "*"
+              Resource: "*"
+  instance:
+    type: aws:ec2:Instance
+    properties:
+      ami: ami-12345678
+      instanceType: t3.micro
+      associatePublicIpAddress: true
+      metadataOptions:
+        httpEndpoint: enabled
+        httpTokens: optional
+      rootBlockDevice:
+        encrypted: false
+        volumeSize: 8
+      tags:
+        Name: checkov-instance
+  queue:
+    type: aws:sqs:Queue
+    properties:
+      name: checkov-queue
+  table:
+    type: aws:dynamodb:Table
+    properties:
+      name: checkov-table
+      billingMode: PAY_PER_REQUEST
+      hashKey: id
+      attributes:
+        - name: id
+          type: S
+      pointInTimeRecovery:
+        enabled: true
+  lambdaRole:
+    type: aws:iam:Role
+    properties:
+      name: checkov-lambda-role
+      assumeRolePolicy:
+        fn::toJSON:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: sts:AssumeRole
+              Principal:
+                Service: lambda.amazonaws.com
+  fn:
+    type: aws:lambda:Function
+    properties:
+      name: checkov-fn
+      role: ${lambdaRole.arn}
+      runtime: python3.12
+      handler: index.handler
+      code:
+        fn::fileArchive: ./app
+      environment:
+        variables:
+          STAGE: dev
+      tracingConfig:
+        mode: Active

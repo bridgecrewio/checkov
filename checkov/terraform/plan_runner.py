@@ -117,8 +117,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
         parsing_errors: dict[str, str] = {}
         tf_local_graph: Optional[TerraformLocalGraph] = None
         if self.definitions is None or self.context is None:
-            self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
-            self.context = build_definitions_context(self.definitions, definitions_raw)
+            self.definitions, self.context = self._parse_definitions(root_folder, files, runner_filter, parsing_errors)
             self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
             for vertex in self.tf_plan_local_graph.vertices:
                 if vertex.block_type == BlockType.RESOURCE:
@@ -158,6 +157,16 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                 return [report, image_report]
 
         return report
+
+    def _parse_definitions(
+        self,
+        root_folder: str | None,
+        files: list[str] | None,
+        runner_filter: RunnerFilter,
+        parsing_errors: dict[str, str],
+    ) -> tuple[_TerraformPlanDefinitions, _TerraformPlanContext]:
+        definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+        return definitions, build_definitions_context(definitions, definitions_raw)
 
     @staticmethod
     def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter) -> None:
@@ -242,7 +251,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                     continue
 
                 self._assign_graph_to_registry(registry)
-                results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
+                results = registry.scan(scanned_file, entity, [], runner_filter, report_type=self.check_type)
                 for check, check_result in results.items():
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
