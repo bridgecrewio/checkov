@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -19,7 +20,8 @@ class RootUser(BaseDockerfileCheck):
 
     def scan_resource_conf(self, conf: list[_Instruction]) -> tuple[CheckResult, list[_Instruction] | None]:
         last_user = conf[-1]
-        if last_user["value"] == "root":
+        user = last_user["value"].partition(":")[0]
+        if user == "root" or re.fullmatch(r"[+-]?0+", user):
             return CheckResult.FAILED, [last_user]
 
         return CheckResult.PASSED, [last_user]
