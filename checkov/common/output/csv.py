@@ -5,6 +5,7 @@ import itertools
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
@@ -201,6 +202,7 @@ class CSVSBOM:
     def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:
         CSVSBOM.arrange_rows(rows)
 
+        Path(file).parent.mkdir(parents=True, exist_ok=True)
         with open(file, "w", newline="") as f:
             logging.info(f"Persisting SBOM to {os.path.abspath(file)}")
             if is_api_key:
