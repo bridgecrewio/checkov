@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast, Union
 from collections import defaultdict
 
@@ -8,13 +9,17 @@ from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.inject import call_function_with_arguments
+from detect_secrets.util.prevalidation import could_match, required_literals
 import re
 
 from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.secrets.plugins.load_detectors import load_detectors
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 100
+PREVALIDATION_ENV_VAR = "CHECKOV_SECRETS_PREVALIDATION"
+DETECT_SECRETS_PREVALIDATION_ENV_VAR = "DETECT_SECRETS_PREVALIDATION"
 
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
@@ -35,6 +40,8 @@ class CustomRegexDetector(RegexBasedDetector):
         self._analyzed_files: Set[str] = set()
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
         self._multiline_regex_supported_file_types: Set[str] = set()
+        self._active_rules_by_file: Dict[str, Tuple[Set[Pattern[str]], Set[Pattern[str]]]] = {}
+        self._prevalidation_enabled = self._configure_prevalidation()
         detectors = load_detectors()
 
         for detector in detectors:
@@ -54,6 +61,37 @@ class CustomRegexDetector(RegexBasedDetector):
                     self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
                 logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
+
+    @staticmethod
+    def _configure_prevalidation() -> bool:
+        """Read CHECKOV_SECRETS_PREVALIDATION and turn detect-secrets' own pre-validation on or off to match."""
+        enabled = bool(convert_str_to_bool(os.getenv(PREVALIDATION_ENV_VAR, False)))
+        os.environ[DETECT_SECRETS_PREVALIDATION_ENV_VAR] = "1" if enabled else "0"
+        if enabled:
+            logging.info("Secrets pre-validation is enabled: skipping regex rules and plugins that cannot match a file")
+        return enabled
+
+    def prevalidate(self, lowered_document: str) -> bool:
+        """Rules are pre-validated individually inside analyze_line, so the plugin itself always runs."""
+        return True
+
+    def _active_rules(self, filename: str) -> Optional[Tuple[Set[Pattern[str]], Set[Pattern[str]]]]:
+        """Single-line and multiline rules that could match somewhere in the file, or None to run all."""
+        if not self._prevalidation_enabled:
+            return None
+        cached = self._active_rules_by_file.get(filename)
+        if cached is not None:
+            return cached
+        content = read_file_safe(filename)
+        if not content:
+            return None
+        lowered = content.lower()
+        active = (
+            {regex for regex in self.denylist if could_match(required_literals(regex), lowered)},
+            {regex for regex in self.multiline_deny_list if could_match(required_literals(regex), lowered)},
+        )
+        self._active_rules_by_file[filename] = active
+        return active
 
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
@@ -80,6 +118,7 @@ class CustomRegexDetector(RegexBasedDetector):
             logging.info(f"File {filename} Line {line_number} has a length of {line_length}, which is higher than the max {CustomRegexDetector.MAX_LINE_LENGTH}")
             return output
 
+        active_rules = self._active_rules(filename)
         self._find_potential_secret(
             filename=filename,
             string_to_analyze=line,
@@ -87,6 +126,7 @@ class CustomRegexDetector(RegexBasedDetector):
             line_number=line_number,
             context=raw_context,
             is_multiline=False,
+            active_rules=active_rules,
             **kwargs
         )
 
@@ -112,6 +152,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 line_number=1,
                 context=raw_context,
                 is_multiline=True,
+                active_rules=active_rules,
                 **kwargs
             )
 
@@ -127,17 +168,19 @@ class CustomRegexDetector(RegexBasedDetector):
             is_multiline: bool = False,
             is_added: bool = False,
             is_removed: bool = False,
+            active_rules: Optional[Tuple[Set[Pattern[str]], Set[Pattern[str]]]] = None,
             **kwargs: Any
     ) -> None:
         current_denylist: Set[Pattern[str]] = set()
         if is_multiline:
+            multiline_candidates = self.multiline_deny_list if active_rules is None else active_rules[1]
             # We want the multiline regex to execute only if current file is supported by them
-            for regex in self.multiline_deny_list:
+            for regex in multiline_candidates:
                 regex_supported_files = self.multiline_regex_to_metadata.get(regex.pattern, {}).get("supportedFiles", [])
                 if regex_supported_files and any([filename.endswith(regex_supported_file) for regex_supported_file in regex_supported_files]):
                     current_denylist.add(regex)
         else:
-            current_denylist = self.denylist
+            current_denylist = self.denylist if active_rules is None else active_rules[0]
 
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
         kwargs["regex_denylist"] = current_denylist

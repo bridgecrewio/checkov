@@ -16,11 +16,11 @@ from cyclonedx.model import (
     HashAlgorithm,
     HashType,
     Property,
-    Tool,
 )
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.license import DisjunctiveLicense
+from cyclonedx.model.tool import Tool
 from cyclonedx.model.vulnerability import (
     Vulnerability,
     VulnerabilityAdvisory,
@@ -74,7 +74,7 @@ class CycloneDX:
 
         this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
         self.update_tool_external_references(this_tool)
-        bom.metadata.tools.add(this_tool)
+        bom.metadata.tools.tools.add(this_tool)
 
         for report in self.reports:
             if report.check_type in SCA_CHECKTYPES and self.export_iac_only:
