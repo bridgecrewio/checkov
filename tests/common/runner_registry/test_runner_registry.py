@@ -741,6 +741,40 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
     assert "<testcase " in xml_file_path.read_text()
 
 
+def test_output_file_path_creates_missing_directory_for_csv(tmp_path: Path, capsys: CaptureFixture[str]):
+    # given
+    test_files_dir = Path(__file__).parent / "example_s3_tf"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+    )
+    reports = runner_registry.run(root_folder=str(test_files_dir))
+
+    # a directory that does not exist yet -- checkov is expected to create it (as it does for the other formats)
+    csv_output_dir = tmp_path / "missing" / "nested"
+    config = argparse.Namespace(
+        file=['./example_s3_tf/main.tf'],
+        compact=False,
+        output=["csv"],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=str(csv_output_dir),
+        use_enforcement_rules=None,
+        output_bc_ids=False,
+        summary_position="top",
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+    capsys.readouterr()
+
+    # then
+    assert csv_output_dir.is_dir()
+    assert list(csv_output_dir.glob("*_iac.csv"))
+
+
 def test_strip_code_blocks_from_json():
     # given
     reports = [
