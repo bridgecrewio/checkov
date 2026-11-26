@@ -18,13 +18,12 @@ from concurrent.futures import ThreadPoolExecutor
 from checkov.common.graph.graph_builder import CustomAttributes, reserved_attributes_to_scan, wrap_reserved_attributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.util.var_utils import is_terraform_variable_dependent
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
 if TYPE_CHECKING:
     from bc_jsonpath_ng import JSONPath
     from checkov.common.typing import LibraryGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, BlockType.DATA, BlockType.MODULE, BlockType.PROVIDER}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 

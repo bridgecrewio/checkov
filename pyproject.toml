@@ -63,7 +63,6 @@ ignore_imports = [
     "checkov.common.output.report -> checkov.sca_package_2.output", # move to checkov.common.output
 
     "checkov.common.checks_infra.solvers.connections_solvers.connection_exists_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
-    "checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
     "checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
 
     "checkov.common.runners.runner_registry -> checkov.sca_image.runner", # old IR, needs to be removed (argo_workflows, bitbucket_pipelines)
