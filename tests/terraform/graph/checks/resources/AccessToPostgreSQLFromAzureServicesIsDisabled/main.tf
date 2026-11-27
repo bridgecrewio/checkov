@@ -3,37 +3,57 @@ resource "azurerm_resource_group" "example" {
   location = "West Europe"
 }
 
-resource "azurerm_sql_server" "sql_server_good" {
-  name                         = "mysqlserver"
-  resource_group_name          = azurerm_resource_group.example.name
-  location                     = "West US"
-  version                      = "12.0"
-  administrator_login          = "4dm1n157r470r"
-  administrator_login_password = "4-v3ry-53cr37-p455w0rd"  # checkov:skip=CKV_SECRET_6 test secret
+resource "azurerm_postgresql_server" "pg_server_good_no_rule" {
+  name                = "pg-good-no-rule"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  administrator_login          = "pud"
+  administrator_login_password = "H@Sh1CoR3!" # checkov:skip=CKV_SECRET_6 test secret
+
+  sku_name   = "GP_Gen5_4"
+  version    = "11"
+  storage_mb = 5120
 }
 
-resource "azurerm_sql_server" "sql_server_bad" {
-  name                         = "mysqlserver"
-  resource_group_name          = azurerm_resource_group.example.name
-  location                     = "West US"
-  version                      = "12.0"
-  administrator_login          = "4dm1n157r470r"
-  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
+resource "azurerm_postgresql_server" "pg_server_good" {
+  name                = "pg-good"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+
+  administrator_login          = "pud"
+  administrator_login_password = "H@Sh1CoR3!" # checkov:skip=CKV_SECRET_6 test secret
+
+  sku_name   = "GP_Gen5_4"
+  version    = "11"
+  storage_mb = 5120
 }
 
+resource "azurerm_postgresql_server" "pg_server_bad" {
+  name                = "pg-bad"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 
-resource "azurerm_sql_firewall_rule" "firewall_rule_good" {
+  administrator_login          = "pud"
+  administrator_login_password = "H@Sh1CoR3!" # checkov:skip=CKV_SECRET_6 test secret
+
+  sku_name   = "GP_Gen5_4"
+  version    = "11"
+  storage_mb = 5120
+}
+
+resource "azurerm_postgresql_firewall_rule" "firewall_rule_good" {
   name                = "FirewallRule1"
   resource_group_name = azurerm_resource_group.example.name
-  server_name         = azurerm_sql_server.sql_server_good.name
+  server_name         = azurerm_postgresql_server.pg_server_good.name
   start_ip_address    = "10.0.17.62"
   end_ip_address      = "10.0.17.62"
 }
 
-resource "azurerm_sql_firewall_rule" "firewall_rule_bad" {
-  name                = "FirewallRule1"
+resource "azurerm_postgresql_firewall_rule" "firewall_rule_bad" {
+  name                = "AllowAzureServices"
   resource_group_name = azurerm_resource_group.example.name
-  server_name         = azurerm_sql_server.sql_server_bad.name
+  server_name         = azurerm_postgresql_server.pg_server_bad.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
 }
