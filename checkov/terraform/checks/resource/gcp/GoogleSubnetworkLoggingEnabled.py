@@ -4,8 +4,9 @@ from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
-# flow logs can't be enabled for subnetworks with the following purpose set
-PURPOSE_EXCEPTIONS = ["INTERNAL_HTTPS_LOAD_BALANCER", "REGIONAL_MANAGED_PROXY", "GLOBAL_MANAGED_PROXY"]
+# Only workload subnets carry VM traffic worth logging. Proxy-only subnets don't support
+# flow logs; PSC and PRIVATE_NAT subnets host no VMs, so flow logs would capture nothing.
+ENFORCEABLE_PURPOSES = ("PRIVATE", "PRIVATE_RFC_1918")
 
 
 class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
@@ -18,7 +19,8 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         purpose = conf.get("purpose")
-        if purpose and purpose[0] in PURPOSE_EXCEPTIONS:
+
+        if purpose and purpose[0] and purpose[0] not in ENFORCEABLE_PURPOSES:
             return CheckResult.UNKNOWN
 
         return super().scan_resource_conf(conf)

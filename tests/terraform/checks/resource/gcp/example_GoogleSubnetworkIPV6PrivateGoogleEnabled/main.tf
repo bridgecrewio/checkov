@@ -142,3 +142,57 @@ resource "google_compute_subnetwork" "unknown7" {
   network          = google_compute_network.custom-test.id
   purpose          = "GLOBAL_MANAGED_PROXY"
 }
+
+resource "google_compute_subnetwork" "pass_private" {
+  name                       = "log-test-subnetwork"
+  ip_cidr_range              = "10.2.0.0/16"
+  stack_type                 = "IPV4_IPV6"
+  ipv6_access_type           = "EXTERNAL"
+  region                     = "us-central1"
+  network                    = google_compute_network.custom-test.id
+  purpose                    = "PRIVATE"
+  private_ip_google_access   = true
+  private_ipv6_google_access = "ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE"
+}
+
+resource "google_compute_subnetwork" "pass_rfc1918" {
+  name                       = "log-test-subnetwork"
+  ip_cidr_range              = "10.2.0.0/16"
+  stack_type                 = "IPV4_IPV6"
+  ipv6_access_type           = "EXTERNAL"
+  region                     = "us-central1"
+  network                    = google_compute_network.custom-test.id
+  purpose                    = "PRIVATE_RFC_1918"
+  private_ip_google_access   = true
+  private_ipv6_google_access = "ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE"
+}
+
+resource "google_compute_subnetwork" "fail_null_purpose" {
+  name             = "log-test-subnetwork"
+  ip_cidr_range    = "10.2.0.0/16"
+  stack_type       = "IPV4_IPV6"
+  ipv6_access_type = "EXTERNAL"
+  region           = "us-central1"
+  network          = google_compute_network.custom-test.id
+  purpose          = null
+}
+
+resource "google_compute_subnetwork" "unknown_psc" {
+  name             = "log-test-subnetwork"
+  ip_cidr_range    = "10.2.0.0/16"
+  stack_type       = "IPV4_IPV6"
+  ipv6_access_type = "INTERNAL"
+  region           = "us-central1"
+  network          = google_compute_network.custom-test.id
+  purpose          = "PRIVATE_SERVICE_CONNECT"
+}
+
+resource "google_compute_subnetwork" "unknown_private_nat" {
+  name             = "log-test-subnetwork"
+  ip_cidr_range    = "10.2.0.0/16"
+  stack_type       = "IPV4_IPV6"
+  ipv6_access_type = "INTERNAL"
+  region           = "us-central1"
+  network          = google_compute_network.custom-test.id
+  purpose          = "PRIVATE_NAT"
+}

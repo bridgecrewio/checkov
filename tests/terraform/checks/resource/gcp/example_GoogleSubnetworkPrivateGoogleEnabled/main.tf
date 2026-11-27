@@ -72,6 +72,44 @@ resource "google_compute_subnetwork" "unknown3" {
   role          = "ACTIVE"
 }
 
+resource "google_compute_subnetwork" "pass3" {
+  name                     = "example"
+  ip_cidr_range            = "10.0.0.0/16"
+  network                  = "google_compute_network.vpc.self_link"
+  purpose                  = "PRIVATE"
+  private_ip_google_access = true
+}
+
+resource "google_compute_subnetwork" "fail3" {
+  name          = "example"
+  ip_cidr_range = "10.0.0.0/16"
+  network       = "google_compute_network.vpc.id"
+  purpose       = null
+}
+
+resource "google_compute_subnetwork" "fail4" {
+  name          = "example"
+  ip_cidr_range = "10.0.0.0/16"
+  network       = "google_compute_network.vpc.id"
+  purpose       = "PRIVATE"
+}
+
+resource "google_compute_subnetwork" "unknown4" {
+  name          = "psc-subnet"
+  network       = google_compute_network.pike.id
+  region        = "europe-west2"
+  ip_cidr_range = "10.0.1.0/24"
+  purpose       = "PRIVATE_SERVICE_CONNECT"
+}
+
+resource "google_compute_subnetwork" "unknown5" {
+  name          = "private-nat-subnet"
+  network       = google_compute_network.pike.id
+  region        = "europe-west2"
+  ip_cidr_range = "10.0.2.0/24"
+  purpose       = "PRIVATE_NAT"
+}
+
  resource "google_compute_network" "pike" {
    auto_create_subnetworks = false
    name="pike"

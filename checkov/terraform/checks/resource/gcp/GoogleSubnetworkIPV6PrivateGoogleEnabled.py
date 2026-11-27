@@ -3,8 +3,8 @@ from typing import Any, List, Dict
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
-# private_ip_google_access is not supported for subnetworks with the following purpose set
-PURPOSE_EXCEPTIONS = ["INTERNAL_HTTPS_LOAD_BALANCER", "REGIONAL_MANAGED_PROXY", "GLOBAL_MANAGED_PROXY"]
+# Enforceable purposes
+ENFORCEABLE_PURPOSES = ("PRIVATE", "PRIVATE_RFC_1918")
 
 
 class GoogleSubnetworkIPV6PrivateGoogleEnabled(BaseResourceValueCheck):
@@ -17,7 +17,8 @@ class GoogleSubnetworkIPV6PrivateGoogleEnabled(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         purpose = conf.get("purpose")
-        if purpose and isinstance(purpose, list) and purpose[0] in PURPOSE_EXCEPTIONS:
+
+        if purpose and purpose[0] and purpose[0] not in ENFORCEABLE_PURPOSES:
             return CheckResult.UNKNOWN
 
         stack = conf.get("stack_type")
