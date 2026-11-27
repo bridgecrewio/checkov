@@ -18,6 +18,8 @@ from checkov.secrets.plugins.load_detectors import load_detectors
 
 MIN_CHARACTERS = 5
 MAX_CHARACTERS = 100
+PREVALIDATION_ENV_VAR = "CHECKOV_SECRETS_PREVALIDATION"
+DETECT_SECRETS_PREVALIDATION_ENV_VAR = "DETECT_SECRETS_PREVALIDATION"
 
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
@@ -39,7 +41,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
         self._multiline_regex_supported_file_types: Set[str] = set()
         self._active_rules_by_file: Dict[str, Tuple[Set[Pattern[str]], Set[Pattern[str]]]] = {}
-        self._prevalidation_enabled = convert_str_to_bool(os.getenv("CHECKOV_SECRETS_PREVALIDATION", False))
+        self._prevalidation_enabled = self._configure_prevalidation()
         detectors = load_detectors()
 
         for detector in detectors:
@@ -59,6 +61,15 @@ class CustomRegexDetector(RegexBasedDetector):
                     self.regex_to_metadata[detector["Regex"]] = detector
             except Exception:
                 logging.warning(f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}")
+
+    @staticmethod
+    def _configure_prevalidation() -> bool:
+        """Read CHECKOV_SECRETS_PREVALIDATION and turn detect-secrets' own pre-validation on or off to match."""
+        enabled = bool(convert_str_to_bool(os.getenv(PREVALIDATION_ENV_VAR, False)))
+        os.environ[DETECT_SECRETS_PREVALIDATION_ENV_VAR] = "1" if enabled else "0"
+        if enabled:
+            logging.info("Secrets pre-validation is enabled: skipping regex rules and plugins that cannot match a file")
+        return enabled
 
     def prevalidate(self, lowered_document: str) -> bool:
         """Rules are pre-validated individually inside analyze_line, so the plugin itself always runs."""
