@@ -1,6 +1,7 @@
 pass:
-  - "azurerm_mssql_server_vulnerability_assessment.okExample"
-  - "azurerm_mssql_server_vulnerability_assessment.okLegacyExample"
-  - "azurerm_mssql_server_vulnerability_assessment.okLegacyExampleAsList"
+  - "azurerm_sql_server.okLegacyExample"
+  - "azurerm_mssql_server.okExample"
 fail:
-  - "azurerm_mssql_server_vulnerability_assessment.badExampleNotEnabled"
+  - "azurerm_sql_server.badExample"
+  - "azurerm_mssql_server.fail_no_va"
+  - "azurerm_mssql_server.fail_bare"

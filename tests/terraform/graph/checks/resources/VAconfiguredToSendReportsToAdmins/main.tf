@@ -147,20 +147,20 @@ resource "azurerm_sql_server" "badExample" {
 
 resource "azurerm_storage_container" "badExampleNotEnabled" {
   name                  = "accteststoragecontainer"
-  storage_account_name  = azurerm_storage_account.badExampleNotEnabled.name
+  storage_account_name  = azurerm_storage_account.badExample.name
   container_access_type = "private"
 }
 
 resource "azurerm_mssql_server_security_alert_policy" "badExampleNotEnabled" {
-  resource_group_name = azurerm_resource_group.badExampleNotEnabled.name
-  server_name         = azurerm_sql_server.badExampleNotEnabled.name
+  resource_group_name = azurerm_resource_group.badExample.name
+  server_name         = azurerm_sql_server.badExample.name
   state               = "Enabled"
 }
 
 resource "azurerm_mssql_server_vulnerability_assessment" "badExampleNotEnabled" {
   server_security_alert_policy_id = azurerm_mssql_server_security_alert_policy.badExampleNotEnabled.id
-  storage_container_path          = "${azurerm_storage_account.badExampleNotEnabled.primary_blob_endpoint}${azurerm_storage_container.badExampleNotEnabled.name}/"
-  storage_account_access_key      = azurerm_storage_account.badExampleNotEnabled.primary_access_key
+  storage_container_path          = "${azurerm_storage_account.badExample.primary_blob_endpoint}${azurerm_storage_container.badExampleNotEnabled.name}/"
+  storage_account_access_key      = azurerm_storage_account.badExample.primary_access_key
 
   recurring_scans {
     enabled                   = false
@@ -170,4 +170,28 @@ resource "azurerm_mssql_server_vulnerability_assessment" "badExampleNotEnabled" 
       "email@example2.com"
     ]
   }
+}
+
+resource "azurerm_mssql_server" "fail_no_va" {
+  name                         = "mssqlserver-no-va"
+  resource_group_name          = azurerm_resource_group.okExample.name
+  location                     = azurerm_resource_group.okExample.location
+  version                      = "12.0"
+  administrator_login          = "4dm1n157r470r"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd" # checkov:skip=CKV_SECRET_6 test secret
+}
+
+resource "azurerm_mssql_server_security_alert_policy" "fail_no_va" {
+  resource_group_name = azurerm_resource_group.okExample.name
+  server_name         = azurerm_mssql_server.fail_no_va.name
+  state               = "Enabled"
+}
+
+resource "azurerm_mssql_server" "fail_bare" {
+  name                         = "mssqlserver-bare"
+  resource_group_name          = azurerm_resource_group.okExample.name
+  location                     = azurerm_resource_group.okExample.location
+  version                      = "12.0"
+  administrator_login          = "4dm1n157r470r"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd" # checkov:skip=CKV_SECRET_6 test secret
 }
