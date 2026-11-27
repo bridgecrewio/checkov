@@ -71,7 +71,7 @@ from checkov.gitlab_ci.runner import Runner as gitlab_ci_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
-from checkov.kustomize.runner import Runner as kustomize_runner
+from checkov.kustomize.runner import KustomizeCommandError, Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
@@ -371,8 +371,15 @@ class Checkov:
             else:
                 runner_registry = RunnerRegistry(banner, runner_filter, *self.runners, tool=tool)
 
+            for runner in runner_registry.runners:
+                if isinstance(runner, kustomize_runner):
+                    runner.kustomize_command_mode = self.config.kustomize_command
+
             runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
-            runnerDependencyHandler.validate_runner_deps()
+            try:
+                runnerDependencyHandler.validate_runner_deps()
+            except KustomizeCommandError as exc:
+                self.parser.error(str(exc))
 
             if self.config.show_config:
                 print(self.parser.format_values(sanitize=True))
