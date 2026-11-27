@@ -23,7 +23,7 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
         found_service_accounts = False
         for index, vertex in enumerate(vertices):
             service_account_name = vertex.attributes.get('metadata.name')
-            if vertex.attributes.get('kind') != 'ServiceAccount' or service_account_name is None:
+            if vertex.attributes.get('kind') != 'ServiceAccount' or not isinstance(service_account_name, str):
                 continue
             self._cache[service_account_name] = VertexConncetions(index)
             found_service_accounts = True
@@ -43,10 +43,10 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
                         continue
 
                     destination_vertex_ref = destination_vertex.attributes.get('spec.serviceAccountName')
-                    if destination_vertex_ref in self._cache:
+                    if isinstance(destination_vertex_ref, str) and destination_vertex_ref in self._cache:
                         self._cache[destination_vertex_ref].destination_vertices_indices.append(index)
 
         vertex_ref = vertex.attributes.get('metadata.name')
-        if vertex_ref is None:
+        if not isinstance(vertex_ref, str):
             return []
         return self._cache[vertex_ref].destination_vertices_indices

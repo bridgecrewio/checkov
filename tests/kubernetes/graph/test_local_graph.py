@@ -134,6 +134,22 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(local_graph.edges[2].origin, 3)
         self.assertEqual(local_graph.edges[2].dest, 0)
 
+    def test_ServiceAccountEdgeBuilder_skips_non_string_names(self) -> None:
+        relative_file_path = "resources/Keyword/service_account_non_string_name.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = [KeywordEdgeBuilder, ServiceAccountEdgeBuilder()]
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(4, len(local_graph.vertices))
+        # only the service account with a string name is connected to its pod
+        self.assertEqual(1, len(local_graph.edges))
+        self.assertEqual(local_graph.edges[0].origin, 2)
+        self.assertEqual(local_graph.edges[0].dest, 3)
+
     def test_LabelSelectorEdgeBuilder_on_templates_with_network_policy(self) -> None:
         relative_file_path = "resources/Keyword/network-policy-attached.yaml"
         definitions = {}
