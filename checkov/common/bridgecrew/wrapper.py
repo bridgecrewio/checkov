@@ -57,7 +57,7 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
 
 def _extract_checks_metadata(report: Report, full_repo_object_key: str, on_prem: bool) -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = defaultdict(dict)
-    for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks):
+    for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks, report.unknown_checks):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = {k: getattr(check, k, "") for k in check_metadata_keys}
         check_meta['file_object_path'] = full_repo_object_key + check.file_path
@@ -93,7 +93,10 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
                         for check in report.failed_checks],
                     "skipped_checks": [
                         {k: getattr(check, k) for k in reduced_keys}
-                        for check in report.skipped_checks]
+                        for check in report.skipped_checks],
+                    "unknown_checks": [
+                        {k: getattr(check, k) for k in reduced_keys}
+                        for check in report.unknown_checks]
                 },
                 "image_cached_results": report.image_cached_results
         }

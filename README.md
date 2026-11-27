@@ -51,7 +51,7 @@ Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacl
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](https://github.com/bridgecrewio/checkov/blob/main/docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](https://github.com/bridgecrewio/checkov/blob/main/docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * [Output](https://github.com/bridgecrewio/checkov/blob/main/docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.prismacloud.io/en/enterprise-edition/policy-reference/).
+ * [Output](https://github.com/bridgecrewio/checkov/blob/main/docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.prismacloud.io/en/enterprise-edition/policy-reference/). Policies that cannot determine pass or fail return [UNKNOWN](https://github.com/bridgecrewio/checkov/blob/main/docs/2.Basics/Unknown%20Check%20Results.md) and are included in the report and summary.
  
 ## Screenshots
 
