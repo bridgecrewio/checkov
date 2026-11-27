@@ -20,11 +20,14 @@ class TestGoogleSubnetworkPrivateGoogleEnabled(unittest.TestCase):
         passing_resources = {
             "google_compute_subnetwork.pass",
             "google_compute_subnetwork.pass2",
+            "google_compute_subnetwork.pass3",
         }
 
         failing_resources = {
             "google_compute_subnetwork.fail",
             "google_compute_subnetwork.fail2",
+            "google_compute_subnetwork.fail3",
+            "google_compute_subnetwork.fail4",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -34,7 +37,7 @@ class TestGoogleSubnetworkPrivateGoogleEnabled(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 8)  # 3 unknown
+        self.assertEqual(summary["resource_count"], 13)  # 5 unknown, 1 network
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
