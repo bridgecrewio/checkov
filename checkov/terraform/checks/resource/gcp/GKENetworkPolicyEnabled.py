@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class GKENetworkPolicyEnabled(BaseResourceValueCheck):
+class GKENetworkPolicyEnabled(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Network Policy is enabled on Kubernetes Engine Clusters"
         id = "CKV_GCP_12"
@@ -18,21 +18,30 @@ class GKENetworkPolicyEnabled(BaseResourceValueCheck):
         :param conf: google_container_cluster configuration
         :return: <CheckResult>
         """
+
+        # If cluster is type Autopilot short circuit this policy as feature is enabled by default
+        if conf.get("enable_autopilot") == [True]:
+            return CheckResult.PASSED
+
+        # datapath_provider is a root level resource attribute. Moved from check within network_policy block
+        if conf.get('datapath_provider') == ['ADVANCED_DATAPATH']:
+            return CheckResult.PASSED
+
         if 'network_policy' in conf:
             network_policy = conf.get('network_policy')
-            datapath_provider = conf.get('datapath_provider')
 
             if 'enabled' in network_policy[0]:
                 policy_enabled = network_policy[0].get('enabled')[0]
                 if policy_enabled:
                     return CheckResult.PASSED
-                elif not policy_enabled and datapath_provider == ['ADVANCED_DATAPATH']:
-                    return CheckResult.PASSED
 
         return CheckResult.FAILED
 
-    def get_inspected_key(self):
-        return 'network_policy/[0]/enabled'
-
+    def get_evaluated_keys(self):
+        return [
+                "enable_autopilot",
+                "datapath_provider",
+                "network_policy/[0]/enabled",
+            ]
 
 check = GKENetworkPolicyEnabled()

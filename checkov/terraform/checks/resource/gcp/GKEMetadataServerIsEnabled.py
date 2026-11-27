@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class GKEMetadataServerIsEnabled(BaseResourceCheck):
@@ -12,15 +12,22 @@ class GKEMetadataServerIsEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+
+        # If cluster is type Autopilot short circuit this policy as feature is enabled by default
+        if self.entity_type == "google_container_cluster" and conf.get("enable_autopilot") == [True]:
+            return CheckResult.PASSED
+
         """
         looks for workload_metadata_config in node_config which ensures that the metadata server is enabled
         https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster
         :param conf: google_container_cluster or google_container_node_pool configuration
         :return: <CheckResult>
         """
+
         if 'node_config' in conf.keys():
             node = conf["node_config"][0]
             if isinstance(node, dict) and 'workload_metadata_config' in node:
+
                 workload_metadatas = force_list(node["workload_metadata_config"][0])
                 for workload_metadata in workload_metadatas:
                     if workload_metadata.get("mode", None) == ["GKE_METADATA"]:
@@ -32,7 +39,10 @@ class GKEMetadataServerIsEnabled(BaseResourceCheck):
         return CheckResult.FAILED
 
     def get_evaluated_keys(self):
-        return ['node_config']
-
+        return [
+                "enable_autopilot",
+                "node_config/[0]/workload_metadata_config/[0]/mode",
+                "node_config/[0]/workload_metadata_config/[0]/node_metadata",
+            ]
 
 check = GKEMetadataServerIsEnabled()
