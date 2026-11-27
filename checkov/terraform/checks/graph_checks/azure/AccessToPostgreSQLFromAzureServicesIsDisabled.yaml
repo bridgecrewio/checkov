@@ -7,31 +7,31 @@ definition:
     - cond_type: filter
       attribute: resource_type
       value:
-        - azurerm_sql_server
+        - azurerm_postgresql_server
       operator: within
     - or:
       - resource_types:
-          - azurerm_sql_server
+          - azurerm_postgresql_server
         connected_resource_types:
-          - azurerm_sql_firewall_rule
+          - azurerm_postgresql_firewall_rule
         operator: not_exists
         cond_type: connection
       - and:
         - resource_types:
-            - azurerm_sql_server
+            - azurerm_postgresql_server
           connected_resource_types:
-            - azurerm_sql_firewall_rule
+            - azurerm_postgresql_firewall_rule
           operator: exists
           cond_type: connection
         - cond_type: attribute
           resource_types:
-             - azurerm_sql_firewall_rule
+             - azurerm_postgresql_firewall_rule
           attribute: start_ip_address
           value: "0.0.0.0"
           operator: not_equals
         - cond_type: attribute
           resource_types:
-             - azurerm_sql_firewall_rule
+             - azurerm_postgresql_firewall_rule
           attribute: end_ip_address
           value: "0.0.0.0"
           operator: not_equals

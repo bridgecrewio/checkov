@@ -1,4 +1,5 @@
 pass:
-  - "azurerm_sql_server.sql_server_good"
+  - "azurerm_postgresql_server.pg_server_good_no_rule"
+  - "azurerm_postgresql_server.pg_server_good"
 fail:
-  - "azurerm_sql_server.sql_server_bad"
+  - "azurerm_postgresql_server.pg_server_bad"
