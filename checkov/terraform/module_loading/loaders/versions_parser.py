@@ -21,6 +21,10 @@ class VersionConstraint:
         self.operator = constraint_parts.get("operator") or "="
 
     def get_max_version_for_most_specific_segment(self) -> version.Version:
+        release = self.version.release
+        if len(release) > 2:
+            max_release = (*release[:-2], release[-2] + 1, 0)
+            return cast("version.Version", version.parse(".".join(map(str, max_release))))
         return cast("version.Version", version.parse(f"{self.version.major + 1}.0.0"))
 
     def versions_matching(self, other_version_str: str) -> bool:
