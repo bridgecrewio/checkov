@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import re
 from datetime import datetime, timezone
 from io import StringIO
 from typing import TYPE_CHECKING
@@ -39,6 +40,7 @@ class SPDX:
 
         # each entry looks like '{file_name}#{package_name}#{package_version}'
         self._added_packages_cache: set[str] = set()
+        self._used_spdx_ids: set[str] = {"SPDXRef-DOCUMENT"}
 
     def create_document(self) -> Document:
         creation_info = CreationInfo(
@@ -78,6 +80,11 @@ class SPDX:
                     logging.info(f"error occurred when trying to parse the license:{split_licenses} due to error {e}")
             package.license_info_from_files = licenses
 
+    @staticmethod
+    def _sanitize_spdx_id(package_name: str) -> str:
+        sanitized = re.sub(r"[^a-zA-Z0-9.-]+", "-", package_name).strip("-")
+        return f"{SPDXREF}{sanitized or 'unknown'}"
+
     def create_package(self, check: Record | ExtraResource) -> Package:
         package_data = check.vulnerability_details
         if not package_data:
@@ -93,7 +100,7 @@ class SPDX:
 
         package = Package(
             name=package_name,
-            spdx_id=f"{SPDXREF}{package_name}",
+            spdx_id=self._sanitize_spdx_id(package_name),
             version=package_data["package_version"],
             download_location=SpdxNone(),
             file_name=check.file_path,
@@ -129,5 +136,14 @@ class SPDX:
 
         package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
         if package_cache_entry not in self._added_packages_cache:
+            base_spdx_id = package.spdx_id
+            unique_spdx_id = base_spdx_id
+            suffix = 2
+            while unique_spdx_id in self._used_spdx_ids:
+                unique_spdx_id = f"{base_spdx_id}-{suffix}"
+                suffix += 1
+            package.spdx_id = unique_spdx_id
+            self._used_spdx_ids.add(unique_spdx_id)
+
             self.packages.append(package)
             self._added_packages_cache.add(package_cache_entry)
