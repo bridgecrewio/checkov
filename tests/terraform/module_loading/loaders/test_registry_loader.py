@@ -336,3 +336,26 @@ def test_registry_download_in_allowed_prefixes_is_loaded(registry_getter, downlo
 
     registry_getter.assert_called_once()
     assert content.loaded()
+
+
+@pytest.mark.parametrize(
+    "version, expected_version",
+    [
+        ("~> 4.1.0", "4.1.2"),
+        ("~> 4.1", "4.11.0"),
+    ],
+)
+def test_find_best_version_pessimistic_constraint(version: str, expected_version: str) -> None:
+    # given
+    module_version_url = "https://registry.terraform.io/v1/modules/terraform-aws-modules/example/versions"
+    versions = ["5.0.0", "4.11.0", "4.2.0", "4.1.2", "4.1.0", "4.0.0"]
+    loader = RegistryLoader()
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", version, "", "")
+    module_params.tf_modules_versions_endpoint = module_version_url
+
+    # when
+    with mock.patch.object(RegistryLoader, "modules_versions_cache", {module_version_url: versions}):
+        best_version = loader._find_best_version(module_params)
+
+    # then
+    assert best_version == expected_version
