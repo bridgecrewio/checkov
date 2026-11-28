@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 
 from time_machine import travel
@@ -110,3 +111,42 @@ def test_sca_package_output():
             "\n",
         ]
     )
+
+
+def test_spdx_sanitizes_and_deduplicates_spdx_ids():
+    report = Report(CheckType.SCA_PACKAGE)
+    packages = [
+        ("/app/package-lock.json", "@babel/traverse", "7.20.0"),
+        ("/web/package-lock.json", "@babel/traverse", "7.21.0"),
+        ("/app/requirements.txt", "typing_extensions", "4.9.0"),
+        ("/app/go.mod", "golang.org/x/crypto", "0.17.0"),
+        ("/app/custom1.txt", "foo_bar", "1.0.0"),
+        ("/app/custom2.txt", "foo/bar", "1.0.0"),
+    ]
+    for file_path, pkg_name, pkg_version in packages:
+        report.extra_resources.add(
+            ExtraResource(
+                file_abs_path=file_path,
+                file_path=file_path,
+                resource=f"{file_path}.{pkg_name}",
+                vulnerability_details={
+                    "package_name": pkg_name,
+                    "package_version": pkg_version,
+                    "licenses": "MIT",
+                },
+            )
+        )
+
+    spdx = SPDX(repo_id="example", reports=[report])
+    spdx.get_tag_value_output()
+
+    spdx_ids = [pkg.spdx_id for pkg in spdx.packages]
+    assert len(spdx_ids) == len(packages)
+    assert len(set(spdx_ids)) == len(packages)
+    for spdx_id in spdx_ids:
+        assert re.match(r"^SPDXRef-[a-zA-Z0-9.-]+$", spdx_id), f"Invalid SPDXID: {spdx_id}"
+    assert "SPDXRef-babel-traverse" in spdx_ids
+    assert "SPDXRef-babel-traverse-2" in spdx_ids
+    assert "SPDXRef-typing-extensions" in spdx_ids
+    assert "SPDXRef-golang.org-x-crypto" in spdx_ids
+
